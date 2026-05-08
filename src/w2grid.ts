@@ -4149,7 +4149,8 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    click(recid, event?) {
+    // any: recid can be string|number (row select) or {recid, column} object (cell select)
+    click(recid: string | number | { recid: string | number; column?: number } | any, event?: MouseEvent | any) {
         const time = Date.now()
         let column = null
         if (this.last.cancelClick == true || (event && event.altKey)) return
@@ -4263,7 +4264,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    columnClick(field, event) {
+    columnClick(field: string, event?: MouseEvent | any) {
         // ignore click if column was resized
         if (this.last.colResizing === true) {
             return
@@ -4970,7 +4971,8 @@ class w2grid extends w2base {
     }
 
 
-    dblClick(recid, event) {
+    // any: recid can be string|number (row select) or {recid, column} object (cell select)
+    dblClick(recid: string | number | { recid: string | number; column?: number } | any, event?: MouseEvent | any) {
         // find columns
         let column = null
         if ((typeof recid == 'object') && (recid !== null)) {
@@ -5002,7 +5004,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    showContextMenu(event, options) {
+    showContextMenu(event: MouseEvent | any, options: { recid?: string | number; index?: number; column?: number }) {
         const { recid, index, column } = options
         if (this.last.userSelect == 'text') return
         if (event == null) {
@@ -5053,7 +5055,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    contextMenuClick(recid, column, event) {
+    contextMenuClick(recid: string | number, column: number | null, event: any) {
         // event before
         const edata = this.trigger('contextMenuClick', {
             target: this.name, recid, column, originalEvent: event.detail.originalEvent,
@@ -6048,7 +6050,7 @@ class w2grid extends w2base {
             // header column click
             .on('click.body-global dblclick.body-global contextmenu.body-global', { delegate: 'td.w2ui-head' }, event => {
                 const col_ind = parseInt(query(event.delegate).attr('col'))
-                const col = this.columns[col_ind] ?? { field: col_ind } // it could be line number
+                const col = this.columns[col_ind] ?? { field: String(col_ind) } // it could be line number
                 switch (event.type) {
                     case 'click':
                         this.columnClick(col.field, event)
@@ -6941,7 +6943,7 @@ class w2grid extends w2base {
         }
     }
 
-    columnOnOff(event, field) {
+    columnOnOff(event: MouseEvent | any, field: string) {
         // event before
         const edata = this.trigger('columnOnOff', { target: this.name, field: field, originalEvent: event })
         if (edata.isCancelled === true) return
@@ -8755,7 +8757,7 @@ class w2grid extends w2base {
         return [rec_html1, rec_html2]
     }
 
-    getLineHTML(lineNum) {
+    getLineHTML(lineNum: number): string {
         return '<div>' + lineNum + '</div>'
     }
 
