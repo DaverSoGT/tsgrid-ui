@@ -10,10 +10,10 @@
   },
   "main": "dist/w2ui.js",
   "module": "dist/w2ui.es6.js",
-  "types": "dist/w2ui.es6.d.mts",
+  "types": "dist/w2ui.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/w2ui.es6.d.mts",
+      "types": "./dist/w2ui.d.ts",
       "import": "./dist/w2ui.es6.js",
       "require": "./dist/w2ui.js"
     },

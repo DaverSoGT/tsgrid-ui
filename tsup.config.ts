@@ -30,8 +30,8 @@ export default defineConfig([
         outExtension() {
             return { js: '.js' }
         },
-        // Phase 6: .d.ts enabled now that all src/ is strict TypeScript
-        dts: true,
+        // dts handled by the dedicated dts-only block below (canonical .d.ts name)
+        dts: false,
         // Never delete dist/ — Less-compiled CSS and iconfont live there too
         clean: false,
         splitting: false,
@@ -58,5 +58,23 @@ export default defineConfig([
         splitting: false,
         sourcemap: false,
         minify: false,
+    },
+    // -----------------------------------------------------------------------
+    // .d.ts rollup — dist/w2ui.d.ts (single canonical name for both ESM and CJS)
+    // dts.only emits ONLY the type declarations (no JS).
+    // format=cjs + outExtension forces .d.ts extension. ESM format would
+    // emit .d.mts (which works fine but has unusual extension); CJS+override
+    // gives the canonical .d.ts that the package.json "types" field references.
+    // -----------------------------------------------------------------------
+    {
+        entry: { 'w2ui': 'src/index.ts' },
+        format: ['cjs'],
+        dts: { only: true },
+        outDir: 'dist',
+        target: 'es2022',
+        outExtension() {
+            return { js: '.js', dts: '.d.ts' }
+        },
+        clean: false,
     },
 ])
