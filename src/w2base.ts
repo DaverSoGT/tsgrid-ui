@@ -36,17 +36,17 @@ interface W2EventListener {
 }
 
 class w2event {
-    type: string | null
-    detail: W2EventData
-    owner: w2base
+    type!: string | null        // assigned via Object.assign in constructor
+    detail!: W2EventData        // assigned via Object.assign in constructor
+    owner!: w2base              // assigned via Object.assign in constructor
     target: unknown
-    phase: string
+    phase!: string              // assigned via Object.assign in constructor
     object: unknown
-    execute: null
-    isStopped: boolean
-    isCancelled: boolean
-    onComplete: ((edata: w2event) => void) | null
-    listeners: Array<(edata: w2event) => void>
+    execute!: null              // assigned via Object.assign in constructor
+    isStopped!: boolean         // assigned via Object.assign in constructor
+    isCancelled!: boolean       // assigned via Object.assign in constructor
+    onComplete!: ((edata: w2event) => void) | null  // assigned via Object.assign in constructor
+    listeners!: Array<(edata: w2event) => void>     // assigned via Object.assign in constructor
     complete: Promise<w2event>
     _resolve!: (value: w2event) => void
     _reject!: (reason?: unknown) => void
@@ -99,9 +99,9 @@ class w2event {
 }
 
 class w2base {
-    activeEvents: w2event[]
-    listeners: W2EventListener[]
-    debug: boolean
+    activeEvents: w2event[] = []
+    listeners: W2EventListener[] = []
+    debug: boolean = false
     name?: string
     box?: HTMLElement | null
     [key: string]: unknown
@@ -142,7 +142,7 @@ class w2base {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
             if (typeof edata == 'string') {
                 const [eventName, scope] = edata.split('.')
-                const [type, execute] = eventName.replace(':complete', ':after').replace(':done', ':after').split(':')
+                const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type, execute: execute ?? 'before', scope }
             }
             edata = w2utils.extend({ type: null, execute: 'before', onComplete: null }, edata)
@@ -177,7 +177,7 @@ class w2base {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
             if (typeof edata == 'string') {
                 const [eventName, scope] = edata.split('.')
-                const [type, execute] = eventName.replace(':complete', ':after').replace(':done', ':after').split(':')
+                const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type: type || '*', execute: execute || '', scope: scope || '' }
             }
             edata = w2utils.extend({ type: null, execute: null, onComplete: null }, edata)
@@ -257,8 +257,8 @@ class w2base {
         for (let h = this.listeners.length-1; h >= 0; h--) {
             const item = this.listeners[h]
             if (item != null && (item.edata.type === edata.type || item.edata.type === '*') &&
-                (item.edata.target === edata.target || item.edata.target == null) &&
-                (item.edata.execute === edata.phase || item.edata.execute === '*' || item.edata.phase === '*'))
+                (item.edata['target'] === edata.target || item.edata['target'] == null) &&
+                (item.edata.execute === edata.phase || item.edata.execute === '*' || item.edata['phase'] === '*'))
             {
                 // add extra params if there
                 Object.keys(item.edata).forEach(key => {
@@ -268,8 +268,8 @@ class w2base {
                 })
                 // check handler arguments
                 args = []
-                tmp  = new RegExp(/\((.*?)\)/).exec(String(item.handler).split('=>')[0])
-                if (tmp) args = tmp[1].split(/\s*,\s*/)
+                tmp  = new RegExp(/\((.*?)\)/).exec(String(item.handler).split('=>')[0] ?? '')
+                if (tmp) args = (tmp[1] ?? '').split(/\s*,\s*/)
                 if (args.length === 2) {
                     item.handler.call(this, edata.target, edata) // old way for back compatibility
                     if (this.debug) console.log(' - call (old)', item.handler)
@@ -286,8 +286,8 @@ class w2base {
             fun = (this as Record<string, unknown>)[funName] as Function // eslint-disable-line @typescript-eslint/ban-types
             // check handler arguments
             args = []
-            tmp  = new RegExp(/\((.*?)\)/).exec(String(fun).split('=>')[0])
-            if (tmp) args = tmp[1].split(/\s*,\s*/)
+            tmp  = new RegExp(/\((.*?)\)/).exec(String(fun).split('=>')[0] ?? '')
+            if (tmp) args = (tmp[1] ?? '').split(/\s*,\s*/)
             if (args.length === 2) {
                 fun.call(this, edata.target, edata) // old way for back compatibility
                 if (this.debug) console.log(' - call: on[Event] (old)', fun)
@@ -302,8 +302,8 @@ class w2base {
             fun = (edata.object as Record<string, unknown>)[funName] as Function // eslint-disable-line @typescript-eslint/ban-types
             // check handler arguments
             args = []
-            tmp  = new RegExp(/\((.*?)\)/).exec(String(fun).split('=>')[0])
-            if (tmp) args = tmp[1].split(/\s*,\s*/)
+            tmp  = new RegExp(/\((.*?)\)/).exec(String(fun).split('=>')[0] ?? '')
+            if (tmp) args = (tmp[1] ?? '').split(/\s*,\s*/)
             if (args.length === 2) {
                 fun.call(this, edata.target, edata) // old way for back compatibility
                 if (this.debug) console.log(' - call: edata.object (old)', fun)

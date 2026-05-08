@@ -111,7 +111,7 @@ const w2uiRegistry = w2ui as Record<string, W2Widget>
 
     $.fn['w2destroy'] = function(this: JQueryElement, name?: string | W2Widget): void {
         if (!name && this.length > 0) name = this.attr('name')
-        if (typeof name === 'string' && w2uiRegistry[name]) w2uiRegistry[name].destroy()
+        if (typeof name === 'string' && w2uiRegistry[name] != null) w2uiRegistry[name]!.destroy()
         if (typeof name === 'object') name.destroy()
     }
 
@@ -144,7 +144,7 @@ const w2uiRegistry = w2ui as Record<string, W2Widget>
     // dispatch cannot be typed without overloads that conflict with the `this` type binding.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function proc(this: JQueryElement, options: any, type: string, ...args: unknown[]): W2Widget | JQueryElement | null {
-        if ($.isPlainObject(options)) {
+        if ($!.isPlainObject(options)) {
             let obj: W2Widget | null = null
             if (type == 'w2form') {
                 obj = new w2form(options) as W2Widget

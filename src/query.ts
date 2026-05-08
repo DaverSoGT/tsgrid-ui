@@ -83,7 +83,8 @@ class Query {
             scNode.text = txtNode.text
             const attrs = txtNode.attributes
             for (let i = 0; i < attrs.length; i++) {
-                scNode.setAttribute(attrs[i].name, attrs[i].value)
+                const attr = attrs[i]
+                if (attr) scNode.setAttribute(attr.name, attr.value)
             }
             return scNode
         }
@@ -121,11 +122,13 @@ class Query {
         const len  = this.length
         if (len < 1) return this
         // TODO: need good unit test coverage for this function
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type AnyNodeMethod = Record<string, ((arg: any) => void) | undefined>
         if (typeof html == 'string') {
             this.each(node => {
                 const clone = Query._fragment(html as string)
                 nodes.push(...clone.childNodes)
-                ;(node as unknown as Record<string, (arg: Node | DocumentFragment) => void>)[method](clone)
+                ;(node as unknown as AnyNodeMethod)[method]?.(clone)
             })
         } else if (html instanceof Query) {
             const single = (len == 1) // if inserting into a single container, then move it there
@@ -134,7 +137,7 @@ class Query {
                     // if insert before a single node, just move new one, else clone and move it
                     const clone = (single ? el : el.cloneNode(true)) as Node
                     nodes.push(clone)
-                    ;(node as unknown as Record<string, (arg: Node) => void>)[method](clone)
+                    ;(node as unknown as AnyNodeMethod)[method]?.(clone)
                     Query._scriptConvert(clone)
                 })
             })
@@ -144,7 +147,7 @@ class Query {
                 // if insert before a single node, just move new one, else clone and move it
                 const clone: Node | DocumentFragment = (len === 1 ? html : Query._fragment((html as Element).outerHTML))
                 nodes.push(...(len === 1 ? [html as Node] : (clone as DocumentFragment).childNodes))
-                ;(node as unknown as Record<string, (arg: Node | DocumentFragment) => void>)[method](clone)
+                ;(node as unknown as AnyNodeMethod)[method]?.(clone)
             })
             if (len > 1) (html as Element).remove()
         } else {
@@ -180,8 +183,8 @@ class Query {
 
     eq(index: number): Query {
         if (index < 0) index = this.length + index
-        let nodes = [this[index]]
-        if (nodes[0] == null) nodes = []
+        const item = this[index]
+        const nodes: Node[] = item != null ? [item] : []
         return new Query(nodes, this.context) // must return a new collection
     }
 
@@ -431,14 +434,16 @@ class Query {
         }
         const eventsStr = events.split(/[,\s]+/) // separate by comma or space
         eventsStr.forEach(eventName => {
-            const [ event, scope ] = String(eventName).toLowerCase().split('.')
+            const parts = String(eventName).toLowerCase().split('.')
+            const event = parts[0] ?? ''
+            const scope = parts[1]
             let cb = callback!
             if (delegate) {
                 const fun = cb
                 cb = (evt: Event) => {
                     // event.target or any ancestors match delegate selector
                     const parent = (query(evt.target as Element) as Query).parents(delegate)
-                    if (parent.length > 0) { (evt as unknown as Record<string, unknown>).delegate = parent[0] } else { (evt as unknown as Record<string, unknown>).delegate = evt.target }
+                    if (parent.length > 0) { (evt as unknown as Record<string, unknown>)['delegate'] = parent[0] } else { (evt as unknown as Record<string, unknown>)['delegate'] = evt.target }
                     if ((evt.target as Element).matches(delegate!) || parent.length > 0) {
                         fun(evt)
                     }
@@ -459,11 +464,14 @@ class Query {
         }
         const eventsStr = (events ?? '').split(/[,\s]+/) // separate by comma or space
         eventsStr.forEach(eventName => {
-            const [ event, scope ] = String(eventName).toLowerCase().split('.')
+            const offParts = String(eventName).toLowerCase().split('.')
+            const event = offParts[0] ?? ''
+            const scope = offParts[1]
             this.each(node => {
                 if (Array.isArray(node._mQuery?.events)) {
                     for (let i = node._mQuery!.events!.length - 1; i >= 0; i--) {
                         const evt = node._mQuery!.events![i]
+                        if (!evt) continue
                         if (scope == null || scope === '') {
                             // if no scope, has to be exact match
                             if ((evt.event == event || event === '') && (evt.callback == callback || callback == null)) {

@@ -197,6 +197,9 @@ interface W2MessageOptions {
     input?: Element | null
     box?: Element | null
     trigger?: (event: string, data: Record<string, unknown>) => unknown
+    close?: () => void
+    setFocus?: (focus: number | string | null | undefined) => void
+    action?: (action: string, event: unknown) => void
     // any: message mixes in w2base methods at runtime via extend(); typed loosely here
     [key: string]: unknown
 }
@@ -249,11 +252,11 @@ class Utils {
             },
 
             'float'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
-                return w2utils.formatters.number(record, extra)
+                return w2utils.formatters['number']?.(record, extra) ?? ''
             },
 
             'int'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
-                return w2utils.formatters.number(record, extra)
+                return w2utils.formatters['number']?.(record, extra) ?? ''
             },
 
             'money'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
@@ -265,7 +268,7 @@ class Utils {
             },
 
             'currency'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
-                return w2utils.formatters.money(record, extra)
+                return w2utils.formatters['money']?.(record, extra) ?? ''
             },
 
             'percent'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
@@ -470,7 +473,7 @@ class Utils {
                 format = format.replace(/month/ig, 'm').replace(/mon/ig, 'm').replace(/dd/ig, 'd').replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
                 strVal = strVal.replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
                 for (let m = 0, len = this.settings.fullmonths.length; m < len; m++) {
-                    const t = this.settings.fullmonths[m]
+                    const t = this.settings.fullmonths[m] ?? ''
                     strVal = strVal.replace(new RegExp(t, 'ig'), String(m + 1)).replace(new RegExp(t.substr(0, 3), 'ig'), String(m + 1))
                 }
             }
@@ -486,20 +489,21 @@ class Utils {
             if (tmp2 === 'yyyy/mm/dd') { month = tmp[1]; day = tmp[2]; year = tmp[0] }
             if (tmp2 === 'yyyy/m/d') { month = tmp[1]; day = tmp[2]; year = tmp[0] }
             if (tmp2 === 'mm/dd/yy') { month = tmp[0]; day = tmp[1]; year = tmp[2] }
-            if (tmp2 === 'm/d/yy') { month = tmp[0]; day = tmp[1]; year = parseInt(tmp[2]) + 1900 }
-            if (tmp2 === 'dd/mm/yy') { month = tmp[1]; day = tmp[0]; year = parseInt(tmp[2]) + 1900 }
-            if (tmp2 === 'd/m/yy') { month = tmp[1]; day = tmp[0]; year = parseInt(tmp[2]) + 1900 }
-            if (tmp2 === 'yy/dd/mm') { month = tmp[2]; day = tmp[1]; year = parseInt(tmp[0]) + 1900 }
-            if (tmp2 === 'yy/d/m') { month = tmp[2]; day = tmp[1]; year = parseInt(tmp[0]) + 1900 }
-            if (tmp2 === 'yy/mm/dd') { month = tmp[1]; day = tmp[2]; year = parseInt(tmp[0]) + 1900 }
-            if (tmp2 === 'yy/m/d') { month = tmp[1]; day = tmp[2]; year = parseInt(tmp[0]) + 1900 }
+            if (tmp2 === 'm/d/yy') { month = tmp[0]; day = tmp[1]; year = parseInt(tmp[2] ?? '0') + 1900 }
+            if (tmp2 === 'dd/mm/yy') { month = tmp[1]; day = tmp[0]; year = parseInt(tmp[2] ?? '0') + 1900 }
+            if (tmp2 === 'd/m/yy') { month = tmp[1]; day = tmp[0]; year = parseInt(tmp[2] ?? '0') + 1900 }
+            if (tmp2 === 'yy/dd/mm') { month = tmp[2]; day = tmp[1]; year = parseInt(tmp[0] ?? '0') + 1900 }
+            if (tmp2 === 'yy/d/m') { month = tmp[2]; day = tmp[1]; year = parseInt(tmp[0] ?? '0') + 1900 }
+            if (tmp2 === 'yy/mm/dd') { month = tmp[1]; day = tmp[2]; year = parseInt(tmp[0] ?? '0') + 1900 }
+            if (tmp2 === 'yy/m/d') { month = tmp[1]; day = tmp[2]; year = parseInt(tmp[0] ?? '0') + 1900 }
         }
         if (!this.isInt(year)) return false
         if (!this.isInt(month)) return false
         if (!this.isInt(day)) return false
-        const numYear  = +year
-        const numMonth = +month
-        const numDay   = +day
+        // year/month/day are string|number after isInt guards above; the checks ensure they are defined
+        const numYear  = +(year ?? 0)
+        const numMonth = +(month ?? 0)
+        const numDay   = +(day ?? 0)
         dt    = new Date(numYear, numMonth - 1, numDay)
         dt.setFullYear(numYear)
         // do checks
@@ -522,13 +526,14 @@ class Utils {
         strVal = strVal.replace('AM', '').replace('PM', '').trim()
         // ---
         const tmp = strVal.split(':')
-        let h   = parseInt(tmp[0] || '0')
-        const m = parseInt(tmp[1] || '0'), s = parseInt(tmp[2] || '0')
+        const tmp0 = tmp[0] ?? '', tmp1 = tmp[1] ?? '', tmp2 = tmp[2] ?? ''
+        let h   = parseInt(tmp0 || '0')
+        const m = parseInt(tmp1 || '0'), s = parseInt(tmp2 || '0')
         // accept edge case: 3PM is a good timestamp, but 3 (without AM or PM) is NOT:
         if ((!ampm || tmp.length !== 1) && tmp.length !== 2 && tmp.length !== 3) { return false }
-        if (tmp[0] === '' || h < 0 || h > max || !this.isInt(tmp[0]) || tmp[0].length > 2) { return false }
-        if (tmp.length > 1 && (tmp[1] === '' || m < 0 || m > 59 || !this.isInt(tmp[1]) || tmp[1].length !== 2)) { return false }
-        if (tmp.length > 2 && (tmp[2] === '' || s < 0 || s > 59 || !this.isInt(tmp[2]) || tmp[2].length !== 2)) { return false }
+        if (tmp0 === '' || h < 0 || h > max || !this.isInt(tmp0) || tmp0.length > 2) { return false }
+        if (tmp.length > 1 && (tmp1 === '' || m < 0 || m > 59 || !this.isInt(tmp1) || tmp1.length !== 2)) { return false }
+        if (tmp.length > 2 && (tmp2 === '' || s < 0 || s > 59 || !this.isInt(tmp2) || tmp2.length !== 2)) { return false }
         // check the edge cases: 12:01AM is ok, as is 12:01PM, but 24:01 is NOT ok while 24:00 is (midnight; equivalent to 00:00).
         // meanwhile, there is 00:00 which is ok, but 0AM nor 0PM are okay, while 0:01AM and 0:00AM are.
         if (!ampm && max === h && (m !== 0 || s !== 0)) { return false }
@@ -567,7 +572,7 @@ class Utils {
             if (format == null) format = this.settings.datetimeFormat
             const formats = format.split('|')
             const values  = [strVal.substr(0, tmp), strVal.substr(tmp).trim()]
-            formats[0]  = formats[0].trim()
+            if (formats[0] != null) formats[0] = formats[0].trim()
             if (formats[1]) formats[1] = formats[1].trim()
             // check
             const tmp1 = this.isDate(values[0], formats[0], true)
@@ -715,8 +720,8 @@ class Utils {
         const month = dt.getMonth()
         const date  = dt.getDate()
         return format.toLowerCase()
-            .replace('month', this.settings.fullmonths[month])
-            .replace('mon', this.settings.shortmonths[month])
+            .replace('month', this.settings.fullmonths[month] ?? '')
+            .replace('mon', this.settings.shortmonths[month] ?? '')
             .replace(/yyyy/g, ('000' + year).slice(-4))
             .replace(/yyy/g, ('000' + year).slice(-4))
             .replace(/yy/g, ('0' + year).slice(-2))
@@ -783,8 +788,8 @@ class Utils {
             fmt = [this.settings.dateFormat, this.settings.timeFormat]
         } else {
             fmt    = format.split('|')
-            fmt[0] = fmt[0].trim()
-            fmt[1] = (fmt.length > 1 ? fmt[1].trim() : this.settings.timeFormat)
+            if (fmt[0] != null) fmt[0] = fmt[0].trim()
+            fmt[1] = (fmt.length > 1 ? (fmt[1] ?? '').trim() : this.settings.timeFormat)
         }
         // older formats support
         if (fmt[1] === 'h12') fmt[1] = 'h:m pm'
@@ -1373,7 +1378,7 @@ class Utils {
             }
         }
         if (msgBase.actions == null && msgBase.buttons == null && msgBase.html == null) {
-            msgBase.actions = { Ok(event: Record<string, unknown>) { (event['detail'] as Record<string, unknown>)?.['self']?.['close']?.() }}
+            msgBase.actions = { Ok(event: Record<string, unknown>) { ((event['detail'] as Record<string, unknown>)?.['self'] as Record<string, () => void> | null | undefined)?.['close']?.() }}
         }
         ;(msgOpts['off'] as (..._a: unknown[]) => unknown)('.buttons')
         if (msgBase.actions != null) {
@@ -1395,13 +1400,13 @@ class Utils {
                     btnAction = handler
                 }
                 if (typeof btnAction == 'string') {
-                    btnAction = btnAction[0].toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
+                    btnAction = (btnAction[0] ?? '').toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
                 }
                 prom[btnAction] = function (callBack: (event: unknown) => void) {
                     ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('action.buttons', (event: Record<string, unknown>) => {
                         const detail = event['detail'] as Record<string, unknown>
                         const act = String(detail['action'])
-                        const target = act[0].toLowerCase() + act.substr(1).replace(/\s+/g, '')
+                        const target = (act[0] ?? '').toLowerCase() + act.substr(1).replace(/\s+/g, '')
                         if (target == btnAction) callBack(event)
                     })
                     return prom
@@ -1428,8 +1433,8 @@ class Utils {
         }
         if ((msgBase.width ?? 0) > pWidth) msgBase.width = pWidth - 10
         if ((msgBase.height ?? 0) > pHeight - titleHeight) msgBase.height = pHeight - 10 - titleHeight
-        msgBase.originalWidth  = msgBase.width
-        msgBase.originalHeight = msgBase.height
+        if (msgBase.width != null) msgBase.originalWidth = msgBase.width
+        if (msgBase.height != null) msgBase.originalHeight = msgBase.height
         if (parseInt(String(msgBase.width)) < 0) msgBase.width = pWidth + (msgBase.width ?? 0)
         if (parseInt(String(msgBase.width)) < 10) msgBase.width = 10
         if (parseInt(String(msgBase.height)) < 0) msgBase.height = pHeight + (msgBase.height ?? 0) - titleHeight
@@ -1451,8 +1456,10 @@ class Utils {
             msgBase.msgIndex = query(where.box).find('.w2ui-message').length
             if (msgBase.msgIndex === 0 && typeof this.lock == 'function') {
                 query(where.box).css('overflow', 'hidden')
-                if (where.owner) { // where.praram is used in the panel
-                    where.owner.lock(where.param)
+                if (where.owner) { // where.param is used in the panel
+                    // any: lock() is a widget method accessed via w2base index signature; safe runtime call
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ;(where.owner as any).lock?.(where.param)
                 } else {
                     this.lock(where.box)
                 }
@@ -1585,7 +1592,7 @@ class Utils {
                 .on('blur.keep-focus', function (event) {
                     setTimeout(() => {
                         const focus = document.activeElement
-                        const inside = query(box).find(sel).filter(focus).length > 0
+                        const inside = focus != null && query(box).find(sel).filter(focus as Node).length > 0
                         const name = query(focus).attr('name')
                         if (!inside && focus && focus !== document.body) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1799,13 +1806,13 @@ class Utils {
             }
             opts['where'] ??= document.body
             opts['timeout'] ??= 15_000 // 15 seconds or will be hidden on route change
-            if (typeof this.tmp.notify_resolve == 'function') {
-                ;(this.tmp.notify_resolve as () => void)()
-                query(this.tmp.notify_where).find('#w2ui-notify').remove()
+            if (typeof this.tmp['notify_resolve'] == 'function') {
+                ;(this.tmp['notify_resolve'] as () => void)()
+                query(this.tmp['notify_where']).find('#w2ui-notify').remove()
             }
-            this.tmp.notify_resolve = resolve
-            this.tmp.notify_where = opts['where']
-            clearTimeout(this.tmp.notify_timer as number)
+            this.tmp['notify_resolve'] = resolve
+            this.tmp['notify_where'] = opts['where']
+            clearTimeout(this.tmp['notify_timer'] as number)
             if (textStr) {
                 if (typeof opts['actions'] == 'object') {
                     const actions: Record<string, string> = {}
@@ -1830,14 +1837,14 @@ class Utils {
                 if (opts['actions']) {
                     query(opts['where']).find('#w2ui-notify .w2ui-notify-link')
                         .on('click', event => {
-                            const value = query((event as Event).target).attr('value')
+                            const value = query((event as Event).target).attr('value') ?? ''
                             ;((opts['actions'] as Record<string, unknown>)[value] as () => void)()
                             query(opts['where']).find('#w2ui-notify').remove()
                             resolve()
                         })
                 }
                 if ((opts['timeout'] as number) > 0) {
-                    this.tmp.notify_timer = setTimeout(() => {
+                    this.tmp['notify_timer'] = setTimeout(() => {
                         query(opts['where']).find('#w2ui-notify').remove()
                         resolve()
                     }, opts['timeout'] as number)
@@ -1895,18 +1902,28 @@ class Utils {
         return this.getStrDimentions(str, styles, raw).height
     }
 
-    execTemplate(str, replace_obj) {
+    execTemplate(
+        // any: str and replace_obj are dynamic template params; types vary by caller
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        str: any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        replace_obj: any
+    ): any {
         if (typeof str !== 'string' || !replace_obj || typeof replace_obj !== 'object') {
             return str
         }
-        return str.replace(/\${([^}]+)?}/g, function($1, $2) { return replace_obj[$2]||$2 })
+        // any: $2 is the matched key from template literal, replace_obj[$2] is dynamic
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return str.replace(/\${([^}]+)?}/g, function(_$1: any, $2: any) { return replace_obj[$2]||$2 })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     marker(el: any, items: any, options: any = { onlyFirst: false, wholeWord: false, isRegex: false}) {
         options.tag ??= 'span'
         options.class ??= 'w2ui-marker'
-        options.raplace = (matched) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`
+        // any: matched is the regex capture group — dynamic string from DOM text
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        options.raplace = (matched: any) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`
 
         const isRegexSearch = options.isRegex || false
         if (!Array.isArray(items)) {
@@ -1918,7 +1935,9 @@ class Utils {
         }
         if (typeof el == 'string') {
             _clearMerkers(el)
-            items.forEach(item => {
+            // any: items is a mixed array of string/regex passed dynamically via marker() api
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            items.forEach((item: any) => {
                 if (isRegexSearch) {
                     // For regex searches with string elements
                     try {
@@ -1940,7 +1959,9 @@ class Utils {
                 _clearMerkers(el)
                 if (isRegexSearch) {
                     // For regex searches, use DOM traversal approach
-                    items.forEach(pattern => {
+                    // any: pattern is string|regex from dynamic items array
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    items.forEach((pattern: any) => {
                         try {
                             let flags = 'i' // Always case-insensitive
                             if (!options.onlyFirst) {
@@ -1954,8 +1975,11 @@ class Utils {
                             const regex = new RegExp(pattern, flags)
 
                             // Get all text nodes
-                            const textNodes = []
-                            function getTextNodes(node) {
+                            // any: DOM walker for arbitrary node tree — nodeType/tagName/childNodes are dynamic
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const textNodes: any[] = []
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            function getTextNodes(node: any) {
                                 if (node.nodeType === 3) { // Text node
                                     textNodes.push(node)
                                 } else if (node.nodeType === 1) { // Element node
@@ -2035,7 +2059,9 @@ class Utils {
                     })
                 } else {
                     // Standard innerHTML replace for non-regex
-                    items.forEach(item => {
+                    // any: item from dynamic items array
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    items.forEach((item: any) => {
                         ;(el as HTMLElement).innerHTML = _replace((el as HTMLElement).innerHTML, item, options.raplace)
                     })
                 }
@@ -2043,7 +2069,9 @@ class Utils {
         }
         return el
 
-        function _replace(html, term, replaceWith) {
+        // any: _replace is an internal helper operating on raw HTML strings; terms are dynamic
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function _replace(html: any, term: any, replaceWith: any) {
             const ww = options.wholeWord
             if (typeof term !== 'string') term = String(term)
             // escape regex special chars
@@ -2060,7 +2088,9 @@ class Utils {
             return html = html.replace(regex, replaceWith)
         }
 
-        function _clearMerkers(el) {
+        // any: el is string or HTMLElement; runtime-checked via typeof
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function _clearMerkers(el: any) {
             const markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class.replace(/-/g, '\\-')}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, 'ig')
             if (typeof el == 'string') {
                 while (el.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
@@ -2164,19 +2194,19 @@ class Utils {
     }
 
     scrollBarSize() {
-        if (this.tmp.scrollBarSize) return this.tmp.scrollBarSize
+        if (this.tmp['scrollBarSize']) return this.tmp['scrollBarSize']
         const html = `
             <div id="_scrollbar_width" style="position: absolute; top: -300px; width: 100px; height: 100px; overflow-y: scroll;">
                 <div style="height: 120px">1</div>
             </div>
         `
         query('body').append(html)
-        this.tmp.scrollBarSize = 100 - (query('#_scrollbar_width > div')[0] as HTMLElement).clientWidth
+        this.tmp['scrollBarSize'] = 100 - (query('#_scrollbar_width > div')[0] as HTMLElement).clientWidth
         query('#_scrollbar_width').remove()
-        return this.tmp.scrollBarSize
+        return this.tmp['scrollBarSize']
     }
 
-    checkName(name) {
+    checkName(name: string): boolean {
         if (name == null) {
             console.log('ERROR: Property "name" is required but not supplied.')
             return false
@@ -2192,10 +2222,12 @@ class Utils {
         return true
     }
 
-    checkUniqueId(id, items, desc, obj) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    checkUniqueId(id: any, items: any, desc: any, obj: any): boolean { // any: generic runtime utility; callers pass heterogeneous types
         if (!Array.isArray(items)) items = [items]
         let isUnique = true
-        items.forEach(item => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items.forEach((item: any) => { // any: item is an arbitrary menu/record object
             if (item.id === id) {
                 console.log(`ERROR: The item id="${id}" is not unique within the ${desc} "${obj}".`, items)
                 isUnique = false
@@ -2210,7 +2242,8 @@ class Utils {
      * { a: 1, b: { c: 2 }}             => "a=1&b[c]=2"
      * { a: 1, b: {c: { k: 'dfdf' } } } => "a=1&b[c][k]=dfdf"
      */
-    encodeParams(obj, prefix = '') {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    encodeParams(obj: any, prefix = ''): string { // any: arbitrary nested object from user code
         let str = ''
         Object.keys(obj).forEach(key => {
             if (str != '') str += '&'
@@ -2223,12 +2256,13 @@ class Utils {
         return str
     }
 
-    parseRoute(route) {
-        const keys = []
+    parseRoute(route: string): { path: RegExp; keys: { name: string; optional: boolean }[] } {
+        const keys: { name: string; optional: boolean }[] = []
         const path = route
             .replace(/\/\(/g, '(?:/')
             .replace(/\+/g, '__plus__')
-            .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_, slash, format, key, capture, optional) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_: any, slash: any, format: any, key: any, capture: any, optional: any) => { // any: regex replace callback; args are untyped capture groups
                 keys.push({ name: key, optional: !! optional })
                 slash = slash || ''
                 return '' + (optional ? '' : slash) + '(?:' + (optional ? slash : '') + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')' + (optional || '')
@@ -2242,7 +2276,8 @@ class Utils {
         }
     }
 
-    getCursorPosition(input) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getCursorPosition(input: any): number | null { // any: accepts HTMLInputElement, HTMLTextAreaElement, contenteditable div, etc.
         if (input == null) return null
         let caretOffset = 0
         const doc = input.ownerDocument || input.document
@@ -2291,9 +2326,9 @@ class Utils {
                         .replace(/&nbsp;/g, ' ')
                 }
                 if (pos <= tmp.length) {
-                    el = input.childNodes[i]
-                    if (el.childNodes && el.childNodes.length > 0) el = el.childNodes[0]
-                    if (el.childNodes && el.childNodes.length > 0) el = el.childNodes[0]
+                    el = input.childNodes[i] ?? null
+                    if (el != null && el.childNodes && el.childNodes.length > 0) el = el.childNodes[0] ?? null
+                    if (el != null && el.childNodes && el.childNodes.length > 0) el = el.childNodes[0] ?? null
                     break
                 } else {
                     pos -= tmp.length
@@ -2309,8 +2344,8 @@ class Utils {
             } else {
                 range.collapse(true)
             }
-            sel.removeAllRanges()
-            sel.addRange(range)
+            sel?.removeAllRanges()
+            sel?.addRange(range)
         }
     }
 
@@ -2319,10 +2354,11 @@ class Utils {
         if (str[0] === '#') str = str.substr(1)
         let color: W2Color = { r: 0, g: 0, b: 0, a: 1 }
         if (str.length === 3) {
+            const s0 = str[0] ?? '0', s1 = str[1] ?? '0', s2 = str[2] ?? '0'
             color = {
-                r: parseInt(str[0] + str[0], 16),
-                g: parseInt(str[1] + str[1], 16),
-                b: parseInt(str[2] + str[2], 16),
+                r: parseInt(s0 + s0, 16),
+                g: parseInt(s1 + s1, 16),
+                b: parseInt(s2 + s2, 16),
                 a: 1
             }
         } else if (str.length === 6) {
@@ -2342,18 +2378,18 @@ class Utils {
         } else if (str.length > 4 && str.substr(0, 4) === 'RGB(') {
             const tmp = str.replace('RGB', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
             color   = {
-                r: parseInt(tmp[0], 10),
-                g: parseInt(tmp[1], 10),
-                b: parseInt(tmp[2], 10),
+                r: parseInt(tmp[0] ?? '0', 10),
+                g: parseInt(tmp[1] ?? '0', 10),
+                b: parseInt(tmp[2] ?? '0', 10),
                 a: 1
             }
         } else if (str.length > 5 && str.substr(0, 5) === 'RGBA(') {
             const tmp = str.replace('RGBA', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
             color   = {
-                r: parseInt(tmp[0], 10),
-                g: parseInt(tmp[1], 10),
-                b: parseInt(tmp[2], 10),
-                a: parseFloat(tmp[3])
+                r: parseInt(tmp[0] ?? '0', 10),
+                g: parseInt(tmp[1] ?? '0', 10),
+                b: parseInt(tmp[2] ?? '0', 10),
+                a: parseFloat(tmp[3] ?? '1')
             }
         } else {
             // word color
@@ -2382,8 +2418,9 @@ class Utils {
     }
 
     // h=0..360, s=0..100, v=0..100
-    hsv2rgb(h, s, v, a) {
-        let r, g, b
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    hsv2rgb(h: any, s?: any, v?: any, a?: any): { r: number; g: number; b: number; a: number } { // any: overloaded — first arg can be {h,s,v,a} object or a number
+        let r: number | undefined, g: number | undefined, b: number | undefined
         if (arguments.length === 1) {
             s = h.s; v = h.v; a = h.a; h = h.h
         }
@@ -2404,21 +2441,22 @@ class Utils {
             case 5: r = v, g = p, b = q; break
         }
         return {
-            r: Math.round(r * 255),
-            g: Math.round(g * 255),
-            b: Math.round(b * 255),
+            r: Math.round((r ?? 0) * 255),
+            g: Math.round((g ?? 0) * 255),
+            b: Math.round((b ?? 0) * 255),
             a: (a != null ? a : 1)
         }
     }
 
     // r=0..255, g=0..255, b=0..255
-    rgb2hsv(r, g, b, a) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rgb2hsv(r: any, g?: any, b?: any, a?: any): { h: number; s: number; v: number; a: number } { // any: overloaded — first arg can be {r,g,b,a} object or a number
         if (arguments.length === 1) {
             g = r.g; b = r.b; a = r.a; r = r.r
         }
         const max = Math.max(r, g, b), min = Math.min(r, g, b),
             d = max - min
-        let h
+        let h: number | undefined
         const s = (max === 0 ? 0 : d / max),
             v = max / 255
         switch (max) {
@@ -2428,7 +2466,7 @@ class Utils {
             case b: h = (r - g) + d * 4; h /= 6 * d; break
         }
         return {
-            h: Math.round(h * 360),
+            h: Math.round((h ?? 0) * 360),
             s: Math.round(s * 100),
             v: Math.round(v * 100),
             a: (a != null ? a : 1)
@@ -2482,11 +2520,11 @@ class Utils {
      * You can also exclude certain elements from final object if used with options: { exclude }
      */
     clone(obj: unknown, options?: Partial<W2CloneOptions>): any {
-        const opts = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {})
+        const opts: Required<W2CloneOptions> = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {}) as Required<W2CloneOptions>
         if (Array.isArray(obj)) {
             const arr: unknown[] = Array.from(obj)
             arr.forEach((value, ind) => {
-                arr[ind] = this.clone(value, { ...opts, parent: (opts.parent ?? '') + '[]' })
+                arr[ind] = this.clone(value, { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: (opts.parent) + '[]' })
             })
             return arr
         } else if (this.isPlainObject(obj)) {
@@ -2497,10 +2535,10 @@ class Utils {
                 opts.exclude.forEach((key: string) => { delete ret[key] })
             }
             Object.keys(ret).forEach(key => {
-                if (typeof opts.exclude == 'function' && opts.exclude(key, { obj, parent: opts.parent ?? '' })) {
+                if (typeof opts.exclude == 'function' && opts.exclude(key, { obj, parent: opts.parent })) {
                     ret[key] = undefined
                 } else {
-                    ret[key] = this.clone(ret[key], { ...opts, parent: (opts.parent ?? '') + (opts.parent != null ? '.' : '') + key })
+                    ret[key] = this.clone(ret[key], { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + (opts.parent ? '.' : '') + key })
                 }
                 if (ret[key] === undefined) delete ret[key] // do not include undefined elements
             })
@@ -2523,7 +2561,8 @@ class Utils {
      * Deep extend an object, if an array, it overwrrites it, cloning objects in the process
      * target, source1, source2, ...
      */
-    extend(target, source, ...rest: unknown[]) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    extend(target: any, source: any, ...rest: unknown[]): any { // any: generic deep-extend; arbitrary object shapes at runtime
         if (Array.isArray(target)) {
             if (Array.isArray(source)) {
                 target.splice(0, target.length) // empty array but keep the reference
@@ -2572,7 +2611,7 @@ class Utils {
      * @license    MIT License
      */
     naturalCompare(a: unknown, b: unknown): number {
-        let i: number, codeA: number, codeB = 1, posA = 0, posB = 0
+        let i: number = 0, codeA: number = 0, codeB = 1, posA = 0, posB = 0
         // any: String.alphabet is an optional user-defined extension for custom sort order (non-standard)
         const alphabet = (String as unknown as Record<string, unknown>)['alphabet'] as string | undefined
 
@@ -2641,8 +2680,9 @@ class Utils {
         } else if (typeof menu === 'function') {
             const newMenu = menu.call(this, menu, options)
             return w2utils.normMenu.call(this, newMenu, options)
-        } else if (typeof menu === 'object') {
-            return Object.keys(menu).map(key => { return { id: key, text: menu[key] } })
+        } else if (typeof menu === 'object' && menu !== null) {
+            const menuObj = menu as Record<string, unknown>
+            return Object.keys(menuObj).map(key => { return { id: key, text: String(menuObj[key] ?? '') } })
         }
     }
 
@@ -2652,8 +2692,8 @@ class Utils {
      */
     prepareParams(url: URL, fetchOptions: Record<string, unknown>, options: Record<string, unknown> = {}): Record<string, unknown> {
         const dataType = (options?.['dataType'] as string | undefined) ?? w2utils.settings.dataType
-        let postParams = fetchOptions.body
-        fetchOptions.method = String(fetchOptions.method).toUpperCase()
+        let postParams = fetchOptions['body']
+        fetchOptions['method'] = String(fetchOptions['method']).toUpperCase()
         switch (dataType) {
             /**
              * Will submit GET, POST, PUT, DELETE
@@ -2703,8 +2743,8 @@ class Utils {
                 }
             }
         }
-        if (fetchOptions.body != null) {
-            fetchOptions.body = typeof fetchOptions.body == 'string' ? fetchOptions.body : JSON.stringify(fetchOptions.body)
+        if (fetchOptions['body'] != null) {
+            fetchOptions['body'] = typeof fetchOptions['body'] == 'string' ? fetchOptions['body'] : JSON.stringify(fetchOptions['body'])
         }
         return fetchOptions
 
@@ -2732,8 +2772,9 @@ class Utils {
         if (selectorR?.[0] instanceof Node) {
             normalizedSelector = Array.isArray(selector) ? selector : (selector as { get(): unknown[] }).get()
         }
-        query(normalizedSelector).each((el) => {
-            const actions = query(el).data()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(query(normalizedSelector as any) as ReturnType<typeof query>).each((el) => { // any: normalizedSelector is pre-validated above
+            const actions = query(el).data() as Record<string, unknown>
             Object.keys(actions).forEach(name => {
                 const events = ['click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout', 'mousedown', 'mousemove', 'mouseup',
                     'contextmenu', 'focus', 'focusin', 'focusout', 'blur', 'input', 'change', 'keydown', 'keyup', 'keypress']
@@ -2751,7 +2792,7 @@ class Utils {
                         if (key === 'null') val = null
                         if (typeof val === 'string' && parseFloat(val) == (val as unknown as number)) val = parseFloat(val)
                         const quotes = ['\'', '"', '`']
-                        if (typeof val == 'string' && quotes.includes(val[0]) && quotes.includes(val[val.length-1])) {
+                        if (typeof val == 'string' && quotes.includes(val[0] ?? '') && quotes.includes(val[val.length-1] ?? '')) {
                             val = val.substring(1, val.length-1)
                         }
                         return val
@@ -2761,7 +2802,7 @@ class Utils {
                 params = params.slice(1) // should be new array
                 query(el)
                     .off(name + '.w2utils-bind')
-                    .on(name + '.w2utils-bind', function(event) {
+                    .on(name + '.w2utils-bind', function(this: HTMLElement, event: Event) {
                         switch (method) {
                             case 'alert':
                                 alert(params[0]) // for testing purposes
@@ -2798,9 +2839,10 @@ class Utils {
         })
     }
 
-    debounce(func, wait = 250) {
-        let timeout
-        return (...args) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    debounce(func: (...args: any[]) => void, wait = 250): (...args: any[]) => void { // any: debounce wraps arbitrary functions
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        return (...args: unknown[]) => {
             clearTimeout(timeout)
             timeout = setTimeout(() => { func(...args) }, wait)
         }
@@ -2812,13 +2854,15 @@ class Utils {
         })
     }
 
-    getNested(obj, prop) {
-        let val
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getNested(obj: any, prop: any): unknown { // any: traverses arbitrary nested objects via dot-path string
+        let val: unknown
         try { // need this to make sure no error in props
             val = obj
             const tmp = String(prop).split('.')
             for (let i = 0; i < tmp.length; i++) {
-                val = val[tmp[i]]
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                val = (val as any)[tmp[i] ?? ''] // any: dynamic property access on unknown nested object
             }
         } catch (event) {
             val = undefined
