@@ -243,6 +243,17 @@ interface W2GridRange {
     [key: string]: any // any: custom range metadata
 }
 
+/** Active search filter — one entry in grid.searchData — T5.5 */
+interface W2GridSearchFilter {
+    field: string
+    type: string
+    operator: string
+    value?: any
+    svalue?: any // display values for enum/list searches
+    text?: string // display text for list/enum
+    [key: string]: any // any: dynamic search filter props
+}
+
 /** GroupBy configuration object */
 interface W2GridGroupBy {
     field: string
@@ -263,7 +274,7 @@ class w2grid extends w2base {
     ranges: W2GridRange[]
     contextMenu: any[]    // any: context menu item shapes
     searchMap: Record<string, string>
-    searchData: any[]     // any: active search filters typed in T5.5
+    searchData: W2GridSearchFilter[]
     sortMap: Record<string, string>
     sortData: W2GridSortData[]
     savedSearches: any[]  // any: saved search objects
@@ -3069,7 +3080,7 @@ class w2grid extends w2base {
         return false
     }
 
-    searchReset(noReload?) {
+    searchReset(noReload?: boolean) {
         const searchData = []
         let hasHiddenSearches = false
         // add hidden searches
@@ -3117,7 +3128,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    searchShowFields(forceHide) {
+    searchShowFields(forceHide?: boolean) {
         if (forceHide === true) {
             w2tooltip.hide(this.name + '-search-fields')
             return
@@ -3171,7 +3182,7 @@ class w2grid extends w2base {
             })
     }
 
-    searchInitInput(field, value?) {
+    searchInitInput(field: string, value?: any) {
         let search
         const el = query(this.box).find('#grid_'+ this.name +'_search_all')
         if (field == 'all') {
