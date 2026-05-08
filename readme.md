@@ -75,7 +75,7 @@ The build produces:
 - `dist/w2ui.css` / `dist/w2ui-dark.css` — compiled stylesheets (and `.min.css` variants)
 - `dist/w2ui-font.woff` — embedded into the CSS via base64
 
-JavaScript bundling is done by **tsup** (esbuild) and CSS/iconfont by **gulp**. The Gulp task you may have used in v2.0 (`gulp` / `gulp build`) still works for CSS/icons but no longer handles the JS bundle.
+JavaScript bundling is done by **tsup** (esbuild) and CSS/iconfont by **gulp**. The CSS-side Gulp tasks (`gulp` / `gulp less` / `gulp icons`) still work standalone if you only need to rebuild stylesheets; the v2.0 JS-bundling tasks (`pack` / `build` / `build_es6`) were removed in v2.1 — JS is now owned by tsup.
 
 ### Other scripts
 
