@@ -58,7 +58,7 @@ interface DialogOptions {
 
 class Dialog extends w2base {
     defaults: DialogOptions
-    options: DialogOptions
+    options!: DialogOptions // definite assignment: set in open() before any property access
     declare name: string
     status: string
     tmp: Record<string, unknown>
@@ -95,14 +95,14 @@ class Dialog extends w2base {
         }
         this.name       = 'popup'
         this.status     = 'closed' // string that describes current status
-        this.onOpen     = null
-        this.onClose    = null
-        this.onMax      = null
-        this.onMin      = null
-        this.onToggle   = null
-        this.onKeydown  = null
-        this.onAction   = null
-        this.onMove     = null
+        this['onOpen']     = null
+        this['onClose']    = null
+        this['onMax']      = null
+        this['onMin']      = null
+        this['onToggle']   = null
+        this['onKeydown']  = null
+        this['onAction']   = null
+        this['onMove']     = null
         this.tmp        = {}
         // event handler for resize
         this.handleResize = (event) => {
@@ -156,23 +156,35 @@ class Dialog extends w2base {
         options.width  = parseInt(options.width)
         options.height = parseInt(options.height)
 
-        let edata, msg
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let edata: any, msg: any // any: w2event + dynamic message state
         const { top, left, width, height } = this.center()
         // make sure popup is not bigger then available screen
         if (options.width > width) options.width = width
         if (options.height > height) options.height = height
 
-        const prom = {
+        const prom: Record<string, unknown> & {
+            self: Dialog
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            action(callBack: any): typeof prom // any: callback event shape is dynamic
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            close(callBack: any): typeof prom // any: callback event shape is dynamic
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            then(callBack: any): typeof prom // any: callback event shape is dynamic
+        } = {
             self: this,
-            action(callBack) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            action(callBack: any) { // any: action callback event shape is dynamic
                 self.on('action.prom', callBack)
                 return prom
             },
-            close(callBack) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            close(callBack: any) { // any: close callback event shape is dynamic
                 self.on('close.prom', callBack)
                 return prom
             },
-            then(callBack) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            then(callBack: any) { // any: then callback event shape is dynamic
                 self.on('open:after.prom', callBack)
                 return prom
             }
@@ -197,16 +209,18 @@ class Dialog extends w2base {
                         options.buttons += handler
 
                     } else {
-                        btnAction = handler[0].toLowerCase() + handler.substr(1).replace(/\s+/g, '')
+                        btnAction = (handler[0] ?? '').toLowerCase() + handler.substr(1).replace(/\s+/g, '')
                         options.buttons += `<button class="w2ui-btn w2ui-eaction" name="${action}" data-click='["action","${btnAction}","event"]'>${handler}</button>`
                     }
                 }
                 if (typeof btnAction == 'string') {
-                    btnAction = btnAction[0].toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
+                    btnAction = (btnAction[0] ?? '').toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
                 }
-                prom[btnAction] = function (callBack) {
-                    self.on('action.buttons', (event) => {
-                        const target = event.detail.action[0].toLowerCase() + event.detail.action.substr(1).replace(/\s+/g, '')
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                prom[btnAction] = function (callBack: any) { // any: button action callback event shape is dynamic
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    self.on('action.buttons', (event: any) => { // any: action event has dynamic detail
+                        const target = (event.detail.action[0] ?? '').toLowerCase() + event.detail.action.substr(1).replace(/\s+/g, '')
                         if (target == btnAction) callBack(event)
                     })
                     return prom
@@ -235,7 +249,7 @@ class Dialog extends w2base {
             if (options.blockPage) {
                 w2utils.lock(document.body, {
                     opacity: 0.3,
-                    onClick: options.modal ? null : () => { this.close() }
+                    ...(options.modal ? {} : { onClick: () => { this.close() } })
                 })
             }
             // first insert just body
@@ -428,7 +442,8 @@ class Dialog extends w2base {
             if (evt.preventDefault) evt.preventDefault(); else return false
         }
 
-        function mvMove(evt) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function mvMove(evt: any): void { // any: MouseEvent or window.event
             if (tmp.changing != true) return
             if (!evt) evt = window.event
             tmp.div_x = evt.screenX - tmp.x
@@ -454,7 +469,8 @@ class Dialog extends w2base {
             edata.finish()
         }
 
-        function mvStop(evt) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function mvStop(evt: any): void { // any: MouseEvent or window.event
             if (tmp.changing != true) return
             if (!evt) evt = window.event
             tmp.div_x = (evt.screenX - tmp.x)
@@ -528,7 +544,7 @@ class Dialog extends w2base {
         if (click instanceof Object && (click as any).onClick) click = (click as any).onClick
         // event before
         const edata = this.trigger('action', { action, target: 'popup', self: this,
-            originalEvent: event, value: this.input ? (this.input as any).value : null })
+            originalEvent: event, value: this['input'] ? (this['input'] as any).value : null })
         if (edata.isCancelled === true) return
         // default actions
         if (typeof click === 'function') click.call(this, event)
@@ -581,7 +597,7 @@ class Dialog extends w2base {
         }
         if (this.status == 'closing' && immediate === true) {
             cleanUp()
-            clearTimeout(this.tmp.closingTimer as ReturnType<typeof setTimeout>)
+            clearTimeout(this.tmp['closingTimer'] as ReturnType<typeof setTimeout>)
             w2utils.unlock(document.body, 0)
             return
         }
@@ -596,7 +612,7 @@ class Dialog extends w2base {
         if (immediate) {
             cleanUp()
         } else {
-            this.tmp.closingTimer = setTimeout(cleanUp, this.options.speed * 1000)
+            this.tmp['closingTimer'] = setTimeout(cleanUp, (this.options.speed ?? 0.3) * 1000)
         }
         // remove keyboard events
         if (this.options.keyboard) {
@@ -613,7 +629,7 @@ class Dialog extends w2base {
         // event after
         setTimeout(() => {
             edata.finish()
-        }, (this.options.speed * 1000) + 50)
+        }, ((this.options.speed ?? 0.3) * 1000) + 50)
     }
 
     max() {
@@ -635,7 +651,7 @@ class Dialog extends w2base {
 
     min() {
         if (this.options.maximized !== true) return
-        const size = this.options.prevSize.split(':')
+        const size = (this.options.prevSize ?? '').split(':')
         // trigger event
         const edata = this.trigger('min', { target: 'popup' })
         if (edata.isCancelled === true) return
@@ -643,7 +659,7 @@ class Dialog extends w2base {
         this.status = 'resizing'
         // do resize
         this.options.maximized = false
-        this.resize(parseInt(size[0]), parseInt(size[1]), () => {
+        this.resize(parseInt(size[0] ?? '0'), parseInt(size[1] ?? '0'), () => {
             this.status = 'open'
             this.options.prevSize  = null
             edata.finish()
@@ -777,7 +793,8 @@ class Dialog extends w2base {
     // internal function
     resizeMessages() {
         // see if there are messages and resize them
-        query('#w2ui-popup .w2ui-message').each((msg: HTMLElement) => {
+        query('#w2ui-popup .w2ui-message').each((node: Node) => {
+            const msg = node as HTMLElement
             const mopt = (msg as any)._msg_options
             const popup = query('#w2ui-popup')
             if (parseInt(mopt.width) < 10) mopt.width = 10
@@ -807,8 +824,10 @@ class Dialog extends w2base {
     }
 }
 
-function w2alert(msg, title, callBack) {
-    let prom
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function w2alert(msg: any, title?: any, callBack?: any): any { // any: msg/title/callBack are heterogeneous convenience params
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let prom: any // any: return from open() or message() differs; unified at call site
     const options = {
         title: w2utils.lang(title ?? 'Notification'),
         body: `<div class="w2ui-centered w2ui-msg-text">${msg}</div>`,
@@ -821,7 +840,8 @@ function w2alert(msg, title, callBack) {
     } else {
         prom = w2popup.open(options)
     }
-    prom.ok(event => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prom['ok']((event: any) => { // any: ok callback event is dynamic
         if (typeof event.detail.self?.close == 'function') {
             event.detail.self.close()
         }
@@ -830,8 +850,10 @@ function w2alert(msg, title, callBack) {
     return prom
 }
 
-function w2confirm(msg, title, callBack) {
-    let prom
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function w2confirm(msg: any, title?: any, callBack?: any): any { // any: msg/title/callBack are heterogeneous convenience params
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let prom: any // any: return from open() or message() differs; unified at call site
     let options = msg
     if (['string', 'number'].includes(typeof options)) {
         options = { msg: options }
@@ -861,7 +883,8 @@ function w2confirm(msg, title, callBack) {
     }
     prom.self
         .off('.confirm')
-        .on('action:after.confirm', (event) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on('action:after.confirm', (event: any) => { // any: action event detail is dynamic
             if (typeof event.detail.self?.close == 'function') {
                 event.detail.self.close()
             }
@@ -870,8 +893,10 @@ function w2confirm(msg, title, callBack) {
     return prom
 }
 
-function w2prompt(label, title, callBack) {
-    let prom
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function w2prompt(label: any, title?: any, callBack?: any): any { // any: label/title/callBack are heterogeneous convenience params
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let prom: any // any: return from open() or message() differs; unified at call site
     let options = label
     if (['string', 'number'].includes(typeof options)) {
         options = { label: options }
@@ -904,27 +929,31 @@ function w2prompt(label, title, callBack) {
         prom = w2popup.open(options)
     }
     if (prom.self.box) {
-        prom.self.input = query(prom.self.box).find('#w2prompt').get(0)
+        prom.self['input'] = query(prom.self.box).find('#w2prompt').get(0)
     } else {
-        prom.self.input = query('#w2ui-popup .w2ui-popup-body #w2prompt').get(0)
+        prom.self['input'] = query('#w2ui-popup .w2ui-popup-body #w2prompt').get(0)
     }
     if (options.value != null) {
-        prom.self.input.value = options.value
-        prom.self.input.select()
+        prom.self['input'].value = options.value
+        prom.self['input'].select()
     }
-    prom.change = function (callback) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prom.change = function (callback: any) { // any: change callback event shape is dynamic
         prom.self.on('change', callback)
         return this
     }
     prom.self
         .off('.prompt')
-        .on('open:after.prompt', (event) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on('open:after.prompt', (event: any) => { // any: open event detail is dynamic
             const box = event.detail.box ? event.detail.box : query('#w2ui-popup .w2ui-popup-body').get(0)
             w2utils.bindEvents(query(box).find('#w2prompt'), {
-                keydown(evt) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                keydown(evt: any) { // any: KeyboardEvent
                     if (evt.keyCode == 27) evt.stopPropagation()
                 },
-                change(evt) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                change(evt: any) { // any: KeyboardEvent
                     const edata = prom.self.trigger('change', { target: 'prompt', originalEvent: evt })
                     if (edata.isCancelled === true) return
                     if (evt.keyCode == 13 && (evt.ctrlKey || evt.metaKey || evt.target.tagName != 'TEXTAREA')) {
@@ -938,7 +967,8 @@ function w2prompt(label, title, callBack) {
             })
             query(box).find('.w2ui-eaction').trigger('keyup')
         })
-        .on('action:after.prompt', (event) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .on('action:after.prompt', (event: any) => { // any: action event detail is dynamic
             if (typeof event.detail.self?.close == 'function') {
                 event.detail.self.close()
             }

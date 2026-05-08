@@ -99,10 +99,11 @@ class w2layout extends w2base {
     panel_template: W2LayoutPanel
     [key: string]: any // any: w2base dynamic event handlers
 
-    constructor(options) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: any) { // any: options bag — mixed type at construction time
         super(options.name)
         this.box            = null // DOM Element that holds the element
-        this.name           = null // unique name for w2ui
+        this.name           = '' // unique name for w2ui
         this.panels         = []
         this.last           = {}
         this.padding        = 1 // panel padding
@@ -161,28 +162,30 @@ class w2layout extends w2base {
         if (typeof this.box == 'string') this.box = query(this.box).get(0) as HTMLElement
         if (this.box) this.render(this.box)
 
-        function initTabs(object: w2layout, panel: W2PanelType | null, tabs?) {
-            const pan = object.get(panel)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function initTabs(object: w2layout, panel: W2PanelType | null, tabs?: any): boolean { // any: tabs config bag
+            const pan = panel != null ? object.get(panel) : null
             if (pan != null && tabs == null) tabs = pan.tabs
             if (pan == null || tabs == null) return false
             // instantiate tabs
             if (Array.isArray(tabs)) tabs = { tabs: tabs }
-            const name = object.name + '_' + panel + '_tabs'
+            const name = object.name + '_' + (panel ?? '') + '_tabs'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
-            pan.tabs      = new w2tabs(w2utils.extend({}, tabs, { owner: object, name: object.name + '_' + panel + '_tabs' }))
+            pan.tabs      = new w2tabs(w2utils.extend({}, tabs, { owner: object, name: object.name + '_' + (panel ?? '') + '_tabs' }))
             pan.show.tabs = true
             return true
         }
 
-        function initToolbar(object: w2layout, panel: W2PanelType | null, toolbar?) {
-            const pan = object.get(panel)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function initToolbar(object: w2layout, panel: W2PanelType | null, toolbar?: any): boolean { // any: toolbar config bag
+            const pan = panel != null ? object.get(panel) : null
             if (pan != null && toolbar == null) toolbar = pan.toolbar
             if (pan == null || toolbar == null) return false
             // instantiate toolbar
             if (Array.isArray(toolbar)) toolbar = { items: toolbar }
-            const name = object.name + '_' + panel + '_toolbar'
+            const name = object.name + '_' + (panel ?? '') + '_toolbar'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
-            pan.toolbar      = new w2toolbar(w2utils.extend({}, toolbar, { owner: object, name: object.name + '_' + panel + '_toolbar' }))
+            pan.toolbar      = new w2toolbar(w2utils.extend({}, toolbar, { owner: object, name: object.name + '_' + (panel ?? '') + '_toolbar' }))
             pan.show.toolbar = true
             return true
         }
@@ -336,7 +339,7 @@ class w2layout extends w2base {
         box.css('overflow', 'hidden')
         // any: options is pass-through from caller; w2utils.message accepts string|number|object
         const prom = w2utils.message({
-            owner: this,
+            owner: this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box  : box.get(0) as HTMLElement,
             after: '.w2ui-panel-title',
@@ -357,7 +360,7 @@ class w2layout extends w2base {
         box.css('overflow', 'hidden')
         // any: options is pass-through from caller; w2utils.confirm accepts string|number|object
         const prom = w2utils.confirm({
-            owner : this,
+            owner : this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box   : box.get(0) as HTMLElement,
             after : '.w2ui-panel-title',
@@ -492,8 +495,9 @@ class w2layout extends w2base {
 
     get(panel: string, returnIndex?: boolean): any { // any: returns panel object or index depending on returnIndex
         for (let p = 0; p < this.panels.length; p++) {
-            if (this.panels[p].type == panel) {
-                if (returnIndex === true) return p; else return this.panels[p]
+            const pan = this.panels[p]
+            if (pan != null && pan.type == panel) {
+                if (returnIndex === true) return p; else return pan
             }
         }
         return null
@@ -541,7 +545,7 @@ class w2layout extends w2base {
             } else if (pan.toolbar != null) {
                 ;(pan.toolbar as w2toolbar).refresh()
             }
-            if (typeof toolbar != 'string' && toolbar) toolbar.owner = this
+            if (typeof toolbar != 'string' && toolbar) toolbar['owner'] = this
             this.showToolbar(panel)
             this.refresh(panel)
         } else {
@@ -584,7 +588,7 @@ class w2layout extends w2base {
             } else if (pan.tabs != null) {
                 ;(pan.tabs as w2tabs).refresh()
             }
-            if (typeof tabs != 'string' && tabs) tabs.owner = this
+            if (typeof tabs != 'string' && tabs) tabs['owner'] = this
             this.showTabs(panel)
             this.refresh(panel)
         } else {
@@ -593,7 +597,7 @@ class w2layout extends w2base {
         }
     }
 
-    render(box?: HTMLElement | string) {
+    override render(box?: HTMLElement | string) {
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
@@ -633,13 +637,13 @@ class w2layout extends w2base {
             .append('<div id="layout_'+ this.name + '_panel_css" style="position: absolute; top: 10000px;"></div>')
         this.refresh() // if refresh is not called here, the layout will not be available right after initialization
         // observe div resize
-        this.last.observeResize = new ResizeObserver(() => { this.resize() })
-        this.last.observeResize.observe(this.box)
+        this.last['observeResize'] = new ResizeObserver(() => { this.resize() })
+        this.last['observeResize'].observe(this.box)
         // process event
         edata.finish()
         // re-init events
         setTimeout(() => { // needed this timeout to allow browser to render first if there are tabs or toolbar
-            self.last.events = { resizeStart, mouseMove, mouseUp }
+            self.last['events'] = { resizeStart, mouseMove, mouseUp }
             this.resize()
         }, 0)
         return Date.now() - time
@@ -648,12 +652,12 @@ class w2layout extends w2base {
             if (!self.box) return
             if (!evnt) evnt = window.event as MouseEvent
             query(document)
-                .off('mousemove', self.last.events.mouseMove)
-                .on('mousemove', self.last.events.mouseMove)
+                .off('mousemove', self.last['events'].mouseMove)
+                .on('mousemove', self.last['events'].mouseMove)
             query(document)
-                .off('mouseup', self.last.events.mouseUp)
-                .on('mouseup', self.last.events.mouseUp)
-            self.last.resize = {
+                .off('mouseup', self.last['events'].mouseUp)
+                .on('mouseup', self.last['events'].mouseUp)
+            self.last['resize'] = {
                 type    : type,
                 x       : evnt.screenX,
                 y       : evnt.screenY,
@@ -673,19 +677,19 @@ class w2layout extends w2base {
             // any: query().get(0) returns Node|Node[]; resizer element is HTMLElement
             const el = query(self.box).find('#layout_'+ self.name +'_resizer_'+ type).get(0) as HTMLElement
             if (type == 'left' || type == 'right') {
-                self.last.resize.value = parseInt(el.style.left)
+                self.last['resize'].value = parseInt(el.style.left)
             }
             if (type == 'top' || type == 'preview' || type == 'bottom') {
-                self.last.resize.value = parseInt(el.style.top)
+                self.last['resize'].value = parseInt(el.style.top)
             }
         }
 
         function mouseUp(evnt: MouseEvent) {
             if (!self.box) return
             if (!evnt) evnt = window.event as MouseEvent
-            query(document).off('mousemove', self.last.events.mouseMove)
-            query(document).off('mouseup', self.last.events.mouseUp)
-            if (self.last.resize == null) return
+            query(document).off('mousemove', self.last['events'].mouseMove)
+            query(document).off('mouseup', self.last['events'].mouseUp)
+            if (self.last['resize'] == null) return
             // unlock all panels
             w2panels.forEach(panel => {
                 const $tmp = query(self.el(panel)).find('.w2ui-lock')
@@ -696,34 +700,34 @@ class w2layout extends w2base {
                 }
             })
             // set new size
-            if (self.last.diff_x !== 0 || self.last.resize.diff_y !== 0) { // only recalculate if changed
+            if (self.last['diff_x'] !== 0 || self.last['resize'].diff_y !== 0) { // only recalculate if changed
                 const ptop    = self.get('top')
                 const pbottom = self.get('bottom')
-                const panel   = self.get(self.last.resize.type)
+                const panel   = self.get(self.last['resize'].type)
                 const width   = w2utils.getSize(query(self.box), 'width')
                 const height  = w2utils.getSize(query(self.box), 'height')
                 const str     = String(panel.size)
                 let ns: number, nd: number
-                switch (self.last.resize.type) {
+                switch (self.last['resize'].type) {
                     case 'top':
-                        ns = parseInt(panel.sizeCalculated) + self.last.resize.diff_y
+                        ns = parseInt(panel.sizeCalculated) + self.last['resize'].diff_y
                         nd = 0
                         break
                     case 'bottom':
-                        ns = parseInt(panel.sizeCalculated) - self.last.resize.diff_y
+                        ns = parseInt(panel.sizeCalculated) - self.last['resize'].diff_y
                         nd = 0
                         break
                     case 'preview':
-                        ns = parseInt(panel.sizeCalculated) - self.last.resize.diff_y
+                        ns = parseInt(panel.sizeCalculated) - self.last['resize'].diff_y
                         nd = (ptop && !ptop.hidden ? ptop.sizeCalculated : 0) +
                             (pbottom && !pbottom.hidden ? pbottom.sizeCalculated : 0)
                         break
                     case 'left':
-                        ns = parseInt(panel.sizeCalculated) + self.last.resize.diff_x
+                        ns = parseInt(panel.sizeCalculated) + self.last['resize'].diff_x
                         nd = 0
                         break
                     case 'right':
-                        ns = parseInt(panel.sizeCalculated) - self.last.resize.diff_x
+                        ns = parseInt(panel.sizeCalculated) - self.last['resize'].diff_x
                         nd = 0
                         break
                     default:
@@ -743,22 +747,22 @@ class w2layout extends w2base {
                 self.resize()
             }
             query(self.box)
-                .find('#layout_'+ self.name + '_resizer_'+ self.last.resize.type)
+                .find('#layout_'+ self.name + '_resizer_'+ self.last['resize'].type)
                 .removeClass(null)
                 .addClass('active')
             query(self.box)
-                .find('#layout_'+ self.name + '_resizer_'+ self.last.resize.type)
+                .find('#layout_'+ self.name + '_resizer_'+ self.last['resize'].type)
                 .removeClass('active')
-            delete self.last.resize
+            delete self.last['resize']
         }
 
         function mouseMove(evnt: MouseEvent) {
             if (!self.box) return
             if (!evnt) evnt = window.event as MouseEvent
-            if (self.last.resize == null) return
-            const panel = self.get(self.last.resize.type)
+            if (self.last['resize'] == null) return
+            const panel = self.get(self.last['resize'].type)
             // event before
-            const tmp   = self.last.resize
+            const tmp   = self.last['resize']
             const edata = self.trigger('resizing', { target: self.name, object: panel, originalEvent: evnt,
                 panel: tmp ? tmp.type : 'all', diff_x: tmp ? tmp.diff_x : 0, diff_y: tmp ? tmp.diff_y : 0 })
             if (edata.isCancelled === true) return
@@ -847,14 +851,14 @@ class w2layout extends w2base {
         }
     }
 
-    unmount() {
+    override unmount(): void {
         super.unmount()
         this.panels.forEach(panel => {
             // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
             ;(panel.tabs as any)?.unmount?.()
             ;(panel.toolbar as any)?.unmount?.()
         })
-        this.last.observeResize?.disconnect()
+        this.last['observeResize']?.disconnect()
     }
 
     destroy() {
@@ -874,8 +878,8 @@ class w2layout extends w2base {
         delete w2ui[this.name]
         // event after
         edata.finish()
-        if (this.last.events && this.last.events.resize) {
-            query(window).off('resize', this.last.events.resize)
+        if (this.last['events'] && this.last['events'].resize) {
+            query(window).off('resize', this.last['events'].resize)
         }
         return true
     }
@@ -884,10 +888,9 @@ class w2layout extends w2base {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         // if (window.getSelection) window.getSelection().removeAllRanges(); // clear selection
-        if (panel == null) panel = null
         const time = Date.now()
         // event before
-        const edata = self.trigger('refresh', { target: (panel != null ? panel : self.name), object: self.get(panel) })
+        const edata = self.trigger('refresh', { target: (panel != null ? panel : self.name), object: panel != null ? self.get(panel) : null })
         if (edata.isCancelled === true) return
         // self.unlock(panel);
         if (typeof panel == 'string') {
@@ -977,7 +980,7 @@ class w2layout extends w2base {
             }
             self.resize()
             // refresh all of them
-            for (let p1 = 0; p1 < this.panels.length; p1++) { self.refresh(this.panels[p1].type) }
+            for (let p1 = 0; p1 < this.panels.length; p1++) { const p = this.panels[p1]; if (p != null) self.refresh(p.type ?? undefined) }
         }
         edata.finish()
         return Date.now() - time
@@ -988,7 +991,7 @@ class w2layout extends w2base {
         if (!this.box) return false
         const time = Date.now()
         // event before
-        const tmp   = this.last.resize
+        const tmp   = this.last['resize']
         const edata = this.trigger('resize', { target: this.name,
             panel: tmp ? tmp.type : 'all', diff_x: tmp ? tmp.diff_x : 0, diff_y: tmp ? tmp.diff_y : 0 })
         if (edata.isCancelled === true) return
@@ -1014,8 +1017,9 @@ class w2layout extends w2base {
         let l: number, t: number, w: number, h: number
         // calculate %
         for (let p = 0; p < w2panels.length; p++) {
-            if (w2panels[p] === 'main') continue
-            const panTmp = this.get(w2panels[p])
+            const panelType = w2panels[p]
+            if (panelType == null || panelType === 'main') continue
+            const panTmp = this.get(panelType)
             if (!panTmp) continue
             const str = String(panTmp.size || 0)
             if (str.substr(str.length-1) == '%') {
@@ -1322,7 +1326,7 @@ class w2layout extends w2base {
         if (!panel && typeof panel == 'string') panels.slice() // defensive copy if filtered
         // display tabs and toolbar if needed
         panels.forEach((pname, ind) => {
-            const pan = this.get(w2panels[ind])
+            const pan = w2panels[ind] != null ? this.get(w2panels[ind] as string) : null
             const tmp2 = `#layout_${this.name}_panel_${pname} > `
             let topHeight = 0
             if (pan) {
@@ -1352,8 +1356,8 @@ class w2layout extends w2base {
             console.log('ERROR: First parameter needs to be the a valid panel name.')
             return
         }
-        const args: [unknown, unknown, unknown?] = ['#layout_'+ this.name + '_panel_' + panel, msg, showSpinner]
-        w2utils.lock(...args)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        w2utils.lock('#layout_'+ this.name + '_panel_' + panel, msg as any, showSpinner) // any: msg is string|W2LockOptions; W2LockOptions not exported from w2utils
     }
 
     unlock(panel: string, speed?: number) {

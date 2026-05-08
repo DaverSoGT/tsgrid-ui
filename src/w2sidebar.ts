@@ -94,20 +94,21 @@ class w2sidebar extends w2base {
     node_template: Record<string, unknown>
     [key: string]: any
 
-    constructor(options) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: any) { // any: options bag — mixed type at construction time
         super(options.name)
-        this.name          = null
+        this.name          = ''
         this.box           = null
-        this.sidebar       = null
-        this.parent        = null
+        this['sidebar']    = null
+        this['parent']     = null
         this.nodes         = [] // Sidebar child nodes
-        this.menu          = []
+        this['menu']       = []
         this.routeData     = {} // data for dynamic routes
         this.selected      = null // current selected node (readonly)
         this.icon          = null
         this.style         = ''
-        this.topHTML       = ''
-        this.bottomHTML    = ''
+        this['topHTML']    = ''
+        this['bottomHTML'] = ''
         this.multi         = false
         this.editable      = false
         this.reorder       = false
@@ -115,35 +116,35 @@ class w2sidebar extends w2base {
         this.keyboard      = true
         this.flat          = false
         this.hasFocus      = false
-        this.levelPadding  = 12
-        this.toggleAlign   = 'right' // can be left or right
+        this['levelPadding'] = 12
+        this['toggleAlign']  = 'right' // can be left or right
         this.skipRefresh   = false
         this.tabIndex      = null // will only be set if > 0 and not null
-        this.handle        = { width: 0, style: '', text: '', tooltip: '' },
-        this.badge         = null
-        this.onClick       = null // Fire when user click on Node Text
-        this.onSelect      = null
-        this.onUnselect    = null
-        this.onDblClick    = null // Fire when user dbl clicks
-        this.onMouseEnter  = null // mouse enter/leave over an item
-        this.onMouseLeave  = null
-        this.onContextMenu = null
-        this.onMenuClick   = null // when context menu item selected
-        this.onExpand      = null // Fire when node expands
-        this.onCollapse    = null // Fire when node collapses
-        this.onKeydown     = null
-        this.onRender      = null
-        this.onRefresh     = null
-        this.onResize      = null
-        this.onDestroy     = null
-        this.onFocus       = null
-        this.onBlur        = null
-        this.onFlat        = null
-        this.onEdit        = null
-        this.onRename      = null
-        this.onReorder     = null
-        this.onDragStart   = null
-        this.onDragOver    = null
+        this['handle']        = { width: 0, style: '', text: '', tooltip: '' }
+        this['badge']         = null
+        this['onClick']       = null // Fire when user click on Node Text
+        this['onSelect']      = null
+        this['onUnselect']    = null
+        this['onDblClick']    = null // Fire when user dbl clicks
+        this['onMouseEnter']  = null // mouse enter/leave over an item
+        this['onMouseLeave']  = null
+        this['onContextMenu'] = null
+        this['onMenuClick']   = null // when context menu item selected
+        this['onExpand']      = null // Fire when node expands
+        this['onCollapse']    = null // Fire when node collapses
+        this['onKeydown']     = null
+        this['onRender']      = null
+        this['onRefresh']     = null
+        this['onResize']      = null
+        this['onDestroy']     = null
+        this['onFocus']       = null
+        this['onBlur']        = null
+        this['onFlat']        = null
+        this['onEdit']        = null
+        this['onRename']      = null
+        this['onReorder']     = null
+        this['onDragStart']   = null
+        this['onDragOver']    = null
         this.node_template = {
             id: null,
             text: '',
@@ -273,9 +274,10 @@ class w2sidebar extends w2base {
 
     remove(...args: any[]) { // multiple arguments
         let effected = 0
-        let node
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let lastNode: any = null // any: node objects have dynamic shape; tracks last removed for refresh
         args.forEach(arg => {
-            node = this.get(arg)
+            const node = this.get(arg)
             if (node == null) return
             if (this.selected != null) {
                 if (Array.isArray(this.selected)) {
@@ -286,13 +288,14 @@ class w2sidebar extends w2base {
             }
             const ind = this.get(node.parent, arg, true)
             if (ind == null) return
-            if (node.parent.nodes[ind].selected) node.sidebar.unselect(node.id)
+            if (node.parent.nodes[ind].selected) node['sidebar'].unselect(node.id)
             node.parent.nodes.splice(ind, 1)
             node.parent.collapsible = node.parent.nodes.length > 0
+            lastNode = node
             effected++
         })
         if (!this.skipRefresh) {
-            if (effected > 0 && arguments.length == 1) this.refresh(node.parent.id); else this.refresh()
+            if (effected > 0 && arguments.length == 1 && lastNode != null) this.refresh(lastNode.parent.id); else this.refresh()
         }
         return effected
     }
@@ -361,7 +364,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    setCount(id, count, options: W2SidebarSetCountOptions = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setCount(id: any, count: any, options: W2SidebarSetCountOptions = {}) { // any: node id + count are runtime-typed
         const node = this.get(id)
         if (node.group) {
             console.log(`Node "${id}" is a group and groups cannot have counts or badges.`)
@@ -411,7 +415,8 @@ class w2sidebar extends w2base {
         return results
     }
 
-    sort(options: W2SidebarSortOptions | null | undefined, nodes?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    sort(options: W2SidebarSortOptions | null | undefined, nodes?: any) { // any: recursive call passes node subtree of unknown shape
         // default options
         if (!options || typeof options != 'object') options = {}
         if (options.foldersFirst == null) options.foldersFirst = true
@@ -421,7 +426,8 @@ class w2sidebar extends w2base {
         if (nodes == null) {
             nodes = this.nodes
         }
-        nodes.sort((a, b) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes.sort((a: any, b: any) => { // any: node objects have dynamic shape
             // folders first
             const isAfolder = (a.nodes && a.nodes.length > 0)
             const isBfolder = (b.nodes && b.nodes.length > 0)
@@ -446,16 +452,19 @@ class w2sidebar extends w2base {
                 return !options.reverse ? 1 : -1
             }
         })
-        nodes.forEach(node => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes.forEach((node: any) => { // any: node objects have dynamic shape
             if (node.nodes && node.nodes.length > 0) {
                 this.sort(options, node.nodes)
             }
         })
     }
 
-    each(fn, nodes?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    each(fn: any, nodes?: any) { // any: fn is a user-supplied callback; nodes is a dynamic node array
         if (nodes == null) nodes = this.nodes
-        nodes.forEach((node) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes.forEach((node: any) => { // any: node objects have dynamic shape
             fn.call(this, node)
             if (node.nodes && node.nodes.length > 0) {
                 this.each(fn, node.nodes)
@@ -463,10 +472,12 @@ class w2sidebar extends w2base {
         })
     }
 
-    search(str, compare = null) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    search(str: any, compare: any = null) { // any: str is searched text; compare is an optional user callback
         let count = 0
         const str2  = str.toLowerCase()
-        this.each((node) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.each((node: any) => { // any: node objects have dynamic shape
             let match = false
             if (typeof compare == 'function') {
                 match = compare(str, node)
@@ -484,7 +495,8 @@ class w2sidebar extends w2base {
         this.refresh()
         return count
 
-        function showParents(node) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function showParents(node: any): void { // any: node objects have dynamic shape
             if (node.parent) {
                 node.parent.hidden = false
                 showParents(node.parent)
@@ -493,7 +505,8 @@ class w2sidebar extends w2base {
     }
 
     show(...args: any[]) { // multiple arguments
-        const effected = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const effected: any[] = [] // any: node ids can be string|number at runtime
         args.forEach(it => {
             const node = this.get(it)
             if (node == null || node.hidden === false) return
@@ -507,7 +520,8 @@ class w2sidebar extends w2base {
     }
 
     hide(...args: any[]) { // multiple arguments
-        const effected = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const effected: any[] = [] // any: node ids can be string|number at runtime
         args.forEach(it => {
             const node = this.get(it)
             if (node == null || node.hidden === true) return
@@ -521,7 +535,8 @@ class w2sidebar extends w2base {
     }
 
     enable(...args: any[]) { // multiple arguments
-        const effected = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const effected: any[] = [] // any: node ids can be string|number at runtime
         args.forEach(it => {
             const node = this.get(it)
             if (node == null || node.disabled === false) return
@@ -535,7 +550,8 @@ class w2sidebar extends w2base {
     }
 
     disable(...args: any[]) { // multiple arguments
-        const effected = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const effected: any[] = [] // any: node ids can be string|number at runtime
         args.forEach(it => {
             const node = this.get(it)
             if (node == null || node.disabled === true) return
@@ -549,7 +565,8 @@ class w2sidebar extends w2base {
         return effected
     }
 
-    select(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select(id: any) { // any: node id is string|number at runtime
         if (Array.isArray(id)) {
             [...id].forEach(id => this.select(id))
             return
@@ -566,7 +583,8 @@ class w2sidebar extends w2base {
             return false
         } else {
             // unselect all previously selected nodes
-            this.find({ selected: true }).forEach(nd => nd.selected = false)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            this.find({ selected: true }).forEach((nd: any) => nd.selected = false) // any: node objects have dynamic shape
         }
         const $el = query(this.box).find('#node_'+ w2utils.escapeId(id))
         $el.addClass('w2ui-selected')
@@ -588,7 +606,8 @@ class w2sidebar extends w2base {
         return true
     }
 
-    unselect(id?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unselect(id?: any) { // any: node id is string|number at runtime; optional to unselect all
         // if no arguments provided, unselect selected node
         if (arguments.length === 0) {
             id = this.selected
@@ -619,7 +638,8 @@ class w2sidebar extends w2base {
         return true
     }
 
-    toggle(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toggle(id: any) { // any: node id is string|number at runtime
         const nd = this.get(id)
         if (nd == null) return false
         if (nd.plus) {
@@ -633,7 +653,8 @@ class w2sidebar extends w2base {
         if (this.get(id).expanded) return this.collapse(id); else return this.expand(id)
     }
 
-    collapse(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    collapse(id: any) { // any: node id is string|number at runtime
         const nd = this.get(id)
         if (nd == null) return false
         // event before
@@ -651,7 +672,8 @@ class w2sidebar extends w2base {
         return true
     }
 
-    expand(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expand(id: any) { // any: node id is string|number at runtime
         const nd = this.get(id)
         // event before
         const edata = this.trigger('expand', { target: id, object: nd, node: nd })
@@ -694,7 +716,8 @@ class w2sidebar extends w2base {
         this.refresh(parent.id)
     }
 
-    expandParents(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expandParents(id: any) { // any: node id is string|number at runtime
         const node = this.get(id)
         if (node == null) return false
         if (node.parent) {
@@ -707,7 +730,8 @@ class w2sidebar extends w2base {
         return true
     }
 
-    click(id, event?: MouseEvent | Event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    click(id: any, event?: any) { // any: id is string|number; event may be MouseEvent|TouchEvent at runtime
         const nd  = this.get(id)
         if (nd == null) return
         if (nd.disabled || nd.group) {
@@ -750,7 +774,8 @@ class w2sidebar extends w2base {
                 } else if (!isCtrl && isShift) { // only Shift
                     // select range in between
                     const chain = this.getChain()
-                    const ind1 = Math.min(this.selected.map(sel => chain.indexOf(sel))) // first item in selection
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const ind1 = Math.min(this.selected.map((sel: any) => chain.indexOf(sel))) // any: selected ids are string|number; first item in selection
                     const ind2 = chain.indexOf(id)
                     for (let i = Math.min(ind1, ind2); i < chain.length && i <= Math.max(ind1, ind2); i++) {
                         const node = this.get(chain[i])
@@ -760,7 +785,8 @@ class w2sidebar extends w2base {
                     }
 
                 } else { // neither
-                    const ids = this.selected?.filter(sid => sid != id && this.selected.includes(sid))
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const ids = this.selected?.filter((sid: any) => sid != id && this.selected.includes(sid)) // any: selected ids are string|number
                     this.unselect(ids)
                     // only select if it is not selected
                     if (!this.selected?.includes(id)) {
@@ -780,9 +806,11 @@ class w2sidebar extends w2base {
                     const info  = w2utils.parseRoute(route)
                     if (info.keys.length > 0) {
                         for (let k = 0; k < info.keys.length; k++) {
-                            if (this.routeData[info.keys[k].name] == null) continue
+                            const routeKey = info.keys[k]
+                            if (routeKey == null) continue
+                            if (this.routeData[routeKey.name] == null) continue
                             // any: routeData values are runtime strings; declared as unknown for safety
-                            route = route.replace((new RegExp(':'+ info.keys[k].name, 'g')), this.routeData[info.keys[k].name] as string)
+                            route = route.replace((new RegExp(':'+ routeKey.name, 'g')), this.routeData[routeKey.name] as string)
                         }
                     }
                     setTimeout(() => { window.location.hash = route }, 1)
@@ -794,8 +822,10 @@ class w2sidebar extends w2base {
                         this.flatMenu(newNode, items)
                     }
 
-                    function _getItems(nodes) {
-                        const items = nodes.map(it => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    function _getItems(nodes: any): any { // any: node objects have dynamic shape
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const items = nodes.map((it: any) => { // any: node objects have dynamic shape
                             const items = it.nodes.length > 0 ? _getItems(it.nodes) : null
                             return { id: it.id, text: it.text, icon: it.icon, items }
                         })
@@ -808,7 +838,8 @@ class w2sidebar extends w2base {
         }, 1)
     }
 
-    flatMenu(el, items) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    flatMenu(el: any, items: any) { // any: el is query-wrapped element; items is dynamic node menu array
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const $el = query(el).find('.w2ui-node-data')
@@ -819,7 +850,8 @@ class w2sidebar extends w2base {
             items,
             // class: 'w2ui-dark',
             position: 'right|left',
-            onSelect(event) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            onSelect(event: any) { // any: w2menu select event detail has dynamic shape
                 self.unselect()
                 self.click(event.detail.item.id, event.detail.originalEvent)
             },
@@ -830,7 +862,8 @@ class w2sidebar extends w2base {
         w2tooltip.hide(this.name + '_tooltip')
     }
 
-    focus(event?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    focus(event?: any) { // any: event may be FocusEvent|MouseEvent at runtime
         // event before
         const edata = this.trigger('focus', { target: this.name, originalEvent: event })
         if (edata.isCancelled === true) return false
@@ -845,7 +878,8 @@ class w2sidebar extends w2base {
         edata.finish()
     }
 
-    blur(event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    blur(event: any) { // any: event may be FocusEvent|MouseEvent at runtime
         // event before
         const edata = this.trigger('blur', { target: this.name, originalEvent: event })
         if (edata.isCancelled === true) return false
@@ -856,18 +890,19 @@ class w2sidebar extends w2base {
         edata.finish()
     }
 
-    next(node, noSubs?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    next(node: any, noSubs?: any): any { // any: node objects have dynamic shape; return is node or null
         if (node == null) return null
         const parent = node.parent
         const ind = this.get(node.id, true)
         let nextNode = null
         // jump inside
         if (node.expanded && node.nodes.length > 0 && noSubs !== true) {
-            const nd = node.nodes[0]
-            if (nd.hidden || nd.disabled || nd.group) nextNode = this.next(nd); else nextNode = nd
+            const nd = node.nodes[0] ?? null
+            if (nd == null) { nextNode = null } else if (nd.hidden || nd.disabled || nd.group) { nextNode = this.next(nd) } else { nextNode = nd }
         } else {
             if (parent && ind + 1 < parent.nodes.length) {
-                nextNode = parent.nodes[ind + 1]
+                nextNode = parent.nodes[ind + 1] ?? null
             } else {
                 nextNode = this.next(parent, true) // jump to the parent
             }
@@ -876,29 +911,37 @@ class w2sidebar extends w2base {
         return nextNode
     }
 
-    prev(node) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    prev(node: any): any { // any: node objects have dynamic shape; return is node or null
         if (node == null) return null
         const parent = node.parent
         const ind = this.get(node.id, true)
-        const lastChild = (node) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const lastChild = (node: any): any => { // any: node objects have dynamic shape
             if (node.expanded && node.nodes.length > 0) {
-                const nd = node.nodes[node.nodes.length - 1]
+                const nd = node.nodes[node.nodes.length - 1] ?? null
+                if (nd == null) return node
                 if (nd.hidden || nd.disabled || nd.group) return this.prev(nd); else return lastChild(nd)
             }
             return node
         }
-        let prevNode = (ind > 0) ? lastChild(parent.nodes[ind - 1]) : parent
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const prevNodeSource: any = (ind > 0) ? parent.nodes[ind - 1] : null // any: node from index access
+        let prevNode = (ind > 0 && prevNodeSource != null) ? lastChild(prevNodeSource) : parent
         if (prevNode != null && (prevNode.hidden || prevNode.disabled || prevNode.group)) prevNode = this.prev(prevNode)
         return prevNode
     }
 
     // returns ids of expanded elements as a flat array
-    getChain(nodes?, options: W2SidebarFindOptions = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getChain(nodes?: any, options: W2SidebarFindOptions = {}): any[] { // any: nodes is dynamic node array; returns id array
         options.returnDisabled ??= false
         options.returnGroups ??= false
-        const ids = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const ids: any[] = [] // any: node ids can be string|number at runtime
         if (nodes == null) nodes = this.nodes
-        nodes.forEach(node => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        nodes.forEach((node: any) => { // any: node objects have dynamic shape
             // can skip disabled if needed
             if ((!node.disabled && !node.group) || (node.disabled && options.returnDisabled) || (node.group && options.returnGroups)) {
                 ids.push(node.id)
@@ -910,13 +953,14 @@ class w2sidebar extends w2base {
         return ids
     }
 
-    keydown(event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    keydown(event: any) { // any: KeyboardEvent in practice but dispatched via w2ui bindEvents as generic Event
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const first = Array.isArray(this.selected) ? this.selected[0] : this.selected
         let nd  = this.get(first)
         if (this.keyboard !== true) return
-        if (!nd) nd = this.nodes[0]
+        if (!nd) nd = this.nodes[0] ?? null
         // if user hits esc and there is active move
         if (event.keyCode == 27) {
             const mv = this.last.move
@@ -971,14 +1015,16 @@ class w2sidebar extends w2base {
         // event after
         edata.finish()
 
-        function selectNode(node, event?: MouseEvent | Event) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function selectNode(node: any, event?: any) { // any: node object has dynamic shape; event may be any Event subtype
             if (node != null && !node.hidden && !node.disabled && !node.group) {
                 self.click(node.id, event)
                 if (!self.inView(node.id)) self.scrollIntoView(node.id)
             }
         }
 
-        function neighbor(node, neighborFunc) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function neighbor(node: any, neighborFunc: any): any { // any: node object and neighborFunc have dynamic shape
             node = neighborFunc.call(self, node)
             while (node != null && (node.hidden || node.disabled)) {
                 if (node.group) break; else node = neighborFunc(node)
@@ -987,7 +1033,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    inView(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    inView(id: any) { // any: node id is string|number at runtime
         // any: query().get(0) returns Node|Node[]; sidebar nodes are always HTMLElement
         const item = query(this.box).find('#node_'+ w2utils.escapeId(id)).get(0) as HTMLElement | undefined
         if (!item) {
@@ -1001,7 +1048,8 @@ class w2sidebar extends w2base {
         return true
     }
 
-    scrollIntoView(id?, instant?) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    scrollIntoView(id?: any, instant?: any) { // any: id is string|number; instant is boolean-ish
         return new Promise<void>((resolve) => {
             if (id == null) id = Array.isArray(this.selected) ? this.selected[0] : this.selected
             const nd = this.get(id)
@@ -1013,7 +1061,8 @@ class w2sidebar extends w2base {
         })
     }
 
-    dblClick(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    dblClick(id: any, event: any) { // any: id is string|number; event may be MouseEvent|TouchEvent at runtime
         const nd = this.get(id)
         // event before
         const edata = this.trigger('dblClick', { target: id, originalEvent: event, object: nd })
@@ -1031,7 +1080,8 @@ class w2sidebar extends w2base {
     /**
      * This is needed for not reorder
      */
-    mouseDown(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mouseDown(id: any, event: any) { // any: id is string|number; event may be MouseEvent|TouchEvent at runtime
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         if (this.reorder) {
@@ -1078,7 +1128,8 @@ class w2sidebar extends w2base {
                 .on(`mouseup.w2ui-${this.name}-reorder`, _mouseStop)
         }
 
-        function _mouseMove(event) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function _mouseMove(event: any) { // any: event is MouseEvent at runtime but bound as generic EventListener
             if (!event.target.tagName) {
                 // element has no tagName - most likely the target is the #document itself
                 // this can happen is you click+drag and move the mouse out of the DOM area,
@@ -1148,7 +1199,8 @@ class w2sidebar extends w2base {
             }
         }
 
-        function _mouseStop(event) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function _mouseStop(event: any) { // any: event is MouseEvent at runtime but bound as generic EventListener
             const mv = self.last.move
             mv.resetReorder()
             if (mv.moved) {
@@ -1165,11 +1217,13 @@ class w2sidebar extends w2base {
                     // insert
                     if (mv.append) {
                         self.nodes.push(...cut)
-                        cut.forEach(nd => nd.parent = self)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        cut.forEach((nd: any) => nd.parent = self) // any: cut nodes have dynamic shape
                     } else {
                         const before = self.get(mv.moveBefore)
                         const beforeInd = before.parent.nodes.indexOf(before)
-                        cut.forEach(nd => nd.parent = before.parent)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        cut.forEach((nd: any) => nd.parent = before.parent) // any: cut nodes have dynamic shape
                         before.parent.nodes.splice(beforeInd, 0, ...cut)
                     }
                     // refresh
@@ -1183,7 +1237,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    edit(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    edit(id: any) { // any: node id is string|number at runtime
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const node = query(this.box).find('#node_'+ w2utils.escapeId(id))
@@ -1203,9 +1258,10 @@ class w2sidebar extends w2base {
                 // timeout is needed to add to the end of the event loop
                 setTimeout(_rename, 0)
             })
-            .on('keydown.node-editing', (event: KeyboardEvent) => {
-                if (event.keyCode == 13) _rename(event)
-                if (event.keyCode == 27) _rename(event, true)
+            .on('keydown.node-editing', (event: Event) => {
+                const kbdEvent = event as KeyboardEvent
+                if (kbdEvent.keyCode == 13) _rename(kbdEvent)
+                if (kbdEvent.keyCode == 27) _rename(kbdEvent, true)
             })
         // any: query().get(0) returns Node|Node[]; text contenteditable node is always HTMLElement
         ;(text.get(0) as HTMLElement).focus()
@@ -1247,7 +1303,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    contextMenu(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    contextMenu(id: any, event: any) { // any: id is string|number; event may be MouseEvent|ContextMenuEvent at runtime
         const nd = this.get(id)
         if (Array.isArray(this.selected)) {
             if (!this.selected.includes(id)) this.click(id)
@@ -1259,15 +1316,15 @@ class w2sidebar extends w2base {
         if (edata.isCancelled === true) return
         // default action
         // any: allowOnDisabled is a custom event field stored in detail (W2EventData allows [key: string]: unknown)
-        if (nd.disabled && !edata.detail.allowOnDisabled) return
-        if (this.menu.length > 0) {
+        if (nd.disabled && !edata.detail['allowOnDisabled']) return
+        if (this['menu'].length > 0) {
             w2menu.hide(this.name + '_menu') // hide previous if any needed when other item's menu is shown
             // any: w2menu.show() returns AttachReturn|{overlay}; select exists on AttachReturn only
             const menuAttach = w2menu.show({
                 name: this.name + '_menu',
                 anchor: document.body,
                 contextMenu: true,
-                items: this.menu,
+                items: this['menu'],
                 originalEvent: event
             }) as any // any: AttachReturn not exported from w2tooltip; select is optional on it
             menuAttach?.select?.((evt: unknown) => {
@@ -1280,7 +1337,8 @@ class w2sidebar extends w2base {
         edata.finish()
     }
 
-    menuClick(itemId, detail = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    menuClick(itemId: any, detail: any = {}) { // any: itemId is string|number; detail is event detail object
         // event before
         const edata = this.trigger('menuClick', { target: itemId, ...detail })
         if (edata.isCancelled === true) return
@@ -1319,7 +1377,8 @@ class w2sidebar extends w2base {
         edata.finish()
     }
 
-    render(box?: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    override render(box?: any) { // any: box is HTMLElement|string|null at runtime
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj  = this
@@ -1353,7 +1412,7 @@ class w2sidebar extends w2base {
         })
         boxEl3.style.cssText += this.style
         // focus
-        let kbd_timer
+        let kbd_timer: ReturnType<typeof setTimeout> | undefined
         query(this.box).find('#sidebar_'+ this.name + '_focus')
             .on('focus', function(event) {
                 clearTimeout(kbd_timer)
@@ -1390,8 +1449,8 @@ class w2sidebar extends w2base {
          * because it should never be refreshed, as it could create recursive refresh loop
          */
         const flatHTML = `<div class="w2ui-flat w2ui-flat-${(this.flat ? 'right' : 'left')}" ${this.flatButton == false ? 'style="display: none"' : ''}></div>`
-        if (this.topHTML !== '' || flatHTML !== '') {
-            query(this.box).find('.w2ui-sidebar-top').html(this.topHTML + flatHTML)
+        if (this['topHTML'] !== '' || flatHTML !== '') {
+            query(this.box).find('.w2ui-sidebar-top').html(this['topHTML'] + flatHTML)
             query(this.box).find('.w2ui-sidebar-body')
                 // any: query().get(0) returns Node|Node[]; sidebar-top element is always HTMLElement
                 .css('top', (query(this.box).find('.w2ui-sidebar-top').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
@@ -1399,8 +1458,8 @@ class w2sidebar extends w2base {
                 .off('click')
                 .on('click', event => { this.goFlat() })
         }
-        if (this.bottomHTML !== '') {
-            query(this.box).find('.w2ui-sidebar-bottom').html(this.bottomHTML)
+        if (this['bottomHTML'] !== '') {
+            query(this.box).find('.w2ui-sidebar-bottom').html(this['bottomHTML'])
             query(this.box).find('.w2ui-sidebar-body')
                 // any: query().get(0) returns Node|Node[]; sidebar-bottom element is always HTMLElement
                 .css('bottom', (query(this.box).find('.w2ui-sidebar-bottom').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
@@ -1416,7 +1475,8 @@ class w2sidebar extends w2base {
         return Date.now() - time
     }
 
-    update(id, options: W2SidebarUpdateOptions = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    update(id: any, options: W2SidebarUpdateOptions = {}) { // any: node id is string|number at runtime
         // quick function to refresh just this item (not sub nodes)
         //  - icon, class, style, text, count
         const nd = this.get(id)
@@ -1458,8 +1518,8 @@ class w2sidebar extends w2base {
                 if (options.count != null) {
                     nd.count = options.count
                     // update counts
-                    let txt = nd.count ?? this.badge?.text
-                    const style = this.badge?.style
+                    let txt = nd.count ?? this['badge']?.text
+                    const style = this['badge']?.style
                     const last = this.last.badge[nd.id]
                     if (typeof txt == 'function') txt = txt.call(this, nd, level)
                     // any: .html(val) returns Query|string; cast to Query for chaining .attr()
@@ -1493,7 +1553,8 @@ class w2sidebar extends w2base {
         return options
     }
 
-    refresh(id?, options: W2SidebarRefreshOptions = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    refresh(id?: any, options: W2SidebarRefreshOptions = {}) { // any: node id is string|number at runtime
         if (this.box == null) return
         // any: query().get(0) returns Node|Node[]; sidebar body is always HTMLElement
         const body = query(this.box).find(':scope > div > .w2ui-sidebar-body').get(0) as HTMLElement | undefined
@@ -1579,8 +1640,8 @@ class w2sidebar extends w2base {
         }
         // reset scroll
         if (div) {
-            div.scrollTop = scroll.top
-            div.scrollLeft = scroll.left
+            div.scrollTop = scroll.top ?? 0
+            div.scrollLeft = scroll.left ?? 0
         }
         // bind events
         if (!options.recursive) {
@@ -1593,7 +1654,8 @@ class w2sidebar extends w2base {
         edata.finish()
         return Date.now() - time
 
-        function getNodeHTML(nd) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function getNodeHTML(nd: any): string { // any: sidebar node objects have dynamic shape
             let html = ''
             let icon = nd.icon
             if (icon == null) icon = obj.icon
@@ -1668,9 +1730,9 @@ class w2sidebar extends w2base {
                 }
                 let expand = ''
                 let counts = ''
-                if (obj.badge != null || nd.count != null) {
-                    let txt = nd.count ?? obj.badge?.text
-                    const style = obj.badge?.style
+                if (obj['badge'] != null || nd.count != null) {
+                    let txt = nd.count ?? obj['badge']?.text
+                    const style = obj['badge']?.style
                     const last = obj.last.badge[nd.id]
                     if (typeof txt == 'function') txt = txt.call(obj, nd, level)
                     if (txt || txt === 0) { // can be number 0
@@ -1693,13 +1755,13 @@ class w2sidebar extends w2base {
                 // collapsible
                 if (nd.collapsible === true) {
                     const toggleClasses = ['w2ui-sb-toggle', 'w2ui-eaction', (nd.expanded ? 'w2ui-expanded' : 'w2ui-collapsed')]
-                    if (obj.toggleAlign == 'left') toggleClasses.push('w2ui-left-toggle')
+                    if (obj['toggleAlign'] == 'left') toggleClasses.push('w2ui-left-toggle')
                     expand = `<div class="${toggleClasses.join(' ')}" data-click="toggle|${nd.id}"><span></span></div>`
                     classes.push('w2ui-has-children')
                 }
                 const text = w2utils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
                 let nodeOffset = nd.parent?.childOffset ?? 0
-                if (level === 0 && nd.collapsible === true && obj.toggleAlign == 'left') {
+                if (level === 0 && nd.collapsible === true && obj['toggleAlign'] == 'left') {
                     nodeOffset += 12
                 }
                 html = `
@@ -1712,17 +1774,17 @@ class w2sidebar extends w2base {
                         data-mouseEnter="mouseAction|Enter|this|${nd.id}|event"
                         data-mouseLeave="mouseAction|Leave|this|${nd.id}|event"
                     >
-                        ${obj.handle.text
-                            ? `<div class="w2ui-node-handle w2ui-eaction" style="width: ${obj.handle.width}px; ${obj.handle.style}"
+                        ${obj['handle'].text
+                            ? `<div class="w2ui-node-handle w2ui-eaction" style="width: ${obj['handle'].width}px; ${obj['handle'].style}"
                                     data-mouseEnter="mouseAction|Enter|this|${nd.id}|event|handle"
                                     data-mouseLeave="mouseAction|Leave|this|${nd.id}|event|handle"
                                     data-click="mouseAction|click|this|${nd.id}|event|handle"
                                 >
-                                   ${typeof obj.handle.text == 'function' ? obj.handle.text.call(obj, nd, level) ?? '' : obj.handle.text}
+                                   ${typeof obj['handle'].text == 'function' ? obj['handle'].text.call(obj, nd, level) ?? '' : obj['handle'].text}
                               </div>`
                             : ''
                         }
-                      <div class="w2ui-node-data" style="margin-left: ${(level * obj.levelPadding) + nodeOffset + obj.handle.width}px">
+                      <div class="w2ui-node-data" style="margin-left: ${(level * obj['levelPadding']) + nodeOffset + obj['handle'].width}px">
                             ${expand} ${image} ${counts}
                             <div class="w2ui-node-text ${!image ? 'no-icon' : ''}" style="${nd.style || ''}">${text}</div>
                        </div>
@@ -1746,7 +1808,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    mouseAction(action, anchor, nodeId, event, type) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mouseAction(action: any, anchor: any, nodeId: any, event: any, type: any) { // any: all params are runtime-typed event handler args
         let edata
         const node = this.get(nodeId)
         if (type == null) {
@@ -1763,12 +1826,12 @@ class w2sidebar extends w2base {
         }
         if (type == 'handle') {
             if (action == 'click') {
-                const onClick = this.handle.onClick
+                const onClick = this['handle'].onClick
                 if (typeof onClick == 'function') {
                     onClick.call(this, node, event)
                 }
             } else {
-                let tooltip = this.handle.tooltip
+                let tooltip = this['handle'].tooltip
                 if (typeof tooltip == 'function') {
                     tooltip = tooltip.call(this, node, event)
                 }
@@ -1793,12 +1856,12 @@ class w2sidebar extends w2base {
         }
         if (type == 'badge') {
             if (action == 'click') {
-                const onClick = this.badge?.onClick
+                const onClick = this['badge']?.onClick
                 if (typeof onClick == 'function') {
                     onClick.call(this, node, event)
                 }
             } else {
-                let tooltip = this.badge?.tooltip
+                let tooltip = this['badge']?.tooltip
                 if (typeof tooltip == 'function') {
                     tooltip = tooltip.call(this, node, event)
                 }
@@ -1809,7 +1872,8 @@ class w2sidebar extends w2base {
         edata?.finish()
     }
 
-    tooltip(el, text) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tooltip(el: any, text: any) { // any: el is query-wrapped element; text is string|number at runtime
         const $el = query(el).find('.w2ui-node-data')
         if (text !== '') {
             w2tooltip.show({
@@ -1824,7 +1888,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    otherTooltip(el, text) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    otherTooltip(el: any, text: any) { // any: el is query-wrapped element; text is string|number at runtime
         if (text !== '') {
             w2tooltip.show({
                 anchor: el,
@@ -1837,7 +1902,8 @@ class w2sidebar extends w2base {
         }
     }
 
-    showPlus(el, color) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    showPlus(el: any, color: any) { // any: el is query-wrapped element; color is CSS color string
         query(el).find('span:nth-child(1)').css('color', color)
     }
 
@@ -1875,7 +1941,7 @@ class w2sidebar extends w2base {
         edata.finish()
     }
 
-    unmount() {
+    override unmount() {
         super.unmount()
         this.last.observeResize?.disconnect()
     }
@@ -1884,7 +1950,8 @@ class w2sidebar extends w2base {
         w2utils.lock(this.box, msg, showSpinner)
     }
 
-    unlock(speed) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    unlock(speed: any) { // any: speed is numeric ms at runtime
         w2utils.unlock(this.box, speed)
     }
 }

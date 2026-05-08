@@ -36,10 +36,11 @@ class w2tabs extends w2base {
     tab_template: Record<string, unknown>
     [key: string]: any
 
-    constructor(options) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: any) { // any: options bag — mixed type at construction time
         super(options.name)
         this.box          = null // DOM Element that holds the element
-        this.name         = null // unique name for w2ui
+        this.name         = '' // unique name for w2ui
         this.active       = null
         this.reorder      = false
         this.flow         = 'down' // can be down or up
@@ -49,16 +50,16 @@ class w2tabs extends w2base {
         this.last         = {} // placeholder for internal variables
         this.right        = ''
         this.style        = ''
-        this.onClick      = null
-        this.onMouseEnter = null // mouse enter and lease
-        this.onMouseLeave = null
-        this.onMouseDown  = null
-        this.onMouseUp    = null
-        this.onClose      = null
-        this.onRender     = null
-        this.onRefresh    = null
-        this.onResize     = null
-        this.onDestroy    = null
+        this['onClick']      = null
+        this['onMouseEnter'] = null // mouse enter and leave
+        this['onMouseLeave'] = null
+        this['onMouseDown']  = null
+        this['onMouseUp']    = null
+        this['onClose']      = null
+        this['onRender']     = null
+        this['onRefresh']    = null
+        this['onResize']     = null
+        this['onDestroy']    = null
         this.tab_template = {
             id: null,
             text: null,
@@ -87,15 +88,18 @@ class w2tabs extends w2base {
         if (this.box) this.render(this.box)
     }
 
-    add(tab) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    add(tab: any): Promise<any> { // any: tab object has dynamic shape
         return this.insert(null, tab)
     }
 
-    insert(id, tabs) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    insert(id: any, tabs: any): Promise<any> { // any: tab objects and ids are heterogeneous
         if (!Array.isArray(tabs)) tabs = [tabs]
         // assume it is array
-        const proms = []
-        tabs.forEach(tab => {
+        const proms: Promise<void>[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        tabs.forEach((tab: any) => { // any: tab object shape is dynamic
             // checks
             if (tab.id == null) {
                 console.log(`ERROR: The parameter "id" is required but not supplied. (obj: ${this.name})`)
@@ -132,14 +136,16 @@ class w2tabs extends w2base {
         return effected
     }
 
-    select(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    select(id: any): boolean { // any: id can be string or number
         if (this.active == id || this.get(id) == null) return false
         this.active = id
         this.refresh()
         return true
     }
 
-    set(id, tab) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    set(id: any, tab: any): boolean { // any: tab partial update object
         const index = this.get(id, true)
         if (index == null) return false
         w2utils.extend(this.tabs[index], tab)
@@ -214,7 +220,7 @@ class w2tabs extends w2base {
         return effected
     }
 
-    dragMove(event) {
+    dragMove(event: MouseEvent): void {
         if (!this.last.reordering) return
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
@@ -273,17 +279,19 @@ class w2tabs extends w2base {
                 return
             }
         }
-        function _find(ind, inc) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function _find(ind: number, inc: number): any { // any: tab objects have dynamic shape
             ind    += inc
-            let tab = self.tabs[ind]
+            const tab = self.tabs[ind]
             if (tab && tab.hidden) {
-                tab = _find(ind, inc)
+                return _find(ind, inc)
             }
             return tab
         }
     }
 
-    mouseAction(action, id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mouseAction(action: string, id: any, event: MouseEvent): void { // any: id can be string or number
         const tab = this.get(id)
         const edata = this.trigger('mouse' + action, { target: id, tab, object: tab, originalEvent: event })
         if (edata.isCancelled === true || tab?.disabled || tab?.hidden) return
@@ -303,7 +311,8 @@ class w2tabs extends w2base {
         edata.finish()
     }
 
-    tooltipShow(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tooltipShow(id: any): void { // any: tab id can be string or number
         const tab = this.get(id)
         const el = query(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(id)).get(0) as HTMLElement
         if (this.tooltip == null || tab?.disabled || this.last.reordering) {
@@ -320,12 +329,14 @@ class w2tabs extends w2base {
         })
     }
 
-    tooltipHide(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tooltipHide(_id: any): void { // any: id used for routing only, not checked here
         if (this.tooltip == null) return
         w2tooltip.hide(this.name + '_tooltip')
     }
 
-    getTabHTML(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getTabHTML(id: any): string | false { // any: tab id can be string or number
         const index = this.get(id, true)
         const tab   = this.tabs[index]
         if (tab == null) return false
@@ -404,7 +415,7 @@ class w2tabs extends w2base {
         return Date.now() - time
     }
 
-    render(box?: any) {
+    override render(box?: any) {
         const time = Date.now()
         if (typeof box == 'string') box = query(box).get(0)
         // event before
@@ -442,14 +453,16 @@ class w2tabs extends w2base {
         return Date.now() - time
     }
 
-    initReorder(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    initReorder(id: any, event: MouseEvent): void { // any: id can be string or number
         if (!this.reorder) return
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self     = this
         const $tab     = query(this.box).find('#tabs_' + this.name + '_tab_' + w2utils.escapeId(id))
         const tabIndex = this.get(id, true)
         const $ghost   = query(($tab.get(0) as HTMLElement).cloneNode(true))
-        let edata
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let edata: any // any: w2event instance returned by trigger(); typed generically
         $ghost.attr('id', '#tabs_' + this.name + '_tab_ghost')
         this.last.moving = {
             index: tabIndex,
@@ -465,7 +478,8 @@ class w2tabs extends w2base {
 
         query(document)
             .off('.w2uiTabReorder')
-            .on('mousemove.w2uiTabReorder', function (event: MouseEvent) {
+            .on('mousemove.w2uiTabReorder', function (event: Event) {
+                const mouseEvent = event as MouseEvent
                 if (!self.last.reordering) {
                     // event before
                     edata = self.trigger('reorder', { target: self.tabs[tabIndex].id, indexFrom: tabIndex, tab: self.tabs[tabIndex] })
@@ -483,9 +497,9 @@ class w2tabs extends w2base {
                     query(self.box).find('.w2ui-scroll-wrapper').append($ghost.get(0) as HTMLElement)
                     query(self.box).find('.w2ui-tab-close').hide()
                 }
-                self.last.moving.divX = event.pageX - self.last.moving.x
+                self.last.moving.divX = mouseEvent.pageX - self.last.moving.x
                 $ghost.css('left', (self.last.moving.left - self.last.moving.parentX + self.last.moving.divX) + 'px')
-                self.dragMove(event)
+                self.dragMove(mouseEvent)
             })
             .on('mouseup.w2uiTabReorder', function () {
                 query(document).off('.w2uiTabReorder')
@@ -585,7 +599,7 @@ class w2tabs extends w2base {
         edata.finish()
     }
 
-    unmount() {
+    override unmount(): void {
         super.unmount()
         this.last.observeResize?.disconnect()
     }
@@ -593,7 +607,8 @@ class w2tabs extends w2base {
     // ===================================================
     // -- Internal Event Handlers
 
-    click(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    click(id: any, event?: MouseEvent): false | void { // any: id can be string or number
         if (event && query(event.target).hasClass('w2ui-tab-close')) {
             // do not consider click on close button as tab click
             return
@@ -613,8 +628,9 @@ class w2tabs extends w2base {
             const info  = w2utils.parseRoute(route)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
-                    if (this.routeData[info.keys[k].name] == null) continue
-                    route = route.replace((new RegExp(':'+ info.keys[k].name, 'g')), this.routeData[info.keys[k].name] as string)
+                    const key = info.keys[k]
+                    if (key == null || this.routeData[key.name] == null) continue
+                    route = route.replace((new RegExp(':'+ key.name, 'g')), this.routeData[key.name] as string)
                 }
             }
             setTimeout(() => { window.location.hash = route }, 1)
@@ -623,7 +639,8 @@ class w2tabs extends w2base {
         edata.finish()
     }
 
-    clickClose(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    clickClose(id: any, event?: MouseEvent): false | void { // any: id can be string or number
         const tab = this.get(id)
         if (tab == null || tab.disabled) return false
         // event before
@@ -652,7 +669,8 @@ class w2tabs extends w2base {
         })
     }
 
-    animateInsert(id, tab) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    animateInsert(id: any, tab: any): Promise<void> { // any: id/tab objects have dynamic shape
         return new Promise<void>((resolve, reject) => {
             let $before = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
             const tabHTML = this.getTabHTML(tab.id)

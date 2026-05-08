@@ -47,25 +47,26 @@ class w2toolbar extends w2base {
     _refreshDebounced: () => void
     [key: string]: any
 
-    constructor(options) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    constructor(options: any) { // any: options bag — mixed type at construction time
         super(options.name)
         this.box           = null // DOM Element that holds the element
-        this.name          = null // unique name for w2ui
+        this.name          = '' // unique name for w2ui
         this.routeData     = {} // data for dynamic routes
         this.items         = []
         this.right         = '' // HTML text on the right of toolbar
         this.tooltip       = 'top|left'// can be top, bottom, left, right
-        this.onClick       = null
-        this.onChange      = null
-        this.onMouseDown   = null
-        this.onMouseUp     = null
-        this.onMouseEnter  = null // mouse enter the button event
-        this.onMouseLeave  = null
-        this.onRender      = null
-        this.onRefresh     = null
-        this.onResize      = null
-        this.onDestroy     = null
-        this.onLiveUpdate  = null
+        this['onClick']       = null
+        this['onChange']      = null
+        this['onMouseDown']   = null
+        this['onMouseUp']     = null
+        this['onMouseEnter']  = null // mouse enter the button event
+        this['onMouseLeave']  = null
+        this['onRender']      = null
+        this['onRefresh']     = null
+        this['onResize']      = null
+        this['onDestroy']     = null
+        this['onLiveUpdate']  = null
         this.item_template = {
             id: null, // command to be sent to all event handlers
             type: 'button', // button, check, radio, drop, menu, menu-radio, menu-check, break, html, label, input spacer
@@ -132,13 +133,16 @@ class w2toolbar extends w2base {
         if (this.box) this.render(this.box)
     }
 
-    add(items, skipRefresh) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    add(items: any, skipRefresh?: any): void { // any: items array or single item object
         this.insert(null, items, skipRefresh)
     }
 
-    insert(id, items, skipRefresh) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    insert(id: any, items: any, skipRefresh?: any): void { // any: id, items, skipRefresh are heterogeneous
         if (!Array.isArray(items)) items = [items]
-        items.forEach((item, idx, arr) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        items.forEach((item: any, idx: any, arr: any) => { // any: toolbar item objects have dynamic shape
             if (typeof item === 'string') {
                 item = arr[idx] = { id: item, text: item }
             }
@@ -161,14 +165,16 @@ class w2toolbar extends w2base {
             // add item
             const newItem = w2utils.extend({}, this.item_template, item)
             if (newItem.type == 'group' && Array.isArray(newItem.items)) {
-                newItem.items.forEach((it, ind) => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                newItem.items.forEach((_it: any, ind: any) => { // any: item shape is dynamic
                     newItem.items[ind] = w2utils.extend({}, this.item_template, newItem.items[ind])
                 })
             }
             if (newItem.type == 'menu-check') {
                 if (!Array.isArray(newItem.selected)) newItem.selected = []
                 if (Array.isArray(newItem.items)) {
-                    newItem.items.forEach(it => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    newItem.items.forEach((it: any) => { // any: menu item shape is dynamic
                         if (typeof it === 'string') {
                             it = arr[idx] = { id: it, text: it }
                         }
@@ -179,7 +185,8 @@ class w2toolbar extends w2base {
                 }
             } else if (newItem.type == 'menu-radio') {
                 if (Array.isArray(newItem.items)) {
-                    newItem.items.forEach((it, idx, arr) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    newItem.items.forEach((it: any, idx: any, arr: any) => { // any: menu item shape is dynamic
                         if (typeof it === 'string') {
                             it = arr[idx] = { id: it, text: it }
                         }
@@ -217,7 +224,8 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    set(id, newOptions) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    set(id: any, newOptions: any): boolean { // any: id can be string or number; newOptions is partial item config
         const item = this.get(id)
         if (item == null) return false
         Object.assign(item, newOptions)
@@ -270,7 +278,8 @@ class w2toolbar extends w2base {
         return null
     }
 
-    setCount(id, count, className, style) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    setCount(id: any, count: any, className?: any, style?: any): void { // any: toolbar item badge params are heterogeneous
         const btn = query(this.box).find(`#tb_${this.name}_item_${w2utils.escapeId(id)} .w2ui-tb-count > span`)
         if (btn.length > 0) {
             btn.removeClass(null)
@@ -290,15 +299,17 @@ class w2toolbar extends w2base {
     }
 
     show(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it) return
             // since group can have style, it should still be shown
             it.hidden = false
             effected.push(String(item).split(':')[0])
             if (it.type == 'group') {
-                it.items.forEach(itm => this.show(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.show(itm.id)) // any: group items are dynamic
             }
         })
         this._refresh({ effected, resize: true }) // debounced, needed for speed
@@ -306,15 +317,17 @@ class w2toolbar extends w2base {
     }
 
     hide(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it) return
             // since group can have style, it should still be hidden
             it.hidden = true
             effected.push(String(item).split(':')[0])
             if (it.type == 'group') {
-                it.items.forEach(itm => this.hide(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.hide(itm.id)) // any: group items are dynamic
             }
         })
         this._refresh({ effected, hideTooltip: true, resize: true }) // debounced, needed for speed
@@ -322,12 +335,14 @@ class w2toolbar extends w2base {
     }
 
     enable(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it) return
             if (it.type == 'group') {
-                it.items.forEach(itm => this.enable(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.enable(itm.id)) // any: group items are dynamic
             } else {
                 it.disabled = false
                 effected.push(String(item).split(':')[0])
@@ -338,12 +353,14 @@ class w2toolbar extends w2base {
     }
 
     disable(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it) return
             if (it.type == 'group') {
-                it.items.forEach(itm => this.disable(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.disable(itm.id)) // any: group items are dynamic
             } else {
                 it.disabled = true
                 effected.push(String(item).split(':')[0])
@@ -354,12 +371,14 @@ class w2toolbar extends w2base {
     }
 
     check(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it || String(item).indexOf(':') != -1) return
             if (it.type == 'group') {
-                it.items.forEach(itm => this.check(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.check(itm.id)) // any: group items are dynamic
             } else {
                 it.checked = true
                 effected.push(String(item).split(':')[0])
@@ -370,8 +389,9 @@ class w2toolbar extends w2base {
     }
 
     uncheck(...args: any[]) {
-        const effected = []
-        args.forEach(item => {
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.forEach((item: any) => { // any: item id can be string or number
             const it = this.get(item)
             if (!it || String(item).indexOf(':') != -1) return
             // remove overlay
@@ -379,7 +399,8 @@ class w2toolbar extends w2base {
                 w2tooltip.hide(this.name + '-drop')
             }
             if (it.type == 'group') {
-                it.items.forEach(itm => this.uncheck(itm.id))
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                it.items.forEach((itm: any) => this.uncheck(itm.id)) // any: group items are dynamic
             } else {
                 it.checked = false
                 effected.push(String(item).split(':')[0])
@@ -389,7 +410,8 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    click(id, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    click(id: any, event?: any): void { // any: id can be string or number; event is MouseEvent or similar
         // click on menu items
         const tmp   = String(id).split(':')
         const it    = this.get(tmp[0])
@@ -478,14 +500,16 @@ class w2toolbar extends w2base {
                             let menuType = 'normal'
                             if (it.type == 'menu-radio') {
                                 menuType = 'radio'
-                                items.forEach((item) => {
-                                    if (it.selected == item.id) item.checked = true; else item.checked = false
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                items?.forEach((item: any) => { // any: W2MenuItem extended with checked flag
+                                    if (it.selected == item.id) item['checked'] = true; else item['checked'] = false
                                 })
                             }
                             if (it.type == 'menu-check') {
                                 menuType = 'check'
-                                items.forEach((item) => {
-                                    if (Array.isArray(it.selected) && it.selected.includes(item.id)) item.checked = true; else item.checked = false
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                items?.forEach((item: any) => { // any: W2MenuItem extended with checked flag
+                                    if (Array.isArray(it.selected) && it.selected.includes(item.id)) item['checked'] = true; else item['checked'] = false
                                 })
                             }
                             ;(w2menu.show(w2utils.extend({
@@ -499,11 +523,13 @@ class w2toolbar extends w2base {
                                 data: { item: it, btn }
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
-                                .remove(event => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .remove((event: any) => { // any: Tooltip CustomEvent
                                     this.menuClick({ name: this.name, remove: true, item: it, subItem: event.detail.item,
                                         originalEvent: event })
                                 })
-                                .select(event => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .select((event: any) => { // any: Tooltip CustomEvent
                                     this.menuClick({ name: this.name, item: it, subItem: event.detail.item,
                                         originalEvent: event })
                                 })
@@ -517,11 +543,13 @@ class w2toolbar extends w2base {
                                 data: { item: it, btn }
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
-                                .liveUpdate(event => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .liveUpdate((event: any) => { // any: Tooltip CustomEvent
                                     const edata = this.trigger('liveUpdate', { name: this.name, item: it, color: event.detail.color })
                                     edata.finish()
                                 })
-                                .select(event => {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                .select((event: any) => { // any: Tooltip CustomEvent
                                     if (event.detail.color != null) {
                                         this.colorClick({ name: this.name, item: it, color: event.detail.color })
                                     }
@@ -545,7 +573,9 @@ class w2toolbar extends w2base {
                 const info  = w2utils.parseRoute(route)
                 if (info.keys.length > 0) {
                     for (let k = 0; k < info.keys.length; k++) {
-                        route = route.replace((new RegExp(':'+ info.keys[k].name, 'g')), this.routeData[info.keys[k].name] as string)
+                        const key = info.keys[k]
+                        if (key == null) continue
+                        route = route.replace((new RegExp(':'+ key.name, 'g')), this.routeData[key.name] as string)
                     }
                 }
                 setTimeout(() => { window.location.hash = route }, 1)
@@ -588,7 +618,7 @@ class w2toolbar extends w2base {
         })
     }
 
-    render(box?: any) {
+    override render(box?: any) {
         const time = Date.now()
         if (typeof box == 'string') box = query(box).get(0) as HTMLElement
         // event before
@@ -635,7 +665,7 @@ class w2toolbar extends w2base {
             .addClass('w2ui-reset w2ui-toolbar')
             .html(html)
         if (query(this.box).length > 0) {
-            (query(this.box)[0] as HTMLElement).style.cssText += this.style
+            (query(this.box)[0] as HTMLElement).style.cssText += this['style']
         }
         // overflow buttons
         w2utils.bindEvents(query(this.box).find('.w2ui-tb-line .w2ui-eaction'), this)
@@ -655,7 +685,8 @@ class w2toolbar extends w2base {
         // event before
         const edata = this.trigger('refresh', { target: (id != null ? id : this.name), item: this.get(id) })
         if (edata.isCancelled === true) return
-        let edata2
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let edata2: any // any: w2event instance or undefined
         // refresh all
         if (id == null) {
             for (let i = 0; i < this.items.length; i++) {
@@ -699,9 +730,10 @@ class w2toolbar extends w2base {
             w2utils.bindEvents(newBtn, this)
             w2utils.bindEvents(newBtn.find('.w2ui-eaction'), this)
             // update overlay's anchor if changed
-            const overlays = w2tooltip.get(true)
-            Object.keys(overlays).forEach(key => {
-                if (overlays[key].anchor == btn.get(0)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const overlays = w2tooltip.get(true) as Record<string, any> | undefined // any: TooltipOverlay shape is dynamic
+            if (overlays != null) Object.keys(overlays).forEach(key => {
+                if (overlays[key]?.anchor == btn.get(0)) {
                     overlays[key].anchor = newBtn.get(0)
                 }
             })
@@ -710,7 +742,8 @@ class w2toolbar extends w2base {
             // check selected items
             const selected = Array.isArray(it.selected) ? it.selected : [it.selected]
             const items = typeof it.items == 'function' ? it.items(it) : [...it.items]
-            items.forEach((item) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            items.forEach((item: any) => { // any: menu item shape is dynamic
                 if (selected.includes(item.id)) item.checked = true; else item.checked = false
             })
             w2menu.update(this.name + '-drop', items)
@@ -766,7 +799,7 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 
-    unmount() {
+    override unmount(): void {
         super.unmount()
         this.last.observeResize?.disconnect()
     }
@@ -774,17 +807,20 @@ class w2toolbar extends w2base {
     // ========================================
     // --- Internal Functions
 
-    getItemHTML(item) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getItemHTML(item: any): string { // any: toolbar item config has dynamic shape
         let html = ''
         if (item.caption != null && item.text == null) item.text = item.caption // for backward compatibility
         if (item.text == null) item.text = ''
         if (item.tooltip == null && item.hint != null) item.tooltip = item.hint // for backward compatibility
         if (item.tooltip == null) item.tooltip = ''
         if (typeof item.get !== 'function' && (Array.isArray(item.items) || typeof item.items == 'function')) {
-            item.get = function get(id) { // need scope, cannot be arrow func
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            item.get = function get(id: any): any { // any: item ids and shapes are dynamic
                 let tmp = item.items
                 if (typeof tmp == 'function') tmp = item.items(item)
-                return tmp.find(it => it.id == id ? true : false)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                return tmp.find((it: any) => it.id == id ? true : false) // any: menu item shape is dynamic
             }
         }
         let icon = ''
@@ -937,7 +973,8 @@ class w2toolbar extends w2base {
                 html = `<div id="tb_${this.name}_item_${item.id}" class="w2ui-tb-group"
                     style="display: flex; ${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">`
                 if (Array.isArray(item.items)) {
-                    item.items.forEach(it => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    item.items.forEach((it: any) => { // any: item shape is dynamic
                         html += this.getItemHTML(it)
                     })
                 } else {
@@ -949,7 +986,8 @@ class w2toolbar extends w2base {
         return html
     }
 
-    spinner(id, action, event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    spinner(id: any, action: any, event?: any): void { // any: id/action/event are heterogeneous at runtime
         const it = this.get(id)
         let inc = 0
         const edata = this.trigger('keyDown', { id, item: it, originalEvent: event })
@@ -1033,7 +1071,8 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 
-    tooltipShow(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tooltipShow(id: any): void { // any: id can be string or number
         if (this.tooltip == null) return
         const el   = query(this.box).find('#tb_'+ this.name + '_item_'+ w2utils.escapeId(id)).get(0) as HTMLElement
         const item = this.get(id)
@@ -1054,12 +1093,14 @@ class w2toolbar extends w2base {
         return
     }
 
-    tooltipHide(id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    tooltipHide(_id: any): void { // any: id can be string or number
         if (this.tooltip == null) return
         w2tooltip.hide(this.name + '-tooltip')
     }
 
-    menuClick(event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    menuClick(event: any): void { // any: menu click event has dynamic detail shape
         if (event.item && !event.item.disabled) {
             // event before
             const edata = this.trigger((event.remove !== true ? 'click' : 'remove'), {
@@ -1079,10 +1120,12 @@ class w2toolbar extends w2base {
             if (item.type == 'menu-radio') {
                 item.selected = it.id
                 if (Array.isArray(items)) {
-                    items.forEach((item) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    items.forEach((item: any) => { // any: menu item shape is dynamic
                         if (item.checked === true) delete item.checked
                         if (Array.isArray(item.items)) {
-                            item.items.forEach((item) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            item.items.forEach((item: any) => { // any: nested menu item shape is dynamic
                                 if (item.checked === true) delete item.checked
                             })
                         }
@@ -1106,8 +1149,10 @@ class w2toolbar extends w2base {
                 } else {
                     const unchecked = []
                     const ind = item.selected.indexOf(it.id)
-                    const checkNested = (items) => {
-                        items.forEach((sub) => {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const checkNested = (items: any): void => { // any: nested menu items have dynamic shape
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        items.forEach((sub: any) => { // any: sub-item shape is dynamic
                             if (sub.group === it.group) {
                                 const ind = item.selected.indexOf(sub.id)
                                 if (ind != -1) {
@@ -1130,8 +1175,9 @@ class w2toolbar extends w2base {
                 const info  = w2utils.parseRoute(route)
                 if (info.keys.length > 0) {
                     for (let k = 0; k < info.keys.length; k++) {
-                        if (this.routeData[info.keys[k].name] == null) continue
-                        route = route.replace((new RegExp(':'+ info.keys[k].name, 'g')), this.routeData[info.keys[k].name] as string)
+                        const key = info.keys[k]
+                        if (key == null || this.routeData[key.name] == null) continue
+                        route = route.replace((new RegExp(':'+ key.name, 'g')), this.routeData[key.name] as string)
                     }
                 }
                 setTimeout(() => { window.location.hash = route }, 1)
@@ -1142,7 +1188,8 @@ class w2toolbar extends w2base {
         }
     }
 
-    colorClick(event) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    colorClick(event: any): void { // any: color pick event has dynamic shape
         if (event.item && !event.item.disabled) {
             // event before
             const edata = this.trigger('click', { target: event.item.id, item: event.item, color: event.color, final: true })
@@ -1157,7 +1204,8 @@ class w2toolbar extends w2base {
         }
     }
 
-    mouseAction(event, target, action, id) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mouseAction(event: any, target: any, action: any, id: any): void { // any: mouse event and toolbar item ids are heterogeneous
         const btn = this.get(id)
         const edata = this.trigger('mouse' + action, { target: id, item: btn, object: btn, originalEvent: event })
         if (edata.isCancelled === true || btn.disabled || btn.hidden) return
