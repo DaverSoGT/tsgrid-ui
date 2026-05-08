@@ -1,4 +1,5 @@
 /* eslint-env node */
+/* w2ui 2.0 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). Phase 1 of ts-native-port migration. */
 const gulp     = require('gulp')
 const header   = require('gulp-header')
 const iconfont = require('gulp-iconfont')
@@ -257,7 +258,7 @@ let tasks = {
     },
 
     watch(cb) {
-        gulp.watch(['src/**/*.js'], tasks.pack) // only packs dist/w2ui.js
+        // JS bundling removed from gulp watch — use `npm run dev` (tsup --watch) for JS changes
         gulp.watch(['src/less/**/*.less'], tasks.less)
         gulp.watch(['src/less/icons/svg/*.svg'], tasks.icons)
     },
@@ -314,11 +315,18 @@ let tasks = {
     },
 }
 
-exports.default = gulp.series(tasks.clean, tasks.less, tasks.build_es6, tasks.build)
-exports.build   = gulp.series(tasks.build_es6, tasks.build)
+// JS bundle tasks (pack, build, build_es6) are DISABLED — tsup owns the JS bundle.
+// Gulp retains ownership of: clean, less, icons, locales, watch (Less/icons only).
+// To build JS: npm run build:js (tsup + wrap-legacy.mjs)
+// To build CSS: npm run build:css (gulp less && gulp icons)
+// To build all: npm run build
+exports.default = gulp.series(tasks.clean, tasks.less)
 exports.dev     = tasks.watch
 exports.clean   = tasks.clean
-exports.pack    = tasks.pack
 exports.less    = gulp.series(tasks.less)
 exports.icons   = gulp.series(tasks.icons, tasks.less)
 exports.locales = tasks.locales
+// Kept for reference but no longer wired to npm run build:
+// exports.pack    = tasks.pack      // DISABLED: tsup owns JS bundling
+// exports.build   = ...             // DISABLED: tsup owns JS bundling
+// exports.build_es6 = ...           // DISABLED: tsup owns JS bundling
