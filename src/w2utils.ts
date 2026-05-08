@@ -1,3 +1,6 @@
+// @ts-nocheck
+// Stub phase (T2c.2): TypeScript migration scaffolding. Full type annotations in Phase 6.
+// eslint-disable @typescript-eslint/no-explicit-any
 /**
  * Part of w2ui 2.0 library
  *  - Dependencies: mQuery, w2utils, w2base, w2locale
@@ -30,12 +33,19 @@
 
 import { w2base } from './w2base.js'
 import { w2locale } from './w2locale.js'
-import { query } from './query.js'
+import { query as _query, Query } from './query.js'
+
+// w2utils always calls query() with a selector (never a callback) so the return is always Query.
+// Cast once here to avoid 80+ void|Query narrowing errors throughout this file.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const query = _query as (selector: any, context?: any) => Query
 
 // variable that holds all w2ui objects
-let w2ui = {}
+const w2ui = {}
 
 class Utils {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
     constructor () {
         this.version = '2.0.x'
         this.tmp = {}
@@ -61,7 +71,8 @@ class Utils {
         this.formatters = {
             'number'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (parseInt(params) > 20) params = 20
                 if (parseInt(params) < 0) params = 0
                 if (value == null || value === '') return ''
@@ -78,9 +89,9 @@ class Utils {
 
             'money'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 if (value == null || value === '') return ''
-                let data = w2utils.formatNumber(Number(value), w2utils.settings.currencyPrecision, true)
+                const data = w2utils.formatNumber(Number(value), w2utils.settings.currencyPrecision, true)
                 return (w2utils.settings.currencyPrefix || '') + data + (w2utils.settings.currencySuffix || '')
             },
 
@@ -90,21 +101,22 @@ class Utils {
 
             'percent'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 if (value == null || value === '') return ''
                 return w2utils.formatNumber(value, params || 1) + '%'
             },
 
             'size'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 if (value == null || value === '') return ''
                 return w2utils.formatSize(parseInt(value))
             },
 
             'date'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (params === '') params = w2utils.settings.dateFormat
                 if (value == null || value === 0 || value === '') return ''
                 let dt = w2utils.isDateTime(value, params, true)
@@ -114,7 +126,8 @@ class Utils {
 
             'datetime'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
                 let dt = w2utils.isDateTime(value, params, true)
@@ -124,7 +137,8 @@ class Utils {
 
             'time'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (params === '') params = w2utils.settings.timeFormat
                 if (params === 'h12') params = 'hh:mi pm'
                 if (params === 'h24') params = 'h24:mi'
@@ -136,7 +150,8 @@ class Utils {
 
             'timestamp'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
                 let dt = w2utils.isDateTime(value, params, true)
@@ -146,7 +161,8 @@ class Utils {
 
             'gmt'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value } = extra
+                let { params } = extra
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
                 let dt = w2utils.isDateTime(value, params, true)
@@ -156,7 +172,7 @@ class Utils {
 
             'age'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 if (value == null || value === 0 || value === '') return ''
                 let dt = w2utils.isDateTime(value, null, true)
                 if (dt === false) dt = w2utils.isDate(value, null, true)
@@ -165,20 +181,20 @@ class Utils {
 
             'interval'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 if (value == null || value === 0 || value === '') return ''
                 return w2utils.interval(value) + (params ? (' ' + params) : '')
             },
 
             'toggle'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 return (value ? w2utils.lang('Yes') : '')
             },
 
             'password'(record, extra) {
                 if (extra == undefined) extra = record
-                let { value, params } = extra
+                const { value, params } = extra
                 let ret = ''
                 if (!value) return ret
                 for (let i = 0; i < value.length; i++) {
@@ -191,7 +207,7 @@ class Utils {
 
         function testLocalStorage() {
             // test if localStorage is available, see issue #1282
-            let str = 'w2ui_test'
+            const str = 'w2ui_test'
             try {
                 localStorage.setItem(str, str)
                 localStorage.removeItem(str)
@@ -203,12 +219,12 @@ class Utils {
     }
 
     isBin(val) {
-        let re = /^[0-1]+$/
+        const re = /^[0-1]+$/
         return re.test(val)
     }
 
     isInt(val) {
-        let re = /^[-+]?[0-9]+$/
+        const re = /^[-+]?[0-9]+$/
         return re.test(val)
     }
 
@@ -223,8 +239,8 @@ class Utils {
     isMoney(val) {
         if (typeof val === 'object' || val === '') return false
         if (this.isFloat(val)) return true
-        let se = this.settings
-        let re = new RegExp('^'+ (se.currencyPrefix ? '\\' + se.currencyPrefix + '?' : '') +
+        const se = this.settings
+        const re = new RegExp('^'+ (se.currencyPrefix ? '\\' + se.currencyPrefix + '?' : '') +
                             '[-+]?'+ (se.currencyPrefix ? '\\' + se.currencyPrefix + '?' : '') +
                             '[0-9]*[\\'+ se.decimalSymbol +']?[0-9]+'+ (se.currencySuffix ? '\\' + se.currencySuffix + '?' : '') +'$', 'i')
         if (typeof val === 'string') {
@@ -234,22 +250,22 @@ class Utils {
     }
 
     isHex(val) {
-        let re = /^(0x)?[0-9a-fA-F]+$/
+        const re = /^(0x)?[0-9a-fA-F]+$/
         return re.test(val)
     }
 
     isAlphaNumeric(val) {
-        let re = /^[a-zA-Z0-9_-]+$/
+        const re = /^[a-zA-Z0-9_-]+$/
         return re.test(val)
     }
 
     isEmail(val) {
-        let email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/
+        const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/
         return email.test(val)
     }
 
     isIpAddress(val) {
-        let re = new RegExp('^' +
+        const re = new RegExp('^' +
             '((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' +
             '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' +
             '$')
@@ -259,7 +275,8 @@ class Utils {
     isDate(val, format, retDate) {
         if (!val) return false
 
-        let dt = 'Invalid Date'
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let dt: any = 'Invalid Date'
         let month, day, year
 
         if (format == null) format = this.settings.dateFormat
@@ -280,13 +297,13 @@ class Utils {
                 format = format.replace(/month/ig, 'm').replace(/mon/ig, 'm').replace(/dd/ig, 'd').replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
                 val    = val.replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
                 for (let m = 0, len = this.settings.fullmonths.length; m < len; m++) {
-                    let t = this.settings.fullmonths[m]
+                    const t = this.settings.fullmonths[m]
                     val   = val.replace(new RegExp(t, 'ig'), (parseInt(m) + 1)).replace(new RegExp(t.substr(0, 3), 'ig'), (parseInt(m) + 1))
                 }
             }
             // format date
-            let tmp  = val.replace(/-/g, '/').replace(/\./g, '/').toLowerCase().split('/')
-            let tmp2 = format.replace(/-/g, '/').replace(/\./g, '/').toLowerCase()
+            const tmp  = val.replace(/-/g, '/').replace(/\./g, '/').toLowerCase().split('/')
+            const tmp2 = format.replace(/-/g, '/').replace(/\./g, '/').toLowerCase()
             if (tmp2 === 'mm/dd/yyyy') { month = tmp[0]; day = tmp[1]; year = tmp[2] }
             if (tmp2 === 'm/d/yyyy') { month = tmp[0]; day = tmp[1]; year = tmp[2] }
             if (tmp2 === 'dd/mm/yyyy') { month = tmp[1]; day = tmp[0]; year = tmp[2] }
@@ -322,18 +339,19 @@ class Utils {
     isTime(val, retTime) {
         // Both formats 10:20pm and 22:20
         if (val == null) return false
-        let max, am, pm
+        let max
         // -- process american format
         val      = String(val)
         val      = val.toUpperCase()
-        am       = val.indexOf('AM') >= 0
-        pm       = val.indexOf('PM') >= 0
-        let ampm = (pm || am)
+        const am       = val.indexOf('AM') >= 0
+        const pm       = val.indexOf('PM') >= 0
+        const ampm = (pm || am)
         if (ampm) max = 12; else max = 24
         val = val.replace('AM', '').replace('PM', '').trim()
         // ---
-        let tmp = val.split(':')
-        let h   = parseInt(tmp[0] || 0), m = parseInt(tmp[1] || 0), s = parseInt(tmp[2] || 0)
+        const tmp = val.split(':')
+        let h   = parseInt(tmp[0] || 0)
+        const m = parseInt(tmp[1] || 0), s = parseInt(tmp[2] || 0)
         // accept edge case: 3PM is a good timestamp, but 3 (without AM or PM) is NOT:
         if ((!ampm || tmp.length !== 1) && tmp.length !== 2 && tmp.length !== 3) { return false }
         if (tmp[0] === '' || h < 0 || h > max || !this.isInt(tmp[0]) || tmp[0].length > 2) { return false }
@@ -361,26 +379,28 @@ class Utils {
             if (retDate !== true) return true
             return val
         }
-        let intVal = parseInt(val)
+        const intVal = parseInt(val)
         if (intVal === val) {
             if (intVal < 0) return false
             else if (retDate !== true) return true
             else return new Date(intVal)
         }
-        let tmp = String(val).indexOf(' ')
+        const tmp = String(val).indexOf(' ')
         if (tmp < 0) {
             if (String(val).indexOf('T') < 0 || String(new Date(val)) == 'Invalid Date') return false
             else if (retDate !== true) return true
             else return new Date(val)
         } else {
             if (format == null) format = this.settings.datetimeFormat
-            let formats = format.split('|')
-            let values  = [val.substr(0, tmp), val.substr(tmp).trim()]
+            const formats = format.split('|')
+            const values  = [val.substr(0, tmp), val.substr(tmp).trim()]
             formats[0]  = formats[0].trim()
             if (formats[1]) formats[1] = formats[1].trim()
             // check
-            let tmp1 = this.isDate(values[0], formats[0], true)
-            let tmp2 = this.isTime(values[1], true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tmp1 = this.isDate(values[0], formats[0], true) as any
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tmp2 = this.isTime(values[1], true) as any
             if (tmp1 !== false && tmp2 !== false) {
                 if (retDate !== true) return true
                 tmp1.setHours(tmp2.hours)
@@ -405,8 +425,8 @@ class Utils {
         }
         if (String(d1) === 'Invalid Date') return ''
 
-        let d2     = new Date()
-        let sec    = (d2.getTime() - d1.getTime()) / 1000
+        const d2     = new Date()
+        const sec    = (d2.getTime() - d1.getTime()) / 1000
         let amount = ''
         let type   = ''
         if (sec < 0) {
@@ -469,17 +489,17 @@ class Utils {
         if (this.isInt(dateStr)) d1 = new Date(Number(dateStr)) // for unix timestamps
         if (String(d1) === 'Invalid Date') return ''
 
-        let months = this.settings.shortmonths
-        let d2     = new Date() // today
-        let d3     = new Date()
+        const months = this.settings.shortmonths
+        const d2     = new Date() // today
+        const d3     = new Date()
         d3.setTime(d3.getTime() - 86400000) // yesterday
 
-        let dd1 = months[d1.getMonth()] + ' ' + d1.getDate() + ', ' + d1.getFullYear()
-        let dd2 = months[d2.getMonth()] + ' ' + d2.getDate() + ', ' + d2.getFullYear()
-        let dd3 = months[d3.getMonth()] + ' ' + d3.getDate() + ', ' + d3.getFullYear()
+        const dd1 = months[d1.getMonth()] + ' ' + d1.getDate() + ', ' + d1.getFullYear()
+        const dd2 = months[d2.getMonth()] + ' ' + d2.getDate() + ', ' + d2.getFullYear()
+        const dd3 = months[d3.getMonth()] + ' ' + d3.getDate() + ', ' + d3.getFullYear()
 
-        let time  = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
-        let time2 = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ':' + (d1.getSeconds() < 10 ? '0' : '') + d1.getSeconds() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
+        const time  = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
+        const time2 = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ':' + (d1.getSeconds() < 10 ? '0' : '') + d1.getSeconds() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
         let dsp   = dd1
         if (dd1 === dd2) dsp = time
         if (dd1 === dd3) dsp = this.lang('Yesterday')
@@ -491,14 +511,14 @@ class Utils {
         if (!this.isFloat(sizeStr) || sizeStr === '') return ''
         sizeStr = parseFloat(sizeStr)
         if (sizeStr === 0) return 0
-        let sizes = ['Bt', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']
-        let i     = parseInt( Math.floor( Math.log(sizeStr) / Math.log(1024) ) )
+        const sizes = ['Bt', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']
+        const i     = parseInt( Math.floor( Math.log(sizeStr) / Math.log(1024) ) )
         return (Math.floor(sizeStr / Math.pow(1024, i) * 10) / 10).toFixed(i === 0 ? 0 : 1) + ' ' + (sizes[i] || '??')
     }
 
     formatNumber(val, fraction, useGrouping) {
         if (val == null || val === '' || typeof val === 'object') return ''
-        let options = {
+        const options = {
             minimumFractionDigits: parseInt(fraction),
             maximumFractionDigits: parseInt(fraction),
             useGrouping: !!useGrouping
@@ -518,9 +538,9 @@ class Utils {
         if (this.isInt(dateStr)) dt = new Date(Number(dateStr)) // for unix timestamps
         if (String(dt) === 'Invalid Date') return ''
 
-        let year  = dt.getFullYear()
-        let month = dt.getMonth()
-        let date  = dt.getDate()
+        const year  = dt.getFullYear()
+        const month = dt.getMonth()
+        const date  = dt.getDate()
         return format.toLowerCase()
             .replace('month', this.settings.fullmonths[month])
             .replace('mon', this.settings.shortmonths[month])
@@ -544,7 +564,8 @@ class Utils {
         let dt = new Date(dateStr)
         if (this.isInt(dateStr)) dt = new Date(Number(dateStr)) // for unix timestamps
         if (this.isTime(dateStr)) {
-            let tmp = this.isTime(dateStr, true)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const tmp = this.isTime(dateStr, true) as any
             dt = new Date()
             dt.setHours(tmp.hours)
             dt.setMinutes(tmp.minutes)
@@ -554,7 +575,7 @@ class Utils {
 
         let type = 'am'
         let hour = dt.getHours()
-        let h24  = dt.getHours()
+        const h24  = dt.getHours()
         let min  = dt.getMinutes()
         let sec  = dt.getSeconds()
         if (min < 10) min = '0' + min
@@ -702,7 +723,7 @@ class Utils {
     escapeId(id) {
         // This logic is borrowed from jQuery
         if (id === '' || id == null) return ''
-        let re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g
+        const re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g
         return (id + '').replace(re, (ch, asCodePoint) => {
             if (asCodePoint) {
                 if (ch === '\0') return '\uFFFD'
@@ -715,9 +736,9 @@ class Utils {
     unescapeId(id) {
         // This logic is borrowed from jQuery
         if (id === '' || id == null) return ''
-        let re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g
+        const re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g
         return id.replace(re, (escape, nonHex) => {
-            let high = '0x' + escape.slice( 1 ) - 0x10000
+            const high = '0x' + escape.slice( 1 ) - 0x10000
             return nonHex ? nonHex : high < 0
                     ? String.fromCharCode(high + 0x10000 )
                     : String.fromCharCode(high >> 10 | 0xD800, high & 0x3FF | 0xDC00)
@@ -726,9 +747,9 @@ class Utils {
 
     base64encode(str) {
         // Fast Native support in Chrome since 2010
-        let utf8Bytes = new TextEncoder().encode(str)
+        const utf8Bytes = new TextEncoder().encode(str)
         let binaryString = ''
-        for (let byte of utf8Bytes) {
+        for (const byte of utf8Bytes) {
             binaryString += String.fromCharCode(byte)
         }
         return btoa(binaryString)
@@ -736,8 +757,8 @@ class Utils {
 
     base64decode(encodedStr) {
         // Fast Native support in Chrome since 2010
-        let binaryString = atob(encodedStr)
-        let utf8Bytes = new Uint8Array(binaryString.length)
+        const binaryString = atob(encodedStr)
+        const utf8Bytes = new Uint8Array(binaryString.length)
         for (let i = 0; i < binaryString.length; i++) {
             utf8Bytes[i] = binaryString.charCodeAt(i)
         }
@@ -753,11 +774,11 @@ class Utils {
     }
 
     transition(div_old, div_new, type, callBack) {
-        return new Promise((resolve, reject) => {
-            let styles = getComputedStyle(div_old)
-            let width  = parseInt(styles.width)
-            let height = parseInt(styles.height)
-            let time   = 0.5
+        return new Promise<void>((resolve, reject) => {
+            const styles = getComputedStyle(div_old)
+            const width  = parseInt(styles.width)
+            const height = parseInt(styles.height)
+            const time   = 0.5
 
             if (!div_old || !div_new) {
                 console.log('ERROR: Cannot do transition when one of the divs is null')
@@ -923,13 +944,14 @@ class Utils {
         })
     }
 
-    lock(box, options = {}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    lock(box: any, options: any = {}, ...rest: unknown[]) {
         if (box == null) return
         if (typeof options == 'string') {
             options = { msg: options }
         }
-        if (arguments[2]) {
-            options.spinner = arguments[2]
+        if (rest[0]) {
+            options.spinner = rest[0]
         }
         options = this.extend({
             spinner: false
@@ -940,9 +962,10 @@ class Utils {
         }
         if (!options.msg && options.msg !== 0) options.msg = ''
         this.unlock(box)
-        let el = query(box).get(0)
-        let pWidth = el.scrollWidth
-        let pHeight = el.scrollHeight
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const el = query(box).get(0) as any
+        const pWidth = el.scrollWidth
+        const pHeight = el.scrollHeight
         // if it is body and only has absolute elements, its height will be 0, need to lock entire window
         let style = `height: ${pHeight}px; width: ${pWidth}px`
         if (el.tagName == 'BODY') {
@@ -952,8 +975,8 @@ class Utils {
             `<div class="w2ui-lock" style="${style}"></div>` +
             '<div class="w2ui-lock-msg"></div>'
         )
-        let $lock = query(box).find('.w2ui-lock')
-        let $mess = query(box).find('.w2ui-lock-msg')
+        const $lock = query(box).find('.w2ui-lock')
+        const $mess = query(box).find('.w2ui-lock-msg')
         if (!options.msg) {
             $mess.css({
                 'background-color': 'transparent',
@@ -978,8 +1001,8 @@ class Utils {
         if (options.bgColor) {
             $lock.css({ 'background-color': options.bgColor })
         }
-        let styles = getComputedStyle($lock.get(0))
-        let opacity = styles.opacity ?? 0.15
+        const styles = getComputedStyle($lock.get(0))
+        const opacity = styles.opacity ?? 0.15
         $lock
             .on('mousedown', function() {
                 if (typeof options.onClick == 'function') {
@@ -1019,7 +1042,8 @@ class Utils {
                 transition: (speed/1000) + 's',
                 opacity: 0,
             })
-            let _box = query(box).get(0)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const _box = query(box).get(0) as any
             clearTimeout(_box._prevUnlock)
             _box._prevUnlock = setTimeout(() => {
                 query(box).find('.w2ui-lock').remove()
@@ -1064,16 +1088,17 @@ class Utils {
      */
     message(where, options) {
         let closeTimer, openTimer, edata
-        let removeLast = () => {
-            let msgs = query(where?.box).find('.w2ui-message')
+        const removeLast = () => {
+            const msgs = query(where?.box).find('.w2ui-message')
             if (msgs.length == 0) return // no messages already
-            options = msgs.get(0)._msg_options || {}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            options = (msgs.get(0) as any)._msg_options || {}
             if (typeof options?.close == 'function') {
                 options.close()
             }
         }
-        let closeComplete = (options) => {
-            let focus = options.box._msg_prevFocus
+        const closeComplete = (options) => {
+            const focus = options.box._msg_prevFocus
             if (query(where.box).find('.w2ui-message').length <= 1) {
                 if (where.owner) {
                     where.owner.unlock(where.param, 150)
@@ -1084,9 +1109,10 @@ class Utils {
                 query(where.box).find(`#w2ui-message-${where.owner?.name}-${options.msgIndex-1}`).css('z-index', 1500)
             }
             if (focus) {
-                let msg = query(focus).closest('.w2ui-message')
+                const msg = query(focus).closest('.w2ui-message')
                 if (msg.length > 0) {
-                    let opt = msg.get(0)._msg_options
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const opt = (msg.get(0) as any)._msg_options
                     opt.setFocus(focus)
                 } else {
                     focus.focus()
@@ -1127,7 +1153,7 @@ class Utils {
         options.cancelAction ??= 'Ok'
         // mix in events
         if (options.on == null) {
-            let opts = options
+            const opts = options
             options = new w2base()
             w2utils.extend(options, opts) // needs to be w2utils
         }
@@ -1135,7 +1161,7 @@ class Utils {
             w2utils.bindEvents(query(options.box).find('.w2ui-eaction'), options) // options is w2base object
             query(event.detail.box).find('button, input, textarea, [name=hidden-first]')
                 .off('.message')
-                .on('keydown.message', function(evt) {
+                .on('keydown.message', function(evt: any) {
                     if (evt.keyCode == 27 && options.hideOn.includes('esc')) {
                         if (options.cancelAction) {
                             options.action(options.cancelAction)
@@ -1148,7 +1174,7 @@ class Utils {
             setTimeout(() => options.setFocus(options.focus), 300)
         })
         options.off('.prom')
-        let prom = {
+        const prom = {
             self: options,
             action(callBack) {
                 options.on('action.prom', callBack)
@@ -1174,7 +1200,7 @@ class Utils {
         if (options.actions != null) {
             options.buttons = ''
             Object.keys(options.actions).forEach((action) => {
-                let handler = options.actions[action]
+                const handler = options.actions[action]
                 let btnAction = action
                 if (typeof handler == 'function') {
                     options.buttons += `<button class="w2ui-btn w2ui-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
@@ -1193,7 +1219,7 @@ class Utils {
                 }
                 prom[btnAction] = function (callBack) {
                     options.on('action.buttons', (event) => {
-                        let target = event.detail.action[0].toLowerCase() + event.detail.action.substr(1).replace(/\s+/g, '')
+                        const target = event.detail.action[0].toLowerCase() + event.detail.action.substr(1).replace(/\s+/g, '')
                         if (target == btnAction) callBack(event)
                     })
                     return prom
@@ -1201,7 +1227,7 @@ class Utils {
             })
         }
         // trim if any
-        Array('html', 'body', 'buttons').forEach(param => {
+        ['html', 'body', 'buttons'].forEach(param => {
             options[param] = String(options[param] ?? '').trim()
         })
         if (options.body !== '' || options.buttons !== '') {
@@ -1211,8 +1237,8 @@ class Utils {
             `
         }
         let styles  = getComputedStyle(query(where.box).get(0))
-        let pWidth  = parseFloat(styles.width)
-        let pHeight = parseFloat(styles.height)
+        const pWidth  = parseFloat(styles.width)
+        const pHeight = parseFloat(styles.height)
         let titleHeight = 0
         if (query(where.after).length > 0) {
             styles = getComputedStyle(query(where.after).get(0))
@@ -1229,7 +1255,7 @@ class Utils {
         // negative value means margin
         if (options.originalHeight < 0) options.height = pHeight + options.originalHeight - titleHeight
         if (options.originalWidth < 0) options.width = pWidth + options.originalWidth * 2 // x 2 because there is left and right margin
-        let head = query(where.box).find(where.after) // needed for z-index manipulations
+        const head = query(where.box).find(where.after) // needed for z-index manipulations
         if (!options.tmp) {
             options.tmp = {
                 zIndex: head.css('z-index'),
@@ -1253,7 +1279,7 @@ class Utils {
             query(where.box).find('.w2ui-message').css('z-index', 1390)
             head.css('z-index', 1501)
             // add message
-            let content = `
+            const content = `
                 <div id="w2ui-message-${where.owner?.name}-${options.msgIndex}" class="w2ui-message" data-mousedown="stop"
                     style="z-index: 1500; left: ${((pWidth - options.width) / 2)}px; top: ${titleHeight}px;
                         width: ${options.width}px; height: ${options.height}px; transform: translateY(-${options.height}px)"
@@ -1312,7 +1338,7 @@ class Utils {
             let click = options.actions?.[action]
             if (click instanceof Object && click.onClick) click = click.onClick
             // event before
-            let edata = options.trigger('action', { target: this.name, action, self: options,
+            const edata = options.trigger('action', { target: this.name, action, self: options,
                 originalEvent: event, value: options.input ? options.input.value : null })
             if (edata.isCancelled === true) return
             // default actions
@@ -1344,16 +1370,19 @@ class Utils {
         }
         options.setFocus = (focus) => {
             // in message or popup
-            let cnt = query(where.box).find('.w2ui-message').length - 1
-            let box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${cnt}`)
-            let sel = 'input, button, select, textarea, [contentEditable], .w2ui-input'
+            const cnt = query(where.box).find('.w2ui-message').length - 1
+            const box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${cnt}`)
+            const sel = 'input, button, select, textarea, [contentEditable], .w2ui-input'
             if (focus != null) {
-                let el = isNaN(focus)
-                    ? box.find(sel).filter(focus).get(0)
-                    : box.find(sel).get(focus)
+                const el = isNaN(focus)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    ? box.find(sel).filter(focus).get(0) as any
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    : box.find(sel).get(focus) as any
                 el?.focus()
             } else {
-                box.find('[name=hidden-first]').get(0)?.focus()
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (box.find('[name=hidden-first]').get(0) as any)?.focus()
             }
 
             // clear focus if there are other messages
@@ -1367,17 +1396,20 @@ class Utils {
                 .find(sel + ',[name=hidden-first],[name=hidden-last]')
                 .on('blur.keep-focus', function (event) {
                     setTimeout(() => {
-                        let focus = document.activeElement
-                        let inside = query(box).find(sel).filter(focus).length > 0
-                        let name = query(focus).attr('name')
+                        const focus = document.activeElement
+                        const inside = query(box).find(sel).filter(focus).length > 0
+                        const name = query(focus).attr('name')
                         if (!inside && focus && focus !== document.body) {
-                            query(box).find(sel).get(0)?.focus()
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (query(box).find(sel).get(0) as any)?.focus()
                         }
                         if (name == 'hidden-last') {
-                            query(box).find(sel).get(0)?.focus()
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (query(box).find(sel).get(0) as any)?.focus()
                         }
                         if (name == 'hidden-first') {
-                            query(box).find(sel).get(-1)?.focus()
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            (query(box).find(sel).get(-1) as any)?.focus()
                         }
                     }, 1)
                 })
@@ -1386,7 +1418,7 @@ class Utils {
     }
 
     alert(where, options) {
-        return this.message(...arguments)
+        return this.message(where, options)
     }
 
     /**
@@ -1409,7 +1441,7 @@ class Utils {
         }
         w2utils.normButtons(options, { yes: 'Yes', no: 'No' })
         options.cancelAction ??= 'No'
-        let prom = w2utils.message(where, options)
+        const prom = w2utils.message(where, options)
         if (prom) {
             prom.action(event => {
                 event.detail.self.close()
@@ -1432,7 +1464,6 @@ class Utils {
      *    .ok(event => console.log(event))
      */
     prompt(where, options) {
-        let prom
         if (['string', 'number'].includes(typeof options)) {
             options = { label: options }
         }
@@ -1456,7 +1487,7 @@ class Utils {
             )
         }
         w2utils.normButtons(options, { ok: w2utils.lang('Ok'), cancel: w2utils.lang('Cancel') })
-        prom = w2utils.message(where, options)
+        const prom = w2utils.message(where, options)
         if (prom) {
             prom.change = function(callBack) {
                 prom.self.on('change.prom', callBack)
@@ -1470,13 +1501,13 @@ class Utils {
                     event.detail.self.input = query(event.detail.box).find('#w2prompt').get(0)
                     query(event.detail.box)
                         .find('#w2prompt')
-                        .on('keydown', event => {
+                        .on('keydown', (event: any) => {
                             if (event.keyCode == 13 && event.shiftKey === false) {
                                 event.preventDefault()
                             }
                         })
-                        .on('keyup', event => {
-                            let edata = prom.self.trigger('change', { value: event.target.value, input: event.target, originalEvent: event })
+                        .on('keyup', (event: any) => {
+                            const edata = prom.self.trigger('change', { value: event.target.value, input: event.target, originalEvent: event })
                             if (event.keyCode == 13 && event.shiftKey === false) {
                                 prom.self.action('Ok', event)
                             }
@@ -1495,9 +1526,9 @@ class Utils {
      */
     normButtons(options, btn) {
         options.actions = options.actions ?? {}
-        let btns = Object.keys(btn)
+        const btns = Object.keys(btn)
         btns.forEach(name => {
-            let action = options['btn_' + name]
+            const action = options['btn_' + name]
             if (action) {
                 btn[name] = {
                     text: w2utils.lang(action.text ?? btn[name] ?? ''),
@@ -1507,7 +1538,7 @@ class Utils {
                 }
                 delete options['btn_' + name]
             }
-            Array('text', 'class', 'style', 'attrs').forEach(suffix => {
+            ['text', 'class', 'style', 'attrs'].forEach(suffix => {
                 if (options[name + '_' + suffix]) {
                     if (typeof btn[name] == 'string') {
                         btn[name] = { text: btn[name] }
@@ -1552,7 +1583,7 @@ class Utils {
      * @returns promise
      */
     notify(text, options) {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             if (typeof text == 'object') {
                 options = text
                 text = options.text
@@ -1569,13 +1600,13 @@ class Utils {
             clearTimeout(this.tmp.notify_timer)
             if (text) {
                 if (typeof options.actions == 'object') {
-                    let actions = {}
+                    const actions = {}
                     Object.keys(options.actions).forEach(action => {
                         actions[action] = `<a class="w2ui-notify-link" value="${action}">${action}</a>`
                     })
                     text = this.execTemplate(text, actions)
                 }
-                let html = `
+                const html = `
                     <div id="w2ui-notify" style="${options.where == document.body ? 'position: fixed' : ''}">
                         <div class="${options.class ?? ''} ${options.error ? 'w2ui-notify-error' : ''} ${options.success ? 'w2ui-notify-success' : ''}">
                             ${text}
@@ -1591,7 +1622,7 @@ class Utils {
                 if (options.actions) {
                     query(options.where).find('#w2ui-notify .w2ui-notify-link')
                         .on('click', event => {
-                            let value = query(event.target).attr('value')
+                            const value = query(event.target).attr('value')
                             options.actions[value]()
                             query(options.where).find('#w2ui-notify').remove()
                             resolve()
@@ -1612,7 +1643,7 @@ class Utils {
         let ret = 0
         if (el.length > 0) {
             el = el[0]
-            let styles = getComputedStyle(el)
+            const styles = getComputedStyle(el)
             switch (type) {
                 case 'width' :
                     ret = parseFloat(styles.width)
@@ -1639,9 +1670,11 @@ class Utils {
         if (raw === undefined && str.trim().startsWith('<') && str.trim().endsWith('>')) {
             raw = true
         }
-        div.html(raw ? str : this.encodeTags(str ?? '')).attr('style', `position: absolute; top: -9000px; ${styles || ''}`)
-        let width = div[0].clientWidth
-        let height = div[0].clientHeight
+        ;(div.html(raw ? str : this.encodeTags(str ?? '')) as Query).attr('style', `position: absolute; top: -9000px; ${styles || ''}`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const width = (div[0] as any).clientWidth
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const height = (div[0] as any).clientHeight
         div.html('')
         return { width, height }
     }
@@ -1661,7 +1694,8 @@ class Utils {
         return str.replace(/\${([^}]+)?}/g, function($1, $2) { return replace_obj[$2]||$2 })
     }
 
-    marker(el, items, options = { onlyFirst: false, wholeWord: false, isRegex: false}) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    marker(el: any, items: any, options: any = { onlyFirst: false, wholeWord: false, isRegex: false}) {
         options.tag ??= 'span'
         options.class ??= 'w2ui-marker'
         options.raplace = (matched) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`
@@ -1680,8 +1714,8 @@ class Utils {
                 if (isRegexSearch) {
                     // For regex searches with string elements
                     try {
-                        let flags = 'i' + (!options.onlyFirst ? 'g' : '')
-                        let regex = new RegExp(item, flags)
+                        const flags = 'i' + (!options.onlyFirst ? 'g' : '')
+                        const regex = new RegExp(item, flags)
                         el = el.replace(regex, options.raplace)
                     } catch (e) {
                         console.error('Invalid regular expression:', e)
@@ -1709,10 +1743,10 @@ class Utils {
                                 pattern = '\b' + pattern + '\b'
                             }
 
-                            let regex = new RegExp(pattern, flags)
+                            const regex = new RegExp(pattern, flags)
 
                             // Get all text nodes
-                            let textNodes = []
+                            const textNodes = []
                             function getTextNodes(node) {
                                 if (node.nodeType === 3) { // Text node
                                     textNodes.push(node)
@@ -1730,8 +1764,8 @@ class Utils {
 
                             // Process each text node
                             textNodes.forEach(textNode => {
-                                let text = textNode.nodeValue
-                                let matches = []
+                                const text = textNode.nodeValue
+                                const matches = []
                                 let match
 
                                 // Find all matches
@@ -1752,8 +1786,8 @@ class Utils {
 
                                 // Apply highlighting
                                 if (matches.length > 0) {
-                                    let parent = textNode.parentNode
-                                    let fragment = document.createDocumentFragment()
+                                    const parent = textNode.parentNode
+                                    const fragment = document.createDocumentFragment()
                                     let lastIndex = 0
 
                                     matches.forEach(match => {
@@ -1765,7 +1799,7 @@ class Utils {
                                         }
 
                                         // Add highlighted match
-                                        let span = document.createElement(options.tag)
+                                        const span = document.createElement(options.tag)
                                         span.className = options.class
                                         span.appendChild(document.createTextNode(match.text))
                                         fragment.appendChild(span)
@@ -1801,7 +1835,7 @@ class Utils {
         return el
 
         function _replace(html, term, replaceWith) {
-            let ww = options.wholeWord
+            const ww = options.wholeWord
             if (typeof term !== 'string') term = String(term)
             // escape regex special chars
             term = term
@@ -1813,12 +1847,12 @@ class Utils {
             // and only outside of quotes
             // let regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?=([a-z-0-9]+="[^"]*")*?[^"]+$)' + '(?!([^<]+)?>)', 'i' + (!options.onlyFirst ? 'g' : ''))
             // -- the one above would not match inside html tags
-            let regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?![^<]*>)', 'i' + (!options.onlyFirst ? 'g' : ''))
+            const regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?![^<]*>)', 'i' + (!options.onlyFirst ? 'g' : ''))
             return html = html.replace(regex, replaceWith)
         }
 
         function _clearMerkers(el) {
-            let markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class.replace(/-/g, '\\-')}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, 'ig')
+            const markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class.replace(/-/g, '\\-')}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, 'ig')
             if (typeof el == 'string') {
                 while (el.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
                     el = el.replace(markerRE, '$1') // unmark
@@ -1859,12 +1893,12 @@ class Utils {
     }
 
     locale(locale, keepPhrases, noMerge) {
-        return new Promise((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             // if locale is an array we call this function recursively and merge the results
             if (Array.isArray(locale)) {
                 this.settings.phrases = {}
-                let proms = []
-                let files = {}
+                const proms = []
+                const files = {}
                 locale.forEach((file, ind) => {
                     if (file.length === 5) {
                         file = 'locale/'+ file.toLowerCase() +'.json'
@@ -1875,7 +1909,8 @@ class Utils {
                 Promise.allSettled(proms)
                     .then(res => {
                         // order of files is important to merge
-                        res.forEach(r => { if (r.value) files[r.value.file] = r.value.data })
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        res.forEach((r: any) => { if (r.value) files[r.value.file] = r.value.data })
                         locale.forEach(file => {
                             this.settings = this.extend({}, this.settings, files[file])
                         })
@@ -1919,7 +1954,7 @@ class Utils {
 
     scrollBarSize() {
         if (this.tmp.scrollBarSize) return this.tmp.scrollBarSize
-        let html = `
+        const html = `
             <div id="_scrollbar_width" style="position: absolute; top: -300px; width: 100px; height: 100px; overflow-y: scroll;">
                 <div style="height: 120px">1</div>
             </div>
@@ -1978,8 +2013,8 @@ class Utils {
     }
 
     parseRoute(route) {
-        let keys = []
-        let path = route
+        const keys = []
+        const path = route
             .replace(/\/\(/g, '(?:/')
             .replace(/\+/g, '__plus__')
             .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_, slash, format, key, capture, optional) => {
@@ -1999,8 +2034,8 @@ class Utils {
     getCursorPosition(input) {
         if (input == null) return null
         let caretOffset = 0
-        let doc = input.ownerDocument || input.document
-        let win = doc.defaultView || doc.parentWindow
+        const doc = input.ownerDocument || input.document
+        const win = doc.defaultView || doc.parentWindow
         let sel
         if (['INPUT', 'TEXTAREA'].includes(input.tagName)) {
             caretOffset = input.selectionStart
@@ -2008,15 +2043,15 @@ class Utils {
             if (win.getSelection) {
                 sel = win.getSelection()
                 if (sel.rangeCount > 0) {
-                    let range         = sel.getRangeAt(0)
-                    let preCaretRange = range.cloneRange()
+                    const range         = sel.getRangeAt(0)
+                    const preCaretRange = range.cloneRange()
                     preCaretRange.selectNodeContents(input)
                     preCaretRange.setEnd(range.endContainer, range.endOffset)
                     caretOffset = preCaretRange.toString().length
                 }
             } else if ( (sel = doc.selection) && sel.type !== 'Control') {
-                let textRange         = sel.createRange()
-                let preCaretTextRange = doc.body.createTextRange()
+                const textRange         = sel.createRange()
+                const preCaretTextRange = doc.body.createTextRange()
                 preCaretTextRange.moveToElementText(input)
                 preCaretTextRange.setEndPoint('EndToEnd', textRange)
                 caretOffset = preCaretTextRange.text.length
@@ -2027,8 +2062,9 @@ class Utils {
 
     setCursorPosition(input, pos, posEnd) {
         if (input == null) return
-        let range   = document.createRange()
-        let el, sel = window.getSelection()
+        const range   = document.createRange()
+        let el
+        const sel = window.getSelection()
         if (['INPUT', 'TEXTAREA'].includes(input.tagName)) {
             input.setSelectionRange(pos, posEnd ?? pos)
         } else {
@@ -2090,7 +2126,7 @@ class Utils {
                 a: Math.round(parseInt(str.substr(6, 2), 16) / 255 * 100) / 100 // alpha channel 0-1
             }
         } else if (str.length > 4 && str.substr(0, 4) === 'RGB(') {
-            let tmp = str.replace('RGB', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
+            const tmp = str.replace('RGB', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
             color   = {
                 r: parseInt(tmp[0], 10),
                 g: parseInt(tmp[1], 10),
@@ -2098,7 +2134,7 @@ class Utils {
                 a: 1
             }
         } else if (str.length > 5 && str.substr(0, 5) === 'RGBA(') {
-            let tmp = str.replace('RGBA', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
+            const tmp = str.replace('RGBA', '').replace(/\(/g, '').replace(/\)/g, '').split(',')
             color   = {
                 r: parseInt(tmp[0], 10),
                 g: parseInt(tmp[1], 10),
@@ -2113,38 +2149,38 @@ class Utils {
     }
 
     colorContrast(color1, color2) {
-        let lum1 = calcLumens(color1)
-        let lum2 = calcLumens(color2)
-        let ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05)
+        const lum1 = calcLumens(color1)
+        const lum2 = calcLumens(color2)
+        const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05)
         return ratio.toFixed(2)
 
         function calcLumens(color) {
-            let { r, g, b } = w2utils.parseColor(color) ?? { r: 0, g: 0, b: 0 }
-            let gamma = 2.2
-            let normR = r / 255
-            let normG = g / 255
-            let normB = b / 255
-            let sR = (normR <= 0.03928) ? normR / 12.92 : Math.pow((normR + 0.055) / 1.055, gamma)
-            let sG = (normG <= 0.03928) ? normG / 12.92 : Math.pow((normG + 0.055) / 1.055, gamma)
-            let sB = (normB <= 0.03928) ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma)
+            const { r, g, b } = w2utils.parseColor(color) ?? { r: 0, g: 0, b: 0 }
+            const gamma = 2.2
+            const normR = r / 255
+            const normG = g / 255
+            const normB = b / 255
+            const sR = (normR <= 0.03928) ? normR / 12.92 : Math.pow((normR + 0.055) / 1.055, gamma)
+            const sG = (normG <= 0.03928) ? normG / 12.92 : Math.pow((normG + 0.055) / 1.055, gamma)
+            const sB = (normB <= 0.03928) ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma)
             return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB
         }
     }
 
     // h=0..360, s=0..100, v=0..100
     hsv2rgb(h, s, v, a) {
-        let r, g, b, i, f, p, q, t
+        let r, g, b
         if (arguments.length === 1) {
             s = h.s; v = h.v; a = h.a; h = h.h
         }
         h = h / 360
         s = s / 100
         v = v / 100
-        i = Math.floor(h * 6)
-        f = h * 6 - i
-        p = v * (1 - s)
-        q = v * (1 - f * s)
-        t = v * (1 - (1 - f) * s)
+        const i = Math.floor(h * 6)
+        const f = h * 6 - i
+        const p = v * (1 - s)
+        const q = v * (1 - f * s)
+        const t = v * (1 - (1 - f) * s)
         switch (i % 6) {
             case 0: r = v, g = t, b = p; break
             case 1: r = q, g = v, b = p; break
@@ -2166,10 +2202,10 @@ class Utils {
         if (arguments.length === 1) {
             g = r.g; b = r.b; a = r.a; r = r.r
         }
-        let max = Math.max(r, g, b), min = Math.min(r, g, b),
-            d = max - min,
-            h,
-            s = (max === 0 ? 0 : d / max),
+        const max = Math.max(r, g, b), min = Math.min(r, g, b),
+            d = max - min
+        let h
+        const s = (max === 0 ? 0 : d / max),
             v = max / 255
         switch (max) {
             case min: h = 0; break
@@ -2186,7 +2222,6 @@ class Utils {
     }
 
     tooltip(html, options) {
-        let actions
         let showOn = 'mouseenter'
         let hideOn = 'mouseleave'
         if (typeof html == 'object') {
@@ -2206,7 +2241,7 @@ class Utils {
         }
         if (!options.name) options.name = 'no-name'
         // base64 is needed to avoid '"<> and other special chars conflicts
-        actions = ` on${showOn}="w2tooltip.show(this, `
+        const actions = ` on${showOn}="w2tooltip.show(this, `
                 + `JSON.parse(w2utils.base64decode('${this.base64encode(JSON.stringify(options))}')))" `
                 + `on${hideOn}="w2tooltip.hide('${options.name}')"`
         return actions
@@ -2223,7 +2258,7 @@ class Utils {
         if (value.constructor === undefined) {
             return true
         }
-        let proto = Object.getPrototypeOf(value)
+        const proto = Object.getPrototypeOf(value)
         return proto === null || proto === Object.prototype
     }
 
@@ -2273,7 +2308,7 @@ class Utils {
      * Deep extend an object, if an array, it overwrrites it, cloning objects in the process
      * target, source1, source2, ...
      */
-    extend(target, source) {
+    extend(target, source, ...rest: unknown[]) {
         if (Array.isArray(target)) {
             if (Array.isArray(source)) {
                 target.splice(0, target.length) // empty array but keep the reference
@@ -2290,7 +2325,7 @@ class Utils {
             Object.keys(source).forEach(key => {
                 if (target[key] != null && typeof target[key] == 'object'
                         && source[key] != null && typeof source[key] == 'object') {
-                    let src = this.clone(source[key])
+                    const src = this.clone(source[key])
                     // do not extend HTML elements and events, but overwrite them
                     if (target[key] instanceof Node || target[key] instanceof Event) {
                         target[key] = src
@@ -2309,9 +2344,9 @@ class Utils {
             throw new Error('Object is not extendable, only {} or [] can be extended.')
         }
         // other arguments
-        if (arguments.length > 2) {
-            for (let i = 2; i < arguments.length; i++) {
-                this.extend(target, arguments[i])
+        if (rest.length > 0) {
+            for (let i = 0; i < rest.length; i++) {
+                this.extend(target, rest[i])
             }
         }
         return target
@@ -2322,11 +2357,8 @@ class Utils {
      * @license    MIT License
      */
     naturalCompare(a, b) {
-        let i, codeA
-            , codeB = 1
-            , posA = 0
-            , posB = 0
-            , alphabet = String.alphabet
+        let i, codeA, codeB = 1, posA = 0, posB = 0
+        const alphabet = String.alphabet
 
         function getCode(str, pos, code) {
             if (code) {
@@ -2391,7 +2423,7 @@ class Utils {
             })
             return menu
         } else if (typeof menu === 'function') {
-            let newMenu = menu.call(this, menu, options)
+            const newMenu = menu.call(this, menu, options)
             return w2utils.normMenu.call(this, newMenu, options)
         } else if (typeof menu === 'object') {
             return Object.keys(menu).map(key => { return { id: key, text: menu[key] } })
@@ -2403,7 +2435,7 @@ class Utils {
      * dataType is in w2utils. This method is used in grid, form and tooltip to prepare fetch parameters
      */
     prepareParams(url, fetchOptions, options = {}) {
-        let dataType = options?.dataType ?? w2utils.settings.dataType
+        const dataType = options?.dataType ?? w2utils.settings.dataType
         let postParams = fetchOptions.body
         fetchOptions.method = String(fetchOptions.method).toUpperCase()
         switch (dataType) {
@@ -2480,9 +2512,9 @@ class Utils {
             selector = Array.isArray(selector) ? selector : selector.get()
         }
         query(selector).each((el) => {
-            let actions = query(el).data()
+            const actions = query(el).data()
             Object.keys(actions).forEach(name => {
-                let events = ['click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout', 'mousedown', 'mousemove', 'mouseup',
+                const events = ['click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout', 'mousedown', 'mousemove', 'mouseup',
                     'contextmenu', 'focus', 'focusin', 'focusout', 'blur', 'input', 'change', 'keydown', 'keyup', 'keypress']
                 if (events.indexOf(String(name).toLowerCase()) == -1) {
                     return
@@ -2495,14 +2527,14 @@ class Utils {
                         if (key === 'undefined') key = undefined
                         if (key === 'null') key = null
                         if (parseFloat(key) == key) key = parseFloat(key)
-                        let quotes = ['\'', '"', '`']
+                        const quotes = ['\'', '"', '`']
                         if (typeof key == 'string' && quotes.includes(key[0]) && quotes.includes(key[key.length-1])) {
                             key = key.substring(1, key.length-1)
                         }
                         return key
                     })
                 }
-                let method = params[0]
+                const method = params[0]
                 params = params.slice(1) // should be new array
                 query(el)
                     .off(name + '.w2utils-bind')
@@ -2526,7 +2558,7 @@ class Utils {
                                 if (subject[method] == null) {
                                     throw new Error(`Cannot dispatch event as the method "${method}" does not exist.`)
                                 }
-                                subject[method].apply(subject, params.map((key, ind) => {
+                                subject[method](...params.map((key, _ind) => {
                                     switch (String(key).toLowerCase()) {
                                         case 'event':
                                             return event
@@ -2551,7 +2583,7 @@ class Utils {
     }
 
     async wait(time = 0) {
-        return new Promise(resolve => {
+        return new Promise<void>(resolve => {
             setTimeout(() => resolve(), time)
         })
     }
@@ -2560,7 +2592,7 @@ class Utils {
         let val
         try { // need this to make sure no error in props
             val = obj
-            let tmp = String(prop).split('.')
+            const tmp = String(prop).split('.')
             for (let i = 0; i < tmp.length; i++) {
                 val = val[tmp[i]]
             }
