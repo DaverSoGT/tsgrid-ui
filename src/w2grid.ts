@@ -4438,7 +4438,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    blur(event?) {
+    blur(event?: Event | any) {
         // event before
         const edata = this.trigger('blur', { target: this.name, originalEvent: event })
         if (edata.isCancelled === true) return false
@@ -4450,7 +4450,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    keydown(event) {
+    keydown(event: KeyboardEvent | any) {
         // this method is called from w2utils
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
@@ -4885,7 +4885,7 @@ class w2grid extends w2base {
         }
     }
 
-    scrollIntoView(ind, column?, instant?, recTop?) {
+    scrollIntoView(ind?: number | null, column?: number, instant?: boolean, recTop?: boolean) {
         let buffered = this.records.length
         if (this.searchData.length != 0 && !this.url) buffered = this.last.searchIds.length
         if (buffered === 0) return
@@ -5340,7 +5340,7 @@ class w2grid extends w2base {
         }
     }
 
-    copy(flag, oEvent) {
+    copy(flag: any, oEvent?: ClipboardEvent | any) {
         if (w2utils.isPlainObject(flag)) {
             // event after
             flag.finish()
@@ -5427,14 +5427,14 @@ class w2grid extends w2base {
         return w2utils.stripTags(this.getCellHTML(ind, col_ind))
     }
 
-    paste(text, event) {
+    paste(text: string, event?: ClipboardEvent | any) {
         const sel = this.getSelection()
         let ind = this.get(sel[0].recid, true)
         const col = sel[0].column
         // before event
         const edata = this.trigger('paste', { target: this.name, text: text, index: ind, column: col, originalEvent: event })
         if (edata.isCancelled === true) return
-        text = edata.detail.text
+        let pasteText: any = edata.detail.text // any: reassigned from string to string[] after .split()
         // default action
         if (this.selectType == 'row' || sel.length === 0) {
             console.log('ERROR: You can paste only if grid.selectType = \'cell\' and when at least one cell selected.')
@@ -5442,11 +5442,11 @@ class w2grid extends w2base {
             edata.finish()
             return
         }
-        if (typeof text !== 'object') {
+        if (typeof pasteText !== 'object') {
             const newSel = []
-            text = text.split('\n')
-            for (let t = 0; t < text.length; t++) {
-                const tmp  = text[t].split('\t')
+            pasteText = pasteText.split('\n')
+            for (let t = 0; t < pasteText.length; t++) {
+                const tmp  = pasteText[t].split('\t')
                 let cnt  = 0
                 const rec  = this.records[ind]
                 const cols = []
@@ -9384,7 +9384,7 @@ class w2grid extends w2base {
         return { index, colIndex: check }
     }
 
-    nextRow(ind, col_ind?, numRows?) {
+    nextRow(ind: number, col_ind?: number, numRows?: number): number | null {
         const sids = this.last.searchIds
         let ret  = null
         if (numRows == null) numRows = 1
@@ -9411,7 +9411,7 @@ class w2grid extends w2base {
         return ret
     }
 
-    prevRow(ind, col_ind?, numRows?) {
+    prevRow(ind: number, col_ind?: number, numRows?: number): number | null {
         const sids = this.last.searchIds
         let ret  = null
         if (numRows == null) numRows = 1
