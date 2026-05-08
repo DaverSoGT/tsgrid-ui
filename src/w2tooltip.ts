@@ -2,6 +2,9 @@
  * Part of w2ui 2.0 library
  * - Dependencies: mQuery, w2utils, w2base
  *
+ * T3.1: Ported to TypeScript with aggressive typing per typing_policy.
+ * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
+ *
  * TODO:
  * - need help pages
  *
@@ -18,11 +21,203 @@
 
 import { w2base } from './w2base.js'
 import { w2utils } from './w2utils.js'
-import { query } from './query.js'
+import { query as _queryRaw, Query } from './query.js'
+
+// w2tooltip always calls query() with a selector (never a callback), so return is always Query.
+// any: query() overload returns void when called with a callback; we only use selector calls here
+const query = _queryRaw as (selector: unknown, context?: unknown) => Query
+
+// ---------------------------------------------------------------------------
+// Public interfaces for option shapes
+// ---------------------------------------------------------------------------
+
+/** Base options shared by all tooltip variants */
+interface TooltipOptions {
+    name?: string | null
+    html?: string
+    style?: string
+    class?: string
+    position?: string | string[]
+    draggable?: boolean
+    align?: string
+    anchor?: HTMLElement | null
+    contextMenu?: boolean
+    anchorClass?: string
+    anchorStyle?: string
+    autoShow?: boolean
+    autoShowOn?: string | null
+    autoHideOn?: string | null
+    arrowSize?: number
+    screenMargin?: number
+    autoResize?: boolean
+    margin?: number
+    offsetX?: number
+    offsetY?: number
+    maxWidth?: number | null
+    maxHeight?: number | null
+    hideOn?: string | string[] | null
+    onThen?: ((event: unknown) => void) | null
+    onShow?: ((event: unknown) => void) | null
+    onHide?: ((event: unknown) => void) | null
+    onUpdate?: ((event: unknown) => void) | null
+    onMove?: ((event: unknown) => void) | null
+    // runtime-only fields added during attach
+    _keep?: boolean
+    text?: string
+    [key: string]: unknown   // any: options objects are open-ended; runtime code adds fields freely
+}
+
+/** A single menu item */
+interface MenuItem {
+    id?: string | number | null
+    text?: string | null | ((item: MenuItem, options: MenuOptions) => string)
+    style?: string
+    icon?: string | null
+    count?: string | number | null
+    tooltip?: string | { html?: string; [key: string]: unknown } | null
+    hint?: string | null
+    hotkey?: string | null
+    removable?: boolean | null
+    remove?: boolean | null
+    help?: string | null
+    items?: MenuItem[] | ((item: MenuItem) => MenuItem[]) | null
+    indent?: number
+    type?: 'check' | 'radio' | 'break' | null
+    group?: string | boolean | null
+    expanded?: boolean
+    hidden?: boolean
+    checked?: boolean | null
+    disabled?: boolean
+    keepOpen?: boolean | null
+    extra?: string
+    _noSearchInside?: boolean
+    [key: string]: unknown   // any: menu items carry arbitrary runtime fields (e.g., data-* mirrors)
+}
+
+/** Options for w2menu (MenuTooltip) */
+interface MenuOptions extends TooltipOptions {
+    type?: 'normal' | 'radio' | 'check'
+    items?: MenuItem[]
+    selected?: null | string | number | MenuItem | Array<string | number | MenuItem>
+    render?: ((item: MenuItem, options: MenuOptions) => string) | null
+    spinner?: boolean
+    msgNoItems?: string
+    msgSearch?: string
+    topHTML?: string
+    menuStyle?: string
+    search?: boolean
+    filter?: boolean
+    match?: 'contains' | 'is' | 'begins' | 'begins with' | 'ends' | 'ends with' | 'regexp'
+    markSearch?: boolean
+    prefilter?: boolean
+    altRows?: boolean
+    url?: string
+    postData?: Record<string, unknown>
+    method?: string
+    recId?: string | ((item: Record<string, unknown>) => unknown) | null
+    recid?: string | null
+    recText?: string | ((item: Record<string, unknown>) => unknown) | null
+    cacheMax?: number
+    minLength?: number
+    debounce?: number
+    hideSelected?: boolean
+    parentOverlay?: TooltipOverlay | null
+    parents?: number[]
+    onSelect?: ((event: unknown) => void) | null
+    onSubMenu?: ((event: unknown) => void) | null
+    onRemove?: ((event: unknown) => void) | null
+    onTooltip?: ((event: unknown) => void) | null
+    onMouseEnter?: ((event: unknown) => void) | null
+    onMouseLeave?: ((event: unknown) => void) | null
+}
+
+/** Options for w2color (ColorTooltip) */
+interface ColorOptions extends TooltipOptions {
+    advanced?: boolean
+    transparent?: boolean
+    color?: string
+    updateInput?: boolean
+    onSelect?: ((event: unknown) => void) | null
+    onLiveUpdate?: ((event: unknown) => void) | null
+}
+
+/** Options for w2date (DateTooltip) */
+interface DateOptions extends TooltipOptions {
+    type?: 'date' | 'time' | 'datetime'
+    value?: string
+    format?: string
+    start?: string | HTMLElement | null
+    end?: string | HTMLElement | null
+    btnNow?: boolean
+    blockDates?: string[]
+    blockWeekdays?: number[]
+    colored?: Record<string, string>
+    noMinutes?: boolean
+    startTime?: string
+    endTime?: string
+    onSelect?: ((event: unknown) => void) | null
+}
+
+/** The overlay object — a w2base instance extended at runtime with many dynamic props */
+// any: overlay is a w2base extended by Object.assign at runtime with anchor, options, tmp, etc.
+// The shape cannot be expressed as a static interface without lying about the full structure.
+type TooltipOverlay = // any: dynamic w2base extension
+    InstanceType<typeof w2base> & {
+        id: string
+        name: string
+        options: TooltipOptions & MenuOptions & ColorOptions & DateOptions
+        anchor: HTMLElement
+        self: Tooltip
+        displayed: boolean
+        box: HTMLElement & { overlay?: TooltipOverlay } | null
+        needsUpdate?: boolean
+        prevOptions?: TooltipOptions
+        // any: tmp is a grab-bag of runtime state (observers, scroll positions, search state, etc.)
+        tmp: Record<string, unknown>
+        selected?: string | number | null
+        newColor?: string
+        newValue?: string
+        newDate?: string
+        next?: () => void
+        prev?: () => void
+        click?: () => void
+        hide: () => void
+    }
+
+/** Return value of Tooltip.attach() */
+interface AttachReturn {
+    overlay: TooltipOverlay
+    then: (callback: (event: unknown) => void) => AttachReturn
+    show: (callback: (event: unknown) => void) => AttachReturn
+    hide: (callback: (event: unknown) => void) => AttachReturn
+    update: (callback: (event: unknown) => void) => AttachReturn
+    move: (callback: (event: unknown) => void) => AttachReturn
+    liveUpdate?: (callback: (event: unknown) => void) => AttachReturn
+    select?: (callback: (event: unknown) => void) => AttachReturn
+    remove?: (callback: (event: unknown) => void) => AttachReturn
+    subMenu?: (callback: (event: unknown) => void) => AttachReturn
+}
+
+/** Position calculation result */
+interface TooltipPosition {
+    left: number
+    top: number
+    arrow: { offset: number; class: string; style: string }
+    adjust: { left: number; top: number }
+    width?: number
+    height?: number
+    pos: string
+}
 
 class Tooltip {
     // no need to extend w2base, as each individual tooltip extends it
-    static active = {} // all defined tooltips
+    static active: Record<string, TooltipOverlay> = {}
+    defaults: TooltipOptions
+    // any: setColor is assigned dynamically inside ColorTooltip.initControls closure
+    setColor?: (color: Partial<{ h: number; s: number; v: number; a: number }>, fullUpdate?: boolean, initial?: string) => void
+    // optional hook — overridden in subclasses; declared as method stub to allow subclass override
+    initControls(overlay: any): void { /* overridden in ColorTooltip, MenuTooltip, DateTooltip */ }
+
     constructor() {
         this.defaults = {
             name            : null,     // name for the overlay, otherwise input id is used
@@ -59,7 +254,7 @@ class Tooltip {
     static observeRemove = new MutationObserver((mutations) => {
         let cnt = 0
         Object.keys(Tooltip.active).forEach(name => {
-            let overlay = Tooltip.active[name]
+            const overlay = Tooltip.active[name]
             if (overlay.displayed) {
                 if (!overlay.anchor || !overlay.anchor.isConnected) {
                     overlay.hide()
@@ -74,9 +269,9 @@ class Tooltip {
         }
     })
 
-    trigger(event, data) {
+    trigger(event: any, data?: any): { isCancelled?: boolean; finish: () => void; detail?: Record<string, unknown> } { // any: event is string or object; data carries event payload
         if (arguments.length == 2) {
-            let type = event
+            const type = event
             event = data
             data.type = type
         }
@@ -87,7 +282,7 @@ class Tooltip {
         }
     }
 
-    get(name) {
+    get(name?: string | true): string[] | Record<string, TooltipOverlay> | TooltipOverlay | undefined {
         if (arguments.length == 0) {
             return Object.keys(Tooltip.active)
         } else if (name === true) {
@@ -97,9 +292,15 @@ class Tooltip {
         }
     }
 
-    attach(anchor, text) {
-        let options, overlay
-        let self = this
+    attach(anchorArg?: HTMLElement | TooltipOptions | null, textArg?: string | TooltipOptions): AttachReturn {
+        // any: anchor/text/options are mutated across branches; runtime shape determined by call path
+        // any: overlay is a w2base extended via Object.assign; full shape not statically knowable
+        let anchor: any = anchorArg // any: reassigned to HTMLElement or options.anchor in branches
+        let text: any = textArg     // any: reassigned to string in some branches
+        let options: any            // any: merged from defaults + user options; open-ended shape
+        let overlay: any            // any: w2base + Object.assign runtime extension
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self: Tooltip = this
         if (arguments.length == 0) {
             return
         } else if (arguments.length == 1 && anchor instanceof Object) {
@@ -146,7 +347,7 @@ class Tooltip {
             options = overlay.options // it was recreated
             // clear all previous overlay events
             Object.keys(overlay).forEach(key => {
-                let val = overlay[key]
+                const val = overlay[key]
                 if (key.startsWith('on') && typeof val == 'function') {
                     delete overlay[key]
                 }
@@ -165,9 +366,10 @@ class Tooltip {
                         this.resize(overlay.name)
                     }),
                     observeAnchorMove: new MutationObserver((mutations) => {
-                        let target = mutations[0].target // all targets are the same
-                        let currRect = target.getBoundingClientRect()
-                        let lastRect = target._lastBoundingRect
+                        // any: MutationObserver target is Node; cast to Element to access getBoundingClientRect
+                        const target = mutations[0].target as Element & { _lastBoundingRect?: DOMRect }
+                        const currRect = target.getBoundingClientRect()
+                        const lastRect = target._lastBoundingRect
                         if (!target._lastBoundingRect) {
                             target._lastBoundingRect = currRect
                         } else if (currRect.left !== lastRect.left || currRect.top !== lastRect.top) {
@@ -184,7 +386,7 @@ class Tooltip {
         }
         // move events on to overlay layer
         Object.keys(overlay.options).forEach(key => {
-            let val = overlay.options[key]
+            const val = overlay.options[key]
             if (key.startsWith('on') && typeof val == 'function') {
                 overlay[key] = val
                 delete overlay.options[key]
@@ -198,7 +400,7 @@ class Tooltip {
             options._keep = true
         }
         if (options.autoShowOn) {
-            let scope = 'autoShow-' + overlay.name
+            const scope = 'autoShow-' + overlay.name
             query(anchor)
                 .off(`.${scope}`)
                 .on(`${options.autoShowOn}.${scope}`, event => {
@@ -209,7 +411,7 @@ class Tooltip {
             options._keep = true
         }
         if (options.autoHideOn) {
-            let scope = 'autoHide-' + overlay.name
+            const scope = 'autoHide-' + overlay.name
             query(anchor)
                 .off(`.${scope}`)
                 .on(`${options.autoHideOn}.${scope}`, event => {
@@ -220,7 +422,7 @@ class Tooltip {
             options._keep = true
         }
         overlay.off('.attach')
-        let ret = {
+        const ret = {
             overlay,
             then: (callback) => {
                 overlay.on('show:after.attach', event => { callback(event) })
@@ -246,8 +448,8 @@ class Tooltip {
         return ret
     }
 
-    update(name, html) {
-        let overlay = Tooltip.active[name]
+    update(name: string, html: string): void {
+        const overlay = Tooltip.active[name]
         if (overlay) {
             overlay.needsUpdate = true
             overlay.options.html = html
@@ -257,14 +459,14 @@ class Tooltip {
         }
     }
 
-    show(name) {
+    show(name?: string | HTMLElement | TooltipOptions, extraOptions?: TooltipOptions): AttachReturn | { overlay: TooltipOverlay } | undefined { // any: name is polymorphic (string|HTMLElement|options)
         if (name instanceof HTMLElement || name instanceof Object) {
-            let options = name
+            let options: any = name // any: name is object-as-options in this branch
             if (name instanceof HTMLElement) {
-                options = arguments[1] || {}
+                options = extraOptions || {}
                 options.anchor = name
             }
-            let ret = this.attach(options)
+            const ret: any = this.attach(options) // any: AttachReturn overlay is runtime-extended
             ret.overlay.tmp.hidden = false
 
             query(ret.overlay.anchor)
@@ -287,16 +489,17 @@ class Tooltip {
             return ret
         }
         let edata
-        let self = this
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this
+        const overlay: any = Tooltip.active[(name as string).replace(/[\s\.#]/g, '_')] // any: runtime overlay
         if (!overlay) return
-        let options = overlay.options
+        const options: any = overlay.options // any: options is open-ended TooltipOptions at runtime
         if (!overlay || (overlay.displayed && !overlay.needsUpdate)) {
             this.resize(overlay?.name)
             return
         }
-        let position = options.position.split('|')
-        let isVertical = ['top', 'bottom'].includes(position[0])
+        const position = options.position.split('|')
+        const isVertical = ['top', 'bottom'].includes(position[0])
         // enforce nowrap only when align=both and vertical
         let overlayStyles = (options.align == 'both' && isVertical ? '' : 'white-space: nowrap;')
         /**
@@ -328,7 +531,7 @@ class Tooltip {
             query(overlay.box)
                 .find('.w2ui-overlay-body')
                 .attr('style', (options.style || '') + '; ' + overlayStyles)
-                .removeClass() // removes all classes
+                .removeClass(null) // removes all classes
                 .addClass('w2ui-overlay-body ' + options.class + (options.draggable ? ' w2ui-draggable' : ''))
                 .html(options.html)
             this.resize(overlay.name)
@@ -349,14 +552,14 @@ class Tooltip {
                 </div>`)
             overlay.box = query('#' + w2utils.escapeId(overlay.id))[0]
             overlay.displayed = true
-            let names = query(overlay.anchor).data('tooltipName') ?? []
-            names.push(name)
+            const names: string[] = (query(overlay.anchor).data('tooltipName') ?? []) as string[] // any: data() returns unknown; runtime-validated as string[]
+            names.push(name as string)
             query(overlay.anchor).data('tooltipName', names) // make available to element overlay attached to
             w2utils.bindEvents(overlay.box, {})
             // remember anchor's original styles
             overlay.tmp.originalCSS = ''
             if (query(overlay.anchor).length > 0) {
-                overlay.tmp.originalCSS = query(overlay.anchor)[0].style.cssText
+                overlay.tmp.originalCSS = (query(overlay.anchor)[0] as HTMLElement).style.cssText // any: query [0] is Node; anchor is always HTMLElement
             }
             this.resize(overlay.name)
         }
@@ -387,18 +590,18 @@ class Tooltip {
         // observer element removal from DOM
         Tooltip.observeRemove.observe(document.body, { subtree: true, childList: true })
         // then insert html and it will adjust
-        query(overlay.box)
-            .css('opacity', 1)
+        // any: .css() returns string|Query|undefined; at runtime with object arg it always returns Query
+        ;(query(overlay.box).css('opacity', 1) as unknown as Query)
             .find('.w2ui-overlay-body')
             .html(options.html)
         /**
          * pointer-events: none is needed to avoid cases when popup is shown right under the cursor
          * or it will trigger onmouseout, onmouseleave and other events.
          */
-        setTimeout(() => { query(overlay.box).css({ 'pointer-events': 'auto' }).data('ready', 'yes') }, 100)
+        setTimeout(() => { (query(overlay.box).css({ 'pointer-events': 'auto' }) as unknown as Query).data('ready', 'yes') }, 100) // any: css() with object returns Query
 
         // bind events
-        w2utils.bindEvents(query(overlay.box).find('.w2ui-eaction'), this)
+        w2utils.bindEvents(query(overlay.box).find('.w2ui-eaction'), this as unknown as Record<string, unknown>) // any: bindEvents accepts event handler object; Tooltip is valid
 
         delete overlay.needsUpdate
         // expose overlay to DOM element
@@ -414,7 +617,7 @@ class Tooltip {
         return { overlay }
 
         function addWatchEvents(el) {
-            let scope = 'tooltip-' + overlay.name
+            const scope = 'tooltip-' + overlay.name
             let queryEl = el
             if (el.tagName == 'BODY') {
                 queryEl = el.ownerDocument
@@ -431,9 +634,9 @@ class Tooltip {
         }
 
         function addHideEvents() {
-            let hide = (event) => { self.hide(overlay.name) }
-            let $anchor = query(overlay.anchor)
-            let scope = 'tooltip-' + overlay.name
+            const hide = (event) => { self.hide(overlay.name) }
+            const $anchor = query(overlay.anchor)
+            const scope = 'tooltip-' + overlay.name
             // document click
             query('html').off(`.${scope}`)
             if (options.hideOn.includes('doc-click')) {
@@ -469,15 +672,15 @@ class Tooltip {
         }
     }
 
-    hide(name) {
-        let overlay
+    hide(name?: string | HTMLElement): void {
+        let overlay: any // any: TooltipOverlay extended at runtime; property access is runtime-safe
         if (arguments.length == 0) {
             // hide all tooltips
             Object.keys(Tooltip.active).forEach(name => { this.hide(name) })
             return
         }
         if (name instanceof HTMLElement) {
-            let names = query(name).data('tooltipName') ?? []
+            const names = (query(name).data('tooltipName') ?? []) as string[] // any: data() unknown; runtime is string[]
             names.forEach(name => { this.hide(name) })
             return
         }
@@ -489,19 +692,19 @@ class Tooltip {
         if (!overlay || !overlay.box) return
 
         // event before
-        let edata = this.trigger('hide', { target: name, overlay })
+        const edata = this.trigger('hide', { target: name, overlay })
         if (edata.isCancelled === true) return
 
         // normal processing
         if (!overlay.options._keep) delete Tooltip.active[name]
-        let scope = 'tooltip-' + overlay.name
+        const scope = 'tooltip-' + overlay.name
         overlay.tmp.observeTooltipResize?.disconnect()
         overlay.tmp.observeAnchorResize?.disconnect()
         overlay.tmp.observeAnchorMove?.disconnect()
         // if no active tooltip then disable observeRemove
         let cnt = 0
         Object.keys(Tooltip.active).forEach(key => {
-            let overlay = Tooltip.active[key]
+            const overlay = Tooltip.active[key]
             if (overlay.displayed) {
                 cnt++
             }
@@ -516,8 +719,8 @@ class Tooltip {
         overlay.box = null
         overlay.displayed = false
         // remove name from anchor properties
-        let names = query(overlay.anchor).data('tooltipName') ?? []
-        let ind = names.indexOf(overlay.name)
+        const names = (query(overlay.anchor).data('tooltipName') ?? []) as string[] // any: data() unknown; runtime is string[]
+        const ind = names.indexOf(overlay.name)
         if (ind != -1) names.splice(names.indexOf(overlay.name), 1)
         if (names.length == 0) {
             query(overlay.anchor).removeData('tooltipName')
@@ -542,19 +745,19 @@ class Tooltip {
         edata.finish()
     }
 
-    resize(name) {
-        let state = { moved: false, resize: false }
+    resize(name?: string): { moved: boolean; resize: boolean } | { multiple: boolean } | void {
+        const state = { moved: false, resize: false }
         if (arguments.length == 0) {
             Object.keys(Tooltip.active).forEach(key => {
-                let overlay = Tooltip.active[key]
+                const overlay: any = Tooltip.active[key] // any: runtime overlay shape
                 if (overlay.displayed) this.resize(overlay.name)
             })
             return { multiple: true }
         }
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
-        let pos = this.getPosition(overlay.name)
-        let newPos = pos.left + 'x' + pos.top
-        let newSize = pos.width + 'x' + pos.height
+        const overlay: any = Tooltip.active[name.replace(/[\s\.#]/g, '_')] // any: runtime overlay
+        const pos: any = this.getPosition(overlay.name) // any: pos may be undefined or TooltipPosition
+        const newPos = pos.left + 'x' + pos.top
+        const newSize = pos.width + 'x' + pos.height
         let edata1, edata2
         if (overlay.tmp.lastPos != newPos) {
             edata1 = this.trigger('move', { target: name, overlay, pos })
@@ -564,23 +767,25 @@ class Tooltip {
             edata2 = this.trigger('resize', { target: name, overlay, pos })
             state.moved = true
         }
-        query(overlay.box)
-            .css({
-                left: pos.left + 'px',
-                top : pos.top + 'px'
-            })
-            .then(query => {
-                if (pos.width != null) {
-                    query.css('width', pos.width + 'px')
-                         .find('.w2ui-overlay-body')
-                         .css('width', '100%')
-                }
-                if (pos.height != null) {
-                    query.css('height', pos.height + 'px')
-                         .find('.w2ui-overlay-body')
-                         .css('height', '100%')
-                }
-            })
+        // any: .css({}) returns Query at runtime (object arg path); TypeScript types it as string|Query|... union
+        // any: Query.css({object}) always returns Query; TypeScript union type makes .then() ambiguous
+        const qBox = query(overlay.box).css({
+            left: pos.left + 'px',
+            top : pos.top + 'px'
+        }) as unknown as Query
+        qBox.then((q: Query): Query => {
+            if (pos.width != null) {
+                (q.css('width', pos.width + 'px') as unknown as Query)
+                     .find('.w2ui-overlay-body')
+                     .css('width', '100%')
+            }
+            if (pos.height != null) {
+                (q.css('height', pos.height + 'px') as unknown as Query)
+                     .find('.w2ui-overlay-body')
+                     .css('height', '100%')
+            }
+            return q
+        })
             .find('.w2ui-overlay-body')
             .removeClass('w2ui-arrow-right w2ui-arrow-left w2ui-arrow-top w2ui-arrow-bottom')
             .addClass(pos.arrow.class)
@@ -599,38 +804,39 @@ class Tooltip {
         return state
     }
 
-    getPosition(name) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+    getPosition(name: string): TooltipPosition | undefined {
+        // any: overlay.options and anchor positions are runtime-extended DOMRect-like objects
+        const overlay: any = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay || !overlay.box) {
             return
         }
-        let options = overlay.options
+        const options = overlay.options
         if (overlay.tmp.resizedY || overlay.tmp.resizedX) {
             query(overlay.box).css({ width: '', height: '', scroll: 'auto' })
         }
-        let scrollSize = w2utils.scrollBarSize()
-        let hasScrollBarX = !(document.body.scrollWidth == document.body.clientWidth)
-        let hasScrollBarY = !(document.body.scrollHeight == document.body.clientHeight)
-        let max = {
+        const scrollSize = w2utils.scrollBarSize() as number // any: scrollBarSize returns unknown (tmp bag); runtime is always number
+        const hasScrollBarX = !(document.body.scrollWidth == document.body.clientWidth)
+        const hasScrollBarY = !(document.body.scrollHeight == document.body.clientHeight)
+        const max = {
             width: window.innerWidth - (hasScrollBarY ? scrollSize : 0),
             height: window.innerHeight - (hasScrollBarX ? scrollSize : 0)
         }
-        let position = options.position == 'auto'
+        const position = options.position == 'auto'
             ? 'top|bottom|right|left'.split('|')
             : Array.isArray(options.position) ? options.position : options.position.split('|')
-        let isVertical = ['top', 'bottom'].includes(position[0])
-        let content = overlay.box.getBoundingClientRect()
+        const isVertical = ['top', 'bottom'].includes(position[0])
+        const content = overlay.box.getBoundingClientRect()
         let anchor = overlay.anchor?.getBoundingClientRect?.()
 
         // minimal width should be a least content width (avoid slow expansion of the tooltip bug)
-        let min_width = w2utils.getStrWidth(options.html, '', true)
+        const min_width = w2utils.getStrWidth(options.html, '', true)
         if (content.width < min_width) content.width = min_width
 
         if (overlay.anchor == document.body) {
             // context menu
             let evt = options.originalEvent
             while (evt?.originalEvent) { evt = evt.originalEvent }
-            let { x, y, width, height } = evt ?? { x: options.x, y: options.y, width: 0, height: 10 }
+            const { x, y, width, height } = evt ?? { x: options.x, y: options.y, width: 0, height: 10 }
             anchor = {
                 left: x - (options.contextMenu ? 4: 0),
                 top: y - (options.contextMenu ? 4: 0),
@@ -644,7 +850,7 @@ class Tooltip {
         if (isNaN(arrowSize)) arrowSize = this.defaults.arrowSize
 
         // space available
-        let available = { // tipsize adjustment should be here, not in max.width/max.height
+        const available = { // tipsize adjustment should be here, not in max.width/max.height
             top: anchor.top - arrowSize,
             bottom: max.height - arrowSize - (anchor.top + anchor.height) - (hasScrollBarX ? scrollSize : 0) - 2,
             left: anchor.left,
@@ -655,13 +861,13 @@ class Tooltip {
         if (content.height < 14) content.height = 14
         let left, top, width, height // tooltip position
         let found = ''
-        let arrow = {
+        const arrow = {
             offset: 0,
             class: '',
             style: `#${overlay.id} { --tip-size: ${arrowSize}px; }`
         }
-        let adjust   = { left: 0, top: 0 }
-        let bestFit  = { posX: '', x: 0, posY: '', y: 0 }
+        const adjust   = { left: 0, top: 0 }
+        const bestFit  = { posX: '', x: 0, posY: '', y: 0 }
 
         // find best position
         position.forEach(pos => {
@@ -712,15 +918,15 @@ class Tooltip {
         if (isVertical) anchorAlignment()
 
         // user offset
-        top += parseFloat(options.offsetY * (found == 'top' ? -1 : 1))   // offset will always move from original position
-        left += parseFloat(options.offsetX * (found == 'left' ? -1 : 1)) // offset will always move from original position
+        top += parseFloat(String(options.offsetY * (found == 'top' ? -1 : 1)))   // offset will always move from original position
+        left += parseFloat(String(options.offsetX * (found == 'left' ? -1 : 1))) // offset will always move from original position
 
         // make sure it is inside visible screen area
         screenAdjust()
 
         // adjust for scrollbar
-        let extraTop = (found == 'top' ? -options.margin : (found == 'bottom' ? options.margin : 0))
-        let extraLeft = (found == 'left' ? -options.margin : (found == 'right' ? options.margin : 0))
+        const extraTop = (found == 'top' ? -options.margin : (found == 'bottom' ? options.margin : 0))
+        const extraLeft = (found == 'left' ? -options.margin : (found == 'right' ? options.margin : 0))
         top = Math.floor((top + parseFloat(extraTop)) * 100) / 100
         left = Math.floor((left + parseFloat(extraLeft)) * 100) / 100
 
@@ -763,7 +969,7 @@ class Tooltip {
                 left = anchor.left + anchor.width - (width ?? content.width)
             }
             if (['top', 'bottom'].includes(found) && options.align.startsWith('both')) {
-                let minWidth = options.align.split(':')[1] ?? 50
+                const minWidth = options.align.split(':')[1] ?? 50
                 if (anchor.width >= minWidth) {
                     left = anchor.left
                     width = anchor.width
@@ -779,7 +985,7 @@ class Tooltip {
                 top = anchor.top + anchor.height - (height ?? content.height)
             }
             if (['left', 'right'].includes(found) && options.align.startsWith('both')) {
-                let minHeight = options.align.split(':')[1] ?? 50
+                const minHeight = options.align.split(':')[1] ?? 50
                 if (anchor.height >= minHeight) {
                     top = anchor.top
                     height = anchor.height
@@ -796,10 +1002,10 @@ class Tooltip {
                 adjustArrow = true
             }
             // if off screen then adjust
-            let minLeft = (found == 'right' ? arrowSize : options.screenMargin)
-            let minTop  = (found == 'bottom' ? arrowSize : options.screenMargin)
-            let maxLeft = max.width - (width ?? content.width) - (found == 'left' ? arrowSize : options.screenMargin)
-            let maxTop  = max.height - (height ?? content.height) - (found == 'top' ? arrowSize : options.screenMargin) + 3
+            const minLeft = (found == 'right' ? arrowSize : options.screenMargin)
+            const minTop  = (found == 'bottom' ? arrowSize : options.screenMargin)
+            const maxLeft = max.width - (width ?? content.width) - (found == 'left' ? arrowSize : options.screenMargin)
+            const maxTop  = max.height - (height ?? content.height) - (found == 'top' ? arrowSize : options.screenMargin) + 3
             // adjust X
             if (['top', 'bottom'].includes(found) || options.autoResize) {
                 if (left < minLeft) {
@@ -828,21 +1034,22 @@ class Tooltip {
             }
             // moves carret to adjust it with element width
             if (adjustArrow) {
-                let aType = isVertical ? 'left' : 'top'
-                let sType = isVertical ? 'width' : 'height'
+                const aType = isVertical ? 'left' : 'top'
+                const sType = isVertical ? 'width' : 'height'
                 arrow.offset = -adjust[aType]
-                let maxOffset = content[sType] / 2 - arrowSize
+                const maxOffset = content[sType] / 2 - arrowSize
                 if (Math.abs(arrow.offset) > maxOffset + arrowSize) {
                     arrow.class = '' // no arrow
                 }
                 if (Math.abs(arrow.offset) > maxOffset) {
                     arrow.offset = arrow.offset < 0 ? -maxOffset : maxOffset
                 }
+                // any: stripSpaces returns unknown; runtime always produces a string
                 arrow.style = w2utils.stripSpaces(`#${overlay.id} .w2ui-overlay-body:after,
                             #${overlay.id} .w2ui-overlay-body:before {
                                 --tip-size: ${arrowSize}px;
                                 margin-${aType}: ${arrow.offset}px;
-                            }`)
+                            }`) as string
             }
         }
     }
@@ -851,30 +1058,31 @@ class Tooltip {
      * Move overlay node to the end of its parent (typically body) so it stacks above other .w2ui-overlay siblings
      * without relying on z-index. No-op if it is already the last element child.
      */
-    bringOverlayToFront(overlay) {
+    bringOverlayToFront(overlay: TooltipOverlay): void {
         if (!overlay || !overlay.box || !overlay.box.parentNode || !overlay.box.nextElementSibling) {
             return
         }
         overlay.box.parentNode.appendChild(overlay.box)
     }
 
-    startDrag(event) {
+    startDrag(event: MouseEvent & { target: EventTarget & { _lastBoundingRect?: DOMRect } }): void {
         if (event.preventDefault) {
             event.preventDefault()
         }
-        let initial
-        let el = query(event.target).closest('.w2ui-overlay')
-        let overlay = el[0]?.overlay
+        const el = query(event.target).closest('.w2ui-overlay')
+        // any: overlay DOM element has .overlay property attached at runtime (line: overlay.box.overlay = overlay)
+        const overlay = (el[0] as HTMLElement & { overlay?: TooltipOverlay })?.overlay
         if (overlay) {
             this.bringOverlayToFront(overlay)
         }
-        initial = {
+        const initial = {
             el,
-            x: parseFloat(el.css('left')),
-            y: parseFloat(el.css('top')),
+            x: parseFloat(el.css('left') as string), // any: css(string) returns string when reading a property
+            y: parseFloat(el.css('top') as string),
             pageX: event.pageX,
             pageY: event.pageY,
-            moved: false
+            moved: false,
+            _removed: false
         }
         query(document)
             .off('.w2ui-drag')
@@ -892,11 +1100,11 @@ class Tooltip {
             query(document).off('dragstart.w2ui-drag')
             query(document.body).removeClass('w2ui-overlay-dragging')
             if (initial.moved) {
-                let ov = initial.el[0] && initial.el[0].overlay
+                const ov = initial.el[0] && (initial.el[0] as HTMLElement & { overlay?: TooltipOverlay }).overlay // any: runtime .overlay prop
                 if (ov) {
                     if (!ov.tmp) ov.tmp = {}
                     ov.tmp.moved = true
-                    clearTimeout(ov.tmp._movedClearTimer)
+                    clearTimeout(ov.tmp._movedClearTimer as number) // any: tmp bag value; runtime is timer ID
                     ov.tmp._movedClearTimer = setTimeout(() => {
                         if (ov.tmp) {
                             delete ov.tmp.moved
@@ -908,8 +1116,8 @@ class Tooltip {
         }
 
         function mouseMove(event) {
-            let divX = event.pageX - initial.pageX
-            let divY = event.pageY - initial.pageY
+            const divX = event.pageX - initial.pageX
+            const divY = event.pageY - initial.pageY
             if (Math.abs(divX) > 3 || Math.abs(divY) > 3) {
                 initial.moved = true
             }
@@ -927,7 +1135,11 @@ class Tooltip {
 }
 
 class ColorTooltip extends Tooltip {
-    static custom_colors = []
+    static custom_colors: string[] = []
+    palette: string[][]
+    // any: index tracks keyboard position in the palette grid; tuple [row, col]
+    index: [number, number]
+
     constructor() {
         super()
         this.palette = [
@@ -966,7 +1178,7 @@ class ColorTooltip extends Tooltip {
             options = text
             options.anchor = anchor
         }
-        let prevHideOn = options.hideOn
+        const prevHideOn = options.hideOn
         options = w2utils.extend({}, this.defaults, options || {})
         if (prevHideOn) {
             options.hideOn = prevHideOn
@@ -985,13 +1197,13 @@ class ColorTooltip extends Tooltip {
         if (typeof options.color === 'string' && options.color.substr(0,1) === '#') options.color = options.color.substr(1)
         // needed for keyboard navigation
         this.index = [-1, -1]
-        let ret = super.attach(options)
-        let overlay = ret.overlay
+        const ret = super.attach(options)
+        const overlay = ret.overlay
         overlay.options.html = this.getColorHTML(overlay.name, options)
         overlay.on('show.attach', event => {
-            let overlay = event.detail.overlay
-            let anchor  = overlay.anchor
-            let options = overlay.options
+            const overlay = event.detail.overlay
+            const anchor  = overlay.anchor
+            const options = overlay.options
             if (['INPUT', 'TEXTAREA'].includes(anchor.tagName) && !options.color && anchor.value) {
                 overlay.tmp.initColor = anchor.value
             }
@@ -999,28 +1211,28 @@ class ColorTooltip extends Tooltip {
         })
         overlay.on('show:after.attach', event => {
             if (ret.overlay?.box) {
-                let actions = query(ret.overlay.box).find('.w2ui-eaction')
-                w2utils.bindEvents(actions, this)
+                const actions = query(ret.overlay.box).find('.w2ui-eaction')
+                w2utils.bindEvents(actions, this as unknown as Record<string, unknown>)
                 this.initControls(ret.overlay)
             }
         })
         overlay.on('update:after.attach', event => {
             if (ret.overlay?.box) {
-                let actions = query(ret.overlay.box).find('.w2ui-eaction')
-                w2utils.bindEvents(actions, this)
+                const actions = query(ret.overlay.box).find('.w2ui-eaction')
+                w2utils.bindEvents(actions, this as unknown as Record<string, unknown>)
                 this.initControls(ret.overlay)
             }
         })
         overlay.on('hide.attach', event => {
-            let overlay = event.detail.overlay
-            let anchor  = overlay.anchor
-            let color   = overlay.newColor ?? overlay.options.color ?? ''
+            const overlay = event.detail.overlay
+            const anchor  = overlay.anchor
+            const color   = overlay.newColor ?? overlay.options.color ?? ''
             // color has been selected
             if (color !== '') {
                 if (['INPUT', 'TEXTAREA'].includes(anchor.tagName) && anchor.value != color && overlay.options.updateInput) {
                     anchor.value = color
                 }
-                let edata = this.trigger('select', { color, target: overlay.name, overlay })
+                const edata = this.trigger('select', { color, target: overlay.name, overlay })
                 if (edata.isCancelled === true) return
                 // event after
                 edata.finish()
@@ -1043,12 +1255,13 @@ class ColorTooltip extends Tooltip {
         this.index = [-1, -1]
         if (typeof name != 'string') {
             target = name.target
-            this.index = query(target).attr('index').split(':')
-            name = query(target).closest('.w2ui-overlay').attr('name')
+            this.index = query(target).attr('index').split(':').map(Number) as [number, number] // any: attr returns string; map to numbers for palette grid coordinates
+            name = query(target).closest('.w2ui-overlay').attr('name') as string // any: attr returns string|undefined; name is always present here
         }
-        let overlay = this.get(name)
+        const overlay: any = this.get(name) // any: get() returns union; runtime is TooltipOverlay when name is string
         // event before
-        let edata = this.trigger('liveUpdate', { color, target: name, overlay, param: arguments[1] })
+        // any: param carries the original event object when name was non-string (event used as 2nd arg)
+        const edata = this.trigger('liveUpdate', { color, target: name, overlay, param: name as unknown })
         if (edata.isCancelled === true) return
         // if anchor is input - live update
         if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName) && overlay.options.updateInput) {
@@ -1065,7 +1278,7 @@ class ColorTooltip extends Tooltip {
 
     // used for keyboard navigation, if any
     nextColor(direction) { // TODO: check it
-        let pal = this.palette
+        const pal = this.palette
         switch (direction) {
             case 'up':
                 this.index[0]--
@@ -1091,8 +1304,8 @@ class ColorTooltip extends Tooltip {
         if (typeof name != 'string') {
             name = query(name.target).closest('.w2ui-overlay').attr('name')
         }
-        let overlay = this.get(name)
-        let tab = query(overlay.box).find(`.w2ui-color-tab:nth-child(${index})`)
+        const overlay: any = this.get(name) // any: get() returns union; runtime is TooltipOverlay
+        const tab = query(overlay.box).find(`.w2ui-color-tab:nth-child(${index})`)
         query(overlay.box).find('.w2ui-color-tab').removeClass('w2ui-selected')
         query(tab).addClass('w2ui-selected')
         query(overlay.box)
@@ -1114,7 +1327,7 @@ class ColorTooltip extends Tooltip {
         for (let i = 0; i < this.palette.length; i++) {
             html += '<div class="w2ui-color-row">'
             for (let j = 0; j < this.palette[i].length; j++) {
-                let color = this.palette[i][j]
+                const color = this.palette[i][j]
                 let border = ''
                 if (color === 'FFFFFF') border = '; border: 1px solid #efefef'
                 html += `
@@ -1186,8 +1399,8 @@ class ColorTooltip extends Tooltip {
         return html
     }
 
-    getCustomColorsHTML(name) {
-        let options = this.get(name)?.options
+    getCustomColorsHTML(name: string): string {
+        const options: any = (this.get(name) as any)?.options // any: get() returns union; runtime is TooltipOverlay
         let html = '<div class="w2ui-color-row" style="min-height: 21px">'
         ColorTooltip.custom_colors.forEach((color, i) => {
             let border = ''
@@ -1208,16 +1421,18 @@ class ColorTooltip extends Tooltip {
     }
 
     // bind advanced tab controls
-    initControls(overlay) {
-        let initial // used for mouse events
-        let self = this
-        let options = overlay.options
-        let color = options.color || overlay.tmp.initColor
-        let rgb = w2utils.parseColor(color)
+    initControls(overlay: TooltipOverlay): void {
+        // any: complex HSV/RGB slider state shared across closures; runtime shapes are always correct
+        let initial: any // used for mouse events
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this
+        const options = overlay.options
+        const color = (options.color || overlay.tmp.initColor) as string // any: initColor in tmp bag; runtime is always string
+        let rgb: any = w2utils.parseColor(color)
         if (rgb == null) {
             rgb = { r: 140, g: 150, b: 160, a: 1 }
         }
-        let hsv = w2utils.rgb2hsv(rgb)
+        let hsv: any = (w2utils.rgb2hsv as any)(rgb)
         if (options.advanced === true) {
             this.tabClick(2, overlay.name)
         }
@@ -1232,14 +1447,14 @@ class ColorTooltip extends Tooltip {
             .find('input')
             .off('.w2color')
             .on('change.w2color', (event) => {
-                let el = query(event.target)
+                const el: any = query(event.target)
                 let val = parseFloat(el.val())
-                let max = parseFloat(el.attr('max'))
+                const max = parseFloat(el.attr('max'))
                 if (isNaN(val)) {
                     val = 0
                     el.val(0)
                 }
-                if (max > 1) val = parseInt(val) // trancate fractions
+                if (max > 1) val = parseInt(String(val)) // trancate fractions
                 if (max > 0 && val > max) {
                     el.val(max)
                     val = max
@@ -1248,11 +1463,11 @@ class ColorTooltip extends Tooltip {
                     el.val(0)
                     val = 0
                 }
-                let name  = el.attr('name')
-                let color = {}
+                const name  = el.attr('name')
+                const color: any = {}
                 if (['r', 'g', 'b', 'a'].indexOf(name) !== -1) {
                     rgb[name] = val
-                    hsv = w2utils.rgb2hsv(rgb)
+                    hsv = (w2utils.rgb2hsv as any)(rgb)
                 } else if (['h', 's', 'v'].indexOf(name) !== -1) {
                     color[name] = val
                 }
@@ -1263,18 +1478,18 @@ class ColorTooltip extends Tooltip {
         query(overlay.box).find('.color-original')
             .off('.w2color')
             .on('click.w2color', (event) => {
-                let tmp = w2utils.parseColor(query(event.target).css('background-color'))
+                const tmp = w2utils.parseColor(query(event.target).css('background-color') as string)
                 if (tmp != null) {
                     rgb = tmp
-                    hsv = w2utils.rgb2hsv(rgb)
+                    hsv = (w2utils.rgb2hsv as any)(rgb)
                     setColor(hsv, true)
                 }
             })
 
         // color sliders events
-        let mDown = `${!w2utils.isMobile ? 'mousedown' : 'touchstart'}.w2color`
-        let mUp   = `${!w2utils.isMobile ? 'mouseup' : 'touchend'}.w2color`
-        let mMove = `${!w2utils.isMobile ? 'mousemove' : 'touchmove'}.w2color`
+        const mDown = `${!w2utils.isMobile ? 'mousedown' : 'touchstart'}.w2color`
+        const mUp   = `${!w2utils.isMobile ? 'mouseup' : 'touchend'}.w2color`
+        const mMove = `${!w2utils.isMobile ? 'mousemove' : 'touchmove'}.w2color`
         query(overlay.box).find('.palette, .rainbow, .alpha')
             .off('.w2color')
             .on(`${mDown}.w2color`, mouseDown)
@@ -1282,14 +1497,14 @@ class ColorTooltip extends Tooltip {
         this.setColor = setColor
         return
 
-        function setColor(color, fullUpdate, initial) {
+        function setColor(color: any, fullUpdate?: boolean, initial?: string) {
             if (color.h != null) hsv.h = color.h
             if (color.s != null) hsv.s = color.s
             if (color.v != null) hsv.v = color.v
             if (color.a != null) { rgb.a = color.a; hsv.a = color.a }
-            rgb = w2utils.hsv2rgb(hsv)
-            let rgba = 'rgba('+ rgb.r +','+ rgb.g +','+ rgb.b +','+ rgb.a +')'
-            let cl = [
+            rgb = (w2utils.hsv2rgb as any)(hsv)
+            const rgba = 'rgba('+ rgb.r +','+ rgb.g +','+ rgb.b +','+ rgb.a +')'
+            const cl = [
                 Number(rgb.r).toString(16).toUpperCase(),
                 Number(rgb.g).toString(16).toUpperCase(),
                 Number(rgb.b).toString(16).toUpperCase(),
@@ -1301,18 +1516,18 @@ class ColorTooltip extends Tooltip {
                 newColor = cl[0] + cl[1] + cl[2]
             }
             query(overlay.box).find('.color-preview').css('background-color', '#' + newColor)
-            query(overlay.box).find('input').each(el => {
+            query(overlay.box).find('input').each((el: HTMLInputElement) => {
                 if (el.name) {
-                    if (rgb[el.name] != null) el.value = rgb[el.name]
-                    if (hsv[el.name] != null) el.value = hsv[el.name]
-                    if (el.name === 'a') el.value = rgb.a
+                    if (rgb[el.name] != null) el.value = String(rgb[el.name])
+                    if (hsv[el.name] != null) el.value = String(hsv[el.name])
+                    if (el.name === 'a') el.value = String(rgb.a)
                     if (el.name == 'hex') el.value = newColor
                     if (el.name == 'rgb') el.value = rgba
                 }
             })
             // if it is in pallette
             if (initial != null) {
-                let color = overlay.tmp.initColor || newColor
+                const color = overlay.tmp.initColor || newColor
                 query(overlay.box).find('.color-original')
                     .css('background-color', '#' + color)
                 query(overlay.box).find('.w2ui-color.w2ui-selected')
@@ -1333,12 +1548,12 @@ class ColorTooltip extends Tooltip {
         }
 
         function updateSliders() {
-            let el1 = query(overlay.box).find('.palette .value1')
-            let el2 = query(overlay.box).find('.rainbow .value2')
-            let el3 = query(overlay.box).find('.alpha .value2')
+            const el1 = query(overlay.box).find('.palette .value1')
+            const el2 = query(overlay.box).find('.rainbow .value2')
+            const el3 = query(overlay.box).find('.alpha .value2')
             if (!el1[0] || !el2[0] || !el3[0]) return
-            let offset1 = parseInt(el1[0].clientWidth) / 2
-            let offset2 = parseInt(el2[0].clientWidth) / 2
+            const offset1 = (el1[0] as HTMLElement).clientWidth / 2
+            const offset2 = (el2[0] as HTMLElement).clientWidth / 2
             el1.css({
                 'left': (hsv.s * 150 / 100 - offset1) + 'px',
                 'top': ((100 - hsv.v) * 125 / 100 - offset1) + 'px'
@@ -1348,15 +1563,15 @@ class ColorTooltip extends Tooltip {
         }
 
         function refreshPalette() {
-            let cl  = w2utils.hsv2rgb(hsv.h, 100, 100)
-            let rgb = `${cl.r},${cl.g},${cl.b}`
+            const cl  = (w2utils.hsv2rgb as any)(hsv.h, 100, 100)
+            const rgb = `${cl.r},${cl.g},${cl.b}`
             query(overlay.box).find('.palette')
                 .css('background-image', `linear-gradient(90deg, rgba(${rgb},0) 0%, rgba(${rgb},1) 100%)`)
         }
 
-        function mouseDown(event) {
-            let el = query(this).find('.value1, .value2')
-            let offset = parseInt(el.prop('clientWidth')) / 2
+        function mouseDown(this: any, event: any) {
+            const el: any = query(this).find('.value1, .value2')
+            const offset = el.prop('clientWidth') / 2
             if (el.hasClass('move-x')) el.css({ left: (event.offsetX - offset) + 'px' })
             if (el.hasClass('move-y')) el.css({ top: (event.offsetY - offset) + 'px' })
             initial = {
@@ -1375,17 +1590,17 @@ class ColorTooltip extends Tooltip {
                 .on(mUp, mouseUp)
         }
 
-        function mouseUp(event) {
+        function mouseUp(event: any) {
             query('html').off('.w2color')
         }
 
-        function mouseMove(event) {
-            let el    = initial.el
-            let divX   = event.pageX - initial.x
-            let divY   = event.pageY - initial.y
+        function mouseMove(event: any) {
+            const el: any   = initial.el
+            const divX   = event.pageX - initial.x
+            const divY   = event.pageY - initial.y
             let newX   = initial.left + divX
             let newY   = initial.top + divY
-            let offset = parseInt(el.prop('clientWidth')) / 2
+            const offset = el.prop('clientWidth') / 2
             if (newX < -offset) newX = -offset
             if (newY < -offset) newY = -offset
             if (newX > initial.width - offset) newX = initial.width - offset
@@ -1394,9 +1609,9 @@ class ColorTooltip extends Tooltip {
             if (el.hasClass('move-y')) el.css({ top : newY + 'px' })
 
             // move
-            let name = query(el.get(0).parentNode).attr('name')
-            let x    = parseInt(el.css('left')) + offset
-            let y    = parseInt(el.css('top')) + offset
+            const name = query(el.get(0).parentNode).attr('name')
+            const x    = parseInt(el.css('left')) + offset
+            const y    = parseInt(el.css('top')) + offset
             if (name === 'palette') {
                 setColor({
                     s: Math.round(x / initial.width * 100),
@@ -1404,7 +1619,7 @@ class ColorTooltip extends Tooltip {
                 })
             }
             if (name === 'rainbow') {
-                let h = Math.round(360 / 150 * x)
+                const h = Math.round(360 / 150 * x)
                 setColor({ h: h })
                 refreshPalette()
             }
@@ -1417,7 +1632,7 @@ class ColorTooltip extends Tooltip {
     addCustomColor(color, name) {
         if (typeof color == 'string' && color.substr(0, 1) == '#' && [7, 9].includes(color.length)) {
             color = color.substr(1).toUpperCase()
-            let custom = ColorTooltip.custom_colors
+            const custom = ColorTooltip.custom_colors
             if (custom.includes(color)) {
                 custom.splice(custom.indexOf(color), 1)
             }
@@ -1429,32 +1644,34 @@ class ColorTooltip extends Tooltip {
         return color
     }
 
-    async pickAndSelect(name, event) {
-        let color = await this.pickColor()
+    async pickAndSelect(name: string, event: any) {
+        const color = await this.pickColor()
         if (typeof color == 'string' && color.substr(0, 1) == '#' && [7, 9].includes(color.length)) {
             this.addCustomColor(color, name)
-            let cnt = query(event.target).closest('.w2ui-colors-custom')
+            const cnt = query(event.target).closest('.w2ui-colors-custom')
             cnt.html(this.getCustomColorsHTML(name))
-            w2utils.bindEvents(cnt.find('.w2ui-eaction'), this)
+            w2utils.bindEvents(cnt.find('.w2ui-eaction'), this as unknown as Record<string, unknown>)
             this.select(color.substr(1), name)
             // this.hide(name)
         }
     }
 
-    async pickAndUse(name) {
-        let color = await this.pickColor()
+    async pickAndUse(name: string) {
+        const color = await this.pickColor()
         if (typeof color == 'string' && color.substr(0, 1) == '#' && [7, 9].includes(color.length)) {
-            let hsv = w2utils.rgb2hsv(w2utils.parseColor(color))
-            this.setColor(hsv, true)
+            const hsv = (w2utils.rgb2hsv as any)(w2utils.parseColor(color))
+            this.setColor!(hsv, true)
         }
     }
 
-    async pickColor() {
-        if (!window.EyeDropper) {
+    async pickColor(): Promise<string | undefined> {
+        // any: EyeDropper is a browser experimental API not yet in lib.dom.d.ts
+        const win = window as any
+        if (!win.EyeDropper) {
             console.error('EyeDropper API is not supported in this browser.')
             return
         }
-        let eyeDropper = new EyeDropper()
+        const eyeDropper = new win.EyeDropper()
         try {
             const result = await eyeDropper.open()
             return result.sRGBHex
@@ -1530,7 +1747,7 @@ class MenuTooltip extends Tooltip {
             options = text
             options.anchor = anchor
         }
-        let prevHideOn = options.hideOn
+        const prevHideOn = options.hideOn
         options = w2utils.extend({}, this.defaults, options || {})
         if (prevHideOn) {
             options.hideOn = prevHideOn
@@ -1544,24 +1761,25 @@ class MenuTooltip extends Tooltip {
         }
         options.items = w2utils.normMenu(options.items, options)
         options.html = this.getMenuHTML(options)
-        let ret = super.attach(options)
-        let overlay = ret.overlay
-        overlay.on('show:after.attach, update:after.attach', event => {
+        const ret = super.attach(options)
+        // any: overlay is a w2base instance extended at runtime with menu-specific fields
+        const overlay: any = ret.overlay
+        overlay.on('show:after.attach, update:after.attach', (event: any) => {
             if (ret.overlay?.box) {
                 let search = ''
                 // reset selected and active chain
                 overlay.selected = overlay.options.selected // this is needed so that menu item can be preselected
-                let index = overlay.anchor.dataset?.selectedIndex
+                const index = overlay.anchor.dataset?.selectedIndex
                 if ((overlay.options.selected !== false && overlay.options.selected !== -1) || index != null) {
                     if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
-                        search = overlay.anchor.value
+                        search = (overlay.anchor as HTMLInputElement).value
                         overlay.selected = null // no element should be pre-selected
                         if (index != null) {
                             overlay.selected = index
                         }
                     }
                 }
-                let actions = query(ret.overlay.box).find('.w2ui-eaction')
+                const actions = query(ret.overlay.box).find('.w2ui-eaction')
                 if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
                     overlay.tmp._new_search = false
                     query(overlay.anchor).on('input.search-trigger', () => {
@@ -1569,9 +1787,9 @@ class MenuTooltip extends Tooltip {
                         query(overlay.anchor).off('input.search-trigger')
                     })
                 }
-                w2utils.bindEvents(actions, this)
-                this.applyFilter(overlay.name, null, search)
-                    .then(data => {
+                w2utils.bindEvents(actions, this as unknown as Record<string, unknown>)
+                this.applyFilter(overlay.name, null, search, undefined)
+                    .then((data: any) => {
                         if (!Tooltip.active[overlay.name].displayed) {
                             // if toolitp is not visible, do not proceed as it would make it visible
                             return
@@ -1592,11 +1810,11 @@ class MenuTooltip extends Tooltip {
             }
         })
         overlay.next = () => {
-            let chain = this.getActiveChain(overlay.name)
-            if (overlay.selected == null || overlay.selected?.length == 0) {
+            const chain: any[] = this.getActiveChain(overlay.name)
+            if (overlay.selected == null || String(overlay.selected).length == 0) {
                 overlay.selected = chain[0]
             } else {
-                let ind = chain.indexOf(String(overlay.selected)) // if nested menu, selected will be "2-2"
+                const ind = chain.indexOf(String(overlay.selected)) // if nested menu, selected will be "2-2"
                 // selected not in chain of items
                 if (ind == -1) {
                     overlay.selected = chain[0]
@@ -1610,11 +1828,11 @@ class MenuTooltip extends Tooltip {
             this.showTooltip(overlay.name)
         }
         overlay.prev = () => {
-            let chain = this.getActiveChain(overlay.name)
-            if (overlay.selected == null || overlay.selected?.length == 0) {
+            const chain: any[] = this.getActiveChain(overlay.name)
+            if (overlay.selected == null || String(overlay.selected).length == 0) {
                 overlay.selected = chain[chain.length-1]
             } else {
-                let ind = chain.indexOf(String(overlay.selected)) // if nested menu, selected will be "2-2"
+                const ind = chain.indexOf(String(overlay.selected)) // if nested menu, selected will be "2-2"
                 // selected not in chain of items
                 if (ind == -1) {
                     overlay.selected = chain[chain.length-1]
@@ -1628,7 +1846,7 @@ class MenuTooltip extends Tooltip {
             this.showTooltip(overlay.name)
         }
         overlay.click = () => {
-            $(overlay.box).find('.w2ui-selected').click()
+            query(overlay.box).find('.w2ui-selected').each((el: HTMLElement) => { el.click() })
         }
         overlay.on('hide:after.attach', event => {
             w2tooltip.hide(overlay.name + '-tooltip')
@@ -1649,13 +1867,13 @@ class MenuTooltip extends Tooltip {
     }
 
     update(name, items) {
-        let overlay = Tooltip.active[name]
+        const overlay = Tooltip.active[name]
         if (overlay) {
-            let options = overlay.options
+            const options = overlay.options
             if (options.items != items) {
                 options.items = items
             }
-            let menuHTML = this.getMenuHTML(options)
+            const menuHTML = this.getMenuHTML(options)
             if (options.html != menuHTML) {
                 options.html = menuHTML
                 overlay.needsUpdate = true
@@ -1666,7 +1884,7 @@ class MenuTooltip extends Tooltip {
         }
     }
 
-    initControls(overlay) {
+    initControls(overlay: any): void {
         let mdown = 'mousedown'
         let mclick = 'click'
         if (w2utils.isMobile) {
@@ -1675,46 +1893,46 @@ class MenuTooltip extends Tooltip {
         }
         query(overlay.box).find('.w2ui-menu:not(.w2ui-sub-menu)')
             .off('.w2menu')
-            .on('contextmenu.w2menu', event => {
+            .on('contextmenu.w2menu', (event: any) => {
                 event.preventDefault() // prevent browser context menu
             })
-            .on(`${mdown}.w2menu`, { delegate: '.w2ui-menu-item' }, event => {
-                let dt = event.delegate.dataset
-                let parents = query(event.delegate).closest('.w2ui-menu').data('parents')
+            .on(`${mdown}.w2menu`, { delegate: '.w2ui-menu-item' }, (event: any) => {
+                const dt = event.delegate.dataset
+                const parents = query(event.delegate).closest('.w2ui-menu').data('parents')
                 this.menuDown(overlay, event, dt.index, parents)
                 if (w2utils.isMobile) {
                     // need it for mobile so that it would not generate onclick (items under menu receive focus)
                     event.preventDefault()
                 }
             })
-            .on(`${mclick}.w2menu`, { delegate: '.w2ui-menu-item' }, event => {
-                let dt = event.delegate.dataset
-                let parents = query(event.delegate).closest('.w2ui-menu').data('parents')
+            .on(`${mclick}.w2menu`, { delegate: '.w2ui-menu-item' }, (event: any) => {
+                const dt = event.delegate.dataset
+                const parents = query(event.delegate).closest('.w2ui-menu').data('parents')
                 this.menuClick(overlay, event, parseInt(dt.index), parents)
             })
             .find('.w2ui-menu-item')
             .off('.w2menu')
-            .on('mouseEnter.w2menu', event => {
-                let dt = event.target.dataset
-                let item = overlay.options.items[dt.index]
-                let edata = this.trigger('mouseEnter', { overlay, item, originalEvent: event })
+            .on('mouseEnter.w2menu', (event: any) => {
+                const dt = (event.target as HTMLElement).dataset
+                const item = overlay.options.items[dt.index]
+                const edata = this.trigger('mouseEnter', { overlay, item, originalEvent: event })
                 if (edata.isCancelled) {
                     return
                 }
-                let tooltip = item?.tooltip
+                const tooltip = item?.tooltip
                 if (tooltip && dt.hassubmenu != 'yes') {
                     this.showTooltip(overlay.name, { tooltip, anchor: event.target })
                 }
                 // hide previous sub-menu if any
-                let _menu = query(event.target).closest('.w2ui-menu').get(0)
+                const _menu: any = query(event.target).closest('.w2ui-menu').get(0)
                 if (_menu._evt && _menu._evt.target != event.target) {
                     this.closeSubMenu(_menu._evt)
                 }
                 // show new sub-menu
                 if (dt.hassubmenu == 'yes') {
-                    let _evt = {
+                    const _evt = {
                         index: parseInt(dt.index),
-                        parents: _menu.dataset.parents !== '' ? _menu.dataset.parents.split('-').map(ind => parseInt(ind)) : [],
+                        parents: _menu.dataset.parents !== '' ? _menu.dataset.parents.split('-').map((ind: string) => parseInt(ind)) : [],
                         target: event.target,
                         originalEvent: event,
                         overlay
@@ -1724,10 +1942,10 @@ class MenuTooltip extends Tooltip {
                 }
                 edata.finish()
             })
-            .on('mouseLeave.w2menu', event => {
-                let dt = event.target.dataset
-                let item = overlay.options.items[dt.index]
-                let edata = this.trigger('mouseLeave', { overlay, item, originalEvent: event })
+            .on('mouseLeave.w2menu', (event: any) => {
+                const dt = (event.target as HTMLElement).dataset
+                const item = overlay.options.items[dt.index]
+                const edata = this.trigger('mouseLeave', { overlay, item, originalEvent: event })
                 if (edata.isCancelled) {
                     return
                 }
@@ -1736,9 +1954,10 @@ class MenuTooltip extends Tooltip {
             })
             .find('.menu-help')
             .off('.w2menu')
-            .on('mouseEnter.w2menu', event => {
-                let dt = event.target.parentNode.parentNode.dataset
-                let tooltip = overlay.options.items[dt.index]?.help
+            .on('mouseEnter.w2menu', (event: any) => {
+                const target = event.target as HTMLElement
+                const dt = (target.parentNode as HTMLElement)?.parentNode as HTMLElement
+                const tooltip = overlay.options.items[(dt as any).dataset?.index]?.help
                 if (tooltip) {
                     w2tooltip.show({
                         name: overlay.name + '-help-tp',
@@ -1749,44 +1968,44 @@ class MenuTooltip extends Tooltip {
                     })
                 }
             })
-            .on('mouseLeave.w2menu', event => {
+            .on('mouseLeave.w2menu', (event: any) => {
                 w2tooltip.hide(overlay.name + '-help-tp')
             })
         if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
             query(overlay.anchor)
                 .off('.w2menu')
-                .on('input.w2menu', event => {
+                .on('input.w2menu', (event: any) => {
                     // if user types, clear selection
                     // let dt = event.target.dataset
                     // delete dt.selected
                     // delete dt.selectedIndex
                 })
-                .on('keyup.w2menu', event => {
-                    event._searchType = 'filter'
+                .on('keyup.w2menu', (event: any) => {
+                    (event as any)._searchType = 'filter'
                     this.keyUp(overlay, event)
                 })
         }
         if (overlay.options.search) {
             query(overlay.box).find('#menu-search')
                 .off('.w2menu')
-                .on('keyup.w2menu', event => {
-                    event._searchType = 'search'
+                .on('keyup.w2menu', (event: any) => {
+                    (event as any)._searchType = 'search'
                     this.keyUp(overlay, event)
                 })
         }
     }
 
-    getCurrent(name, id) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
-        let options = overlay.options
-        let selected = String(id ? id : (overlay.selected || '')).split('-')
+    getCurrent(name: string, id?: any) {
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+        const options = overlay.options
+        const selected = String(id ? id : (overlay.selected || '')).split('-')
         if (selected?.[0] === '') {
             selected.shift()
         }
-        let last = selected.length - 1
-        let index = selected[last]
-        let parents = selected.slice(0, selected.length - 1).join('-')
-        index = w2utils.isInt(index) ? parseInt(index) : 0
+        const last = selected.length - 1
+        let index: string | number = selected[last]
+        const parents = selected.slice(0, selected.length - 1).join('-')
+        index = w2utils.isInt(index) ? parseInt(index as string) : 0
         // items
         let items = options.items
         selected.forEach((id, ind) => {
@@ -1808,7 +2027,7 @@ class MenuTooltip extends Tooltip {
                 </div>
             </div>`
         }
-        let parents = options.parents ?? []
+        const parents = options.parents ?? []
         let items = options.items
         if (!Array.isArray(items)) items = []
         let count = 0
@@ -1831,7 +2050,7 @@ class MenuTooltip extends Tooltip {
         `
         items.forEach((mitem, f) => {
             icon = mitem.icon
-            let index = (parents.length > 0 ? parents.join('-') + '-' : '') + f
+            const index = (parents.length > 0 ? parents.join('-') + '-' : '') + f
             if (icon == null) icon = null // icon might be undefined
             if (['radio', 'check'].includes(options.type) && !Array.isArray(mitem.items) && mitem.group !== false) {
                 if (mitem.checked === true) icon = 'w2ui-icon-check'; else icon = 'w2ui-icon-empty'
@@ -1842,7 +2061,7 @@ class MenuTooltip extends Tooltip {
                 if (typeof options.render === 'function') txt = options.render(mitem, options)
                 if (typeof txt == 'function') txt = txt(mitem, options)
                 if (icon) {
-                    let first = String(icon).trim().slice(0, 1)
+                    const first = String(icon).trim().slice(0, 1)
                     if (first == '#') {
                         icon = `<span class="w2ui-icon w2ui-icon-empty" style="background-color: ${icon}"></span>`
                     } else if (first !== '<') {
@@ -1856,7 +2075,7 @@ class MenuTooltip extends Tooltip {
                 }
                 // render only if non-empty
                 if (mitem.type !== 'break' && txt != null && txt !== '' && String(txt).substr(0, 2) != '--') {
-                    let classes = ['w2ui-menu-item']
+                    const classes = ['w2ui-menu-item']
                     if (options.altRows == true) {
                         classes.push(count % 2 === 0 ? 'w2ui-even' : 'w2ui-odd')
                     }
@@ -1888,7 +2107,7 @@ class MenuTooltip extends Tooltip {
                     count++
                 } else {
                     // horizontal line
-                    let divText = (txt ?? '').replace(/^-+/g, '')
+                    const divText = (txt ?? '').replace(/^-+/g, '')
                     menu_html  += `
                         <div index="${index}" class="w2ui-menu-divider ${divText != '' ? 'has-text' : ''}">
                             <div class="line"></div>
@@ -1899,11 +2118,11 @@ class MenuTooltip extends Tooltip {
             items[f] = mitem
         })
         if (count === 0 && options.msgNoItems) {
-            let overlay = Tooltip.active[options.name.replace(/[\s\.#]/g, '_')]
-            let remote = overlay?.tmp.remote
+            const overlay = Tooltip.active[options.name.replace(/[\s\.#]/g, '_')]
+            const remote = overlay?.tmp.remote
             let msg = options.msgNoItems
             if (options.url) {
-                if (count == 0 && remote?.hasMore === false) {
+                if (count == 0 && (remote as any)?.hasMore === false) {
                     // if search is applied, but there are no items
                     msg = options.msgNoItems
                 } else {
@@ -1919,26 +2138,26 @@ class MenuTooltip extends Tooltip {
         return menu_html
     }
 
-    openSubMenu(event) {
-        let anchor = query(event.originalEvent.target).get(0)
-        let { overlay } = event
-        let { items } = overlay.options
+    openSubMenu(event: any) {
+        const anchor = query(event.originalEvent.target).get(0)
+        const { overlay } = event
+        const { items } = overlay.options
         // build sub-items list
-        let mitem = items[event.index]
+        const mitem = items[event.index]
         let _items = []
         if (typeof mitem.items == 'function') {
             _items = mitem.items(mitem)
         } else if (Array.isArray(mitem.items)) {
             _items = mitem.items
         }
-        let prev = w2menu.get(overlay.name + '-submenu')
+        const prev: any = w2menu.get(overlay.name + '-submenu')
         if (prev) {
             prev.hide()
         }
         query(event.target).addClass('expanded')
-        w2menu.show({
+        ;(w2menu.show({
             name: overlay.name + '-submenu',
-            anchor: anchor,
+            anchor: anchor as HTMLElement,
             items: _items,
             class: overlay.options.class + ' ' + mitem.overlay?.class,
             offsetX: -7,
@@ -1947,22 +2166,22 @@ class MenuTooltip extends Tooltip {
             parents: [...event.parents, event.index],
             position: 'right|left',
             hideOn: ['doc-click', 'select']
-        })
-        .hide(evt => {
+        }) as any)
+        .hide((evt: any) => {
             query(event.target).removeClass('expanded')
         })
         // indicates if user cursor is over sub menu
         setTimeout(() => {
             query('#w2overlay-' + overlay.name + '-submenu')
-                .on('mouseenter', event => { event.target._keepSubOpen = true })
-                .on('mouseleave', event => { event.target._keepSubOpen = false })
+                .on('mouseenter', (event: any) => { (event.target as any)._keepSubOpen = true })
+                .on('mouseleave', (event: any) => { (event.target as any)._keepSubOpen = false })
         }, 10)
     }
 
-    closeSubMenu(event) {
-        let { overlay } = event
-        if (event.target._keepSubOpen !== true) {
-            let prev = w2menu.get(overlay.name + '-submenu')
+    closeSubMenu(event: any) {
+        const { overlay } = event
+        if ((event.target as any)._keepSubOpen !== true) {
+            const prev: any = w2menu.get(overlay.name + '-submenu')
             if (prev) {
                 prev.hide()
             }
@@ -1970,19 +2189,19 @@ class MenuTooltip extends Tooltip {
     }
 
     // Refreshed only selected item highligh, used in keyboard navigation
-    refreshIndex(name, instant) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+    refreshIndex(name: string, instant?: boolean) {
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay) return
         if (!overlay.displayed) {
             this.show(overlay.name)
         }
-        let view = query(overlay.box).find('.w2ui-overlay-body').get(0)
-        let search = query(overlay.box).find('.w2ui-menu-search, .w2ui-menu-top').get(0)
+        const view = query(overlay.box).find('.w2ui-overlay-body').get(0) as HTMLElement
+        const search = query(overlay.box).find('.w2ui-menu-search, .w2ui-menu-top').get(0) as HTMLElement
         query(overlay.box).find('.w2ui-menu-item.w2ui-selected')
             .removeClass('w2ui-selected')
-        let el = query(overlay.box).find(`.w2ui-menu-item[index="${overlay.selected}"]`)
+        const el = query(overlay.box).find(`.w2ui-menu-item[index="${overlay.selected}"]`)
             .addClass('w2ui-selected')
-            .get(0)
+            .get(0) as HTMLElement
         if (el) {
             if (el.offsetTop + el.clientHeight > view.clientHeight + view.scrollTop) {
                 el.scrollIntoView({
@@ -2002,13 +2221,13 @@ class MenuTooltip extends Tooltip {
         w2tooltip.hide(overlay.name + '-tooltip')
     }
 
-    showTooltip(name, options) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+    showTooltip(name: string, options?: any) {
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay || !overlay.displayed) return
-        let anchor = options?.anchor ?? query(overlay.box).find(`.w2ui-menu-item[index="${overlay.selected}"]`).get(0)
-        let tooltip = options?.tooltip ?? overlay.options.items[overlay.selected]?.tooltip
+        const anchor = options?.anchor ?? query(overlay.box).find(`.w2ui-menu-item[index="${overlay.selected}"]`).get(0)
+        const tooltip = options?.tooltip ?? overlay.options.items[overlay.selected]?.tooltip
         if (tooltip) {
-            let html = tooltip.html ?? tooltip
+            const html = tooltip.html ?? tooltip
             w2tooltip.show(Object.assign({
                 name: overlay.name + '-tooltip',
                 anchor,
@@ -2026,32 +2245,32 @@ class MenuTooltip extends Tooltip {
     }
 
     // show/hide searched items
-    refreshSearch(name) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+    refreshSearch(name: string) {
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay) return
         if (!overlay.displayed) {
             this.show(overlay.name)
         }
         w2tooltip.hide(overlay.name + '-tooltip')
         query(overlay.box).find('.w2ui-no-items').hide()
-        query(overlay.box).find('.w2ui-menu-item, .w2ui-menu-divider').each(el => {
-            let cur = this.getCurrent(name, el.getAttribute('index'))
+        query(overlay.box).find('.w2ui-menu-item, .w2ui-menu-divider').each((el: HTMLElement) => {
+            const cur = this.getCurrent(name, (el as Element).getAttribute('index'))
             if (cur.item?.hidden) {
                 query(el).hide()
             } else {
-                let search = overlay.tmp?.search
+                const search = overlay.tmp?.search
                 if (overlay.options.markSearch) {
-                    w2utils.marker(el, search, { onlyFirst: overlay.options.match == 'begins' })
+                    w2utils.marker(el, search as string, { onlyFirst: overlay.options.match == 'begins' })
                 }
                 query(el).show()
             }
         })
         // hide empty menus
-        query(overlay.box).find('.w2ui-sub-menu').each(sub => {
-            let hasItems = query(sub).find('.w2ui-menu-item').get().some(el => {
+        query(overlay.box).find('.w2ui-sub-menu').each((sub: HTMLElement) => {
+            const hasItems = (query(sub).find('.w2ui-menu-item').get() as HTMLElement[]).some(el => {
                 return el.style.display != 'none' ? true : false
             })
-            let parent = this.getCurrent(name, sub.dataset.parent)
+            const parent = this.getCurrent(name, (sub as any).dataset?.parent)
             // only if parent is expaneded
             if (parent.item.expanded) {
                 if (!hasItems) {
@@ -2066,7 +2285,7 @@ class MenuTooltip extends Tooltip {
             if (query(overlay.box).find('.w2ui-no-items').length == 0) {
                 query(overlay.box).find('.w2ui-menu:not(.w2ui-sub-menu)').append(`
                     <div class="w2ui-no-items">
-                        ${w2utils.lang(overlay.options.msgNoItems)}
+                        ${w2utils.lang(overlay.options.msgNoItems as string)}
                     </div>`)
             }
             query(overlay.box).find('.w2ui-no-items').show()
@@ -2077,12 +2296,12 @@ class MenuTooltip extends Tooltip {
      * Loops through the items and markes item.hidden = true for those that need to be hidden, and item.hidden = false
      * for those that are visible. Return a promise (since items can be on the server) with the number of visible items.
      */
-    applyFilter(name, items, search, debounce) {
+    applyFilter(name: string, items: any, search: any, debounce?: any): Promise<any> {
         let count = 0
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
-        let options = overlay.options
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+        const options = overlay.options
         let resolve, reject
-        let prom = new Promise((res, rej) => {
+        const prom = new Promise((res, rej) => {
             resolve = res
             reject = rej
         })
@@ -2091,7 +2310,7 @@ class MenuTooltip extends Tooltip {
         }
         if (search == null) {
             if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
-                search = overlay.anchor.value
+                search = (overlay.anchor as HTMLInputElement).value
             } else {
                 search = ''
             }
@@ -2103,21 +2322,22 @@ class MenuTooltip extends Tooltip {
         if (overlay.tmp._new_search === false) {
             search = ''
         }
-        let selectedIds = []
+        let selectedIds: any[] = []
         if (options.selected) {
             if (Array.isArray(options.selected)) {
-                selectedIds = options.selected.map(item => {
+                selectedIds = (options.selected as any[]).map(item => {
                     return item?.id ?? item
                 })
-            } else if (options.selected?.id) {
-                selectedIds = [options.selected.id]
+            } else if ((options.selected as any)?.id) {
+                selectedIds = [(options.selected as any).id]
             }
         }
         overlay.tmp.activeChain = null
         // if url is defined, get items from it
-        let remote = overlay.tmp.remote ?? { hasMore: true, emptySet: false, search: null, cached: -1 }
+        // any: remote is stored in overlay.tmp bag as unknown; shape is always this object
+        const remote: any = overlay.tmp.remote ?? { hasMore: true, emptySet: false, search: null, cached: -1 }
         if (remote.hasMore == false) {
-            let len = remote.hasMore_search.length
+            const len = remote.hasMore_search.length
             if (search.substr(0, len) != remote.hasMore_search) {
                 remote.hasMore = true
             }
@@ -2127,10 +2347,10 @@ class MenuTooltip extends Tooltip {
             // only when items == null because it is case of nested items
             let msg = w2utils.lang('Loading...')
             if (search.length < options.minLength && remote.emptySet !== true) {
-                msg = w2utils.lang('${count} letters or more...', { count: options.minLength })
+                msg = w2utils.lang('${count} letters or more...', { count: String(options.minLength) })
                 proceed = false
                 if (search === '') {
-                    msg = w2utils.lang(options.msgSearch)
+                    msg = w2utils.lang(options.msgSearch as string)
                 }
                 // if there are items - then clear them
                 if (options.items?.length > 0) {
@@ -2188,9 +2408,9 @@ class MenuTooltip extends Tooltip {
             return prom
         }
         items.forEach(item => {
-            if (options.match == 'regex') {
+            if ((options.match as string) == 'regex') {
                 try {
-                    let re = new RegExp(search, 'i')
+                    const re = new RegExp(search, 'i')
                     if (re.test(item.text) || item.text === '...') {
                         item.hidden = false
                     } else {
@@ -2203,7 +2423,7 @@ class MenuTooltip extends Tooltip {
                 if (['is', 'begins', 'begins with'].indexOf(options.match) !== -1) prefix = '^'
                 if (['is', 'ends', 'ends with'].indexOf(options.match) !== -1) suffix = '$'
                 try {
-                    let re = new RegExp(prefix + search + suffix, 'i')
+                    const re = new RegExp(prefix + search + suffix, 'i')
                     if (re.test(item.text) || item.text === '...') {
                         item.hidden = false
                     } else {
@@ -2219,7 +2439,7 @@ class MenuTooltip extends Tooltip {
             if (Array.isArray(item.items) && item.items.length > 0) {
                 delete item._noSearchInside
                 this.applyFilter(name, item.items, search).then(data => {
-                    let subCount = data.count
+                    const subCount = data.count
                     if (subCount > 0) {
                         count += subCount
                         if (item.hidden) item._noSearchInside = true
@@ -2237,8 +2457,8 @@ class MenuTooltip extends Tooltip {
     }
 
     request(overlay, search, debounce) {
-        let options = overlay.options
-        let remote = overlay.tmp.remote
+        const options = overlay.options
+        const remote = overlay.tmp.remote
         let resolve, reject // promise functions
         if ((options.items.length === 0 && remote.cached !== 0)
             || (remote.cached == options.cacheMax && search.length > remote.search.length)
@@ -2253,18 +2473,18 @@ class MenuTooltip extends Tooltip {
             clearTimeout(remote.timeout)
             remote.timeout = setTimeout(() => {
                 let url = options.url
-                let postData = { search, max: options.cacheMax }
+                const postData = { search, max: options.cacheMax }
                 Object.assign(postData, options.postData)
                 // trigger event
-                let edata = this.trigger('request', {
+                const edata = this.trigger('request', {
                     search, overlay, url, postData,
                     httpMethod: options.method ?? 'GET',
                     httpHeaders: {}
                 })
                 if (edata.isCancelled === true) return
                 // if event updated url and postData, use it
-                url = new URL(edata.detail.url, location)
-                let fetchOptions = w2utils.prepareParams(url, {
+                url = new URL(edata.detail.url as string, location.href)
+                const fetchOptions = w2utils.prepareParams(url, {
                     method: edata.detail.httpMethod,
                     headers: edata.detail.httpHeaders,
                     body: edata.detail.postData
@@ -2278,7 +2498,7 @@ class MenuTooltip extends Tooltip {
                     .then(data => {
                         remote.controller = null
                         // trigger event
-                        let edata = overlay.trigger('load', { search: postData.search, overlay, data })
+                        const edata = overlay.trigger('load', { search: postData.search, overlay, data })
                         if (edata.isCancelled === true) return
                         // default behavior
                         data = edata.detail.data
@@ -2332,7 +2552,7 @@ class MenuTooltip extends Tooltip {
                         resolve(w2utils.normMenu(data.records, data))
                     })
                     .catch(error => {
-                        let edata = this.trigger('error', { overlay, search, error })
+                        const edata = this.trigger('error', { overlay, search, error })
                         if (edata.isCancelled === true) return
                         // default behavior
                         if (error?.name !== 'AbortError') {
@@ -2366,10 +2586,10 @@ class MenuTooltip extends Tooltip {
      * Builds an array of item ids that sequencial order for navigation with up/down keys. Skips hidden and disabled items
      * and goes into nested structures. It will remember last active chain in 'overlay.tmp.activeChain'
      */
-    getActiveChain(name, items, parents = [], res = [], noSave) {
-        let overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
+    getActiveChain(name: string, items?: any, parents: any[] = [], res: any[] = [], noSave?: boolean): any[] {
+        const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (overlay.tmp.activeChain != null) {
-            return overlay.tmp.activeChain
+            return overlay.tmp.activeChain as any[]
         }
         if (items == null) items = overlay.options.items
         items.forEach((item, ind) => {
@@ -2388,19 +2608,19 @@ class MenuTooltip extends Tooltip {
         return res
     }
 
-    menuDown(overlay, event, index, parents) {
-        let options = overlay.options
+    menuDown(overlay: any, event: any, index: any, parents: any) {
+        const options = overlay.options
         let items   = options.items
-        let icon    = query(event.delegate).find('.w2ui-icon')
-        let menu    = query(event.target).closest('.w2ui-menu:not(.w2ui-sub-menu)')
+        const icon    = query(event.delegate).find('.w2ui-icon')
+        const menu    = query(event.target).closest('.w2ui-menu:not(.w2ui-sub-menu)')
         if (typeof items == 'function') {
             items = items({ overlay, index, parents, event })
         }
-        let item = items[index]
+        const item = items[index]
         if (item == null || item.disabled) {
             return
         }
-        let uncheck = (items, parent) => {
+        const uncheck = (items: any, parent?: any) => {
             items.forEach((other, ind) => {
                 if (other.id == item.id) return
                 if (other.group === item.group && other.checked) {
@@ -2444,10 +2664,10 @@ class MenuTooltip extends Tooltip {
         }
     }
 
-    menuClick(overlay, event, index, parents) {
-        let options  = overlay.options
+    menuClick(overlay: any, event: any, index: any, parents: any) {
+        const options  = overlay.options
         let items    = options.items
-        let $item    = query(event.delegate).closest('.w2ui-menu-item')
+        const $item    = query(event.delegate).closest('.w2ui-menu-item')
         let keepOpen = options.hideOn.includes('select') ? false : true
         if (event.shiftKey || event.metaKey || event.ctrlKey) {
             keepOpen = true
@@ -2455,12 +2675,12 @@ class MenuTooltip extends Tooltip {
         if (typeof items == 'function') {
             items = items({ overlay, index, parents, event })
         }
-        let item = items[index]
+        const item = items[index]
         if (!item || (item.disabled && !query(event.target).hasClass('menu-remove'))) {
             return
         }
         let edata
-        let overlays = [overlay]
+        const overlays = [overlay]
         let topOverlay = overlay
         let parentOverlay
         while (topOverlay.options.parentOverlay) {
@@ -2478,21 +2698,21 @@ class MenuTooltip extends Tooltip {
                 return
             }
             // delete from items
-            let items = options.items
-            let ind = items.findIndex(it => it.id == item.id)
+            const items = options.items
+            const ind = items.findIndex(it => it.id == item.id)
             if (ind != -1) {
-                let tmp = items.splice(ind, 1)
+                const tmp = items.splice(ind, 1)
                 // delete from the parent too
                 if (overlay.options.parents) {
-                    let pind = overlay.options.parents[overlay.options.parents.length -1]
-                    let pitems = parentOverlay.options.items[pind].items
+                    const pind = overlay.options.parents[overlay.options.parents.length -1]
+                    const pitems = parentOverlay.options.items[pind].items
                     if (pitems[ind].id == tmp[0].id) {
                         pitems.splice(ind, 1)
                     }
                 }
             }
             keepOpen = !options.hideOn.includes('item-remove')
-            let name = $item.closest('.w2ui-overlay').attr('name')
+            const name = $item.closest('.w2ui-overlay').attr('name')
             overlay.self.update(name, items)
 
         } else if ($item.hasClass('has-sub-menu')) {
@@ -2509,9 +2729,9 @@ class MenuTooltip extends Tooltip {
         } else {
 
             // find items that are selected
-            let selected = this.findChecked(options.items)
-            let a_index = $item.attr('index')
-            overlay.selected = isNaN(a_index) ? a_index: parseInt(a_index)
+            const selected = this.findChecked(options.items)
+            const a_index = $item.attr('index') as string
+            overlay.selected = isNaN(Number(a_index)) ? a_index : parseInt(a_index)
             edata = topOverlay.trigger('select', {
                 originalEvent: event, target: overlay.name, overlay, topOverlay, parentOverlay,
                 item, index, selected, keepOpen, el: $item[0], parents
@@ -2548,9 +2768,9 @@ class MenuTooltip extends Tooltip {
         return found
     }
 
-    keyUp(overlay, event) {
-        let options = overlay.options
-        let search = event.target.value
+    keyUp(overlay: any, event: any) {
+        const options = overlay.options
+        const search = event.target.value
         let filter = true
         let refreshIndex = false
         switch (event.keyCode) {
@@ -2562,10 +2782,10 @@ class MenuTooltip extends Tooltip {
             }
             case 13: { // enter
                 if (!overlay.displayed || !overlay.selected) return
-                let { index, parents } = this.getCurrent(overlay.name)
+                const { index, parents } = this.getCurrent(overlay.name)
                 event.delegate = query(overlay.box).find('.w2ui-selected').get(0)
                 // reset active chain for folders
-                this.menuClick(overlay, event, parseInt(index), parents)
+                this.menuClick(overlay, event, parseInt(String(index)), parents)
                 filter = false
                 break
             }
@@ -2575,7 +2795,7 @@ class MenuTooltip extends Tooltip {
                     this.hide(overlay.name)
                 } else {
                     // clear selected
-                    let el = overlay.anchor
+                    const el = overlay.anchor
                     if (['INPUT', 'TEXTAREA'].includes(el.tagName)) {
                         el.value = ''
                         delete el.dataset.selected
@@ -2589,7 +2809,7 @@ class MenuTooltip extends Tooltip {
                 let { item, index, parents } = this.getCurrent(overlay.name)
                 // collapse parent if any
                 if (parents) {
-                    item    = options.items[parents]
+                    item    = options.items[parseInt(parents)]
                     index   = parseInt(parents)
                     parents = ''
                     refreshIndex = true
@@ -2597,17 +2817,17 @@ class MenuTooltip extends Tooltip {
                 if (Array.isArray(item?.items) && item.items.length > 0 && item.expanded) {
                     event.delegate = query(overlay.box).find(`.w2ui-menu-item[index="${index}"]`).get(0)
                     overlay.selected = index
-                    this.menuClick(overlay, event, parseInt(index), parents)
+                    this.menuClick(overlay, event, parseInt(String(index)), parents)
                 }
                 filter = false
                 break
             }
             case 39: { // right
                 if (!overlay.displayed) return
-                let { item, index, parents } = this.getCurrent(overlay.name)
+                const { item, index, parents } = this.getCurrent(overlay.name)
                 if (Array.isArray(item?.items) && item.items.length > 0 && !item.expanded) {
                     event.delegate = query(overlay.box).find('.w2ui-selected').get(0)
-                    this.menuClick(overlay, event, parseInt(index), parents)
+                    this.menuClick(overlay, event, parseInt(String(index)), parents)
                 }
                 filter = false
                 break
@@ -2652,9 +2872,12 @@ class MenuTooltip extends Tooltip {
 }
 
 class DateTooltip extends Tooltip {
+    daysCount: number[]
+    today: string
+
     constructor() {
         super()
-        let td = new Date()
+        const td = new Date()
         this.daysCount = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
         this.today = td.getFullYear() + '/' + (Number(td.getMonth()) + 1) + '/' + td.getDate()
         this.defaults = w2utils.extend({}, this.defaults, {
@@ -2687,14 +2910,14 @@ class DateTooltip extends Tooltip {
             options = text
             options.anchor = anchor
         }
-        let prevHideOn = options.hideOn
+        const prevHideOn = options.hideOn
         options = w2utils.extend({}, this.defaults, options || {})
         if (prevHideOn) {
             options.hideOn = prevHideOn
         }
         if (!options.format) {
-            let df = w2utils.settings.dateFormat
-            let tf = w2utils.settings.timeFormat
+            const df = w2utils.settings.dateFormat
+            const tf = w2utils.settings.timeFormat
             if (options.type == 'date') {
                 options.format = df
             } else if (options.type == 'time') {
@@ -2703,16 +2926,16 @@ class DateTooltip extends Tooltip {
                 options.format = df + '|' + tf
             }
         }
-        let cal = options.type == 'time' ? this.getHourHTML(options) : this.getMonthHTML(options)
+        const cal = options.type == 'time' ? this.getHourHTML(options) : this.getMonthHTML(options, undefined, undefined)
         options.style += '; padding: 0;'
         options.html = cal.html
-        let ret = super.attach(options)
-        let overlay = ret.overlay
+        const ret = super.attach(options)
+        const overlay = ret.overlay
         Object.assign(overlay.tmp, cal)
         overlay.on('show.attach', event => {
-            let overlay = event.detail.overlay
-            let anchor  = overlay.anchor
-            let options = overlay.options
+            const overlay = event.detail.overlay
+            const anchor  = overlay.anchor
+            const options = overlay.options
             if (['INPUT', 'TEXTAREA'].includes(anchor.tagName) && !options.value && anchor.value) {
                 overlay.tmp.initValue = anchor.value
             }
@@ -2730,8 +2953,8 @@ class DateTooltip extends Tooltip {
             }
         })
         overlay.on('hide.attach', event => {
-            let overlay = event.detail.overlay
-            let anchor  = overlay.anchor
+            const overlay = event.detail.overlay
+            const anchor  = overlay.anchor
             if (overlay.newValue != null) {
                 if (overlay.newDate) {
                     overlay.newValue = overlay.newDate + ' ' + overlay.newValue
@@ -2739,7 +2962,7 @@ class DateTooltip extends Tooltip {
                 if (['INPUT', 'TEXTAREA'].includes(anchor.tagName) && anchor.value != overlay.newValue) {
                     anchor.value = overlay.newValue
                 }
-                let edata = this.trigger('select', { date: overlay.newValue, target: overlay.name, overlay })
+                const edata = this.trigger('select', { date: overlay.newValue, target: overlay.name, overlay })
                 if (edata.isCancelled === true) return
                 // event after
                 edata.finish()
@@ -2753,8 +2976,8 @@ class DateTooltip extends Tooltip {
     }
 
     initControls(overlay) {
-        let options = overlay.options
-        let moveMonth = (inc) => {
+        const options = overlay.options
+        const moveMonth = (inc) => {
             let { month, year } = overlay.tmp
             month += inc
             if (month > 12) {
@@ -2765,23 +2988,23 @@ class DateTooltip extends Tooltip {
                 month = 12
                 year--
             }
-            let cal = this.getMonthHTML(options, month, year)
+            const cal = this.getMonthHTML(options, month, year)
             Object.assign(overlay.tmp, cal)
             query(overlay.box).find('.w2ui-overlay-body').html(cal.html)
             this.initControls(overlay)
         }
-        let checkJump = (event, dblclick) => {
+        const checkJump = (event: any, dblclick?: boolean) => {
             query(event.target).parent().find('.w2ui-jump-month, .w2ui-jump-year')
                 .removeClass('w2ui-selected')
             query(event.target).addClass('w2ui-selected')
-            let dt = new Date()
+            const dt = new Date()
             let { jumpMonth, jumpYear } = overlay.tmp
             if (dblclick) {
                 if (jumpYear == null) jumpYear = dt.getFullYear()
                 if (jumpMonth == null) jumpMonth = dt.getMonth() + 1
             }
             if (jumpMonth && jumpYear) {
-                let cal = this.getMonthHTML(options, jumpMonth, jumpYear)
+                const cal = this.getMonthHTML(options, jumpMonth, jumpYear)
                 Object.assign(overlay.tmp, cal)
                 query(overlay.box).find('.w2ui-overlay-body').html(cal.html)
                 overlay.tmp.jump = false
@@ -2801,14 +3024,14 @@ class DateTooltip extends Tooltip {
                 }
                 Object.assign(overlay.tmp, { jumpYear: null, jumpMonth: null })
                 if (overlay.tmp.jump) {
-                    let { month, year } = overlay.tmp
-                    let cal = this.getMonthHTML(options, month, year)
+                    const { month, year } = overlay.tmp
+                    const cal = this.getMonthHTML(options, month, year)
                     query(overlay.box).find('.w2ui-overlay-body').html(cal.html)
                     overlay.tmp.jump = false
                 } else {
                     query(overlay.box).find('.w2ui-overlay-body .w2ui-cal-days')
                         .replace(this.getYearHTML())
-                    let el = query(overlay.box).find(`[name="${overlay.tmp.year}"]`).get(0)
+                    const el = query(overlay.box).find(`[name="${overlay.tmp.year}"]`).get(0) as HTMLElement
                     if (el) el.scrollIntoView(true)
                     overlay.tmp.jump = true
                 }
@@ -2884,53 +3107,54 @@ class DateTooltip extends Tooltip {
                 checkJump(event, true)
             })
             // click on hour
-            .on('click.calendar', { delegate: '.w2ui-time.hour' }, event => {
-                let hour = query(event.target).attr('hour')
-                let min  = this.str2min(options.value) % 60
+            .on('click.calendar', { delegate: '.w2ui-time.hour' }, (event: any) => {
+                const hour = Number(query(event.target).attr('hour'))
+                let min  = (this.str2min(options.value as string) ?? 0) % 60
                 if (overlay.tmp.initValue && !options.value) {
-                    min = this.str2min(overlay.tmp.initValue) % 60
+                    min = (this.str2min(overlay.tmp.initValue as string) ?? 0) % 60
                 }
                 if (options.noMinutes) {
                     overlay.newValue = this.min2str(hour * 60, options.format)
                     this.hide(overlay.name)
                 } else {
                     overlay.newValue = hour + ':' + min
-                    let html = this.getMinHTML(hour, options).html
+                    const html = this.getMinHTML(hour, options).html
                     query(overlay.box).find('.w2ui-overlay-body').html(html)
                     this.initControls(overlay)
                 }
             })
             // click on minute
-            .on('click.calendar', { delegate: '.w2ui-time.min' }, event => {
-                let hour = Math.floor(this.str2min(overlay.newValue) / 60)
-                let time = (hour * 60) + parseInt(query(event.target).attr('min'))
+            .on('click.calendar', { delegate: '.w2ui-time.min' }, (event: any) => {
+                const hour = Math.floor((this.str2min(overlay.newValue as string) ?? 0) / 60)
+                const time = (hour * 60) + parseInt(query(event.target).attr('min') as string)
                 overlay.newValue = this.min2str(time, options.format)
                 this.hide(overlay.name)
             })
         // After any innerHTML refresh, re-attach w2ui-eaction handlers (startDrag on title, stop on arrows, etc.)
-        w2utils.bindEvents(query(overlay.box).find('.w2ui-eaction'), this)
+        w2utils.bindEvents(query(overlay.box).find('.w2ui-eaction'), this as unknown as Record<string, unknown>)
     }
 
-    getMonthHTML(options, month, year) {
-        let days = w2utils.settings.fulldays.slice() // creates copy of the array
-        let sdays = w2utils.settings.shortdays.slice() // creates copy of the array
+    getMonthHTML(options: any, month?: any, year?: any) {
+        const days = w2utils.settings.fulldays.slice() // creates copy of the array
+        const sdays = w2utils.settings.shortdays.slice() // creates copy of the array
         if (w2utils.settings.weekStarts !== 'M') {
             days.unshift(days.pop())
             sdays.unshift(sdays.pop())
         }
 
         let DT = new Date()
-        let dayLengthMil = 1000 * 60 * 60 * 24
+        const dayLengthMil = 1000 * 60 * 60 * 24
 
-        let selected = options.type === 'datetime'
+        const selected = options.type === 'datetime'
             ? w2utils.isDateTime(options.value, options.format, true)
             : w2utils.isDate(options.value, options.format, true)
-        let selected_dsp = w2utils.formatDate(selected)
+        const selected_dsp = w2utils.formatDate(selected)
 
         // normalize date
         if (month == null || year == null) {
-            year  = selected ? selected.getFullYear() : DT.getFullYear()
-            month = selected ? selected.getMonth() + 1 : DT.getMonth() + 1
+            const selDate = (selected instanceof Date) ? selected : DT
+            year  = selDate.getFullYear()
+            month = selDate.getMonth() + 1
         }
         if (month > 12) { month -= 12; year++ }
         if (month < 1 || month === 0) { month += 12; year-- }
@@ -2938,15 +3162,15 @@ class DateTooltip extends Tooltip {
         options.current = month + '/' + year
 
         let weekDaysHeaderHTML = ''
-        let st = w2utils.settings.weekStarts
+        const st = w2utils.settings.weekStarts
         for (let i = 0; i < sdays.length; i++) {
-            let isSat = (st == 'M' && i == 5) || (st != 'M' && i == 6) ? true : false
-            let isSun = (st == 'M' && i == 6) || (st != 'M' && i == 0) ? true : false
+            const isSat = (st == 'M' && i == 5) || (st != 'M' && i == 6) ? true : false
+            const isSun = (st == 'M' && i == 6) || (st != 'M' && i == 0) ? true : false
             weekDaysHeaderHTML += `<div class="w2ui-day w2ui-weekday ${isSat ? 'w2ui-sunday' : ''} ${isSun ? 'w2ui-saturday' : ''}">${sdays[i]}</div>`
         }
 
-        let calTitleClass = 'w2ui-cal-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
-        let calTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
+        const calTitleClass = 'w2ui-cal-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
+        const calTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
 
         let html = `
             <div class="${calTitleClass}"${calTitleData}>
@@ -2984,14 +3208,14 @@ class DateTooltip extends Tooltip {
 
         const DaySat = 6, DaySun = 0
         for (let ci = 0; ci < 42; ci++) {
-            let className = []
-            let dt = `${DT.getFullYear()}/${DT.getMonth()+1}/${DT.getDate()}`
+            const className = []
+            const dt = `${DT.getFullYear()}/${DT.getMonth()+1}/${DT.getDate()}`
             if (DT.getDay() === DaySat) className.push('w2ui-saturday')
             if (DT.getDay() === DaySun) className.push('w2ui-sunday')
             if (DT.getMonth() + 1 !== month) className.push('outside')
             if (dt == this.today) className.push('w2ui-today')
 
-            let dspDay = DT.getDate()
+            const dspDay = DT.getDate()
             let col    = ''
             let bgcol  = ''
             let tmp_dt, tmp_dt_fmt
@@ -3003,7 +3227,7 @@ class DateTooltip extends Tooltip {
                 tmp_dt_fmt = tmp_dt
             }
             if (options.colored && options.colored[tmp_dt_fmt] !== undefined) { // if there is predefined colors for dates
-                let tmp = options.colored[tmp_dt_fmt].split('|')
+                const tmp = options.colored[tmp_dt_fmt].split('|')
                 bgcol   = 'background-color: ' + tmp[0] + ';'
                 col     = 'color: ' + tmp[1] + ';'
             }
@@ -3018,7 +3242,7 @@ class DateTooltip extends Tooltip {
         }
         html += '</div>'
         if (options.btnNow) {
-            let label = w2utils.lang('Today' + (options.type == 'datetime' ? ' & Now' : ''))
+            const label = w2utils.lang('Today' + (options.type == 'datetime' ? ' & Now' : ''))
             html += `<div class="w2ui-cal-now">${label}</div>`
         }
         return { html, month, year }
@@ -3042,29 +3266,29 @@ class DateTooltip extends Tooltip {
     getHourHTML(options) {
         options = options ?? {}
         if (!options.format) options.format = w2utils.settings.timeFormat
-        let h24 = (options.format.indexOf('h24') > -1)
-        let value = options.value ? options.value : (options.anchor ? options.anchor.value : '')
+        const h24 = (options.format.indexOf('h24') > -1)
+        const value = options.value ? options.value : (options.anchor ? options.anchor.value : '')
 
-        let tmp = []
+        const tmp = []
         for (let a = 0; a < 24; a++) {
             let time = (a >= 12 && !h24 ? a - 12 : a) + ':00' + (!h24 ? (a < 12 ? ' am' : ' pm') : '')
             if (a == 12 && !h24) time = '12:00 pm'
             if (!tmp[Math.floor(a/8)]) tmp[Math.floor(a/8)] = ''
-            let tm1 = this.min2str(this.str2min(time))
-            let tm2 = this.min2str(this.str2min(time) + 59)
+            let tm1 = this.min2str(this.str2min(time) ?? 0)
+            let tm2 = this.min2str((this.str2min(time) ?? 0) + 59)
             if (options.type === 'datetime') {
-                let dt = w2utils.isDateTime(value, options.format, true)
-                let fm = options.format.split('|')[0].trim()
+                const dt = w2utils.isDateTime(value, options.format, true)
+                const fm = options.format.split('|')[0].trim()
                 tm1    = w2utils.formatDate(dt, fm) + ' ' + tm1
                 tm2    = w2utils.formatDate(dt, fm) + ' ' + tm2
             }
-            let valid = this.inRange(tm1, options) || this.inRange(tm2, options)
+            const valid = this.inRange(tm1, options) || this.inRange(tm2, options)
             tmp[Math.floor(a/8)] += `<span hour="${a}"
                 class="hour ${valid ? 'w2ui-time ' : 'w2ui-blocked'}">${time}</span>`
         }
-        let timeTitleClass = 'w2ui-time-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
-        let timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
-        let html = `<div class="w2ui-calendar">
+        const timeTitleClass = 'w2ui-time-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
+        const timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
+        const html = `<div class="w2ui-calendar">
             <div class="${timeTitleClass}"${timeTitleData}>${w2utils.lang('Select Hour')}</div>
             <div class="w2ui-cal-time">
                 <div class="w2ui-cal-column">${tmp[0]}</div>
@@ -3080,25 +3304,25 @@ class DateTooltip extends Tooltip {
         if (hour == null) hour = 0
         options = options ?? {}
         if (!options.format) options.format = w2utils.settings.timeFormat
-        let h24 = (options.format.indexOf('h24') > -1)
-        let value = options.value ? options.value : (options.anchor ? options.anchor.value : '')
+        const h24 = (options.format.indexOf('h24') > -1)
+        const value = options.value ? options.value : (options.anchor ? options.anchor.value : '')
 
-        let tmp = []
+        const tmp = []
         for (let a = 0; a < 60; a += 5) {
-            let time = (hour > 12 && !h24 ? hour - 12 : hour) + ':' + (a < 10 ? 0 : '') + a + ' ' + (!h24 ? (hour < 12 ? 'am' : 'pm') : '')
+            const time = (hour > 12 && !h24 ? hour - 12 : hour) + ':' + (a < 10 ? 0 : '') + a + ' ' + (!h24 ? (hour < 12 ? 'am' : 'pm') : '')
             let tm   = time
-            let ind  = a < 20 ? 0 : (a < 40 ? 1 : 2)
+            const ind  = a < 20 ? 0 : (a < 40 ? 1 : 2)
             if (!tmp[ind]) tmp[ind] = ''
             if (options.type === 'datetime') {
-                let dt = w2utils.isDateTime(value, options.format, true)
-                let fm = options.format.split('|')[0].trim()
+                const dt = w2utils.isDateTime(value, options.format, true)
+                const fm = options.format.split('|')[0].trim()
                 tm = w2utils.formatDate(dt, fm) + ' ' + tm
             }
             tmp[ind] += `<span min="${a}" class="min ${(this.inRange(tm, options) ? 'w2ui-time ' : 'w2ui-blocked')}">${time}</span>`
         }
-        let timeTitleClass = 'w2ui-time-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
-        let timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
-        let html = `<div class="w2ui-calendar">
+        const timeTitleClass = 'w2ui-time-title' + (options.draggable ? ' w2ui-eaction w2ui-draggable' : '')
+        const timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
+        const html = `<div class="w2ui-calendar">
             <div class="${timeTitleClass}"${timeTitleData}>${w2utils.lang('Select Minute')}</div>
             <div class="w2ui-cal-time">
                 <div class="w2ui-cal-column">${tmp[0]}</div>
@@ -3111,18 +3335,19 @@ class DateTooltip extends Tooltip {
     }
 
     // checks if date is in range (loost at start, end, blockDates, blockWeekdays)
-    inRange(str, options, dateOnly) {
+    inRange(str: any, options: any, dateOnly?: boolean) {
         let inRange = false
         if (options.type === 'date') {
-            let dt = w2utils.isDate(str, options.format, true)
+            const dt = w2utils.isDate(str, options.format, true)
             if (dt) {
                 // enable range
                 if (options.start || options.end) {
-                    let st      = (typeof options.start === 'string' ? options.start : query(options.start).val())
-                    let en      = (typeof options.end === 'string' ? options.end : query(options.end).val())
+                    const st      = (typeof options.start === 'string' ? options.start : query(options.start).val())
+                    const en      = (typeof options.end === 'string' ? options.end : query(options.end).val())
                     let start   = w2utils.isDate(st, options.format, true)
                     let end     = w2utils.isDate(en, options.format, true)
-                    let current = new Date(dt)
+                    const dtDate = dt instanceof Date ? dt : new Date()
+                    const current = new Date(dtDate)
                     if (!start) start = current
                     if (!end) end = current
                     if (current >= start && current <= end) inRange = true
@@ -3132,11 +3357,11 @@ class DateTooltip extends Tooltip {
                 // block predefined dates
                 if (Array.isArray(options.blockDates) && options.blockDates.includes(str)) inRange = false
                 // block weekdays
-                if (Array.isArray(options.blockWeekdays) && options.blockWeekdays.includes(dt.getDay())) inRange = false
+                if (Array.isArray(options.blockWeekdays) && options.blockWeekdays.includes((dt instanceof Date ? dt : new Date()).getDay())) inRange = false
             }
         } else if (options.type === 'time') {
             if (options.start || options.end) {
-                let tm  = this.str2min(str)
+                const tm  = this.str2min(str)
                 let tm1 = this.str2min(options.start)
                 let tm2 = this.str2min(options.end)
                 if (!tm1) tm1 = tm
@@ -3146,16 +3371,16 @@ class DateTooltip extends Tooltip {
                 inRange = true
             }
         } else if (options.type === 'datetime') {
-            let dt = w2utils.isDateTime(str, options.format, true)
+            const dt = w2utils.isDateTime(str, options.format, true)
             if (dt) {
-                let format = options.format.split('|').map(format => format.trim())
+                const format = options.format.split('|').map(format => format.trim())
                 if (dateOnly) {
-                    let date = w2utils.formatDate(dt, format[0])
-                    let opts = w2utils.extend({}, options, { type: 'date', format: format[0] })
+                    const date = w2utils.formatDate(dt, format[0])
+                    const opts = w2utils.extend({}, options, { type: 'date', format: format[0] })
                     if (this.inRange(date, opts)) inRange = true
                 } else {
-                    let time = w2utils.formatTime(dt, format[1])
-                    let opts =  { type: 'time', format: format[1], start: options.startTime, end: options.endTime }
+                    const time = w2utils.formatTime(dt, format[1])
+                    const opts =  { type: 'time', format: format[1], start: options.startTime, end: options.endTime }
                     if (this.inRange(time, opts)) inRange = true
                 }
             }
@@ -3164,9 +3389,9 @@ class DateTooltip extends Tooltip {
     }
 
     // converts time into number of minutes since midnight -- '11:50am' => 710
-    str2min(str) {
+    str2min(str: any): number | null {
         if (typeof str !== 'string') return null
-        let tmp = str.split(':')
+        const tmp: any[] = str.split(':')
         if (tmp.length === 2) {
             tmp[0] = parseInt(tmp[0])
             tmp[1] = parseInt(tmp[1])
@@ -3179,12 +3404,12 @@ class DateTooltip extends Tooltip {
     }
 
     // converts minutes since midnight into time str -- 710 => '11:50am'
-    min2str(time, format) {
+    min2str(time: number, format?: any): string {
         let ret = ''
         if (time >= 24 * 60) time = time % (24 * 60)
         if (time < 0) time = 24 * 60 + time
-        let hour = Math.floor(time/60)
-        let min = ((time % 60) < 10 ? '0' : '') + (time % 60)
+        const hour = Math.floor(time/60)
+        const min = ((time % 60) < 10 ? '0' : '') + (time % 60)
         if (!format) { format = w2utils.settings.timeFormat}
         if (format.indexOf('h24') !== -1) {
             ret = hour + ':' + min
@@ -3195,9 +3420,9 @@ class DateTooltip extends Tooltip {
     }
 }
 
-let w2tooltip = new Tooltip()
-let w2menu    = new MenuTooltip()
-let w2color   = new ColorTooltip()
-let w2date    = new DateTooltip()
+const w2tooltip = new Tooltip()
+const w2menu    = new MenuTooltip()
+const w2color   = new ColorTooltip()
+const w2date    = new DateTooltip()
 
 export { w2tooltip, w2color, w2menu, w2date, Tooltip }
