@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Smoke: Form</title>
+    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <style>
+        body { margin: 0; padding: 10px; }
+        #form { width: 700px; height: 400px; }
+    </style>
+</head>
+<body>
+    <div id="form"></div>
+    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
+    <script src="../../dist/w2ui.js"></script>
+    <script>
+        var form = new w2form({
+            name: 'smoke-form',
+            fields: [
+                { field: 'first_name', type: 'text',    html: { label: 'First Name', attr: 'style="width: 200px"' } },
+                { field: 'age',        type: 'int',     html: { label: 'Age',        attr: 'style="width: 80px"' } },
+                { field: 'birthdate',  type: 'date',    html: { label: 'Birth Date', attr: 'style="width: 120px"' } }
+            ],
+            record: {
+                first_name: 'Alice',
+                age: 30,
+                birthdate: '2000-01-15'
+            }
+        })
+        form.render(document.getElementById('form'))
+        window._smokeForm = form
+        window._smokeReady = true
+    </script>
+</body>
+</html>

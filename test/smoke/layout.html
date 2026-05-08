@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Smoke: Layout</title>
+    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        #layout { width: 900px; height: 600px; }
+    </style>
+</head>
+<body>
+    <div id="layout"></div>
+    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
+    <script src="../../dist/w2ui.js"></script>
+    <script>
+        var layout = new w2layout({
+            name: 'smoke-layout',
+            panels: [
+                { type: 'top',    size: 60,    html: '<div style="padding:10px">Top Panel</div>' },
+                { type: 'left',   size: 200,   html: '<div style="padding:10px">Left Panel</div>' },
+                { type: 'main',                html: '<div style="padding:10px">Main Panel</div>' },
+                { type: 'bottom', size: 40,    html: '<div style="padding:10px">Bottom Panel</div>' }
+            ]
+        })
+        layout.render(document.getElementById('layout'))
+        window._smokeLayout = layout
+        window._smokeReady = true
+    </script>
+</body>
+</html>
