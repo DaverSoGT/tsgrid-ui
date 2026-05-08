@@ -3281,7 +3281,8 @@ class w2grid extends w2base {
         }
     }
 
-    request(action, postData?, url?, callBack?) {
+    // any: url can be string, { get, save, remove } object, URL instance, or null
+    request(action: string, postData?: Record<string, any>, url?: any, callBack?: (...args: any[]) => void): Promise<any> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         let resolve, reject
@@ -6163,7 +6164,7 @@ class w2grid extends w2base {
         }
     }
 
-    render(box) {
+    render(box?: HTMLElement | string | null) {
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj  = this
@@ -6174,7 +6175,7 @@ class w2grid extends w2base {
         // default action
         if (box != null) {
             this.unmount() // clean previous control
-            this.box = box
+            this.box = box as HTMLElement // any: string was converted to Element via query().get(0) above
         }
         if (!this.box) return
         const url = this.url?.get ?? this.url
@@ -9035,7 +9036,7 @@ class w2grid extends w2base {
     }
 
     // return null or the editable object if the given cell is editable
-    getCellEditable(ind, col_ind) {
+    getCellEditable(ind: number, col_ind: number): any {
         const col = this.columns[col_ind]
         const rec = this.records[ind]
         if (!rec || !col) return null
@@ -9052,7 +9053,7 @@ class w2grid extends w2base {
         return edit
     }
 
-    getCellValue(ind, col_ind, summary?, extra?) {
+    getCellValue(ind: number, col_ind: number, summary?: boolean, extra?: boolean): any {
         const col = this.columns[col_ind]
         const record = (summary !== true ? this.records[ind] : this.summary[ind])
         let value = this.parseField(record, col.field)
@@ -9278,7 +9279,7 @@ class w2grid extends w2base {
         this.cacheSave('state', null)
     }
 
-    parseField(obj, field) {
+    parseField(obj: W2GridRecord | null | undefined, field: string): any {
         let val
         if (this.nestedFields) {
             val = w2utils.getNested(obj, field)
@@ -9299,7 +9300,7 @@ class w2grid extends w2base {
         }
 
         // prepare date and time objects for the 'rec' record and its closed children
-        function prepareRecord(rec) {
+        function prepareRecord(rec: W2GridRecord): void {
             for (let c = 0; c < obj.columns.length; c++) {
                 const column = obj.columns[c]
                 if (rec[column.field] == null || typeof column.render != 'string') continue
