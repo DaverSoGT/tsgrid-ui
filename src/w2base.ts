@@ -9,15 +9,10 @@
  *
  */
 
-// w2utils interaction is `any`-stubbed; T2c.3 will tighten after w2utils.ts ships.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-import { w2ui as w2uiAny, w2utils as w2utilsAny, query as queryAny } from './w2utils.js'
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2ui = w2uiAny as any // T2c.3 will replace with proper typing
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2utils = w2utilsAny as any // T2c.3 fill
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const query = queryAny as any // T2c.3 fill
+import { w2utils, query } from './w2utils.js'
+// w2ui is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
+import { w2ui as _w2uiRegistry } from './w2utils.js'
+const w2ui = _w2uiRegistry as Record<string, unknown>
 
 interface W2EventData {
     type?: string | null
@@ -217,8 +212,8 @@ class w2base {
      * @returns modified edata
      *
      * NOTE: `edata` is typed as `any` here intentionally. The method mutates the argument
-     * from W2EventData into a w2event mid-execution. T2c.3 will tighten this after
-     * w2utils.ts ships and provides the `isPlainObject` type guard.
+     * from W2EventData into a w2event mid-execution. Runtime type mutation is inherent
+     * to the event dispatch pattern. Phase 6 strict tighten will revisit this.
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     trigger(eventName: string | W2EventData | w2event, edataIn?: W2EventData): w2event {

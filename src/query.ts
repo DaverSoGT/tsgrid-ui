@@ -374,7 +374,7 @@ class Query {
         return this
     }
 
-    removeClass(classes: string | null): Query {
+    removeClass(classes: string | string[] | null): Query {
         this.toggleClass(classes, false)
         return this
     }
@@ -452,7 +452,7 @@ class Query {
         return this
     }
 
-    off(events: string, options?: AddEventListenerOptions | EventListener, callback?: EventListener): Query {
+    off(events?: string, options?: AddEventListenerOptions | EventListener, callback?: EventListener): Query {
         if (typeof options == 'function') {
             callback = options as EventListener
             options = undefined
