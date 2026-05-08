@@ -1,9 +1,14 @@
 {
     "extends": "./tsconfig.base.json",
     "compilerOptions": {
-        "allowJs": true,
+        "allowJs": false,
         "checkJs": false,
-        "strict": false,
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "exactOptionalPropertyTypes": true,
+        "noImplicitOverride": true,
+        "noPropertyAccessFromIndexSignature": true,
+        "stripInternal": true,
         "declaration": true,
         "declarationMap": true,
         "emitDeclarationOnly": false,
