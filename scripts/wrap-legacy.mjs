@@ -13,7 +13,7 @@
  * Usage: node scripts/wrap-legacy.mjs
  */
 
-import { readFile, writeFile, rename, stat } from 'node:fs/promises'
+import { readFile, writeFile, rename, rm, stat } from 'node:fs/promises'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -23,8 +23,11 @@ const ROOT = path.resolve(__dirname, '..')
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
-const DIST_JS     = path.join(ROOT, 'dist', 'w2ui.js')
-const DIST_JS_TMP = path.join(ROOT, 'dist', 'w2ui.js.tmp')
+const DIST_JS        = path.join(ROOT, 'dist', 'w2ui.js')
+const DIST_JS_TMP    = path.join(ROOT, 'dist', 'w2ui.js.tmp')
+// Stale ESM artifact left over before T1.7 fixed outExtension().
+// tsup now emits dist/w2ui.es6.js (not .mjs). Remove idempotently on every run.
+const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'w2ui.es6.mjs')
 
 // ---------------------------------------------------------------------------
 // IIFE wrapper — verbatim from gulpfile.js lines 24–46
@@ -106,46 +109,75 @@ async function wrapFile(src, tmp) {
 }
 
 /**
- * Remove esbuild/tsup CJS preamble + trailing exports object so the content
- * can sit bare inside the IIFE wrapper.
+ * Remove the esbuild/tsup CJS artifact lines that crash the browser when the
+ * bundle is loaded via a plain <script> tag.
  *
- * esbuild CJS output structure:
- *   "use strict";
- *   var __defProp = Object.defineProperty;
- *   ... helpers ...
- *   // ---- actual source ----
- *   Object.assign(exports, { w2ui, w2utils, ... });
+ * esbuild CJS output contains two browser-hostile lines near the top:
  *
- * We strip the final `Object.assign(exports, ...)` / `exports.xxx = yyy` lines
- * and the leading "use strict" + helper block, but keep all the class/function
- * definitions that are the real payload.
+ *   module.exports = __toCommonJS(index_legacy_exports);
+ *
+ * In a browser context `module` is not defined → immediate ReferenceError →
+ * the entire script dies before any widget var-assignment can execute.
+ * (Function declarations are fully hoisted and survive; var assignments are
+ * not — this is why only the function-declared globals like w2alert pass.)
+ *
+ * The IIFE wrapper that wrap-legacy.mjs appends owns the UMD/global export
+ * surface (AMD, CJS, and browser-global paths), so the esbuild line is
+ * fully redundant AND harmful. We strip it here.
+ *
+ * We also strip `Object.defineProperty(exports, "__esModule", { value: true })`
+ * if esbuild ever emits it as a standalone statement (defensive; not in current
+ * output shape but possible with future esbuild versions).
+ *
+ * All other helper declarations (__defProp, __getOwnPropDesc, __getOwnPropNames,
+ * __hasOwnProp, __export, __copyProps, __toCommonJS) are LEFT INTACT — they are
+ * plain var declarations that don't reference `module` or `exports` and do not
+ * crash in browsers.
+ *
+ * @param {string} code - Raw CJS bundle content
+ * @returns {string} - Content with browser-crashing lines removed
  */
 function stripCjsArtifacts(code) {
-    // Remove the esbuild CJS preamble ("use strict"; __defProp etc.)
-    // and trailing exports. The safest approach: keep everything between
-    // the end of the preamble and the start of the trailing exports block.
-    //
-    // esbuild wraps in a block like:
-    //   "use strict"; var __defProp = ...; ... __export(exports, { ... });
-    // Then the source, then at the very end may add nothing extra (exports
-    // are already wired via __export at top).
-    //
-    // For tsup format=iife we'd get a different shape, but we're using cjs.
-    // The key thing to strip is any trailing `Object.assign(exports, {...})`
-    // or the __export() call that tsup adds.
-    //
-    // Strategy: just return the code as-is. The IIFE wrapper uses variable
-    // names from the CJS scope directly (they are module-level vars in the
-    // CJS output). The CJS `exports` assignment is harmless in the IIFE
-    // context since `exports` is declared as a global by the AMD/CJS check
-    // inside the IIFE.
-    return code
+    let result = code
+
+    // ── Strip: module.exports = __toCommonJS(<varname>); ──────────────────────
+    // This is the primary crash point. esbuild emits exactly one such line.
+    const moduleExportsRe = /^module\.exports = __toCommonJS\([^)]+\);\s*$/m
+    if (moduleExportsRe.test(result)) {
+        result = result.replace(moduleExportsRe, '')
+    } else {
+        process.stderr.write(
+            '[wrap-legacy] WARNING: expected `module.exports = __toCommonJS(...)` ' +
+            'line not found — esbuild output shape may have changed. ' +
+            'Verify dist/w2ui.js loads correctly in browser.\n'
+        )
+    }
+
+    // ── Strip (defensive): Object.defineProperty(exports, "__esModule", ...) ──
+    // Not present in current esbuild output (it uses __defProp inline in
+    // __toCommonJS instead), but guard against future esbuild versions.
+    const esModuleDefineRe = /^Object\.defineProperty\(\s*exports,\s*["']__esModule["'],\s*\{\s*value:\s*true\s*\}\s*\);\s*$/m
+    if (esModuleDefineRe.test(result)) {
+        result = result.replace(esModuleDefineRe, '')
+        process.stderr.write(
+            '[wrap-legacy] INFO: stripped standalone Object.defineProperty(__esModule) line.\n'
+        )
+    }
+
+    return result
 }
 
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main() {
+    // ── One-time stale artifact cleanup ─────────────────────────────────────
+    // Before T1.7 fixed tsup outExtension(), ESM output landed as .mjs.
+    // T1.7 corrected the extension to .js. Remove the old .mjs if it exists
+    // so it doesn't confuse consumers or bundlers. force:true makes this a
+    // no-op on clean builds (idempotent).
+    await rm(STALE_ES6_MJS, { force: true })
+
     console.log('[wrap-legacy] Wrapping dist/w2ui.js with legacy IIFE...')
 
     try {
