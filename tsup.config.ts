@@ -17,12 +17,19 @@ import { defineConfig } from 'tsup'
 export default defineConfig([
     // -----------------------------------------------------------------------
     // ESM bundle — dist/w2ui.es6.js
+    // outExtension: force .js (not .mjs) to preserve the v2.0 consumer contract
     // -----------------------------------------------------------------------
     {
         entry: { 'w2ui.es6': 'src/index.js' },
         format: ['esm'],
         outDir: 'dist',
         target: 'es2022',
+        // Force .js extension for ESM output — preserves dist/w2ui.es6.js name
+        // that package.json "module" field and existing consumers reference.
+        // Without this tsup emits dist/w2ui.es6.mjs by default for ESM format.
+        outExtension() {
+            return { js: '.js' }
+        },
         // Phase 1: no .d.ts — enabled in Phase 6 after strict pass
         dts: false,
         // Never delete dist/ — Less-compiled CSS and iconfont live there too
@@ -34,12 +41,18 @@ export default defineConfig([
     // -----------------------------------------------------------------------
     // Legacy CJS bundle — dist/w2ui.js (pre-wrap)
     // After tsup: `node scripts/wrap-legacy.mjs` splices the IIFE wrapper
+    // define: substitute import.meta.url → undefined (matches gulp-replace
+    // behavior: replace('import.meta.url', 'undefined') in w2compat.js)
     // -----------------------------------------------------------------------
     {
         entry: { 'w2ui': 'src/index-legacy.js' },
         format: ['cjs'],
         outDir: 'dist',
         target: 'es2022',
+        // Reproduce Gulp's `.pipe(replace('import.meta.url', 'undefined'))`.
+        // In w2compat.js: String(import.meta.url).split('?')[1] || ''
+        // → String(undefined).split('?')[1] || '' → '' (globals branch disabled)
+        define: { 'import.meta.url': 'undefined' },
         dts: false,
         clean: false,
         splitting: false,
