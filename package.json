@@ -14,7 +14,11 @@
     "start": "run-script-os",
     "start:win32": "start http://localhost:3500 & python -m http.server 3500",
     "start:nix": "open http://localhost:3500; python3 -m http.server 3500",
-    "test": "eslint src demos --ext js"
+    "lint": "eslint src demos --ext js",
+    "test": "eslint src demos --ext js",
+    "smoke": "playwright test",
+    "smoke:update": "playwright test --update-snapshots",
+    "verify": "npm run lint && npm run smoke"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",

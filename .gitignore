@@ -16,7 +16,7 @@ dist/w2ui-*.tgz
 *.iws
 .DAV
 *~
-test/smoke/__snapshots__/
 test/smoke/__results__/
-baseline/
 .tscache/
+# allow snapshot txt files (overrides *.txt rule above)
+!test/smoke/__snapshots__/**
