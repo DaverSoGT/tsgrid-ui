@@ -137,6 +137,7 @@ class w2base {
         } else {
             events = [events as string | W2EventData]
         }
+        // any: callback parameter — caller signature varies; w2base event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (events as Array<any>).forEach((edata: any) => {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
@@ -172,6 +173,7 @@ class w2base {
         } else {
             events = [events as string | W2EventData]
         }
+        // any: callback parameter — caller signature varies; w2base event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (events as Array<any>).forEach((edata: any) => {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
@@ -215,8 +217,10 @@ class w2base {
      * from W2EventData into a w2event mid-execution. Runtime type mutation is inherent
      * to the event dispatch pattern. Phase 6 strict tighten will revisit this.
      */
+    // any: targeted-any per typing_policy; w2base event payload is widget-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     trigger(eventName: string | W2EventData | w2event, edataIn?: W2EventData): w2event {
+        // any: targeted-any per typing_policy; w2base event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
         if (arguments.length == 1) {

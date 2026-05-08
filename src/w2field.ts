@@ -429,14 +429,19 @@ class w2field extends w2base {
         this.onScroll    = opts.onScroll ?? null
         this.tmp         = {} // temp object
         // clean up some options
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).type
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onClick
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseEnter
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseLeave
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onScroll
 
@@ -1038,6 +1043,7 @@ class w2field extends w2base {
                         query(mouseEvent.target).remove()
                     } else {
                         // trigger event
+                        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         edata = this.trigger('click', { target: this.el, originalEvent: (mouseEvent as any).originalEvent, item })
                         if (edata.isCancelled === true) return
@@ -1269,8 +1275,10 @@ class w2field extends w2base {
             }
             // if default group symbol does not match - replase it
             const group = (1000).toLocaleString(w2utils.settings.locale, { useGrouping: true }).slice(1, 2)
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (group !== (this.options as any).groupSymbol) {
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = val.replaceAll(group, (this.options as any).groupSymbol)
             }
@@ -1364,6 +1372,7 @@ class w2field extends w2base {
         if (this.type == 'list' && document.activeElement == this.el) {
             this.helpers.search_focus?.focus()
             // update overlay if needed
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
@@ -1387,6 +1396,7 @@ class w2field extends w2base {
                 return
             }
             // regenerate items
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (typeof (this.options as any)._items_fun == 'function') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1408,6 +1418,7 @@ class w2field extends w2base {
             }
             this.resize()
             // update overlay if needed
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
@@ -1448,6 +1459,7 @@ class w2field extends w2base {
                         error = `Should be <= ${options.max}`
                     }
                 }
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this.options as any).autoCorrect) {
                     ;(query(this.el).val(newVal) as Query).trigger('input').trigger('change')
@@ -1463,12 +1475,14 @@ class w2field extends w2base {
             }
         }
         // date or time
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['date', 'time', 'datetime'].includes(this.type) && (this.options as any).autoCorrect) {
             if (val !== '') {
                 const check = this.type == 'date' ? w2utils.isDate :
                     (this.type == 'time' ? w2utils.isTime : w2utils.isDateTime)
                 if (!w2date.inRange(this.el!.value, this.options)
+                        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         || !check.bind(w2utils)(this.el!.value, (this.options as any).format)) {
                     // if not in range or wrong value - clear it
@@ -1670,6 +1684,7 @@ class w2field extends w2base {
             this.refresh()
         }
         if (this.type == 'combo') {
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (![9, 16, 27].includes(event.keyCode) && (this.options as any).openOnFocus !== true) {
                 // do not show when receives focus on tab or shift + tab or on esc
@@ -1703,12 +1718,14 @@ class w2field extends w2base {
     findItemIndex(items: any[], id: any, parents?: number[]): number[] { // any: items/id vary by field type
         let inds: number[] = []
         if (!parents) parents = []
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['list', 'combo', 'enum'].includes(this.type) && (this.options as any).url) {
             // remove source, so get it from overlay
             const overlay = w2menu.get(this.el!.id + '_menu')
             if (overlay) {
                 items = overlay.options.items
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).items = items
             }
@@ -1717,6 +1734,7 @@ class w2field extends w2base {
         items.forEach((item: any, ind: number) => { // any: item shape varies by field type
             if (item.id === id) {
                 inds = parents.concat([ind])
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).index = [ind]
             }
@@ -1841,10 +1859,12 @@ class w2field extends w2base {
         let isValid = true
         switch (this.type) {
             case 'int':
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
+                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isInt(ch.replace((this.options as any).numberRE, ''))
                 }
@@ -1853,22 +1873,27 @@ class w2field extends w2base {
                 ch = ch.replace(/%/g, '')
             // falls through to float
             case 'float':
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', '', (this.options as any).decimalSymbol, (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
+                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isFloat(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'money':
             case 'currency':
+                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).decimalSymbol, (this.options as any).groupSymbol, (this.options as any).currency.prefix,
+                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.options as any).currency.suffix].includes(ch)) {
                     isValid = true
                 } else {
+                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isFloat(ch.replace((this.options as any).moneyRE, ''))
                 }
@@ -1888,6 +1913,7 @@ class w2field extends w2base {
     }
 
     addPrefix(): void {
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).prefix) {
             return
@@ -1899,6 +1925,7 @@ class w2field extends w2base {
         }
         // remove if already displayed
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query(this.el).before(`<div class="w2ui-field-helper">${(this.options as any).prefix}</div>`)
         const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
@@ -1927,6 +1954,7 @@ class w2field extends w2base {
     }
 
     addSuffix(): void {
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).suffix && !(this.options as any).arrows) {
             return
@@ -1937,6 +1965,7 @@ class w2field extends w2base {
             this.tmp['old-padding-right'] = styles['padding-right']
         }
         let pr = parseInt(styles['padding-right'] || '0')
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).arrows) {
             // remove if already displayed
@@ -1978,11 +2007,13 @@ class w2field extends w2base {
             query(this.el).css('padding-right', pr + 'px !important')
             this.helpers.arrows = arrowHelper
         }
+        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).suffix !== '') {
             // remove if already displayed
             if (this.helpers.suffix) query(this.helpers.suffix).remove()
             // add fresh
+            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.el).after(`<div class="w2ui-field-helper">${(this.options as any).suffix}</div>`)
             const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement

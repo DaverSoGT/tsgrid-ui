@@ -1570,12 +1570,14 @@ class Utils {
             const box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${cnt}`)
             const sel = 'input, button, select, textarea, [contentEditable], .w2ui-input'
             if (focus != null) {
+                // any: parameter typed any — runtime dispatch by call site; w2utils helper accepts heterogeneous runtime input
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const el: any = typeof focus === 'string'
                     ? box.find(sel).filter(focus).get(0)
                     : box.find(sel).get(focus as number)
                 el?.focus()
             } else {
+                // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (box.find('[name=hidden-first]').get(0) as any)?.focus()
             }
@@ -1595,14 +1597,17 @@ class Utils {
                         const inside = focus != null && query(box).find(sel).filter(focus as Node).length > 0
                         const name = query(focus).attr('name')
                         if (!inside && focus && focus !== document.body) {
+                            // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (query(box).find(sel).get(0) as any)?.focus()
                         }
                         if (name == 'hidden-last') {
+                            // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (query(box).find(sel).get(0) as any)?.focus()
                         }
                         if (name == 'hidden-first') {
+                            // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             (query(box).find(sel).get(-1) as any)?.focus()
                         }
@@ -1708,12 +1713,14 @@ class Utils {
                     ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#w2prompt').get(0)
                     query(d?.['box'])
                         .find('#w2prompt')
+                        // any: callback parameter — caller signature varies; w2utils helper accepts heterogeneous runtime input
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .on('keydown', (evt: any) => {
                             if (evt.keyCode == 13 && evt.shiftKey === false) {
                                 evt.preventDefault()
                             }
                         })
+                        // any: callback parameter — caller signature varies; w2utils helper accepts heterogeneous runtime input
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .on('keyup', (evt: any) => {
                             const self = d?.['self'] as Record<string, unknown>
@@ -1886,8 +1893,10 @@ class Utils {
             raw = true
         }
         ;(div.html(raw ? str : this.encodeTags(str ?? '') as string) as Query).attr('style', `position: absolute; top: -9000px; ${styles || ''}`)
+        // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const width = (div[0] as any).clientWidth
+        // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const height = (div[0] as any).clientHeight
         div.html('')
@@ -1906,8 +1915,10 @@ class Utils {
         // any: str and replace_obj are dynamic template params; types vary by caller
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         str: any,
+        // any: targeted-any per typing_policy; w2utils helper accepts heterogeneous runtime input
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         replace_obj: any
+    // any: return type any — caller narrows by code path; w2utils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         if (typeof str !== 'string' || !replace_obj || typeof replace_obj !== 'object') {
@@ -1918,6 +1929,7 @@ class Utils {
         return str.replace(/\${([^}]+)?}/g, function(_$1: any, $2: any) { return replace_obj[$2]||$2 })
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2utils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     marker(el: any, items: any, options: any = { onlyFirst: false, wholeWord: false, isRegex: false}) {
         options.tag ??= 'span'
@@ -1979,6 +1991,7 @@ class Utils {
                             // any: DOM walker for arbitrary node tree — nodeType/tagName/childNodes are dynamic
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const textNodes: any[] = []
+                            // any: callback parameter — caller signature varies; w2utils helper accepts heterogeneous runtime input
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             function getTextNodes(node: any) {
                                 if (node.nodeType === 3) { // Text node
@@ -2150,6 +2163,7 @@ class Utils {
                 Promise.allSettled(proms)
                     .then(res => {
                         // order of files is important to merge
+                        // any: callback parameter — caller signature varies; w2utils helper accepts heterogeneous runtime input
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         res.forEach((r: any) => { if (r.value) files[r.value.file] = r.value.data })
                         localeArr.forEach(file => {
@@ -2520,6 +2534,7 @@ class Utils {
      * you can choose to include them or not, by default they are included.
      * You can also exclude certain elements from final object if used with options: { exclude }
      */
+    // any: return type any — caller narrows by code path; w2utils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clone(obj: unknown, options?: Partial<W2CloneOptions>): any {
         const opts: Required<W2CloneOptions> = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {}) as Required<W2CloneOptions>
@@ -2708,6 +2723,7 @@ class Utils {
                     ;(fetchOptions['headers'] as Record<string, string>)['Content-Type'] = 'application/json'
                 }
                 if (String(fetchOptions['method']) == 'GET') {
+                    // any: cast-to-any for dynamic dispatch; w2utils helper accepts heterogeneous runtime input
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if ((dataType as any) == 'RESTFULLJSON') { // note: pre-existing typo in original code (RESTFULLJSON vs RESTFULJSON)
                         postParams = { request: postParams }

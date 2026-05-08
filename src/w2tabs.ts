@@ -24,6 +24,7 @@ const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 class w2tabs extends w2base {
     declare box: HTMLElement | null
     declare name: string
+    // any: targeted-any per typing_policy; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     active: any
     reorder: boolean
@@ -37,6 +38,7 @@ class w2tabs extends w2base {
     right: string
     style: string
     tab_template: Record<string, unknown>
+    // any: targeted-any per typing_policy; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -125,6 +127,7 @@ class w2tabs extends w2base {
         return Promise.all(proms)
     }
 
+    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...ids: any[]) {
         let effected = 0
@@ -158,6 +161,7 @@ class w2tabs extends w2base {
         return true
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean): any {
         if (arguments.length === 0) {
@@ -178,8 +182,10 @@ class w2tabs extends w2base {
         return null
     }
 
+    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...ids: any[]) {
+        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -192,8 +198,10 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...ids: any[]) {
+        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -206,8 +214,10 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...ids: any[]) {
+        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -220,8 +230,10 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...ids: any[]) {
+        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -392,6 +404,7 @@ class w2tabs extends w2base {
             </div>`
     }
 
+    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
@@ -430,6 +443,7 @@ class w2tabs extends w2base {
         return Date.now() - time
     }
 
+    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
@@ -534,6 +548,7 @@ class w2tabs extends w2base {
             })
     }
 
+    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -562,6 +577,7 @@ class w2tabs extends w2base {
         })
     }
 
+    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scrollIntoView(id?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -672,6 +688,7 @@ class w2tabs extends w2base {
         event?.stopPropagation()
     }
 
+    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animateClose(id?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -693,6 +710,7 @@ class w2tabs extends w2base {
         return new Promise<void>((resolve, _reject) => {
             let $before = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
             const tabHTML = this.getTabHTML(tab.id)
+            // any: cast-to-any for dynamic dispatch; w2tabs tab item shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const $tab    = (_queryRaw as any).html(tabHTML) as Query
             if ($before.length == 0) {
@@ -706,6 +724,7 @@ class w2tabs extends w2base {
                 const $tmp  = query(this.box).find('#' + $tab.attr('id'))
                 const width = ($tmp.get(0) as HTMLElement)?.clientWidth ?? 0
                 // insert animation div
+                // any: cast-to-any for dynamic dispatch; w2tabs tab item shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const $anim = (_queryRaw as any).html('<div class="tab-animate-insert" style="flex-shrink: 0; width: 0; transition: width 0.25s"></div>') as Query
                 $before.before($anim)

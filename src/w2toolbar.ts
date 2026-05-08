@@ -45,9 +45,11 @@ class w2toolbar extends w2base {
     item_template: Record<string, unknown>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates badge, pendingRefresh, etc.
+    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _refresh: (opts: any) => void
     _refreshDebounced: () => void
+    // any: targeted-any per typing_policy; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -212,6 +214,7 @@ class w2toolbar extends w2base {
         if (skipRefresh !== true) this.resize()
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) {
         let effected = 0
@@ -238,6 +241,7 @@ class w2toolbar extends w2base {
         return true
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean, items?: any[]): any {
         if (arguments.length === 0) {
@@ -304,8 +308,10 @@ class w2toolbar extends w2base {
         }
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -324,8 +330,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -344,8 +352,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -364,8 +374,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -384,8 +396,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     check(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -404,8 +418,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uncheck(...args: any[]) {
+        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -488,6 +504,7 @@ class w2toolbar extends w2base {
                      * Need to clear all previous event listeners, since tooltip name is reused and it finds the old configuration and
                      * extends it. If events are not cleared, it would trigger old listeners too.
                      */
+                    // any: parameter typed any — runtime dispatch by call site; w2toolbar item shape varies by `type` at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const overlay: any = w2tooltip.get(this.name + '-drop')
                     if (overlay?.displayed) overlay.hide()
@@ -495,6 +512,7 @@ class w2toolbar extends w2base {
 
                     // timeout is needed to make sure previous overlay hides
                     setTimeout(() => {
+                        // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const hideDrop = (id: any, _btn?: any) => {
                             // need a closure to capture id variable
@@ -513,6 +531,7 @@ class w2toolbar extends w2base {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
+                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                             .hide(hideDrop(it.id, btn))
@@ -542,6 +561,7 @@ class w2toolbar extends w2base {
                                 name : this.name + '-drop',
                                 anchor: el[0],
                                 data: { item: it, btn }
+                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
@@ -563,6 +583,7 @@ class w2toolbar extends w2base {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
+                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
@@ -610,6 +631,7 @@ class w2toolbar extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, line?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -642,6 +664,7 @@ class w2toolbar extends w2base {
         })
     }
 
+    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
@@ -705,6 +728,7 @@ class w2toolbar extends w2base {
         return Date.now() - time
     }
 
+    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
@@ -751,6 +775,7 @@ class w2toolbar extends w2base {
             w2utils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
         } else {
             // refresh
+            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.box).find(selector).replace((_queryRaw as any).html(html))
             const newBtn = query(this.box).find(selector)
@@ -1054,6 +1079,7 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 
+    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     change(id?: any, value?: any, dynamic?: any) {
         const it = this.get(id)

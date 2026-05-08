@@ -216,6 +216,7 @@ class Tooltip {
     // any: setColor is assigned dynamically inside ColorTooltip.initControls closure
     setColor?: (color: Partial<{ h: number; s: number; v: number; a: number }>, fullUpdate?: boolean, initial?: string) => void
     // optional hook — overridden in subclasses; declared as method stub to allow subclass override
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initControls(_overlay: any): void { /* overridden in ColorTooltip, MenuTooltip, DateTooltip */ }
 
@@ -1484,11 +1485,13 @@ class ColorTooltip extends Tooltip {
         const self = this
         const options = overlay.options
         const color = (options.color || overlay.tmp['initColor']) as string // any: initColor in tmp bag; runtime is always string
+        // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let rgb: any = w2utils.parseColor(color)
         if (rgb == null) {
             rgb = { r: 140, g: 150, b: 160, a: 1 }
         }
+        // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let hsv: any = (w2utils.rgb2hsv as any)(rgb)
         if (options.advanced === true) {
@@ -1505,6 +1508,7 @@ class ColorTooltip extends Tooltip {
             .find('input')
             .off('.w2color')
             .on('change.w2color', (event) => {
+                // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const el: any = query(event.target)
                 let val = parseFloat(el.val())
@@ -1523,10 +1527,12 @@ class ColorTooltip extends Tooltip {
                     val = 0
                 }
                 const name  = el.attr('name')
+                // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const color: any = {}
                 if (['r', 'g', 'b', 'a'].indexOf(name) !== -1) {
                     rgb[name] = val
+                    // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     hsv = (w2utils.rgb2hsv as any)(rgb)
                 } else if (['h', 's', 'v'].indexOf(name) !== -1) {
@@ -1542,6 +1548,7 @@ class ColorTooltip extends Tooltip {
                 const tmp = w2utils.parseColor(query(event.target).css('background-color') as string)
                 if (tmp != null) {
                     rgb = tmp
+                    // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     hsv = (w2utils.rgb2hsv as any)(rgb)
                     setColor(hsv, true)
@@ -1559,12 +1566,14 @@ class ColorTooltip extends Tooltip {
         this.setColor = setColor
         return
 
+        // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function setColor(color: any, fullUpdate?: boolean, initial?: string) {
             if (color.h != null) hsv.h = color.h
             if (color.s != null) hsv.s = color.s
             if (color.v != null) hsv.v = color.v
             if (color.a != null) { rgb.a = color.a; hsv.a = color.a }
+            // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             rgb = (w2utils.hsv2rgb as any)(hsv)
             const rgba = 'rgba('+ rgb.r +','+ rgb.g +','+ rgb.b +','+ rgb.a +')'
@@ -1628,6 +1637,7 @@ class ColorTooltip extends Tooltip {
         }
 
         function refreshPalette() {
+            // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const cl  = (w2utils.hsv2rgb as any)(hsv.h, 100, 100)
             const rgb = `${cl.r},${cl.g},${cl.b}`
@@ -1635,8 +1645,10 @@ class ColorTooltip extends Tooltip {
                 .css('background-image', `linear-gradient(90deg, rgba(${rgb},0) 0%, rgba(${rgb},1) 100%)`)
         }
 
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mouseDown(this: any, event: any) {
+            // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const el: any = query(this).find('.value1, .value2')
             const offset = el.prop('clientWidth') / 2
@@ -1658,13 +1670,16 @@ class ColorTooltip extends Tooltip {
                 .on(mUp, mouseUp)
         }
 
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mouseUp(_event: any) {
             query('html').off('.w2color')
         }
 
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mouseMove(event: any) {
+            // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const el: any   = initial.el
             const divX   = event.pageX - initial.x
@@ -1716,6 +1731,7 @@ class ColorTooltip extends Tooltip {
         return color
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     async pickAndSelect(name: string, event: any) {
         const color = await this.pickColor()
@@ -1732,6 +1748,7 @@ class ColorTooltip extends Tooltip {
     async pickAndUse(_name: string) {
         const color = await this.pickColor()
         if (typeof color == 'string' && color.substr(0, 1) == '#' && [7, 9].includes(color.length)) {
+            // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const hsv = (w2utils.rgb2hsv as any)(w2utils.parseColor(color))
             this.setColor!(hsv, true)
@@ -1843,6 +1860,7 @@ class MenuTooltip extends Tooltip {
         // any: overlay is a w2base instance extended at runtime with menu-specific fields
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const overlay: any = ret.overlay
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         overlay.on('show:after.attach, update:after.attach', (_event: any) => {
             if (ret.overlay?.box) {
@@ -1869,6 +1887,7 @@ class MenuTooltip extends Tooltip {
                 }
                 w2utils.bindEvents(actions, this as unknown as Record<string, unknown>)
                 this.applyFilter(overlay.name, null, search, undefined)
+                    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .then((data: any) => {
                         if (!Tooltip.active[overlay.name]?.displayed) {
@@ -1891,6 +1910,7 @@ class MenuTooltip extends Tooltip {
             }
         })
         overlay.next = () => {
+            // any: array of heterogeneous runtime values; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const chain: any[] = this.getActiveChain(overlay.name)
             if (overlay.selected == null || String(overlay.selected).length == 0) {
@@ -1910,6 +1930,7 @@ class MenuTooltip extends Tooltip {
             this.showTooltip(overlay.name)
         }
         overlay.prev = () => {
+            // any: array of heterogeneous runtime values; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const chain: any[] = this.getActiveChain(overlay.name)
             if (overlay.selected == null || String(overlay.selected).length == 0) {
@@ -1976,6 +1997,7 @@ class MenuTooltip extends Tooltip {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override initControls(overlay: any): void {
         let mdown = 'mousedown'
@@ -1986,10 +2008,12 @@ class MenuTooltip extends Tooltip {
         }
         query(overlay.box).find('.w2ui-menu:not(.w2ui-sub-menu)')
             .off('.w2menu')
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('contextmenu.w2menu', (event: any) => {
                 event.preventDefault() // prevent browser context menu
             })
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on(`${mdown}.w2menu`, { delegate: '.w2ui-menu-item' }, (event: any) => {
                 const dt = event.delegate.dataset
@@ -2000,6 +2024,7 @@ class MenuTooltip extends Tooltip {
                     event.preventDefault()
                 }
             })
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on(`${mclick}.w2menu`, { delegate: '.w2ui-menu-item' }, (event: any) => {
                 const dt = event.delegate.dataset
@@ -2008,6 +2033,7 @@ class MenuTooltip extends Tooltip {
             })
             .find('.w2ui-menu-item')
             .off('.w2menu')
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mouseEnter.w2menu', (event: any) => {
                 const dt = (event.target as HTMLElement).dataset
@@ -2021,6 +2047,7 @@ class MenuTooltip extends Tooltip {
                     this.showTooltip(overlay.name, { tooltip, anchor: event.target })
                 }
                 // hide previous sub-menu if any
+                // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const _menu: any = query(event.target).closest('.w2ui-menu').get(0)
                 if (_menu._evt && _menu._evt.target != event.target) {
@@ -2040,6 +2067,7 @@ class MenuTooltip extends Tooltip {
                 }
                 edata.finish()
             })
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mouseLeave.w2menu', (event: any) => {
                 const dt = (event.target as HTMLElement).dataset
@@ -2053,10 +2081,12 @@ class MenuTooltip extends Tooltip {
             })
             .find('.menu-help')
             .off('.w2menu')
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mouseEnter.w2menu', (event: any) => {
                 const target = event.target as HTMLElement
                 const dt = (target.parentNode as HTMLElement)?.parentNode as HTMLElement
+                // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const tooltip = overlay.options.items[(dt as any).dataset?.index]?.help
                 if (tooltip) {
@@ -2069,6 +2099,7 @@ class MenuTooltip extends Tooltip {
                     })
                 }
             })
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mouseLeave.w2menu', (_event: any) => {
                 w2tooltip.hide(overlay.name + '-help-tp')
@@ -2076,6 +2107,7 @@ class MenuTooltip extends Tooltip {
         if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
             query(overlay.anchor)
                 .off('.w2menu')
+                // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('input.w2menu', (_event: any) => {
                     // if user types, clear selection
@@ -2083,8 +2115,10 @@ class MenuTooltip extends Tooltip {
                     // delete dt.selected
                     // delete dt.selectedIndex
                 })
+                // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keyup.w2menu', (event: any) => {
+                    // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (event as any)._searchType = 'filter'
                     this.keyUp(overlay, event)
@@ -2093,8 +2127,10 @@ class MenuTooltip extends Tooltip {
         if (overlay.options.search) {
             query(overlay.box).find('#menu-search')
                 .off('.w2menu')
+                // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keyup.w2menu', (event: any) => {
+                    // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (event as any)._searchType = 'search'
                     this.keyUp(overlay, event)
@@ -2102,6 +2138,7 @@ class MenuTooltip extends Tooltip {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCurrent(name: string, id?: any) {
         const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]!
@@ -2235,6 +2272,7 @@ class MenuTooltip extends Tooltip {
             const remote = overlay?.tmp['remote']
             let msg = options.msgNoItems
             if (options.url) {
+                // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (count == 0 && (remote as any)?.hasMore === false) {
                     // if search is applied, but there are no items
@@ -2252,6 +2290,7 @@ class MenuTooltip extends Tooltip {
         return menu_html
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     openSubMenu(event: any) {
         const anchor = query(event.originalEvent.target).get(0)
@@ -2265,6 +2304,7 @@ class MenuTooltip extends Tooltip {
         } else if (Array.isArray(mitem.items)) {
             _items = mitem.items
         }
+        // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const prev: any = w2menu.get(overlay.name + '-submenu')
         if (prev) {
@@ -2282,8 +2322,10 @@ class MenuTooltip extends Tooltip {
             parents: [...event.parents, event.index],
             position: 'right|left',
             hideOn: ['doc-click', 'select']
+        // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }) as any)
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .hide((_evt: any) => {
             query(event.target).removeClass('expanded')
@@ -2291,18 +2333,23 @@ class MenuTooltip extends Tooltip {
         // indicates if user cursor is over sub menu
         setTimeout(() => {
             query('#w2overlay-' + overlay.name + '-submenu')
+                // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('mouseenter', (event: any) => { (event.target as any)._keepSubOpen = true })
+                // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('mouseleave', (event: any) => { (event.target as any)._keepSubOpen = false })
         }, 10)
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     closeSubMenu(event: any) {
         const { overlay } = event
+        // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((event.target as any)._keepSubOpen !== true) {
+            // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const prev: any = w2menu.get(overlay.name + '-submenu')
             if (prev) {
@@ -2344,11 +2391,13 @@ class MenuTooltip extends Tooltip {
         w2tooltip.hide(overlay.name + '-tooltip')
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showTooltip(name: string, options?: any) {
         const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay || !overlay.displayed) return
         const anchor = options?.anchor ?? query(overlay.box).find(`.w2ui-menu-item[index="${overlay.selected}"]`).get(0)
+        // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tooltip = options?.tooltip ?? (overlay.selected != null ? (overlay.options.items as any)?.[overlay.selected]?.tooltip : undefined)
         if (tooltip) {
@@ -2399,6 +2448,7 @@ class MenuTooltip extends Tooltip {
             const hasItems = (query(sub).find('.w2ui-menu-item').get() as HTMLElement[]).some(el => {
                 return el.style.display != 'none' ? true : false
             })
+            // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const parent = this.getCurrent(name, (sub as any).dataset?.parent)
             // only if parent is expaneded
@@ -2426,6 +2476,7 @@ class MenuTooltip extends Tooltip {
      * Loops through the items and markes item.hidden = true for those that need to be hidden, and item.hidden = false
      * for those that are visible. Return a promise (since items can be on the server) with the number of visible items.
      */
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     applyFilter(name: string, items: any, search: any, debounce?: any): Promise<any> {
         let count = 0
@@ -2454,16 +2505,20 @@ class MenuTooltip extends Tooltip {
         if (overlay.tmp['_new_search'] === false) {
             search = ''
         }
+        // any: array of heterogeneous runtime values; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let selectedIds: any[] = []
         if (options.selected) {
             if (Array.isArray(options.selected)) {
+                // any: cast-then-index for dynamic property access; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 selectedIds = (options.selected as any[]).map(item => {
                     return item?.id ?? item
                 })
+            // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             } else if ((options.selected as any)?.id) {
+                // any: cast-to-any for dynamic dispatch; w2tooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 selectedIds = [(options.selected as any).id]
             }
@@ -2730,10 +2785,12 @@ class MenuTooltip extends Tooltip {
      * Builds an array of item ids that sequencial order for navigation with up/down keys. Skips hidden and disabled items
      * and goes into nested structures. It will remember last active chain in 'overlay.tmp.activeChain'
      */
+    // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getActiveChain(name: string, items?: any, parents: any[] = [], res: any[] = [], noSave?: boolean): any[] {
         const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]!
         if (overlay.tmp['activeChain'] != null) {
+            // any: cast-then-index for dynamic property access; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return overlay.tmp['activeChain'] as any[]
         }
@@ -2755,6 +2812,7 @@ class MenuTooltip extends Tooltip {
         return res
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     menuDown(overlay: any, event: any, index: any, parents: any) {
         const options = overlay.options
@@ -2768,6 +2826,7 @@ class MenuTooltip extends Tooltip {
         if (item == null || item.disabled) {
             return
         }
+        // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const uncheck = (items: any, parent?: any) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2814,6 +2873,7 @@ class MenuTooltip extends Tooltip {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     menuClick(overlay: any, event: any, index: any, parents: any) {
         const options  = overlay.options
@@ -2911,6 +2971,7 @@ class MenuTooltip extends Tooltip {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findChecked(items: any): any[] { // any: menu item shape varies
+        // any: array of heterogeneous runtime values; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let found: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2923,6 +2984,7 @@ class MenuTooltip extends Tooltip {
         return found
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keyUp(overlay: any, event: any) {
         const options = overlay.options
@@ -3157,6 +3219,7 @@ class DateTooltip extends Tooltip {
             query(overlay.box).find('.w2ui-overlay-body').html(cal.html)
             this.initControls(overlay)
         }
+        // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const checkJump = (event: any, dblclick?: boolean) => {
             query(event.target).parent().find('.w2ui-jump-month, .w2ui-jump-year')
@@ -3272,6 +3335,7 @@ class DateTooltip extends Tooltip {
                 checkJump(event, true)
             })
             // click on hour
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('click.calendar', { delegate: '.w2ui-time.hour' }, (event: any) => {
                 const hour = Number(query(event.target).attr('hour'))
@@ -3290,6 +3354,7 @@ class DateTooltip extends Tooltip {
                 }
             })
             // click on minute
+            // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('click.calendar', { delegate: '.w2ui-time.min' }, (event: any) => {
                 const hour = Math.floor((this.str2min(overlay.newValue as string) ?? 0) / 60)
@@ -3301,6 +3366,7 @@ class DateTooltip extends Tooltip {
         w2utils.bindEvents(query(overlay.box).find('.w2ui-eaction'), this as unknown as Record<string, unknown>)
     }
 
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getMonthHTML(options: any, month?: any, year?: any) {
         const days = w2utils.settings.fulldays.slice() // creates copy of the array
@@ -3505,6 +3571,7 @@ class DateTooltip extends Tooltip {
     }
 
     // checks if date is in range (loost at start, end, blockDates, blockWeekdays)
+    // any: parameter typed any — runtime dispatch by call site; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inRange(str: any, options: any, dateOnly?: boolean) {
         let inRange = false
@@ -3561,9 +3628,11 @@ class DateTooltip extends Tooltip {
     }
 
     // converts time into number of minutes since midnight -- '11:50am' => 710
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     str2min(str: any): number | null {
         if (typeof str !== 'string') return null
+        // any: array of heterogeneous runtime values; w2tooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tmp: any[] = str.split(':')
         if (tmp.length === 2) {
@@ -3578,6 +3647,7 @@ class DateTooltip extends Tooltip {
     }
 
     // converts minutes since midnight into time str -- 710 => '11:50am'
+    // any: callback parameter — caller signature varies; w2tooltip overlay options merge from multiple user sources at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     min2str(time: number, format?: any): string {
         let ret = ''

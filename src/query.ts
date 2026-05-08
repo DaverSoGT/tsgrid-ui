@@ -122,6 +122,7 @@ class Query {
         const len  = this.length
         if (len < 1) return this
         // TODO: need good unit test coverage for this function
+        // any: callback parameter — caller signature varies; query DOM-traversal accepts arbitrary HTMLElement subclasses at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         type AnyNodeMethod = Record<string, ((arg: any) => void) | undefined>
         if (typeof html == 'string') {

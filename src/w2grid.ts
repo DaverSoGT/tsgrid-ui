@@ -150,12 +150,14 @@ interface W2GridColumn {
     sortable?: boolean            // if false column header is not clickable for sort
     searchable?: boolean | string // if true/string auto-adds a search field
     sortMode?: string             // 'default' | 'natural' | 'i18n' | function
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     editable?: boolean | { type: string; [key: string]: any } | ((rec: W2GridRecord, cell: any) => any)
     render?: string | ((record: W2GridRecord, index: number, colIndex: number) => string)
     tooltip?: string              // tooltip shown on column header hover
     style?: string                // inline CSS for cells in this column
     attr?: string                 // HTML attributes for <td> elements
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clipboardCopy?: boolean | ((record: W2GridRecord, cell: any) => string) // if true/function show clipboard copy icon in cells
     colspan?: Record<string, number> | ((record: W2GridRecord, index: number) => number)
@@ -179,10 +181,13 @@ interface W2GridSearch {
     style?: string                // CSS style for the search cell
     operator?: string             // default operator key for this search
     operators?: string[]          // override available operators for this search
+    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     options?: Record<string, any> // extra options passed to w2field (list items, etc.)
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any                   // current value of the search field (runtime)
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     svalue?: any                  // display value for enum/list searches (runtime)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -211,6 +216,7 @@ interface W2GridLast {
     move: any | null // any: drag/move state object shape varies
     cancelClick: boolean | null
     inEditMode: boolean
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _edit: { value: any; index: number; column: number; recid: string | number; [key: string]: any } | null
     kbd_timer: ReturnType<typeof setTimeout> | null
@@ -269,8 +275,10 @@ interface W2GridSearchFilter {
     field: string
     type: string
     operator: string
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     svalue?: any // display values for enum/list searches
     text?: string // display text for list/enum
@@ -773,6 +781,7 @@ class w2grid extends w2base {
 
         // check if there are records without recid
         if (Array.isArray(this.records)) {
+            // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const remove: any[] = [] // remove from records as they are summary
             this.records.forEach((rec, ind) => {
@@ -883,6 +892,7 @@ class w2grid extends w2base {
         return added
     }
 
+    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     find(obj?: Record<string, any>, returnIndex?: boolean, displayedOnly?: boolean): (string | number)[] {
         // any: obj values are user-supplied record field values for matching
@@ -915,6 +925,7 @@ class w2grid extends w2base {
 
     // does not delete existing, but overrides on top of it
     // Overload: set(recid, record, noRefresh?) or set(record, noRefresh?) — shifts args when recid is object
+    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(recid: any, record?: any, noRefresh?: boolean): boolean {
         if ((typeof recid == 'object') && (recid !== null)) {
@@ -966,6 +977,7 @@ class w2grid extends w2base {
         if (Array.isArray(recid)) {
             const recs = []
             for (let i = 0; i < recid.length; i++) {
+                // any: this-cast for legacy widget self-reference; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const v = (this as any).get(recid[i], returnIndex)
                 if (v !== null)
@@ -1050,12 +1062,14 @@ class w2grid extends w2base {
     processGroupBy(): void {
         if (this.groupBy == null) return
         const groupBy = this.groupBy
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const new_records: any[] = []
         this.records.forEach(rec => {
             const group = rec[groupBy.field]
             if (group != null) {
                 if (this.last.groupBy_links[group] == null) {
+                    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const gr: any = { recid: 'group-'+ group, group, w2ui: { ...groupBy, children: [] } }
                     this.last.groupBy_links[group] = gr
@@ -1138,6 +1152,7 @@ class w2grid extends w2base {
         return null
     }
 
+    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateColumn(fields: string | string[], updates: Partial<W2GridColumn> | Record<string, any>) {
         let effected = 0
@@ -1164,6 +1179,7 @@ class w2grid extends w2base {
     }
 
     toggleColumn(...fields: string[]) {
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.updateColumn(fields, { hidden(col: any) { return !col.hidden } })
     }
@@ -1274,6 +1290,7 @@ class w2grid extends w2base {
         return hidden
     }
 
+    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getSearchData(field: string): Record<string, any> | null {
         for (let i = 0; i < this.searchData.length; i++) {
@@ -1401,8 +1418,10 @@ class w2grid extends w2base {
                 const sortItem = obj.sortData[i]!
                 const fld     = sortItem.field
                 const sortFld = sortItem.field_ ? sortItem.field_! : fld
+                // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let aa: any = a[sortFld]
+                // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let bb: any = b[sortFld]
                 if (String(fld).indexOf('.') != -1) {
@@ -1744,6 +1763,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getRangeData(range: [{ recid: string | number; column: number }, { recid: string | number; column: number }], extra?: boolean): any[] {
         const rec1 = this.get(range[0]!.recid, true) ?? 0
@@ -1775,6 +1795,7 @@ class w2grid extends w2base {
         } else {
             for (let r = Math.min(rec1, rec2); r <= Math.max(rec1, rec2); r++) {
                 const record = this.records[r]!
+                // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const rowData: any[] = []
                 res.push(rowData)
@@ -1796,6 +1817,7 @@ class w2grid extends w2base {
     addRange(rangesInput: W2GridRange | W2GridRange[] | string | Record<string, any>): number {
         let added = 0, first, last
         if (this.selectType == 'row') return added
+        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ranges: any[] = !Array.isArray(rangesInput) ? [rangesInput] : rangesInput as any[]
         // if it is selection
@@ -2001,6 +2023,7 @@ class w2grid extends w2base {
         query(this.box).find('.w2ui-selection-resizer')
             .off('.resizer')
             .on('mousedown.resizer', mouseStart)
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('dblclick.resizer', (event: any) => {
                 const edata = this.trigger('resizerDblClick', { target: this.name, originalEvent: event })
@@ -2008,8 +2031,10 @@ class w2grid extends w2base {
                 edata.finish()
             })
         // this variables are needed for selection expantion
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
+        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detail: any = { target: this.name, originalRange: null, newRange: null }
         const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -2172,6 +2197,7 @@ class w2grid extends w2base {
             }
         } else {
             // normalize for performance
+            // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const new_sel: Record<string, any[]> = {}
             for (let a = 0; a < args.length; a++) {
@@ -2351,6 +2377,7 @@ class w2grid extends w2base {
         return unselected
     }
 
+    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareSelection(newSel: any[]): { select: any[]; unselect: any[] } {
         const sel = this.getSelection()
@@ -2536,6 +2563,7 @@ class w2grid extends w2base {
     // any: row-select returns (string|number)[], cell-select returns W2GridCellSelection[] — runtime branching
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getSelection(returnIndex?: boolean): any[] {
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ret: any[] = []
         const sel = this.last.selection
@@ -2629,6 +2657,7 @@ class w2grid extends w2base {
                     }
                 }
                 if ((value1 !== '' && value1 != null) || (value2 != null && value2 !== '')) {
+                    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const tmp: any = {
                         field    : search.field,
@@ -2861,6 +2890,7 @@ class w2grid extends w2base {
     }
 
     // open advanced search popover
+    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchOpen(options: any = {}) {
         if (!this.box) return
@@ -3057,8 +3087,10 @@ class w2grid extends w2base {
                 queueMicrotask(() => event.detail.overlay.hide())
                 w2tooltip.hide(this.name + '-search-overlay')
 
+                // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.confirm(w2utils.lang('Do you want to delete search "${item}"?', { item: item.text })) as any)
+                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .yes((evt: any) => {
                         // remove from searches
@@ -3223,6 +3255,7 @@ class w2grid extends w2base {
         if (edata.isCancelled === true) return
         // default action
         const input = query(this.box).find('#grid_'+ this.name +'_search_all')
+        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.searchData = edata.detail['searchData'] as any[]
         this['searchSelected'] = null
@@ -3310,6 +3343,7 @@ class w2grid extends w2base {
             })
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchInitInput(field: string, _value?: any) {
         let search
@@ -3392,6 +3426,7 @@ class w2grid extends w2base {
         return this.request('load', {}, url, callBack)
     }
 
+    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reload(callBack?: (...args: any[]) => void) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -3418,6 +3453,7 @@ class w2grid extends w2base {
     request(action: string, postData?: Record<string, any>, url?: any, callBack?: (...args: any[]) => void): Promise<any> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
+        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: any, reject: any
         const requestProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -3428,8 +3464,10 @@ class w2grid extends w2base {
         if (!w2utils.isInt(this.offset)) this.offset = 0
         if (!w2utils.isInt(this.last.fetch.offset)) this.last.fetch.offset = 0
         // add list params
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
+        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {
             limit: this.limit,
@@ -3523,6 +3561,7 @@ class w2grid extends w2base {
         fetchOptions['signal'] = this.last.fetch.controller!.signal
         fetch(url, fetchOptions)
             .catch(processError)
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .then((resp: any) => {
                 if (resp == null) return // request aborted
@@ -3643,6 +3682,7 @@ class w2grid extends w2base {
                     if (data.total != -1 && parseInt(String(data.total)) != this.total) {
                         // eslint-disable-next-line @typescript-eslint/no-this-alias
                         const grid = this
+                        // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         ;(this.message(w2utils.lang(this.msgNeedReload)) as any)
                             .ok(() => {
@@ -3730,6 +3770,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getChanges(recordsBase?: W2GridRecord[]): Record<string, any>[] {
         const changes = []
@@ -3741,6 +3782,7 @@ class w2grid extends w2base {
             const rec = recordsBase[r]!
             if (rec?.w2ui) {
                 if (rec.w2ui['changes'] != null) {
+                    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const obj: Record<string, any> = {}
                     obj[this.recid || 'recid'] = rec.recid
@@ -3768,6 +3810,7 @@ class w2grid extends w2base {
                 try {
                     _setValue(record, s, change_c[s])
                 } catch (e) {
+                    // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     console.log('ERROR: Cannot merge. ', (e as any)?.message || '', e)
                 }
@@ -3789,6 +3832,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     save(callBack?: (data: any) => void) {
         const changes = this.getChanges()
@@ -3902,6 +3946,7 @@ class w2grid extends w2base {
         if (edit.items.length > 0 && !w2utils.isPlainObject(edit.items[0])) {
             edit.items = w2utils.normMenu(edit.items, edit)
         }
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let input: any
         const dropTypes = ['date', 'time', 'datetime', 'color', 'list', 'combo']
@@ -4148,6 +4193,7 @@ class w2grid extends w2base {
         const old_val = this.parseField(rec, col.field)
         const prev_val = (rec.w2ui?.['changes'] && rec.w2ui['changes'].hasOwnProperty(col.field) ? rec.w2ui['changes'][col.field]: old_val)
         // change/restore event
+        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any = {
             target: this.name, input,
@@ -4275,8 +4321,10 @@ class w2grid extends w2base {
                 yes_text: w2utils.lang('Delete'),
                 yes_class: 'w2ui-btn-red',
                 no_text: w2utils.lang('Cancel'),
+            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any)
+                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .yes((event: any) => {
                     event.detail.self.close()
@@ -4435,6 +4483,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnClick(field: string, event?: MouseEvent | any) {
         // ignore click if column was resized
@@ -4598,6 +4647,7 @@ class w2grid extends w2base {
         this.columns.forEach((col, ind) => this.columnAutoSize(ind))
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     focus(event?: Event | any) {
         // event before
@@ -4616,6 +4666,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blur(event?: Event | any) {
         // event before
@@ -4629,6 +4680,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keydown(event: KeyboardEvent | any) {
         // this method is called from w2utils
@@ -4650,6 +4702,7 @@ class w2grid extends w2base {
         const sel     = obj.getSelection()
         if (sel.length === 0) empty = true
         let recid   = sel[0] || null
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let columns: any[] = []
         let recid2  = sel[sel.length-1]
@@ -5183,6 +5236,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showContextMenu(event: MouseEvent | any, options: { recid?: string | number; index?: number; column?: number }) {
         const { recid, index, column } = options
@@ -5236,6 +5290,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     contextMenuClick(recid: string | number, column: number | null, event: any) {
         // event before
@@ -5300,6 +5355,7 @@ class w2grid extends w2base {
             edata.finish()
         } else {
             if (query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded_row').length > 0 || this.show.expandColumn !== true) return false
+            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((rec.w2ui.expanded as any) == 'none') return false
             // insert expand row
@@ -5358,6 +5414,7 @@ class w2grid extends w2base {
         rec.w2ui     = rec.w2ui || {}
         const id       = w2utils.escapeId(recid)
         const children = rec.w2ui.children
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
         if (Array.isArray(children)) {
@@ -5529,6 +5586,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     copy(flag: any, oEvent?: ClipboardEvent | any) {
         if (w2utils.isPlainObject(flag)) {
@@ -5618,6 +5676,7 @@ class w2grid extends w2base {
         return w2utils.stripTags(this.getCellHTML(ind, col_ind))
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paste(text: string, event?: ClipboardEvent | any) {
         const sel = this.getSelection()
@@ -5691,6 +5750,7 @@ class w2grid extends w2base {
         return Date.now() - time
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     update({ cells, fullCellRefresh, ignoreColumns }: any = {}) {
         const time = Date.now()
@@ -6461,6 +6521,7 @@ class w2grid extends w2base {
                     if (this.hasFocus) { this.blur() }
                 }, 100) // need this timer to be 100 ms
             })
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('paste', (event: any) => {
                 const cd = (event.clipboardData ? event.clipboardData : null)
@@ -6493,16 +6554,19 @@ class w2grid extends w2base {
                     if (items2send.length === 1 && items2send[0]!.kind != 'file') {
                         items2send = items2send[0]!.data
                     }
+                    // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ;(w2ui[this.name] as any).paste(items2send, event)
                     event.preventDefault()
                 }
             })
             .on('keydown', function (event: Event) {
+                // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(w2ui[obj.name] as any).keydown.call(w2ui[obj.name], event)
             })
         // init mouse events for mouse selection
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edataCol: any // event for column select
         query(this.box).off('mousedown.mouseStart').on('mousedown.mouseStart', mouseStart)
@@ -6650,8 +6714,10 @@ class w2grid extends w2base {
                         sel = [obj.last.move.recid]
                     }
                     //select children
+                    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const new_sel: any[] = []
+                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const selectExpandedChildren = (recid: any) => {
                         const rec = obj.get(recid)
@@ -6902,10 +6968,12 @@ class w2grid extends w2base {
                         }
                         // default behavior
                         // multiple rows reordering
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const ind1 = mv.from.map((recid: any) => obj.get(recid, true))
                         let ind2 = obj.get(mv.to, true)
                         if (mv.to == 'bottom') ind2 = obj.records.length // end of list
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const tmp = ind1.map((ind: any) => obj.records[ind])
                         // swap records
@@ -6968,6 +7036,7 @@ class w2grid extends w2base {
     // --- Internal Functions
 
     initColumnOnOff() {
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const items: any[] = [
             { id: 'line-numbers', text: 'Line #', checked: this.show.lineNumbers }
@@ -6999,8 +7068,10 @@ class w2grid extends w2base {
                 { id: 'w2ui-stateReset', text: w2utils.lang('Restore Default State'), icon: 'w2ui-icon-empty', group: false }
             )
         }
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const selected: any[] = []
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items.forEach((item: any) => {
             item.text = w2utils.lang(item.text) // translate
@@ -7010,6 +7081,7 @@ class w2grid extends w2base {
         return items
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initColumnDrag(_box?: any) {
         // throw error if using column groups
@@ -7019,6 +7091,7 @@ class w2grid extends w2base {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         let dragData: {
+            // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             pressed: boolean; targetPos: any; columnHead: any; [key: string]: any
         } = {
@@ -7026,6 +7099,7 @@ class w2grid extends w2base {
             targetPos: null,
             columnHead: null
         }
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const hasInvalidClass = (target: any, lastColumn?: any) => {
             const iClass = ['w2ui-col-number', 'w2ui-col-expand', 'w2ui-col-select']
@@ -7124,6 +7198,7 @@ class w2grid extends w2base {
 
                 // dragData.columns.css({ overflow: '' }).children('div').css({ overflow: '' });
                 query(document).off('.colDrag')
+                // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 dragData = {} as any
             }
@@ -7175,6 +7250,7 @@ class w2grid extends w2base {
             return
         }
 
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function trackGhost(cursorX: any, cursorY: any){
             query(dragData['ghost'])
@@ -7194,6 +7270,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnOnOff(event: MouseEvent | any, field: string) {
         // event before
@@ -7260,12 +7337,14 @@ class w2grid extends w2base {
                 id: 'w2ui-search',
                 type: 'html',
                 html,
+                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onRefresh: async (event: any) => {
                     await event.complete
                     const input = query(this.box).find(`#grid_${this.name}_search_all`)
                     w2utils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .w2ui-action`), this)
                     // slow down live search calls
+                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const slowSearch = w2utils.debounce((event: any) => {
                         const val = event.target.value
@@ -7276,6 +7355,7 @@ class w2grid extends w2base {
                     }, 250)
                     input
                         .on('blur', () => { this.last['liveText'] = '' })
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .on('keyup', (event: any) => {
                             switch (event.keyCode) {
@@ -7334,6 +7414,7 @@ class w2grid extends w2base {
         // =============================================
         // ------ Toolbar onClick processing
 
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('click', (event: any) => {
             const edata = this.trigger('toolbar', { target: event.target, originalEvent: event })
@@ -7363,10 +7444,12 @@ class w2grid extends w2base {
                         setTimeout(() => {
                             query(`#w2overlay-${this.name}_toolbar-drop .w2ui-grid-skip`)
                                 .off('.w2ui-grid')
+                                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 .on('click.w2ui-grid', (evt: any) => {
                                     evt.stopPropagation()
                                 })
+                                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 .on('keypress', (evt: any) => {
                                     if (evt.keyCode == 13) {
@@ -7403,6 +7486,7 @@ class w2grid extends w2base {
             // no default action
             edata.finish()
         })
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('refresh', (event: any) => {
             if (event.target == 'w2ui-search') {
@@ -7451,6 +7535,7 @@ class w2grid extends w2base {
                     column: obj.last.tmp.col, field: obj.columns[obj.last.tmp.col]!.field
                 })
                 // set move event
+                // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let timer: any
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7501,6 +7586,7 @@ class w2grid extends w2base {
                 event.stopPropagation()
                 event.preventDefault()
             })
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 const td = query(el).get(0).parentNode
@@ -7667,6 +7753,7 @@ class w2grid extends w2base {
             }
         }
 
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function addEmptyRow(row: any, height: any, grid: any) {
             let html1 = ''
@@ -7690,6 +7777,7 @@ class w2grid extends w2base {
             query(grid.box).find('#grid_'+ grid.name +'_frecords > table').append(html1)
             query(grid.box).find('#grid_'+ grid.name +'_records > table').append(html2)
         }
+        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let width_box: any, percent: any
         if (body.length > 0) {
@@ -7814,6 +7902,7 @@ class w2grid extends w2base {
         // resize columns
         columns.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(fcolumns.find(':scope > table > tbody > tr:nth-child(1) td'))
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -7861,6 +7950,7 @@ class w2grid extends w2base {
         // resize records
         records.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(frecords.find(':scope > table > tbody > tr:nth-child(1) td'))
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -7897,6 +7987,7 @@ class w2grid extends w2base {
         // resize summary
         summary.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(fsummary.find(':scope > table > tbody > tr:nth-child(1) td'))
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -7949,6 +8040,7 @@ class w2grid extends w2base {
                 </span>
             </div>
         `
+        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const columns: any[] = []
         let col_ind = 0
@@ -8041,6 +8133,7 @@ class w2grid extends w2base {
         return html
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOperators(type: any, opers: any) {
         let operators = this.operators[this.operatorsMap[type] ?? ''] || []
@@ -8048,6 +8141,7 @@ class w2grid extends w2base {
             operators = opers
         }
         let html = ''
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         operators.forEach((oper: any) => {
             let displayText = oper
@@ -8065,6 +8159,7 @@ class w2grid extends w2base {
         return html
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initOperator(ind: any) {
         let options
@@ -8131,11 +8226,13 @@ class w2grid extends w2base {
                     const fld = new w2field(search.type, {
                         el: $fld1[0],
                         ...options,
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onSelect: async (event: any) => {
                             await event.complete
                             this.initSearchLists(search.field)
                         },
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onRemove: async (event: any) => {
                             await event.complete
@@ -8172,9 +8269,11 @@ class w2grid extends w2base {
         this.initSearchLists()
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initSearchLists(changedField?: any) {
         const fields = this.getSearch()
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fields.forEach((field: any) => {
             const search = this.getSearch(field)
@@ -8187,6 +8286,7 @@ class w2grid extends w2base {
                 } else {
                     values = values?.id != null ? [values.id] : []
                 }
+                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 search['_w2field']?.options?.items?.forEach?.((item: any) => {
                     const parent = w2utils.getNested(item, search?.options?.['parentField'] ?? 'parentId')
@@ -8195,6 +8295,7 @@ class w2grid extends w2base {
                     }
                     const possible = w2utils.clone(Array.isArray(parent) ? parent : [parent])
                     possible.unshift('')
+                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const includes = values.some((item: any) => possible.includes(item))
                     if (includes && item.hidden === true) {
@@ -8207,17 +8308,20 @@ class w2grid extends w2base {
         })
         // set all fields that refer to changed one to blank
         if (changedField != null) {
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields.forEach((field: any) => {
                 const search = this.getSearch(field)
                 if (search != null && search.options?.['parentList'] == changedField) {
                     const fld = search['_w2field']
+                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const items = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
                     if (fld.type == 'list' && !items.includes(fld.get()?.id)) {
                         fld.set(null)
                     }
                     if (fld.type == 'enum') {
+                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const new_sel = fld.get()?.filter((it: any) => items.includes(it.id))
                         fld.set(new_sel || [])
@@ -8243,6 +8347,7 @@ class w2grid extends w2base {
             let operators = [...(this.operators[this.operatorsMap[search.type] ?? ''] ?? [])] // need a copy
             if (search.operators) operators = [...search.operators] // need a copy as this variable will be changed
             // normalize
+            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (w2utils.isPlainObject(operator)) operator = (operator as any).oper
             operators.forEach((oper, ind) => {
@@ -8276,6 +8381,7 @@ class w2grid extends w2base {
         }
         // add on change event
         overlay.find('.w2ui-grid-search-advanced *[rel=search]')
+            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('keypress', (evnt: any) => {
                 if (evnt.keyCode == 13) {
@@ -8393,6 +8499,7 @@ class w2grid extends w2base {
             return [html1, html2]
         }
 
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function getColumns(main: any) {
             let html1 = '<tr>'
@@ -8453,6 +8560,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getColumnCellHTML(i: any) {
         const col = this.columns[i]!
@@ -8487,6 +8595,7 @@ class w2grid extends w2base {
         return html
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnTooltipShow(ind: any, _event: any) {
         const $el  = query(this.box).find('#grid_'+ this.name + '_column_'+ ind)
@@ -8500,6 +8609,7 @@ class w2grid extends w2base {
         })
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnTooltipHide(_ind: any, _event: any) {
         w2tooltip.hide(this.name + '-column-tooltip')
@@ -8568,6 +8678,7 @@ class w2grid extends w2base {
         return [html1, html2]
     }
 
+    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(event?: Event | any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -8653,6 +8764,7 @@ class w2grid extends w2base {
                             if (this.columns[i] && (this.columns[i]!.frozen || this.columns[i]!.hidden)) continue
                             $cfirst.after(this.getColumnCellHTML(i)) // column
                             // record
+                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8661,6 +8773,7 @@ class w2grid extends w2base {
                                 query(el).after(td)
                             })
                             // summary
+                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $sfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8676,6 +8789,7 @@ class w2grid extends w2base {
                             if (this.columns[i] && (this.columns[i]!.frozen || this.columns[i]!.hidden)) continue
                             $clast.before(this.getColumnCellHTML(i)) // column
                             // record
+                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rlast.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8684,6 +8798,7 @@ class w2grid extends w2base {
                                 query(el).before(td)
                             })
                             // summary
+                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $slast.each((el: any) => {
                                 const index = query(el).parent().attr('index') || -1
@@ -9187,6 +9302,7 @@ class w2grid extends w2base {
         }
         return data
 
+        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function getTitle(cellData: any, title: any){
             if (title === undefined && obj.show.recordTitles) {
@@ -9203,6 +9319,7 @@ class w2grid extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clipboardCopy(ind: any, col_ind: any, summary: any) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -9216,6 +9333,7 @@ class w2grid extends w2base {
         document.execCommand('copy')
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showBubble(ind: any, col_ind: any, summary: any) {
         const info = this.columns[col_ind]?.['info']
@@ -9339,6 +9457,7 @@ class w2grid extends w2base {
     }
 
     // return null or the editable object if the given cell is editable
+    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCellEditable(ind: number, col_ind: number): any {
         const col = this.columns[col_ind]
@@ -9357,6 +9476,7 @@ class w2grid extends w2base {
         return edit
     }
 
+    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCellValue(ind: number, col_ind: number, summary?: boolean, extra?: boolean): any {
         const col = this.columns[col_ind]!
@@ -9380,6 +9500,7 @@ class w2grid extends w2base {
                 if (col['options'] && col['options'].autoFormat === false) {
                     func = undefined
                 }
+                // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 render = func as any
                 params = tmp[1]
@@ -9423,6 +9544,7 @@ class w2grid extends w2base {
             }
             // if it is an object
             if (typeof render == 'object') {
+                // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const tmp = (render as any)[value]
                 if (tmp != null && tmp !== '') {
@@ -9469,6 +9591,7 @@ class w2grid extends w2base {
         setTimeout(() => {
             // hide empty msg if any
             query(this.box).find('#grid_'+ this.name +'_empty_msg').remove()
+            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(w2utils.lock as any)(...args)
         }, 10)
@@ -9482,6 +9605,7 @@ class w2grid extends w2base {
         }, 25) // needed timer so if server fast, it will not flash
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateSave(returnOnly: any) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9500,23 +9624,29 @@ class w2grid extends w2base {
             sortData  : [],
             searchData: []
         }
+        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let prop_val: any
         for (let i = 0; i < this.columns.length; i++) {
             const col          = this.columns[i]
+            // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const col_save_obj: Record<string, any> = {}
             // iterate properties to save
             Object.keys(this.stateColProps).forEach((prop, _idx) => {
+                // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this.stateColProps as any)[prop]){
                     // check if the property is defined on the column
+                    // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if ((col as any)[prop] !== undefined){
+                        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         prop_val = (col as any)[prop]
                     } else {
                         // use fallback or null
+                        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         prop_val = (this.colTemplate as any)[prop] || null
                     }
@@ -9599,6 +9729,7 @@ class w2grid extends w2base {
         this.cacheSave('state', null)
     }
 
+    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parseField(obj: W2GridRecord | null | undefined, field: string): any {
         let val
@@ -9640,6 +9771,7 @@ class w2grid extends w2base {
                 // time
                 if (['time'].indexOf(column.render) != -1) {
                     if (w2utils.isTime(rec[column.field])) { // if string
+                        // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const tmp = w2utils.isTime(rec[column.field], true) as any
                         const dt  = new Date()
@@ -9802,6 +9934,7 @@ class w2grid extends w2base {
         }, options)
     }
 
+    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
         return w2utils.confirm({

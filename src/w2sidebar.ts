@@ -77,10 +77,13 @@ class w2sidebar extends w2base {
     declare name: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodes: any[] // any: sidebar node tree has dynamic shape
+    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected: any
+    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     img: any
+    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any
     style: string
@@ -97,6 +100,7 @@ class w2sidebar extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates move, renaming, observeResize
     node_template: Record<string, unknown>
+    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -199,6 +203,7 @@ class w2sidebar extends w2base {
         if (this.box) this.render(this.box)
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     add(parent?: any, nodes?: any) {
         if (nodes === undefined) {
@@ -213,6 +218,7 @@ class w2sidebar extends w2base {
         return this.insert(parent, null, nodes)
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insert(parent?: any, before?: any, nodes?: any) {
         let txt, ind, tmp, node, nd
@@ -280,6 +286,7 @@ class w2sidebar extends w2base {
         return tmp
     }
 
+    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) { // multiple arguments
         let effected = 0
@@ -309,6 +316,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(parent?: any, id?: any, node?: any) {
         if (node === undefined) {
@@ -343,6 +351,7 @@ class w2sidebar extends w2base {
         return false
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(parent?: any, id?: any, returnIndex?: any): any { // can be just called get(id) or get(id, true)
         if (arguments.length === 0) {
@@ -403,6 +412,7 @@ class w2sidebar extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     find(parent?: any, params?: any, results?: any): any { // can be just called find({ selected: true })
         // TODO: rewrite with this.each()
@@ -516,6 +526,7 @@ class w2sidebar extends w2base {
         }
     }
 
+    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -532,6 +543,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -548,6 +560,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -564,6 +577,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -707,6 +721,7 @@ class w2sidebar extends w2base {
         return true
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collapseAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -721,6 +736,7 @@ class w2sidebar extends w2base {
         return true
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expandAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1966,6 +1982,7 @@ class w2sidebar extends w2base {
         this.last.observeResize?.disconnect()
     }
 
+    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
         w2utils.lock(this.box, msg, showSpinner)

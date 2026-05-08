@@ -76,6 +76,7 @@ class w2form extends w2base {
     actions: Record<string, any> // any: action can be function or object
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: Record<string, any> // any: record values depend on field definitions
+    // any: Record<string, any> — dynamic property bag; w2form field schema is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     original: Record<string, any> | null
     dataType: string | null
@@ -257,8 +258,10 @@ class w2form extends w2base {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function _processFields(fields: any): { fields: any[]; tabs: any[] } { // any: field definitions vary widely
+            // any: array of heterogeneous runtime values; w2form field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const newFields: any[] = []
+            // any: array of heterogeneous runtime values; w2form field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tabs: any[] = []
             // if it is an object
@@ -290,6 +293,7 @@ class w2form extends w2base {
                         tabs.push(tab)
                         // add page to fields
                         const sub = _processFields(fld.fields).fields
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         sub.forEach((fld2: any) => {
                             fld2.html = fld2.html || {}
@@ -332,6 +336,7 @@ class w2form extends w2base {
                 }
             }
             // process groups
+            // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields.forEach((field: any) => {
                 if (field.type == 'group') {
@@ -344,6 +349,7 @@ class w2form extends w2base {
                     }
                     // loop through fields
                     if (Array.isArray(field.fields)) {
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.fields.forEach((gfield: any) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -413,6 +419,7 @@ class w2form extends w2base {
             let val = undefined
             try { // need this to make sure no error in fields
                 const rec = original === true ? this.original : this.record
+                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = String(field).split('.').reduce((rec: any, i: string) => { return rec[i] }, rec)
             } catch (_event) {
@@ -625,6 +632,7 @@ class w2form extends w2base {
                  * if it is a "simple" value, then find item in options.items
                  */
                 if (item?.id == null && Array.isArray(field.options?.items)) {
+                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
                         const val = w2utils.getNested(it, map?.id ?? 'id')
@@ -635,6 +643,7 @@ class w2form extends w2base {
                  * If item.id is there, but item.text is not there, then look up item.text in options.items
                  */
                 if (item?.id != null && item?.text == null && Array.isArray(field.options?.items)) {
+                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
                         const id = w2utils.getNested(it, map?.id ?? 'id')
@@ -672,6 +681,7 @@ class w2form extends w2base {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any, ind: number) => { // any: item can be primitive or object
                     if (item?.id == null && Array.isArray(field.options.items)) {
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.options.items.forEach((it: any) => {
                             if (it.id == item) {
@@ -732,6 +742,7 @@ class w2form extends w2base {
                 let updated: boolean | undefined
                 let values = this.getValue(fld.options.parentList)
                 if (Array.isArray(values)) {
+                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     values = values.map((vv: any) => vv.id)
                 } else {
@@ -746,6 +757,7 @@ class w2form extends w2base {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const possible = w2utils.clone(Array.isArray(parent) ? parent : [parent]) as any[] // any: clone returns unknown; items are dynamic
                     possible.unshift('')
+                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const includes = values.some((item: any) => possible.includes(item))
                     if (includes && item.hidden === true) {
@@ -761,23 +773,28 @@ class w2form extends w2base {
                     if (value?.id != null) value = value.id
                     // if item is not visible, then clear its field
                     if (fld.type == 'enum') {
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const valid = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
                         let values = this.getValue(fld.field)
                         if (!Array.isArray(values)) values = [values]
                         // make sure they are objects
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         values = values.map((it: any) => {
                             if (typeof it == 'string' || typeof it == 'number') {
+                                // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 it = fld.options.items.find((ii: any) => ii.id == it)
                             }
                             return it
                         })
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const new_values = values.filter((it: any) => valid.includes(it.id))
                         this.setValue(fld.field, new_values, true)
                     } else {
+                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         fld.options.items.forEach((it: any) => {
                             if (it.id == value && it.hidden) {
@@ -930,6 +947,7 @@ class w2form extends w2base {
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
             // this.clear();
+            // any: generic any — runtime polymorphic; w2form field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return this.request(callBack) as Promise<any> // request() is void | Promise; url+recid guarantee it returns Promise
         } else {
@@ -1154,6 +1172,7 @@ class w2form extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getChanges(): Record<string, any> | null { // any: diff values vary by field type
         // TODO: not working on nested structures
+        // any: Record<string, any> — dynamic property bag; w2form field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let diff: Record<string, any> = {}
         if (this.original != null && typeof this.original == 'object' && Object.keys(this.record).length !== 0) {
@@ -1232,6 +1251,7 @@ class w2form extends w2base {
     request(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary by server API
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
+        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const responseProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -1368,6 +1388,7 @@ class w2form extends w2base {
     save(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
+        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const saveProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -1966,11 +1987,13 @@ class w2form extends w2base {
         let fields = Array.from(this.fields.keys())
         if (args.length > 0) {
             fields = args
+                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .map((fld: any, _ind: number) => {
                     if (typeof fld != 'string') console.log('ERROR: Arguments in refresh functions should be field names')
                     return this.get(fld, true) // get index of field
                 })
+                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((fld: any, _ind: number) => {
                     if (fld != null) return true; else return false
@@ -2027,6 +2050,7 @@ class w2form extends w2base {
             }
             field.$el
                 .off('.w2form')
+                // any: targeted-any per typing_policy; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('change.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     const value = self.getFieldValue(field.field)
@@ -2048,6 +2072,7 @@ class w2form extends w2base {
                     // event after
                     edata2.finish()
                 })
+                // any: targeted-any per typing_policy; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('input.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     self.rememberOriginal()
@@ -2141,6 +2166,7 @@ class w2form extends w2base {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ;(w2ui[this.name + '_' + field.name + '_tb'] as any).destroy() // any: w2ui registry returns unknown
                 }
+                // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 field.options?.items?.forEach?.((it: any) => it.text == null ? it.text = '' : '')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2206,6 +2232,7 @@ class w2form extends w2base {
                             self.rememberOriginal()
                             const value = self.getFieldValue(field.name)
                             if (value == null) return
+                            // any: cast-then-index for dynamic property access; w2form field schema is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const tbItem = (field.toolbar.items as any[])[ind]
                             value.current = tbItem?.id
@@ -2257,6 +2284,7 @@ class w2form extends w2base {
                             html = field.html.render.call(self, { empty: empty === true, ind: cnt, field, div })
                             // make sure all inputs have names as it is important for array objects
                             if (!field.el._errorDisplayed) {
+                                // any: cast-to-any for dynamic dispatch; w2form field schema is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 (_queryRaw as any).html(html).filter('input, textarea').each((node: Node) => {
                                     const inp = node as HTMLInputElement
@@ -2300,6 +2328,7 @@ class w2form extends w2base {
                         }
                         if (field.type == 'array') {
                             if (!Array.isArray(map)) map = []
+                            // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             keys = map.map((item: any, ind: number) => { return ind })
                         }
@@ -2332,6 +2361,7 @@ class w2form extends w2base {
                                 $v = fld.find('.w2ui-map.value')
                                 let val = map[key]
                                 if (field.type == 'array') {
+                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const tmp = map.filter((it: any) => { return it?.key == key ? true : false})
                                     if (tmp.length > 0) val = tmp[0].value
@@ -2440,8 +2470,10 @@ class w2form extends w2base {
                                 const $cnt = query(event.target).closest('.w2ui-map-container')
                                 // delete empty
                                 if (typeof field.html?.render == 'function') {
+                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((kk: any) => {
+                                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const val = [...(new Set(Object.values(kk).filter((vv: any) => typeof vv != 'boolean')))]
                                         return !(val.length == 0 || (val.length == 1 && val[0] === ''))
@@ -2452,6 +2484,7 @@ class w2form extends w2base {
                                     current._order = current._order.filter((k: string) => k !== '')
                                     delete current['']
                                 } else if (field.type == 'array') {
+                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((k: any) => k !== '')
                                 }
@@ -2575,6 +2608,7 @@ class w2form extends w2base {
         this.resize()
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
+            // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(this.request() as Promise<any>).catch((_error: any) => this.refresh()) // request() is void|Promise; url+recid guarantee it returns Promise
         } else {

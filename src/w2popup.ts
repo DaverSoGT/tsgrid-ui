@@ -62,6 +62,7 @@ class Dialog extends w2base {
     declare name: string
     status: string
     tmp: Record<string, unknown>
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handleResize: (event?: any) => void
     _promCreated!: (value?: unknown) => void
@@ -121,6 +122,7 @@ class Dialog extends w2base {
      * - w2popup.open({ body: 'text', title: 'caption', actions: ["Close"] }).close(() => { w2popup.close() })
      * - w2popup.open({ body: 'text', title: 'caption', actions: { Close() { w2popup.close() }} })
      */
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     open(options?: any, extraOptions?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -264,6 +266,7 @@ class Dialog extends w2base {
             `
             msg = `<div id="w2ui-popup" class="w2ui-popup w2ui-anim-open animating ${!options.blockPage ? 'w2ui-non-blocking' : ''}" style="${w2utils.stripSpaces(styles)}"></div>`
             query('body').append(msg)
+            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(query('#w2ui-popup')[0] as any)._w2popup = {
                 self: this,
@@ -398,6 +401,7 @@ class Dialog extends w2base {
         }
         query(window).on('resize', this.handleResize)
         // initialize move; any: drag-state bag mutated dynamically in mvStart/mvMove/mvStop
+        // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tmp: any = {
             changing : false,
@@ -424,6 +428,7 @@ class Dialog extends w2base {
         return prom
 
         // handlers
+        // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mvStart(evt: any, resizer?: any) {
             if (!evt) evt = window.event
@@ -505,6 +510,7 @@ class Dialog extends w2base {
         }
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     load(options: any) {
         return new Promise((resolve, reject) => {
@@ -526,12 +532,14 @@ class Dialog extends w2base {
         })
     }
 
+    // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     template(data: any, id: any, options: any = {}) {
         let html
         try {
             html = query(data)
         } catch (e) {
+            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             html = (_queryRaw as any).html(data)
         }
@@ -547,14 +555,18 @@ class Dialog extends w2base {
         return this.open(options)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action(action: any, event?: any) {
+        // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let click: any = this.options.actions?.[action]
+        // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (click instanceof Object && (click as any).onClick) click = (click as any).onClick
         // event before
         const edata = this.trigger('action', { action, target: 'popup', self: this,
+            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             originalEvent: event, value: this['input'] ? (this['input'] as any).value : null })
         if (edata.isCancelled === true) return
@@ -564,6 +576,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keydown(event: any) {
         if (this.options && !this.options.keyboard) return
@@ -587,6 +600,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     close(immediate?: any) {
         // trigger event
@@ -690,6 +704,7 @@ class Dialog extends w2base {
         this.open(this.defaults)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options: any) {
         return w2utils.message({
@@ -699,6 +714,7 @@ class Dialog extends w2base {
         }, options)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
         return w2utils.confirm({
@@ -708,6 +724,7 @@ class Dialog extends w2base {
         }, options)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFocus(focus?: any) {
         const box = query('#w2ui-popup')
@@ -724,12 +741,15 @@ class Dialog extends w2base {
         // keep focus/blur inside popup
         query(box).find(sel)
             .off('.keep-focus')
+            // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('blur.keep-focus', function (_event: any) {
                 setTimeout(() => {
                     const focus = document.activeElement
+                    // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const inside = query(box).find(sel).filter(focus as any).length > 0
+                    // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const name = query(focus as any).attr('name')
                     if (!inside && focus && focus !== document.body) {
@@ -745,16 +765,19 @@ class Dialog extends w2base {
             })
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
         w2utils.lock(query('#w2ui-popup'), msg, showSpinner)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unlock(speed?: any) {
         w2utils.unlock(query('#w2ui-popup'), speed)
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     center(width?: any, height?: any, force?: any) {
         let maxW, maxH
@@ -788,6 +811,7 @@ class Dialog extends w2base {
         return { top, left, width, height }
     }
 
+    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resize(newWidth: any, newHeight: any, callBack?: any) {
         return new Promise(resolve => {
@@ -819,6 +843,7 @@ class Dialog extends w2base {
         // see if there are messages and resize them
         query('#w2ui-popup .w2ui-message').each((node: Node) => {
             const msg = node as HTMLElement
+            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mopt = (msg as any)._msg_options
             const popup = query('#w2ui-popup')

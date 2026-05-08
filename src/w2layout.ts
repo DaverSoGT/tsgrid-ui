@@ -347,6 +347,7 @@ class w2layout extends w2base {
             box  : box.get(0) as HTMLElement,
             after: '.w2ui-panel-title',
             param: panel
+        // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
@@ -369,6 +370,7 @@ class w2layout extends w2base {
             box   : box.get(0) as HTMLElement,
             after : '.w2ui-panel-title',
             param : panel
+        // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
@@ -863,6 +865,7 @@ class w2layout extends w2base {
             // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.unmount?.()
+            // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.unmount?.()
         })
@@ -879,6 +882,7 @@ class w2layout extends w2base {
             // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.destroy?.()
+            // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.destroy?.()
         })
