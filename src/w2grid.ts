@@ -78,6 +78,7 @@ const w2tooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 
 // ---------------------------------------------------------------------------
 // Type definitions — T5.1 (skeleton + CRUD); T5.2 (column + search cluster)
+//                    T5.4 (selection + ranges)
 // Additional interfaces added in T5.3–T5.9 as clusters are typed
 // ---------------------------------------------------------------------------
 
@@ -182,7 +183,7 @@ interface W2GridLast {
     logic: 'AND' | 'OR'
     search: string
     searchIds: number[]
-    selection: { indexes: number[]; columns: Record<string | number, number[]> }
+    selection: W2GridSelection
     saved_sel: any | null // any: complex selection restore payload
     multi: boolean
     fetch: W2GridFetch
@@ -213,6 +214,35 @@ interface W2GridLast {
     [key: string]: any // any: runtime-assigned transient last-state properties
 }
 
+/** Cell-level selection descriptor used in cell-select mode */
+interface W2GridCellSelection {
+    recid: string | number
+    index?: number
+    column: number
+}
+
+/** Selection state — T5.4 */
+interface W2GridSelection {
+    indexes: number[]
+    columns: Record<string | number, number[]>
+}
+
+/** Range endpoint (used in addRange / refreshRanges) */
+interface W2GridRangeEndpoint {
+    recid: string | number
+    column: number
+    index?: number  // runtime index (added by refreshRanges)
+}
+
+/** Range descriptor for addRange / refreshRanges */
+interface W2GridRange {
+    name: string
+    range: W2GridRangeEndpoint[]  // [start, end] — 2-element in practice
+    style?: string
+    class?: string
+    [key: string]: any // any: custom range metadata
+}
+
 /** GroupBy configuration object */
 interface W2GridGroupBy {
     field: string
@@ -230,7 +260,7 @@ class w2grid extends w2base {
     summary: W2GridRecord[]
     searches: W2GridSearch[]
     toolbar: any          // any: w2toolbar instance or config object
-    ranges: any[]         // any: range descriptors typed in T5.4
+    ranges: W2GridRange[]
     contextMenu: any[]    // any: context menu item shapes
     searchMap: Record<string, string>
     searchData: any[]     // any: active search filters typed in T5.5
@@ -1635,7 +1665,7 @@ class w2grid extends w2base {
         }
     }
 
-    getRangeData(range, extra) {
+    getRangeData(range: [{ recid: string | number; column: number }, { recid: string | number; column: number }], extra?: boolean): any[] {
         const rec1 = this.get(range[0].recid, true)
         const rec2 = this.get(range[1].recid, true)
         const col1 = range[0].column
@@ -1679,7 +1709,8 @@ class w2grid extends w2base {
         return res
     }
 
-    addRange(ranges) {
+    // any: addRange accepts string 'selection' shorthand, single range object, or array of ranges
+    addRange(ranges: W2GridRange | W2GridRange[] | string | Record<string, any>): number {
         let added = 0, first, last
         if (this.selectType == 'row') return added
         if (!Array.isArray(ranges)) ranges = [ranges]
@@ -1761,7 +1792,7 @@ class w2grid extends w2base {
             let td2  = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
             let td1f = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
             let td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
-            let _lastColumn = last.column
+            let _lastColumn: number | string = last.column // any: sentinel 'end'/'start' used for virtual scroll boundary cols
             // adjustment due to column virtual scroll
             if (first.column < this.last.vscroll.colIndStart && last.column > this.last.vscroll.colIndStart) {
                 td1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(first.recid) + ' td[col="start"]')
@@ -2218,7 +2249,7 @@ class w2grid extends w2base {
         return unselected
     }
 
-    compareSelection(newSel) {
+    compareSelection(newSel: any[]): { select: any[]; unselect: any[] } {
         const sel = this.getSelection()
         const select = []
         const unselect = []
@@ -2394,8 +2425,9 @@ class w2grid extends w2base {
         }
     }
 
-    getSelection(returnIndex?: boolean) {
-        const ret = []
+    // any: row-select returns (string|number)[], cell-select returns W2GridCellSelection[] — runtime branching
+    getSelection(returnIndex?: boolean): any[] {
+        const ret: any[] = []
         const sel = this.last.selection
         if (this.selectType == 'row') {
             for (let i = 0; i < sel.indexes.length; i++) {
