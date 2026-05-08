@@ -10,6 +10,16 @@
   },
   "main": "dist/w2ui.js",
   "module": "dist/w2ui.es6.js",
+  "types": "dist/w2ui.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/w2ui.d.ts",
+      "import": "./dist/w2ui.es6.js",
+      "require": "./dist/w2ui.js"
+    },
+    "./css": "./dist/w2ui.css",
+    "./dark": "./dist/w2ui-dark.css"
+  },
   "style": "dist/w2ui.css",
   "scripts": {
     "start": "run-script-os",
