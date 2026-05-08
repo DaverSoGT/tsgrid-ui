@@ -3547,7 +3547,7 @@ class w2grid extends w2base {
                 return this.reload()
             }
         } else {
-            this.error(w2utils.lang(data.message ?? this.msgServerError))
+            this.error(w2utils.lang(data.message || this.msgServerError)) // || not ?? — empty string should also fall back
             reject(data)
         }
         // event after
@@ -3583,7 +3583,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    getChanges(recordsBase?: any[]) { // any: accepts records array or undefined (uses this.records)
+    getChanges(recordsBase?: W2GridRecord[]): Record<string, any>[] {
         const changes = []
         if (typeof recordsBase == 'undefined') {
             recordsBase = this.records
@@ -3636,7 +3636,7 @@ class w2grid extends w2base {
         }
     }
 
-    save(callBack?) {
+    save(callBack?: (data: any) => void) {
         const changes = this.getChanges()
         const url = this.url?.save ?? this.url
         // event before
@@ -3662,7 +3662,7 @@ class w2grid extends w2base {
         }
     }
 
-    editField(recid, column, value, event) {
+    editField(recid: string | number, column: number, value: any, event?: any) { // any: can be KeyboardEvent, MouseEvent, or synthetic event
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         if (this.last.inEditMode === true) {
