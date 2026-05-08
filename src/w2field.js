@@ -1587,12 +1587,12 @@ class w2field extends w2base {
         this.helpers.search_focus = query(helper).find('input').get(0)
         let styles = getComputedStyle(this.el)
         query(helper).css({
-                width           : this.el.clientWidth + 'px',
-                'margin-top'    : styles['margin-top'],
-                'margin-left'   : styles['margin-left'],
-                'margin-bottom' : styles['margin-bottom'],
-                'margin-right'  : styles['margin-right']
-            })
+            width           : this.el.clientWidth + 'px',
+            'margin-top'    : styles['margin-top'],
+            'margin-left'   : styles['margin-left'],
+            'margin-bottom' : styles['margin-bottom'],
+            'margin-right'  : styles['margin-right']
+        })
             .find('input')
             .css({
                 cursor   : 'default',

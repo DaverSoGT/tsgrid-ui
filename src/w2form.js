@@ -1591,7 +1591,7 @@ class w2form extends w2base {
                             : ` <div>
                                     ${label} ${input} ${text}
                                 </div>`
-                        )}
+    )}
                     </div>`
             } else {
                 let span = (field.html.span != null ? 'w2ui-span'+ field.html.span : '')

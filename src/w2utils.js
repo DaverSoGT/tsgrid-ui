@@ -1666,7 +1666,7 @@ class Utils {
         options.class ??= 'w2ui-marker'
         options.raplace = (matched) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`
 
-        const isRegexSearch = options.isRegex || false;
+        const isRegexSearch = options.isRegex || false
         if (!Array.isArray(items)) {
             if (items != null && items !== '') {
                 items = [items]
@@ -1813,7 +1813,7 @@ class Utils {
             // and only outside of quotes
             // let regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?=([a-z-0-9]+="[^"]*")*?[^"]+$)' + '(?!([^<]+)?>)', 'i' + (!options.onlyFirst ? 'g' : ''))
             // -- the one above would not match inside html tags
-            let regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?![^<]*>)', 'i' + (!options.onlyFirst ? 'g' : ''));
+            let regex = new RegExp((ww ? '\\b' : '') + term + (ww ? '\\b' : '') + '(?![^<]*>)', 'i' + (!options.onlyFirst ? 'g' : ''))
             return html = html.replace(regex, replaceWith)
         }
 

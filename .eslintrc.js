@@ -28,7 +28,8 @@ module.exports = {
         'bela': 'readonly',
         'context': 'readonly',
         'test': 'readonly',
-        'chai': 'readonly'
+        'chai': 'readonly',
+        'EyeDropper': 'readonly'
     },
     'rules': {
         'indent': ['error', 4, {

@@ -1141,7 +1141,7 @@ class w2grid extends w2base {
                 if (sdata == null) continue
                 if (search == null) search = { field: sdata.field, type: sdata.type }
                 // поиск среди изменений
-                let val1b = rec.w2ui?.changes?.[search.field] ?? obj.parseField(rec, search.field);
+                let val1b = rec.w2ui?.changes?.[search.field] ?? obj.parseField(rec, search.field)
                 val1 = (val1b != null && (typeof val1b != 'object' || val1b.toString != defaultToString))
                     ? String(val1b).toLowerCase()
                     : '' // do not match a bogus string
@@ -1440,10 +1440,10 @@ class w2grid extends w2base {
             let last  = rg.range[1]
             if (first.index == null) first.index = this.get(first.recid, true)
             if (last.index == null) last.index = this.get(last.recid, true)
-            if(first.index!= null && last.index!=null && first.index > last.index) {
-                let tmp = first;
-                first = last;
-                last = tmp;
+            if (first.index!= null && last.index!=null && first.index > last.index) {
+                let tmp = first
+                first = last
+                last = tmp
             }
             let td1  = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
             let td2  = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
@@ -6043,31 +6043,31 @@ class w2grid extends w2base {
                 if (query(el).hasClass('w2ui-col-number') || query(el).hasClass('w2ui-col-order')) {
                     //multiple rows reordering
                     //obj.selectNone()
-                    let sel = obj.getSelection();
-                    if(sel.length > 0 && typeof sel[0] == 'object') {
-                        obj.select([...new Set(sel.map(r => r.recid))]);
-                        sel = [...new Set(obj.getSelection().map(r => r.recid))];
+                    let sel = obj.getSelection()
+                    if (sel.length > 0 && typeof sel[0] == 'object') {
+                        obj.select([...new Set(sel.map(r => r.recid))])
+                        sel = [...new Set(obj.getSelection().map(r => r.recid))]
                     }
-                    if(sel.indexOf(obj.last.move.recid) == -1) {
-                        obj.selectNone();
-                        obj.select([obj.last.move.recid]);
-                        sel = [obj.last.move.recid];
+                    if (sel.indexOf(obj.last.move.recid) == -1) {
+                        obj.selectNone()
+                        obj.select([obj.last.move.recid])
+                        sel = [obj.last.move.recid]
                     }
                     //select children
-                    let new_sel = [];
+                    let new_sel = []
                     let selectExpandedChildren = (recid) => {
-                        let rec = obj.get(recid);
-                        if(rec?.w2ui?.children) {
+                        let rec = obj.get(recid)
+                        if (rec?.w2ui?.children) {
                             rec.w2ui.children.forEach(c => {
-                                let child_rec = obj.get(c.recid);
-                                if(!child_rec) return;
-                                new_sel.push(c.recid);
-                                selectExpandedChildren(c.recid);
-                            });
+                                let child_rec = obj.get(c.recid)
+                                if (!child_rec) return
+                                new_sel.push(c.recid)
+                                selectExpandedChildren(c.recid)
+                            })
                         }
                     }
-                    sel.forEach((recid) => selectExpandedChildren(recid));
-                    sel = [...sel, ...new_sel];
+                    sel.forEach((recid) => selectExpandedChildren(recid))
+                    sel = [...sel, ...new_sel]
                     obj.last.move.reorder = true
                     // suppress hover
                     let eColor = query(obj.box).find('.w2ui-even.w2ui-empty-record').css('background-color')
@@ -6080,25 +6080,25 @@ class w2grid extends w2base {
                     if (!mv.ghost) {
                         //multiple rows reordering
                         //let row = query(obj.box).find(`#grid_${obj.name}_rec_${mv.recid}`)
-                        let rows = sel.map(r => query(obj.box).find(`#grid_${obj.name}_rec_${r}`));
+                        let rows = sel.map(r => query(obj.box).find(`#grid_${obj.name}_rec_${r}`))
                         let tmp = rows[0].parents('table').find('tr:first-child').get(0).cloneNode(true)
                         mv.offsetY = event.offsetY
                         //multiple rows reordering
                         //mv.from = mv.recid
-                        mv.from = sel;
+                        mv.from = sel
                         //mv.pos = {top: row.get(0).offsetTop - 1, left: row.get(0).offsetLeft}
                         mv.pos = {top: rows[0].get(0).offsetTop - 1, left: rows[rows.length-1].get(0).offsetLeft}
                         //mv.ghost = query(row.get(0).cloneNode(true))
-                        mv.ghost = query(rows.map(row => row.get(0).cloneNode(true)));
+                        mv.ghost = query(rows.map(row => row.get(0).cloneNode(true)))
                         mv.ghost.removeAttr('id')
                         mv.ghost.find('td').css({
                             'border-top': '1px solid silver',
                             'border-bottom': '1px solid silver'
                         })
                         rows.forEach(row => {
-                            row.find('td').remove();
+                            row.find('td').remove()
                             row.append(`<td colspan="1000"><div class="w2ui-reorder-empty" style="height: ${(obj.recordHeight - 2)}px"></div></td>`)
-                        });
+                        })
                         recs.append('<div id="grid_'+ obj.name + '_ghost_line" style="position: absolute; z-index: 999999; pointer-events: none; width: 100%;"></div>')
                         recs.append('<table id="grid_'+ obj.name + '_ghost" style="position: absolute; z-index: 999998; opacity: 0.9; pointer-events: none;"></table>')
                         query(obj.box).find('#grid_'+ obj.name + '_ghost').append(tmp).append(mv.ghost)
@@ -6303,7 +6303,7 @@ class w2grid extends w2base {
                         let ind1 = mv.from.map(recid => obj.get(recid, true))
                         let ind2 = obj.get(mv.to, true)
                         if (mv.to == 'bottom') ind2 = obj.records.length // end of list
-                        let tmp = ind1.map(ind => obj.records[ind]);
+                        let tmp = ind1.map(ind => obj.records[ind])
                         // swap records
                         if (ind1 != null && ind2 != null) {
                             obj.records.splice(ind1[0], ind1.length)
@@ -6319,8 +6319,8 @@ class w2grid extends w2base {
                             .find(`#grid_${obj.name}_columns .w2ui-col-header`)
                             .removeClass('w2ui-col-sorted')
                         resetRowReorder()
-                        obj.selectNone(true);
-                        obj.select(mv.from);
+                        obj.selectNone(true)
+                        obj.select(mv.from)
                         // event after
                         edata.finish()
                     } else {
@@ -7495,7 +7495,7 @@ class w2grid extends w2base {
                             await event.complete
                             this.initSearchLists(search.field)
                         }
-                     })
+                    })
                     if (sdata && sdata.text != null) {
                         fld.set({ id: sdata.value, text: sdata.text })
                     }
