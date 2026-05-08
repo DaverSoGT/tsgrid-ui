@@ -88,8 +88,8 @@ module.exports = {
             ],
             rules: {
                 'align-assignments/align-assignments': 'off',          // no equivalent in TS world
-                '@typescript-eslint/no-explicit-any': 'off',           // re-enabled in Phase 6
-                '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
+                '@typescript-eslint/no-explicit-any': 'error',         // Phase 6: every `any` must have eslint-disable + `// any: <reason>` comment
+                '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
                 '@typescript-eslint/ban-ts-comment': ['warn', { 'ts-expect-error': 'allow-with-description' }],
                 // Disable JS-only rules that conflict with TS
                 'no-undef': 'off',
