@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Smoke: Grid Basic</title>
+    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        #grid { width: 800px; height: 400px; }
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
+    <script src="../../dist/w2ui.js"></script>
+    <script>
+        var grid = new w2grid({
+            name: 'grid-basic',
+            columns: [
+                { field: 'recid',  caption: 'ID',         size: '50px' },
+                { field: 'fname',  caption: 'First Name',  size: '30%' },
+                { field: 'lname',  caption: 'Last Name',   size: '30%' },
+                { field: 'email',  caption: 'Email',       size: 'auto' }
+            ],
+            records: [
+                { recid: 1, fname: 'Alice',   lname: 'Smith',    email: 'alice@example.com' },
+                { recid: 2, fname: 'Bob',     lname: 'Jones',    email: 'bob@example.com' },
+                { recid: 3, fname: 'Carol',   lname: 'Williams', email: 'carol@example.com' },
+                { recid: 4, fname: 'Dave',    lname: 'Brown',    email: 'dave@example.com' },
+                { recid: 5, fname: 'Eve',     lname: 'Davis',    email: 'eve@example.com' },
+                { recid: 6, fname: 'Frank',   lname: 'Miller',   email: 'frank@example.com' },
+                { recid: 7, fname: 'Grace',   lname: 'Wilson',   email: 'grace@example.com' },
+                { recid: 8, fname: 'Hank',    lname: 'Moore',    email: 'hank@example.com' },
+                { recid: 9, fname: 'Irene',   lname: 'Taylor',   email: 'irene@example.com' },
+                { recid: 10, fname: 'Jack',   lname: 'Anderson', email: 'jack@example.com' }
+            ]
+        })
+        grid.render(document.getElementById('grid'))
+        window._smokeGrid = grid
+        window._smokeReady = true
+    </script>
+</body>
+</html>

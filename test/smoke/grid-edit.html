@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Smoke: Grid Edit</title>
+    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <style>
+        body { margin: 0; padding: 0; }
+        #grid { width: 800px; height: 400px; }
+    </style>
+</head>
+<body>
+    <div id="grid"></div>
+    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
+    <script src="../../dist/w2ui.js"></script>
+    <script>
+        var grid = new w2grid({
+            name: 'grid-edit',
+            columns: [
+                { field: 'recid', caption: 'ID',    size: '50px' },
+                { field: 'name',  caption: 'Name',  size: '40%', editable: { type: 'text' } },
+                { field: 'value', caption: 'Value', size: 'auto', editable: { type: 'text' } }
+            ],
+            records: [
+                { recid: 1, name: 'Item One',   value: 'alpha' },
+                { recid: 2, name: 'Item Two',   value: 'beta' },
+                { recid: 3, name: 'Item Three', value: 'gamma' }
+            ]
+        })
+        grid.render(document.getElementById('grid'))
+        window._smokeGrid = grid
+        window._smokeReady = true
+    </script>
+</body>
+</html>
