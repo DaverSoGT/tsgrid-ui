@@ -12,12 +12,13 @@
   "style": "dist/w2ui.css",
   "scripts": {
     "start": "run-script-os",
-    "start:win32": "start http://localhost:3500 & python3 -m http.server 3500",
+    "start:win32": "start http://localhost:3500 & python -m http.server 3500",
     "start:nix": "open http://localhost:3500; python3 -m http.server 3500",
     "test": "eslint src demos --ext js"
   },
   "devDependencies": {
     "@babel/core": "^7.19.3",
+    "@playwright/test": "^1.59.1",
     "del": "^6.0.0",
     "eslint": "^8.25.0",
     "eslint-plugin-align-assignments": "^1.1.2",

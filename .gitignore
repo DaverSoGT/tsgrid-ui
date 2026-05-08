@@ -1,5 +1,6 @@
 tmp/*
 node_modules/
+.atl/
 /npm-debug.log
 npm-shrinkwrap.json
 package-lock.json
@@ -15,3 +16,7 @@ dist/w2ui-*.tgz
 *.iws
 .DAV
 *~
+test/smoke/__snapshots__/
+test/smoke/__results__/
+baseline/
+.tscache/
