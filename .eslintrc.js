@@ -89,11 +89,12 @@ module.exports = {
             rules: {
                 'align-assignments/align-assignments': 'off',          // no equivalent in TS world
                 '@typescript-eslint/no-explicit-any': 'off',           // re-enabled in Phase 6
-                '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+                '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
                 '@typescript-eslint/ban-ts-comment': ['warn', { 'ts-expect-error': 'allow-with-description' }],
                 // Disable JS-only rules that conflict with TS
                 'no-undef': 'off',
                 'no-unused-vars': 'off',
+                'dot-notation': 'off',                                 // bracket access on `any`/dynamic types is intentional; TS itself enforces correctness
             }
         }
     ]
