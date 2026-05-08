@@ -60,18 +60,55 @@ Please make sure that the same issue was not previously submitted by someone els
 
 ## Building
 
-It is a Node.JS repository, so you need to have node installed to install all dependencies and compile w2ui.
+This is a Node.js + pnpm repository. Install dependencies and run the build:
 
 ```
-npm install
+pnpm install
+pnpm build
 ```
 
-To compile JS and CSS, run
-```
-gulp
+The build produces:
+
+- `dist/w2ui.js` — IIFE/CJS/AMD bundle with global `window.w2ui` registration (legacy script-tag consumers and the jQuery `w2compat` shim)
+- `dist/w2ui.es6.js` — pure ESM bundle for `import` consumers
+- `dist/w2ui.d.ts` — TypeScript type declarations rolled up across all 23 public exports
+- `dist/w2ui.css` / `dist/w2ui-dark.css` — compiled stylesheets (and `.min.css` variants)
+- `dist/w2ui-font.woff` — embedded into the CSS via base64
+
+JavaScript bundling is done by **tsup** (esbuild) and CSS/iconfont by **gulp**. The Gulp task you may have used in v2.0 (`gulp` / `gulp build`) still works for CSS/icons but no longer handles the JS bundle.
+
+### Other scripts
+
+- `pnpm test` — ESLint + `tsc --noEmit` (lint + typecheck)
+- `pnpm smoke` — Playwright smoke harness for grid, form, layout, sidebar, popup, and tooltip widgets
+- `pnpm verify` — `test` + `smoke` (use as your CI signal)
+- `pnpm start` — local server on http://localhost:3500 to preview the demos
+
+## TypeScript Support
+
+Starting with v2.1.0, w2ui ships with full TypeScript type declarations.
+
+```ts
+import { w2grid, type W2GridColumn } from 'w2ui'
+import 'w2ui/css'
+
+const grid = new w2grid({
+    name: 'myGrid',
+    columns: [
+        { field: 'recid', text: 'ID',   size: '10%' },
+        { field: 'fname', text: 'Name', size: '50%' },
+    ] satisfies W2GridColumn[],
+    records: [
+        { recid: 1, fname: 'Alice' },
+        { recid: 2, fname: 'Bob' },
+    ],
+})
+grid.render('#main')
 ```
 
-It will bundle all necessary files into `dist/w2ui.min.js` and `dist/w2ui.min.css`
+All 23 public exports are typed, including widget classes (`w2grid`, `w2form`, `w2field`, `w2layout`, `w2sidebar`, `w2tabs`, `w2toolbar`, `w2popup`, `w2tooltip`), helper functions (`w2alert`, `w2confirm`, `w2prompt`, `w2menu`, `w2color`, `w2date`), utilities (`w2utils`, `w2locale`, `w2base`, `w2event`, `query`, `Tooltip`, `Dialog`), and domain interfaces (`W2GridColumn`, `W2GridSearch`, `W2GridSelection`, `W2MessageProm`, etc.).
+
+The library is compiled under TypeScript strict mode with `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` enabled. See [`CHANGELOG.md`](CHANGELOG.md) for the full v2.1.0 native-port history.
 
 ## File Structure
 
@@ -100,7 +137,7 @@ If you're using **`w2ui`**, I'd love to hear about it, please email to `vitmalin
 Your contributions are welcome. However, a few things you need to know before contributing:
 
 1. Please check out the latest code before changing anything. It is harder to merge if your changes will not merge cleanly.
-2. If you are changing JS files - do all changes in /src folder
+2. If you are changing source files - do all changes in `/src` (TypeScript as of v2.1.0)
 3. If you are changing CSS files - do all changes in LESS in /src/less/src
 4. If you want to help with unit test - do all changes in /qa
 5. If you want to change documentation - do all changes in /docs
