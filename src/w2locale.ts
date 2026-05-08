@@ -9,7 +9,25 @@
  * YY is the ISO 3166-1 alpha-2 country code ( see https://en.wikipedia.org/wiki/ISO_3166-2 )
  */
 
-const w2locale = {
+interface W2Locale {
+    locale: string
+    dateFormat: string
+    timeFormat: string
+    datetimeFormat: string
+    currencyPrefix: string
+    currencySuffix: string
+    currencyPrecision: number
+    groupSymbol: string
+    decimalSymbol: string
+    shortmonths: string[]
+    fullmonths: string[]
+    shortdays: string[]
+    fulldays: string[]
+    weekStarts: string
+    phrases: Record<string, string> | null
+}
+
+const w2locale: W2Locale = {
     'locale'            : 'en-US',
     'dateFormat'        : 'm/d/yyyy',
     'timeFormat'        : 'hh:mi pm',
@@ -129,3 +147,4 @@ const w2locale = {
     }
 }
 export { w2locale }
+export type { W2Locale }
