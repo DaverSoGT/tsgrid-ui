@@ -1244,7 +1244,7 @@ class w2grid extends w2base {
 
         // grab paths before sorting for efficiency and because calling obj.get()
         // while sorting 'obj.records' is unsafe, at least on webkit
-        function preparePaths() {
+        function preparePaths(): void {
             for (let i = 0; i < obj.records.length; i++) {
                 const rec = obj.records[i]
                 if (rec.w2ui?.parent_recid != null) {
@@ -1254,7 +1254,7 @@ class w2grid extends w2base {
         }
 
         // cleanup and release memory allocated by preparePaths()
-        function cleanupPaths() {
+        function cleanupPaths(): void {
             for (let i = 0; i < obj.records.length; i++) {
                 const rec = obj.records[i]
                 if (rec.w2ui?.parent_recid != null) {
@@ -1264,7 +1264,7 @@ class w2grid extends w2base {
         }
 
         // compare two paths, from root of tree to given records
-        function compareRecordPaths(a, b) {
+        function compareRecordPaths(a: W2GridRecord, b: W2GridRecord): number {
             if ((!a.w2ui || a.w2ui.parent_recid == null) && (!b.w2ui || b.w2ui.parent_recid == null)) {
                 return compareRecords(a, b) // no tree, fast path
             }
@@ -1281,10 +1281,10 @@ class w2grid extends w2base {
         }
 
         // return an array of all records from root to and including 'rec'
-        function getRecordPath(rec) {
+        function getRecordPath(rec: W2GridRecord): W2GridRecord[] {
             if (!rec.w2ui || rec.w2ui.parent_recid == null) return [rec]
             if (rec.w2ui._path)
-                return rec.w2ui._path
+                return rec.w2ui._path as W2GridRecord[]
             // during actual sort, we should never reach this point
             const subrec = obj.get(rec.w2ui.parent_recid)
             if (!subrec) {
@@ -1295,13 +1295,13 @@ class w2grid extends w2base {
         }
 
         // compare two records according to sortData and finally recid
-        function compareRecords(a, b) {
+        function compareRecords(a: W2GridRecord, b: W2GridRecord): number {
             if (a === b) return 0 // optimize, same object
             for (let i = 0; i < obj.sortData.length; i++) {
                 const fld     = obj.sortData[i].field
                 const sortFld = (obj.sortData[i].field_) ? obj.sortData[i].field_ : fld
-                let aa      = a[sortFld]
-                let bb      = b[sortFld]
+                let aa: any = a[sortFld]
+                let bb: any = b[sortFld]
                 if (String(fld).indexOf('.') != -1) {
                     aa = obj.parseField(a, sortFld)
                     bb = obj.parseField(b, sortFld)
@@ -1321,7 +1321,8 @@ class w2grid extends w2base {
         }
 
         // compare two values, aa and bb, producing consistent ordering
-        function compareCells(aa, bb, i, direction, sortMode?) {
+        // any: aa/bb are record field values — dynamic types (string | number | Date | object)
+        function compareCells(aa: any, bb: any, i: number, direction: string, sortMode?: string | ((a: any, b: any) => number)) {
             // if both objects are strictly equal, we're done
             if (aa === bb)
                 return 0
@@ -1442,7 +1443,7 @@ class w2grid extends w2base {
         return time
 
         // check if a record (or one of its closed children) matches the search data
-        function searchRecord(rec) {
+        function searchRecord(rec: W2GridRecord): boolean {
             let fl = 0, val1, val2, val3, tmp
             let orEqual = false
             for (let j = 0; j < obj.searchData.length; j++) {
@@ -1620,7 +1621,7 @@ class w2grid extends w2base {
         }
 
         // add parents nodes recursively
-        function addParent(recid) {
+        function addParent(recid: string | number | null): void {
             const i = obj.get(recid, true)
             if (i == null || recid == null || duplicateMap[recid] || obj.last.searchIds.includes(i)) {
                 return
@@ -5222,7 +5223,7 @@ class w2grid extends w2base {
         }
     }
 
-    sort(field, direction, multiField) { // if no params - clears sort
+    sort(field?: string, direction?: 'asc' | 'desc' | '' | null, multiField?: boolean) { // if no params - clears sort
         // event before
         const edata = this.trigger('sort', { target: this.name, field, direction, multiField })
         if (edata.isCancelled === true) return
