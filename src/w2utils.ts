@@ -1,9 +1,9 @@
-// @ts-nocheck
-// Stub phase (T2c.2): TypeScript migration scaffolding. Full type annotations in Phase 6.
-// eslint-disable @typescript-eslint/no-explicit-any
 /**
  * Part of w2ui 2.0 library
  *  - Dependencies: mQuery, w2utils, w2base, w2locale
+ *
+ * T2.5: @ts-nocheck removed; file typed aggressively per typing_policy.
+ * See commit body for targeted-any inventory.
  *
  * == TODO ==
  *  - add w2utils.lang wrap for all captions in all buttons.
@@ -36,16 +36,185 @@ import { w2locale } from './w2locale.js'
 import { query as _query, Query } from './query.js'
 
 // w2utils always calls query() with a selector (never a callback) so the return is always Query.
-// Cast once here to avoid 80+ void|Query narrowing errors throughout this file.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const query = _query as (selector: any, context?: any) => Query
+// any: query() overload returns void|Query when called with a callback; we only use selector calls here
+const query = _query as (selector: unknown, context?: unknown) => Query
 
 // variable that holds all w2ui objects
-const w2ui = {}
+const w2ui: Record<string, unknown> = {}
+
+// ---------------------------------------------------------------------------
+// Public interfaces — exported via w2utils instance
+// ---------------------------------------------------------------------------
+
+/** Settings object merged from w2locale + user locale overrides */
+interface W2UISettings {
+    dataType: string
+    dateFormat: string
+    timeFormat: string
+    datetimeFormat: string
+    dateStartYear: number
+    dateEndYear: number
+    currencyPrefix: string
+    currencySuffix: string
+    currencyPrecision: number
+    groupSymbol: string
+    decimalSymbol: string
+    shortmonths: string[]
+    fullmonths: string[]
+    shortdays: string[]
+    fulldays: string[]
+    weekStarts: string
+    macButtonOrder: boolean
+    warnNoPhrase: boolean
+    phrases: Record<string, string> | null
+    missing?: Record<string, string>
+    locale?: string
+    [key: string]: unknown   // locale files can add arbitrary keys; unknown forces cast at use-sites
+}
+
+/** Extra data passed to grid cell formatters */
+interface W2FormatterExtra {
+    value: unknown
+    params?: unknown
+    record?: unknown
+    [key: string]: unknown
+}
+
+/** Signature of a grid-cell formatter function */
+type W2Formatter = (record: W2FormatterExtra, extra?: W2FormatterExtra) => string
+
+/** Options for w2utils.lock() */
+interface W2LockOptions {
+    msg?: string | number
+    spinner?: boolean
+    opacity?: number
+    bgColor?: string
+    onClick?: () => void
+}
+
+/** Return value from w2utils.isTime() when retTime === true */
+interface W2TimeResult {
+    hours: number
+    minutes: number
+    seconds: number
+}
+
+/** RGB(A) color as returned by w2utils.parseColor() */
+interface W2Color {
+    r: number
+    g: number
+    b: number
+    a: number
+}
+
+/** Options for w2utils.marker() */
+interface W2MarkerOptions {
+    onlyFirst?: boolean
+    wholeWord?: boolean
+    isRegex?: boolean
+    tag?: string
+    class?: string
+    raplace?: (matched: string) => string
+}
+
+/** Route parameter descriptor */
+interface W2RouteKey {
+    name: string
+    optional: boolean
+}
+
+/** Parsed route as returned by w2utils.parseRoute() */
+interface W2ParsedRoute {
+    path: RegExp
+    keys: W2RouteKey[]
+}
+
+/** A normalized menu item */
+interface W2MenuItem {
+    id: string | number | null
+    text: string
+    caption?: string
+    class?: string
+    style?: string
+    attrs?: string
+    [key: string]: unknown
+}
+
+/** Options for w2utils.normMenu() */
+interface W2NormMenuOptions {
+    itemMap?: { id: string; text: string }
+    [key: string]: unknown
+}
+
+/** Options for w2utils.clone() */
+interface W2CloneOptions {
+    functions?: boolean
+    elements?: boolean
+    events?: boolean
+    exclude?: string[] | ((key: string, ctx: { obj: unknown; parent: string }) => boolean)
+    parent?: string
+}
+
+/** Promise-chain handle returned by w2utils.message() / .confirm() / .prompt() */
+interface W2MessageProm {
+    self: w2base
+    action(callBack: (event: unknown) => void): W2MessageProm
+    close(callBack: (event: unknown) => void): W2MessageProm
+    open(callBack: (event: unknown) => void): W2MessageProm
+    then(callBack: (event: unknown) => void): W2MessageProm
+    change?: (callBack: (event: unknown) => void) => W2MessageProm
+    [key: string]: unknown  // dynamic action keys (yes/no/ok/cancel) added at runtime
+}
+
+/** Where-descriptor for w2utils.message() */
+interface W2MessageWhere {
+    box: string | Element | null
+    after?: string | Element | null
+    owner?: { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void }
+    param?: unknown
+}
+
+/** Options for w2utils.message() */
+interface W2MessageOptions {
+    width?: number
+    height?: number
+    text?: string | null
+    body?: string
+    buttons?: string
+    html?: string
+    focus?: number | string | null
+    hideOn?: string[]
+    actions?: Record<string, unknown>
+    cancelAction?: string
+    on?: unknown
+    onOpen?: unknown
+    onClose?: unknown
+    onAction?: unknown
+    originalWidth?: number
+    originalHeight?: number
+    msgIndex?: number
+    tmp?: { zIndex: string; overflow: string }
+    input?: Element | null
+    box?: Element | null
+    trigger?: (event: string, data: Record<string, unknown>) => unknown
+    // any: message mixes in w2base methods at runtime via extend(); typed loosely here
+    [key: string]: unknown
+}
 
 class Utils {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any
+    version: string
+    tmp: Record<string, unknown>
+    settings: W2UISettings
+    i18nCompare: (a: string, b: string) => number
+    hasLocalStorage: boolean
+    isMac: boolean
+    isMobile: boolean
+    isIOS: boolean
+    isAndroid: boolean
+    isSafari: boolean
+    isFirefox: boolean
+    formatters: Record<string, W2Formatter>
+
     constructor () {
         this.version = '2.0.x'
         this.tmp = {}
@@ -69,135 +238,140 @@ class Utils {
 
         // Formatters: Primarily used in grid
         this.formatters = {
-            'number'(record, extra) {
+            'number'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
-                if (parseInt(params) > 20) params = 20
-                if (parseInt(params) < 0) params = 0
+                let params = extra.params
+                if (parseInt(String(params)) > 20) params = 20
+                if (parseInt(String(params)) < 0) params = 0
                 if (value == null || value === '') return ''
-                return w2utils.formatNumber(parseFloat(value), params, true)
+                return w2utils.formatNumber(parseFloat(String(value)), params as number, true)
             },
 
-            'float'(record, extra) {
+            'float'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 return w2utils.formatters.number(record, extra)
             },
 
-            'int'(record, extra) {
+            'int'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 return w2utils.formatters.number(record, extra)
             },
 
-            'money'(record, extra) {
+            'money'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
-                const { value, params } = extra
+                const { value } = extra
                 if (value == null || value === '') return ''
                 const data = w2utils.formatNumber(Number(value), w2utils.settings.currencyPrecision, true)
                 return (w2utils.settings.currencyPrefix || '') + data + (w2utils.settings.currencySuffix || '')
             },
 
-            'currency'(record, extra) {
+            'currency'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 return w2utils.formatters.money(record, extra)
             },
 
-            'percent'(record, extra) {
+            'percent'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value, params } = extra
                 if (value == null || value === '') return ''
-                return w2utils.formatNumber(value, params || 1) + '%'
+                return w2utils.formatNumber(value, (params as number) || 1) + '%'
             },
 
-            'size'(record, extra) {
-                if (extra == undefined) extra = record
-                const { value, params } = extra
-                if (value == null || value === '') return ''
-                return w2utils.formatSize(parseInt(value))
-            },
-
-            'date'(record, extra) {
+            'size'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
+                if (value == null || value === '') return ''
+                return String(w2utils.formatSize(parseInt(String(value))))
+            },
+
+            'date'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
+                if (extra == undefined) extra = record
+                const { value } = extra
+                let params = extra.params as string | undefined
                 if (params === '') params = w2utils.settings.dateFormat
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, params, true)
-                if (dt === false) dt = w2utils.isDate(value, params, true)
-                return '<span title="'+ dt +'">' + w2utils.formatDate(dt, params) + '</span>'
+                let dt: boolean | Date = w2utils.isDateTime(value, params ?? null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, params ?? null, true) as boolean | Date
+                const dtStr = dt instanceof Date ? dt : ''
+                return '<span title="'+ dtStr +'">' + w2utils.formatDate(dt instanceof Date ? dt : undefined, params) + '</span>'
             },
 
-            'datetime'(record, extra) {
+            'datetime'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
+                let params = extra.params as string | undefined
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, params, true)
-                if (dt === false) dt = w2utils.isDate(value, params, true)
-                return '<span title="'+ dt +'">' + w2utils.formatDateTime(dt, params) + '</span>'
+                let dt: boolean | Date = w2utils.isDateTime(value, params ?? null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, params ?? null, true) as boolean | Date
+                const dtStr = dt instanceof Date ? dt : ''
+                return '<span title="'+ dtStr +'">' + w2utils.formatDateTime(dt instanceof Date ? dt : undefined, params) + '</span>'
             },
 
-            'time'(record, extra) {
+            'time'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
+                let params = extra.params as string | undefined
                 if (params === '') params = w2utils.settings.timeFormat
                 if (params === 'h12') params = 'hh:mi pm'
                 if (params === 'h24') params = 'h24:mi'
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, params, true)
-                if (dt === false) dt = w2utils.isDate(value, params, true)
-                return '<span title="'+ dt +'">' + w2utils.formatTime(value, params) + '</span>'
+                let dt: boolean | Date = w2utils.isDateTime(value, params ?? null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, params ?? null, true) as boolean | Date
+                const dtStr = dt instanceof Date ? dt : ''
+                return '<span title="'+ dtStr +'">' + w2utils.formatTime(value, params) + '</span>'
             },
 
-            'timestamp'(record, extra) {
+            'timestamp'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
+                let params = extra.params as string | undefined
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, params, true)
-                if (dt === false) dt = w2utils.isDate(value, params, true)
-                return dt.toString ? dt.toString() : ''
+                let dt: boolean | Date = w2utils.isDateTime(value, params ?? null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, params ?? null, true) as boolean | Date
+                return dt instanceof Date ? dt.toString() : ''
             },
 
-            'gmt'(record, extra) {
+            'gmt'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value } = extra
-                let { params } = extra
+                let params = extra.params as string | undefined
                 if (params === '') params = w2utils.settings.datetimeFormat
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, params, true)
-                if (dt === false) dt = w2utils.isDate(value, params, true)
-                return dt.toUTCString ? dt.toUTCString() : ''
+                let dt: boolean | Date = w2utils.isDateTime(value, params ?? null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, params ?? null, true) as boolean | Date
+                return dt instanceof Date ? dt.toUTCString() : ''
             },
 
-            'age'(record, extra) {
+            'age'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value, params } = extra
                 if (value == null || value === 0 || value === '') return ''
-                let dt = w2utils.isDateTime(value, null, true)
-                if (dt === false) dt = w2utils.isDate(value, null, true)
-                return '<span title="'+ dt +'">' + w2utils.age(value) + (params ? (' ' + params) : '') + '</span>'
+                let dt: boolean | Date = w2utils.isDateTime(value, null, true) as boolean | Date
+                if (dt === false) dt = w2utils.isDate(value, null, true) as boolean | Date
+                const dtStr = dt instanceof Date ? dt : ''
+                return '<span title="'+ dtStr +'">' + w2utils.age(value) + (params ? (' ' + params) : '') + '</span>'
             },
 
-            'interval'(record, extra) {
+            'interval'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
                 const { value, params } = extra
                 if (value == null || value === 0 || value === '') return ''
-                return w2utils.interval(value) + (params ? (' ' + params) : '')
+                return w2utils.interval(Number(value)) + (params ? (' ' + params) : '')
             },
 
-            'toggle'(record, extra) {
+            'toggle'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
-                const { value, params } = extra
+                const { value } = extra
                 return (value ? w2utils.lang('Yes') : '')
             },
 
-            'password'(record, extra) {
+            'password'(record: W2FormatterExtra, extra?: W2FormatterExtra): string {
                 if (extra == undefined) extra = record
-                const { value, params } = extra
+                const { value } = extra
                 let ret = ''
                 if (!value) return ret
-                for (let i = 0; i < value.length; i++) {
+                const strVal = String(value)
+                for (let i = 0; i < strVal.length; i++) {
                     ret += '*'
                 }
                 return ret
@@ -218,17 +392,17 @@ class Utils {
         }
     }
 
-    isBin(val) {
+    isBin(val: unknown): boolean {
         const re = /^[0-1]+$/
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isInt(val) {
+    isInt(val: unknown): boolean {
         const re = /^[-+]?[0-9]+$/
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isFloat(val) {
+    isFloat(val: unknown): boolean {
         if (typeof val === 'string') {
             val = val.replace(new RegExp(this.settings.groupSymbol, 'g'), '')
                 .replace(this.settings.decimalSymbol, '.')
@@ -236,7 +410,7 @@ class Utils {
         return (typeof val === 'number' || (typeof val === 'string' && val !== '')) && !isNaN(Number(val))
     }
 
-    isMoney(val) {
+    isMoney(val: unknown): boolean {
         if (typeof val === 'object' || val === '') return false
         if (this.isFloat(val)) return true
         const se = this.settings
@@ -246,63 +420,62 @@ class Utils {
         if (typeof val === 'string') {
             val = val.replace(new RegExp(se.groupSymbol, 'g'), '')
         }
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isHex(val) {
+    isHex(val: unknown): boolean {
         const re = /^(0x)?[0-9a-fA-F]+$/
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isAlphaNumeric(val) {
+    isAlphaNumeric(val: unknown): boolean {
         const re = /^[a-zA-Z0-9_-]+$/
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isEmail(val) {
+    isEmail(val: unknown): boolean {
         const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/
-        return email.test(val)
+        return email.test(String(val))
     }
 
-    isIpAddress(val) {
+    isIpAddress(val: unknown): boolean {
         const re = new RegExp('^' +
             '((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' +
             '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' +
             '$')
-        return re.test(val)
+        return re.test(String(val))
     }
 
-    isDate(val, format, retDate) {
+    isDate(val: unknown, format?: string | null, retDate?: boolean): boolean | Date {
         if (!val) return false
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let dt: any = 'Invalid Date'
-        let month, day, year
+        let dt: Date | string = 'Invalid Date'
+        let month: number | string | undefined, day: number | string | undefined, year: number | string | undefined
 
         if (format == null) format = this.settings.dateFormat
 
-        if (typeof val.getFullYear === 'function') { // date object
+        if (val instanceof Date) { // date object
             year  = val.getFullYear()
             month = val.getMonth() + 1
             day   = val.getDate()
-        } else if (parseInt(val) == val && parseInt(val) > 0) {
-            val   = new Date(parseInt(val))
-            year  = val.getFullYear()
-            month = val.getMonth() + 1
-            day   = val.getDate()
+        } else if (typeof val === 'number' || (typeof val === 'string' && parseInt(val) == (val as unknown as number) && parseInt(val) > 0)) {
+            const d = new Date(parseInt(String(val)))
+            year  = d.getFullYear()
+            month = d.getMonth() + 1
+            day   = d.getDate()
         } else {
-            val = String(val)
+            let strVal = String(val)
             // convert month formats
             if (new RegExp('mon', 'ig').test(format)) {
                 format = format.replace(/month/ig, 'm').replace(/mon/ig, 'm').replace(/dd/ig, 'd').replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
-                val    = val.replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
+                strVal = strVal.replace(/[, ]/ig, '/').replace(/\/\//g, '/').toLowerCase()
                 for (let m = 0, len = this.settings.fullmonths.length; m < len; m++) {
                     const t = this.settings.fullmonths[m]
-                    val   = val.replace(new RegExp(t, 'ig'), (parseInt(m) + 1)).replace(new RegExp(t.substr(0, 3), 'ig'), (parseInt(m) + 1))
+                    strVal = strVal.replace(new RegExp(t, 'ig'), String(m + 1)).replace(new RegExp(t.substr(0, 3), 'ig'), String(m + 1))
                 }
             }
             // format date
-            const tmp  = val.replace(/-/g, '/').replace(/\./g, '/').toLowerCase().split('/')
+            const tmp  = strVal.replace(/-/g, '/').replace(/\./g, '/').toLowerCase().split('/')
             const tmp2 = format.replace(/-/g, '/').replace(/\./g, '/').toLowerCase()
             if (tmp2 === 'mm/dd/yyyy') { month = tmp[0]; day = tmp[1]; year = tmp[2] }
             if (tmp2 === 'm/d/yyyy') { month = tmp[0]; day = tmp[1]; year = tmp[2] }
@@ -324,34 +497,33 @@ class Utils {
         if (!this.isInt(year)) return false
         if (!this.isInt(month)) return false
         if (!this.isInt(day)) return false
-        year  = +year
-        month = +month
-        day   = +day
-        dt    = new Date(year, month - 1, day)
-        dt.setFullYear(year)
+        const numYear  = +year
+        const numMonth = +month
+        const numDay   = +day
+        dt    = new Date(numYear, numMonth - 1, numDay)
+        dt.setFullYear(numYear)
         // do checks
-        if (month == null) return false
+        if (numMonth == null) return false
         if (String(dt) === 'Invalid Date') return false
-        if ((dt.getMonth() + 1 !== month) || (dt.getDate() !== day) || (dt.getFullYear() !== year)) return false
+        if ((dt.getMonth() + 1 !== numMonth) || (dt.getDate() !== numDay) || (dt.getFullYear() !== numYear)) return false
         if (retDate === true) return dt; else return true
     }
 
-    isTime(val, retTime) {
+    isTime(val: unknown, retTime?: boolean): boolean | W2TimeResult {
         // Both formats 10:20pm and 22:20
         if (val == null) return false
-        let max
+        let max: number
         // -- process american format
-        val      = String(val)
-        val      = val.toUpperCase()
-        const am       = val.indexOf('AM') >= 0
-        const pm       = val.indexOf('PM') >= 0
+        let strVal = String(val).toUpperCase()
+        const am       = strVal.indexOf('AM') >= 0
+        const pm       = strVal.indexOf('PM') >= 0
         const ampm = (pm || am)
         if (ampm) max = 12; else max = 24
-        val = val.replace('AM', '').replace('PM', '').trim()
+        strVal = strVal.replace('AM', '').replace('PM', '').trim()
         // ---
-        const tmp = val.split(':')
-        let h   = parseInt(tmp[0] || 0)
-        const m = parseInt(tmp[1] || 0), s = parseInt(tmp[2] || 0)
+        const tmp = strVal.split(':')
+        let h   = parseInt(tmp[0] || '0')
+        const m = parseInt(tmp[1] || '0'), s = parseInt(tmp[2] || '0')
         // accept edge case: 3PM is a good timestamp, but 3 (without AM or PM) is NOT:
         if ((!ampm || tmp.length !== 1) && tmp.length !== 2 && tmp.length !== 3) { return false }
         if (tmp[0] === '' || h < 0 || h > max || !this.isInt(tmp[0]) || tmp[0].length > 2) { return false }
@@ -374,60 +546,61 @@ class Utils {
         return true
     }
 
-    isDateTime(val, format, retDate) {
-        if (typeof val.getFullYear === 'function') { // date object
+    isDateTime(val: unknown, format?: string | null, retDate?: boolean): boolean | Date {
+        if (val instanceof Date) { // date object
             if (retDate !== true) return true
             return val
         }
-        const intVal = parseInt(val)
-        if (intVal === val) {
+        const intVal = parseInt(String(val))
+        if (intVal === (val as number)) {
             if (intVal < 0) return false
             else if (retDate !== true) return true
             else return new Date(intVal)
         }
-        const tmp = String(val).indexOf(' ')
+        const strVal = String(val)
+        const tmp = strVal.indexOf(' ')
         if (tmp < 0) {
-            if (String(val).indexOf('T') < 0 || String(new Date(val)) == 'Invalid Date') return false
+            if (strVal.indexOf('T') < 0 || String(new Date(strVal)) == 'Invalid Date') return false
             else if (retDate !== true) return true
-            else return new Date(val)
+            else return new Date(strVal)
         } else {
             if (format == null) format = this.settings.datetimeFormat
             const formats = format.split('|')
-            const values  = [val.substr(0, tmp), val.substr(tmp).trim()]
+            const values  = [strVal.substr(0, tmp), strVal.substr(tmp).trim()]
             formats[0]  = formats[0].trim()
             if (formats[1]) formats[1] = formats[1].trim()
             // check
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tmp1 = this.isDate(values[0], formats[0], true) as any
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tmp2 = this.isTime(values[1], true) as any
+            const tmp1 = this.isDate(values[0], formats[0], true)
+            const tmp2 = this.isTime(values[1], true)
             if (tmp1 !== false && tmp2 !== false) {
                 if (retDate !== true) return true
-                tmp1.setHours(tmp2.hours)
-                tmp1.setMinutes(tmp2.minutes)
-                tmp1.setSeconds(tmp2.seconds)
-                return tmp1
+                const dt1 = tmp1 as Date
+                const t2  = tmp2 as W2TimeResult
+                dt1.setHours(t2.hours)
+                dt1.setMinutes(t2.minutes)
+                dt1.setSeconds(t2.seconds)
+                return dt1
             } else {
                 return false
             }
         }
     }
 
-    age(dateStr) {
-        let d1
+    age(dateStr: unknown): string {
+        let d1: Date
         if (dateStr === '' || dateStr == null) return ''
-        if (typeof dateStr.getFullYear === 'function') { // date object
+        if (dateStr instanceof Date) { // date object
             d1 = dateStr
-        } else if (parseInt(dateStr) == dateStr && parseInt(dateStr) > 0) {
-            d1 = new Date(parseInt(dateStr))
+        } else if (typeof dateStr === 'number' || (typeof dateStr === 'string' && parseInt(dateStr) == (dateStr as unknown as number) && parseInt(dateStr) > 0)) {
+            d1 = new Date(parseInt(String(dateStr)))
         } else {
-            d1 = new Date(dateStr)
+            d1 = new Date(String(dateStr))
         }
         if (String(d1) === 'Invalid Date') return ''
 
         const d2     = new Date()
         const sec    = (d2.getTime() - d1.getTime()) / 1000
-        let amount = ''
+        let amount: number = 0
         let type   = ''
         if (sec < 0) {
             amount = 0
@@ -459,7 +632,7 @@ class Utils {
         return amount + ' ' + type + (amount > 1 ? 's' : '')
     }
 
-    interval(value) {
+    interval(value: number): string {
         let ret = ''
         if (value < 100) {
             ret = '< 0.01 sec'
@@ -483,9 +656,9 @@ class Utils {
         return ret
     }
 
-    date(dateStr) {
-        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !dateStr.getMonth)) return ''
-        let d1 = new Date(dateStr)
+    date(dateStr: unknown): string {
+        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
+        let d1 = new Date(dateStr as string | number)
         if (this.isInt(dateStr)) d1 = new Date(Number(dateStr)) // for unix timestamps
         if (String(d1) === 'Invalid Date') return ''
 
@@ -507,34 +680,34 @@ class Utils {
         return '<span title="'+ dd1 +' ' + time2 +'">'+ dsp +'</span>'
     }
 
-    formatSize(sizeStr) {
+    formatSize(sizeStr: unknown): string | number {
         if (!this.isFloat(sizeStr) || sizeStr === '') return ''
-        sizeStr = parseFloat(sizeStr)
-        if (sizeStr === 0) return 0
+        const num = parseFloat(String(sizeStr))
+        if (num === 0) return 0
         const sizes = ['Bt', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB']
-        const i     = parseInt( Math.floor( Math.log(sizeStr) / Math.log(1024) ) )
-        return (Math.floor(sizeStr / Math.pow(1024, i) * 10) / 10).toFixed(i === 0 ? 0 : 1) + ' ' + (sizes[i] || '??')
+        const i     = parseInt(String(Math.floor( Math.log(num) / Math.log(1024) )))
+        return (Math.floor(num / Math.pow(1024, i) * 10) / 10).toFixed(i === 0 ? 0 : 1) + ' ' + (sizes[i] || '??')
     }
 
-    formatNumber(val, fraction, useGrouping) {
+    formatNumber(val: unknown, fraction?: number | string | null, useGrouping?: boolean): string {
         if (val == null || val === '' || typeof val === 'object') return ''
-        const options = {
-            minimumFractionDigits: parseInt(fraction),
-            maximumFractionDigits: parseInt(fraction),
+        const options: Intl.NumberFormatOptions = {
+            minimumFractionDigits: fraction != null ? parseInt(String(fraction)) : undefined,
+            maximumFractionDigits: fraction != null ? parseInt(String(fraction)) : undefined,
             useGrouping: !!useGrouping
         }
-        if (fraction == null || fraction < 0) {
+        if (fraction == null || Number(fraction) < 0) {
             options.minimumFractionDigits = 0
             options.maximumFractionDigits = 20
         }
-        return parseFloat(val).toLocaleString(this.settings.locale, options)
+        return parseFloat(String(val)).toLocaleString(this.settings.locale, options)
     }
 
-    formatDate(dateStr, format) { // IMPORTANT dateStr HAS TO BE valid JavaScript Date String
+    formatDate(dateStr: unknown, format?: string | null): string { // IMPORTANT dateStr HAS TO BE valid JavaScript Date String
         if (!format) format = this.settings.dateFormat
-        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !dateStr.getMonth)) return ''
+        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
 
-        let dt = new Date(dateStr)
+        let dt = new Date(dateStr as string | number)
         if (this.isInt(dateStr)) dt = new Date(Number(dateStr)) // for unix timestamps
         if (String(dt) === 'Invalid Date') return ''
 
@@ -557,15 +730,14 @@ class Utils {
             .replace(/(^|[^a-z$])d/g, '$1' + date) // only y's that are not preceded by a letter
     }
 
-    formatTime(dateStr, format) { // IMPORTANT dateStr HAS TO BE valid JavaScript Date String
+    formatTime(dateStr: unknown, format?: string | null): string { // IMPORTANT dateStr HAS TO BE valid JavaScript Date String
         if (!format) format = this.settings.timeFormat
-        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !dateStr.getMonth)) return ''
+        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
 
-        let dt = new Date(dateStr)
+        let dt = new Date(dateStr as string | number)
         if (this.isInt(dateStr)) dt = new Date(Number(dateStr)) // for unix timestamps
         if (this.isTime(dateStr)) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const tmp = this.isTime(dateStr, true) as any
+            const tmp = this.isTime(dateStr, true) as W2TimeResult
             dt = new Date()
             dt.setHours(tmp.hours)
             dt.setMinutes(tmp.minutes)
@@ -574,10 +746,10 @@ class Utils {
         if (format == 'h12') format = 'hh:mi pm'
 
         let type = 'am'
-        let hour = dt.getHours()
+        let hour: string | number = dt.getHours()
         const h24  = dt.getHours()
-        let min  = dt.getMinutes()
-        let sec  = dt.getSeconds()
+        let min: string | number  = dt.getMinutes()
+        let sec: string | number  = dt.getSeconds()
         if (min < 10) min = '0' + min
         if (sec < 10) sec = '0' + sec
         if (format.indexOf('am') !== -1 || format.indexOf('pm') !== -1) {
@@ -585,24 +757,28 @@ class Utils {
             if (hour > 12) hour = hour - 12
             if (hour === 0) hour = 12
         }
+        const hourStr = String(hour)
+        const minStr  = String(min)
+        const secStr  = String(sec)
+        const h24Str  = String(h24)
         return format.toLowerCase()
             .replace('am', type)
             .replace('pm', type)
-            .replace('hhh', (hour < 10 ? '0' + hour : hour))
-            .replace('hh24', (h24 < 10 ? '0' + h24 : h24))
-            .replace('h24', h24)
-            .replace('hh', hour)
-            .replace('mm', min)
-            .replace('mi', min)
-            .replace('ss', sec)
-            .replace(/(^|[^a-z$])h/g, '$1' + hour) // only y's that are not preceded by a letter
-            .replace(/(^|[^a-z$])m/g, '$1' + min) // only y's that are not preceded by a letter
-            .replace(/(^|[^a-z$])s/g, '$1' + sec) // only y's that are not preceded by a letter
+            .replace('hhh', (Number(hour) < 10 ? '0' + hourStr : hourStr))
+            .replace('hh24', (h24 < 10 ? '0' + h24Str : h24Str))
+            .replace('h24', h24Str)
+            .replace('hh', hourStr)
+            .replace('mm', minStr)
+            .replace('mi', minStr)
+            .replace('ss', secStr)
+            .replace(/(^|[^a-z$])h/g, '$1' + hourStr) // only y's that are not preceded by a letter
+            .replace(/(^|[^a-z$])m/g, '$1' + minStr) // only y's that are not preceded by a letter
+            .replace(/(^|[^a-z$])s/g, '$1' + secStr) // only y's that are not preceded by a letter
     }
 
-    formatDateTime(dateStr, format) {
-        let fmt
-        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !dateStr.getMonth)) return ''
+    formatDateTime(dateStr: unknown, format?: string | null): string {
+        let fmt: string[]
+        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
         if (typeof format !== 'string') {
             fmt = [this.settings.dateFormat, this.settings.timeFormat]
         } else {
@@ -616,7 +792,7 @@ class Utils {
         return this.formatDate(dateStr, fmt[0]) + ' ' + this.formatTime(dateStr, fmt[1])
     }
 
-    stripSpaces(html) {
+    stripSpaces(html: unknown): unknown {
         if (html == null) return html
         switch (typeof html) {
             case 'number':
@@ -627,22 +803,19 @@ class Utils {
             case 'object':
                 // does not modify original object, but creates a copy
                 if (Array.isArray(html)) {
-                    html = this.extend([], html)
-                    html.forEach((key, ind) => {
-                        html[ind] = this.stripSpaces(key)
-                    })
+                    const arr = this.extend([], html) as unknown[]
+                    arr.forEach((key, ind) => { arr[ind] = this.stripSpaces(key) })
+                    return arr
                 } else {
-                    html = this.extend({}, html)
-                    Object.keys(html).forEach(key => {
-                        html[key] = this.stripSpaces(html[key])
-                    })
+                    const obj = this.extend({}, html) as Record<string, unknown>
+                    Object.keys(obj).forEach(key => { obj[key] = this.stripSpaces(obj[key]) })
+                    return obj
                 }
-                break
         }
         return html
     }
 
-    stripTags(html) {
+    stripTags(html: unknown): unknown {
         if (html == null) return html
         switch (typeof html) {
             case 'number':
@@ -653,22 +826,19 @@ class Utils {
             case 'object':
                 // does not modify original object, but creates a copy
                 if (Array.isArray(html)) {
-                    html = this.extend([], html)
-                    html.forEach((key, ind) => {
-                        html[ind] = this.stripTags(key)
-                    })
+                    const arr = this.extend([], html) as unknown[]
+                    arr.forEach((key, ind) => { arr[ind] = this.stripTags(key) })
+                    return arr
                 } else {
-                    html = this.extend({}, html)
-                    Object.keys(html).forEach(key => {
-                        html[key] = this.stripTags(html[key])
-                    })
+                    const obj = this.extend({}, html) as Record<string, unknown>
+                    Object.keys(obj).forEach(key => { obj[key] = this.stripTags(obj[key]) })
+                    return obj
                 }
-                break
         }
         return html
     }
 
-    encodeTags(html) {
+    encodeTags(html: unknown): unknown {
         if (html == null) return html
         switch (typeof html) {
             case 'number':
@@ -679,22 +849,19 @@ class Utils {
             case 'object':
                 // does not modify original object, but creates a copy
                 if (Array.isArray(html)) {
-                    html = this.extend([], html)
-                    html.forEach((key, ind) => {
-                        html[ind] = this.encodeTags(key)
-                    })
+                    const arr = this.extend([], html) as unknown[]
+                    arr.forEach((key, ind) => { arr[ind] = this.encodeTags(key) })
+                    return arr
                 } else {
-                    html = this.extend({}, html)
-                    Object.keys(html).forEach(key => {
-                        html[key] = this.encodeTags(html[key])
-                    })
+                    const obj = this.extend({}, html) as Record<string, unknown>
+                    Object.keys(obj).forEach(key => { obj[key] = this.encodeTags(obj[key]) })
+                    return obj
                 }
-                break
         }
         return html
     }
 
-    decodeTags(html) {
+    decodeTags(html: unknown): unknown {
         if (html == null) return html
         switch (typeof html) {
             case 'number':
@@ -705,22 +872,19 @@ class Utils {
             case 'object':
                 // does not modify original object, but creates a copy
                 if (Array.isArray(html)) {
-                    html = this.extend([], html)
-                    html.forEach((key, ind) => {
-                        html[ind] = this.decodeTags(key)
-                    })
+                    const arr = this.extend([], html) as unknown[]
+                    arr.forEach((key, ind) => { arr[ind] = this.decodeTags(key) })
+                    return arr
                 } else {
-                    html = this.extend({}, html)
-                    Object.keys(html).forEach(key => {
-                        html[key] = this.decodeTags(html[key])
-                    })
+                    const obj = this.extend({}, html) as Record<string, unknown>
+                    Object.keys(obj).forEach(key => { obj[key] = this.decodeTags(obj[key]) })
+                    return obj
                 }
-                break
         }
         return html
     }
 
-    escapeId(id) {
+    escapeId(id: unknown): string {
         // This logic is borrowed from jQuery
         if (id === '' || id == null) return ''
         const re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g
@@ -733,19 +897,19 @@ class Utils {
         })
     }
 
-    unescapeId(id) {
+    unescapeId(id: string | null | undefined): string {
         // This logic is borrowed from jQuery
         if (id === '' || id == null) return ''
         const re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g
         return id.replace(re, (escape, nonHex) => {
-            const high = '0x' + escape.slice( 1 ) - 0x10000
+            const high = (parseInt('0x' + escape.slice(1), 16)) - 0x10000
             return nonHex ? nonHex : high < 0
                     ? String.fromCharCode(high + 0x10000 )
                     : String.fromCharCode(high >> 10 | 0xD800, high & 0x3FF | 0xDC00)
         })
     }
 
-    base64encode(str) {
+    base64encode(str: string): string {
         // Fast Native support in Chrome since 2010
         const utf8Bytes = new TextEncoder().encode(str)
         let binaryString = ''
@@ -755,7 +919,7 @@ class Utils {
         return btoa(binaryString)
     }
 
-    base64decode(encodedStr) {
+    base64decode(encodedStr: string): string {
         // Fast Native support in Chrome since 2010
         const binaryString = atob(encodedStr)
         const utf8Bytes = new Uint8Array(binaryString.length)
@@ -765,7 +929,7 @@ class Utils {
         return new TextDecoder().decode(utf8Bytes)
     }
 
-    async sha256(str) {
+    async sha256(str: string): Promise<string> {
         const utf8 = new TextEncoder().encode(str)
         return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
             const hashArray = Array.from(new Uint8Array(hashBuffer))
@@ -773,8 +937,8 @@ class Utils {
         })
     }
 
-    transition(div_old, div_new, type, callBack) {
-        return new Promise<void>((resolve, reject) => {
+    transition(div_old: HTMLElement, div_new: HTMLElement, type: string, callBack?: () => void): Promise<void> {
+        return new Promise<void>((resolve, _reject) => {
             const styles = getComputedStyle(div_old)
             const width  = parseInt(styles.width)
             const height = parseInt(styles.height)
@@ -785,7 +949,8 @@ class Utils {
                 return
             }
 
-            div_old.parentNode.style.cssText += 'perspective: 900px; overflow: hidden;'
+            // any: parentNode is ParentNode | null; for transition usage it's always an HTMLElement
+            ;(div_old.parentNode as HTMLElement).style.cssText += 'perspective: 900px; overflow: hidden;'
             div_old.style.cssText            += '; position: absolute; z-index: 1019; backface-visibility: hidden'
             div_new.style.cssText            += '; position: absolute; z-index: 1020; backface-visibility: hidden'
 
@@ -929,14 +1094,11 @@ class Utils {
                     query(div_new).css('z-index', '1020')
                 }
                 if (div_new) {
-                    query(div_new)
-                        .css({ 'opacity': '1' })
-                        .css({ 'transition': '', 'transform' : '' })
+                    // any: .css({...}) returns Query when called with object arg; chain cast needed
+                    ;(query(div_new).css({ 'opacity': '1' }) as Query).css({ 'transition': '', 'transform' : '' })
                 }
                 if (div_old) {
-                    query(div_old)
-                        .css({ 'opacity': '1' })
-                        .css({ 'transition': '', 'transform' : '' })
+                    ;(query(div_old).css({ 'opacity': '1' }) as Query).css({ 'transition': '', 'transform' : '' })
                 }
                 if (typeof callBack === 'function') callBack()
                 resolve()
@@ -944,26 +1106,24 @@ class Utils {
         })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    lock(box: any, options: any = {}, ...rest: unknown[]) {
+    lock(box: unknown, options: W2LockOptions | string = {}, ...rest: unknown[]): void {
         if (box == null) return
-        if (typeof options == 'string') {
-            options = { msg: options }
+        // Normalise: string shorthand → { msg }
+        let opts: W2LockOptions = typeof options === 'string' ? { msg: options } : { ...options }
+        if (rest[0] != null) {
+            opts.spinner = rest[0] as boolean
         }
-        if (rest[0]) {
-            options.spinner = rest[0]
+        opts = this.extend({ spinner: false }, opts) as W2LockOptions
+        // for backward compatibility: unwrap jQuery-like array wrappers
+        // any: box may be a legacy jQuery wrapper with [0] and .get(); normalise to a plain selector
+        let boxSel: unknown = box
+        if ((box as Record<string, unknown>)?.[0] instanceof Node) {
+            boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
         }
-        options = this.extend({
-            spinner: false
-        }, options)
-        // for backward compatibility
-        if (box?.[0] instanceof Node) {
-            box = Array.isArray(box) ? box : box.get()
-        }
-        if (!options.msg && options.msg !== 0) options.msg = ''
-        this.unlock(box)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const el = query(box).get(0) as any
+        if (!opts.msg && opts.msg !== 0) opts.msg = ''
+        this.unlock(boxSel)
+        // any: Query.get(0) returns Element|null; HTMLElement is needed for scrollWidth/scrollHeight
+        const el = query(boxSel).get(0) as HTMLElement
         const pWidth = el.scrollWidth
         const pHeight = el.scrollHeight
         // if it is body and only has absolute elements, its height will be 0, need to lock entire window
@@ -971,13 +1131,13 @@ class Utils {
         if (el.tagName == 'BODY') {
             style = 'position: fixed; right: 0; bottom: 0;'
         }
-        query(box).prepend(
+        query(boxSel).prepend(
             `<div class="w2ui-lock" style="${style}"></div>` +
             '<div class="w2ui-lock-msg"></div>'
         )
-        const $lock = query(box).find('.w2ui-lock')
-        const $mess = query(box).find('.w2ui-lock-msg')
-        if (!options.msg) {
+        const $lock = query(boxSel).find('.w2ui-lock')
+        const $mess = query(boxSel).find('.w2ui-lock-msg')
+        if (!opts.msg) {
             $mess.css({
                 'background-color': 'transparent',
                 'background-image': 'none',
@@ -985,40 +1145,41 @@ class Utils {
                 'box-shadow': 'none'
             })
         }
-        if (options.spinner === true) {
-            options.msg = `<div class="w2ui-spinner" ${(!options.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
-                + options.msg
+        if (opts.spinner === true) {
+            opts.msg = `<div class="w2ui-spinner" ${(!opts.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
+                + opts.msg
         }
-        if (options.msg) {
-            $mess.html(options.msg).css('display', 'block')
+        if (opts.msg) {
+            // any: .html(str) returns Query when setting content; cast needed for chaining
+            ;($mess.html(String(opts.msg)) as Query).css('display', 'block')
         } else {
             $mess.remove()
         }
-        if (options.opacity != null) {
-            $lock.css('opacity', options.opacity)
+        if (opts.opacity != null) {
+            $lock.css('opacity', String(opts.opacity))
         }
         $lock.css({ display: 'block' })
-        if (options.bgColor) {
-            $lock.css({ 'background-color': options.bgColor })
+        if (opts.bgColor) {
+            $lock.css({ 'background-color': opts.bgColor })
         }
-        const styles = getComputedStyle($lock.get(0))
+        const styles = getComputedStyle($lock.get(0) as Element)
         const opacity = styles.opacity ?? 0.15
         $lock
             .on('mousedown', function() {
-                if (typeof options.onClick == 'function') {
-                    options.onClick()
+                if (typeof opts.onClick == 'function') {
+                    opts.onClick()
                 } else {
                     $lock.css({
                         'transition': '.2s',
-                        'opacity': opacity * 1.5
+                        'opacity': String(Number(opacity) * 1.5)
                     })
                 }
             })
             .on('mouseup', function() {
-                if (typeof options.onClick !== 'function') {
+                if (typeof opts.onClick !== 'function') {
                     $lock.css({
                         'transition': '.2s',
-                        'opacity': opacity
+                        'opacity': String(opacity)
                     })
                 }
             })
@@ -1030,28 +1191,31 @@ class Utils {
             })
     }
 
-    unlock(box, speed) {
+    unlock(box: unknown, speed?: number): void {
         if (box == null) return
-        clearTimeout(box._prevUnlock)
+        // any: box may store a _prevUnlock timer id on the element; dynamic property on Element
+        const prevBox = box as Record<string, unknown>
+        clearTimeout(prevBox['_prevUnlock'] as number)
         // for backward compatibility
-        if (box?.[0] instanceof Node) {
-            box = Array.isArray(box) ? box : box.get()
+        let boxSel: unknown = box
+        if ((box as Record<string, unknown>)?.[0] instanceof Node) {
+            boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
         }
-        if (this.isInt(speed) && speed > 0) {
-            query(box).find('.w2ui-lock').css({
-                transition: (speed/1000) + 's',
+        if (this.isInt(speed) && (speed ?? 0) > 0) {
+            query(boxSel).find('.w2ui-lock').css({
+                transition: ((speed ?? 0)/1000) + 's',
                 opacity: 0,
             })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const _box = query(box).get(0) as any
-            clearTimeout(_box._prevUnlock)
-            _box._prevUnlock = setTimeout(() => {
-                query(box).find('.w2ui-lock').remove()
+            // any: Element may have a dynamic _prevUnlock property used for timer management
+            const _box = query(boxSel).get(0) as unknown as Record<string, unknown>
+            clearTimeout(_box['_prevUnlock'] as number)
+            _box['_prevUnlock'] = setTimeout(() => {
+                query(boxSel).find('.w2ui-lock').remove()
             }, speed)
-            query(box).find('.w2ui-lock-msg').remove()
+            query(boxSel).find('.w2ui-lock-msg').remove()
         } else {
-            query(box).find('.w2ui-lock').remove()
-            query(box).find('.w2ui-lock-msg').remove()
+            query(boxSel).find('.w2ui-lock').remove()
+            query(boxSel).find('.w2ui-lock-msg').remove()
         }
     }
 
@@ -1086,140 +1250,158 @@ class Utils {
      *      onAction,   // event on action
      * }
      */
-    message(where, options) {
-        let closeTimer, openTimer, edata
+    message(where: W2MessageWhere, options?: W2MessageOptions | string | number): W2MessageProm | undefined {
+        let closeTimer: ReturnType<typeof setTimeout>,
+            openTimer: ReturnType<typeof setTimeout>,
+            edata: unknown
+        // any: msgBase is the live W2MessageOptions reference shared across all closures
+        let msgBase: W2MessageOptions = {}
         const removeLast = () => {
             const msgs = query(where?.box).find('.w2ui-message')
             if (msgs.length == 0) return // no messages already
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            options = (msgs.get(0) as any)._msg_options || {}
-            if (typeof options?.close == 'function') {
-                options.close()
+            // any: DOM element has _msg_options stored dynamically at open time
+            msgBase = (msgs.get(0) as unknown as Record<string, unknown>)['_msg_options'] as W2MessageOptions || {}
+            if (typeof msgBase?.close == 'function') {
+                msgBase.close!()
             }
         }
-        const closeComplete = (options) => {
-            const focus = options.box._msg_prevFocus
+        // any: options is morphed into a w2base instance mid-function; the full shape is known only at runtime
+        const closeComplete = (options: Record<string, unknown>) => {
+            // any: DOM element has _msg_prevFocus stored dynamically at open time
+            const msgBoxEl = options['box'] as Record<string, unknown> | null
+            const focus = msgBoxEl?.['_msg_prevFocus'] as Element | undefined
             if (query(where.box).find('.w2ui-message').length <= 1) {
                 if (where.owner) {
-                    where.owner.unlock(where.param, 150)
+                    where.owner.unlock?.(where.param, 150)
                 } else {
                     this.unlock(where.box, 150)
                 }
             } else {
-                query(where.box).find(`#w2ui-message-${where.owner?.name}-${options.msgIndex-1}`).css('z-index', 1500)
+                query(where.box).find(`#w2ui-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
             }
             if (focus) {
                 const msg = query(focus).closest('.w2ui-message')
                 if (msg.length > 0) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const opt = (msg.get(0) as any)._msg_options
-                    opt.setFocus(focus)
+                    // any: DOM element has _msg_options + setFocus stored dynamically at open time
+                    const opt = (msg.get(0) as unknown as Record<string, unknown>)['_msg_options'] as Record<string, unknown>
+                    ;(opt['setFocus'] as (f: Element) => void)(focus)
                 } else {
-                    focus.focus()
+                    (focus as HTMLElement).focus()
                 }
             } else {
                 if (typeof where.owner?.focus == 'function') where.owner.focus()
             }
-            query(options.box).remove()
-            if (options.msgIndex === 0) {
-                head.css('z-index', options.tmp.zIndex)
-                query(where.box).css('overflow', options.tmp.overflow)
+            query(options['box'] as unknown).remove()
+            if (options['msgIndex'] === 0) {
+                const tmp = options['tmp'] as { zIndex: string; overflow: string }
+                head.css('z-index', tmp.zIndex)
+                query(where.box).css('overflow', tmp.overflow)
             }
             // event after
-            if (options.trigger) {
-                edata.finish()
+            if (options['trigger']) {
+                // any: edata is a w2event whose finish() is called after close; runtime-owned by options.trigger
+                ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
             }
         }
 
         if (typeof options == 'string' || typeof options == 'number') {
-            options = {
+            msgBase = {
                 width : (String(options).length < 300 ? 350 : 550),
                 height: (String(options).length < 300 ? 170: 250),
                 text  : String(options),
             }
+        } else if (arguments.length == 1 || options == null) {
+            msgBase = where as unknown as W2MessageOptions
+        } else {
+            msgBase = options ?? {}
         }
-        if (arguments.length == 1 || options == null) {
-            options = where
-        }
-        options ??= {}
-        if (options == null || (options.text === '' || options.text == null) && (options.body === '' || options.body == null)) {
+        if ((msgBase.text === '' || msgBase.text == null) && (msgBase.body === '' || msgBase.body == null)) {
             removeLast()
             return
         }
-        if (options.text != null) options.body = `<div class="w2ui-centered w2ui-msg-text">${options.text}</div>`
-        if (options.width == null) options.width = 350
-        if (options.height == null) options.height = 170
-        if (options.hideOn == null) options.hideOn = ['esc']
-        options.cancelAction ??= 'Ok'
+        if (msgBase.text != null) msgBase.body = `<div class="w2ui-centered w2ui-msg-text">${msgBase.text}</div>`
+        if (msgBase.width == null) msgBase.width = 350
+        if (msgBase.height == null) msgBase.height = 170
+        if (msgBase.hideOn == null) msgBase.hideOn = ['esc']
+        msgBase.cancelAction ??= 'Ok'
         // mix in events
-        if (options.on == null) {
-            const opts = options
-            options = new w2base()
-            w2utils.extend(options, opts) // needs to be w2utils
+        // any: msgBase is coerced into a w2base instance here so that .on/.off/.trigger work;
+        // the resulting shape is a hybrid W2MessageOptions + w2base that TS cannot express statically
+        if (msgBase.on == null) {
+            const opts = msgBase
+            msgBase = new w2base() as unknown as W2MessageOptions
+            w2utils.extend(msgBase, opts) // needs to be w2utils
         }
-        options.on('open', (event) => {
-            w2utils.bindEvents(query(options.box).find('.w2ui-eaction'), options) // options is w2base object
-            query(event.detail.box).find('button, input, textarea, [name=hidden-first]')
+        // any: at this point msgBase has both W2MessageOptions fields AND w2base event methods (on/off/trigger)
+        const msgOpts = msgBase as unknown as Record<string, unknown>
+        ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open', (event: Record<string, unknown>) => {
+            w2utils.bindEvents(query(msgOpts['box'] as unknown).find('.w2ui-eaction'), msgOpts) // msgOpts is w2base object
+            const detail = event['detail'] as Record<string, unknown>
+            query(detail['box'] as unknown).find('button, input, textarea, [name=hidden-first]')
                 .off('.message')
-                .on('keydown.message', function(evt: any) {
-                    if (evt.keyCode == 27 && options.hideOn.includes('esc')) {
-                        if (options.cancelAction) {
-                            options.action(options.cancelAction)
+                .on('keydown.message', function(evt: Event) {
+                    const keyEvt = evt as KeyboardEvent
+                    if (keyEvt.keyCode == 27 && (msgOpts['hideOn'] as string[]).includes('esc')) {
+                        if (msgOpts['cancelAction']) {
+                            ;(msgOpts['action'] as (..._a: unknown[]) => unknown)(msgOpts['cancelAction'])
                         } else {
-                            options.close()
+                            ;(msgOpts['close'] as (..._a: unknown[]) => unknown)()
                         }
                     }
                 })
             // timeout is needed because messages opens over 0.3 seconds
-            setTimeout(() => options.setFocus(options.focus), 300)
+            setTimeout(() => (msgOpts['setFocus'] as (..._a: unknown[]) => unknown)(msgOpts['focus']), 300)
         })
-        options.off('.prom')
-        const prom = {
-            self: options,
-            action(callBack) {
-                options.on('action.prom', callBack)
+        ;(msgOpts['off'] as (..._a: unknown[]) => unknown)('.prom')
+        const prom: W2MessageProm = {
+            self: msgBase as unknown as w2base,
+            action(callBack: (event: unknown) => void) {
+                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('action.prom', callBack)
                 return prom
             },
-            close(callBack) {
-                options.on('close.prom', callBack)
+            close(callBack: (event: unknown) => void) {
+                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('close.prom', callBack)
                 return prom
             },
-            open(callBack) {
-                options.on('open.prom', callBack)
+            open(callBack: (event: unknown) => void) {
+                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open.prom', callBack)
                 return prom
             },
-            then(callBack) {
-                options.on('open:after.prom', callBack)
+            then(callBack: (event: unknown) => void) {
+                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open:after.prom', callBack)
                 return prom
             }
         }
-        if (options.actions == null && options.buttons == null && options.html == null) {
-            options.actions = { Ok(event) { event.detail.self.close() }}
+        if (msgBase.actions == null && msgBase.buttons == null && msgBase.html == null) {
+            msgBase.actions = { Ok(event: Record<string, unknown>) { (event['detail'] as Record<string, unknown>)?.['self']?.['close']?.() }}
         }
-        options.off('.buttons')
-        if (options.actions != null) {
-            options.buttons = ''
-            Object.keys(options.actions).forEach((action) => {
-                const handler = options.actions[action]
-                let btnAction = action
+        ;(msgOpts['off'] as (..._a: unknown[]) => unknown)('.buttons')
+        if (msgBase.actions != null) {
+            msgBase.buttons = ''
+            Object.keys(msgBase.actions).forEach((action) => {
+                const handler = msgBase.actions![action]
+                let btnAction: string = action
                 if (typeof handler == 'function') {
-                    options.buttons += `<button class="w2ui-btn w2ui-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
+                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
                 }
-                if (typeof handler == 'object') {
-                    options.buttons += `<button class="w2ui-btn w2ui-eaction ${handler.class || ''}" name="${action}" data-click='["action","${action}","event"]'
-                        style="${handler.style ?? ''}" ${handler.attrs ?? ''}>${handler.text || action}</button>`
-                    btnAction = Array.isArray(options.actions) ? handler.text : action
+                if (typeof handler == 'object' && handler !== null) {
+                    const h = handler as Record<string, unknown>
+                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
+                        style="${h['style'] ?? ''}" ${h['attrs'] ?? ''}>${h['text'] || action}</button>`
+                    btnAction = Array.isArray(msgBase.actions) ? String(h['text']) : action
                 }
                 if (typeof handler == 'string') {
-                    options.buttons += `<button class="w2ui-btn w2ui-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
+                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
                     btnAction = handler
                 }
                 if (typeof btnAction == 'string') {
                     btnAction = btnAction[0].toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
                 }
-                prom[btnAction] = function (callBack) {
-                    options.on('action.buttons', (event) => {
-                        const target = event.detail.action[0].toLowerCase() + event.detail.action.substr(1).replace(/\s+/g, '')
+                prom[btnAction] = function (callBack: (event: unknown) => void) {
+                    ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('action.buttons', (event: Record<string, unknown>) => {
+                        const detail = event['detail'] as Record<string, unknown>
+                        const act = String(detail['action'])
+                        const target = act[0].toLowerCase() + act.substr(1).replace(/\s+/g, '')
                         if (target == btnAction) callBack(event)
                     })
                     return prom
@@ -1227,47 +1409,47 @@ class Utils {
             })
         }
         // trim if any
-        ['html', 'body', 'buttons'].forEach(param => {
-            options[param] = String(options[param] ?? '').trim()
+        ;(['html', 'body', 'buttons'] as const).forEach(param => {
+            msgBase[param] = String(msgBase[param] ?? '').trim()
         })
-        if (options.body !== '' || options.buttons !== '') {
-            options.html = `
-                <div class="w2ui-message-body">${options.body || ''}</div>
-                <div class="w2ui-message-buttons">${options.buttons || ''}</div>
+        if (msgBase.body !== '' || msgBase.buttons !== '') {
+            msgBase.html = `
+                <div class="w2ui-message-body">${msgBase.body || ''}</div>
+                <div class="w2ui-message-buttons">${msgBase.buttons || ''}</div>
             `
         }
-        let styles  = getComputedStyle(query(where.box).get(0))
+        let styles  = getComputedStyle(query(where.box).get(0) as Element)
         const pWidth  = parseFloat(styles.width)
         const pHeight = parseFloat(styles.height)
         let titleHeight = 0
         if (query(where.after).length > 0) {
-            styles = getComputedStyle(query(where.after).get(0))
-            titleHeight = parseInt(styles.display != 'none' ? parseInt(styles.height) : 0)
+            styles = getComputedStyle(query(where.after).get(0) as Element)
+            titleHeight = parseInt(styles.display != 'none' ? styles.height : '0')
         }
-        if (options.width > pWidth) options.width = pWidth - 10
-        if (options.height > pHeight - titleHeight) options.height = pHeight - 10 - titleHeight
-        options.originalWidth  = options.width
-        options.originalHeight = options.height
-        if (parseInt(options.width) < 0) options.width = pWidth + options.width
-        if (parseInt(options.width) < 10) options.width = 10
-        if (parseInt(options.height) < 0) options.height = pHeight + options.height - titleHeight
-        if (parseInt(options.height) < 10) options.height = 10
+        if ((msgBase.width ?? 0) > pWidth) msgBase.width = pWidth - 10
+        if ((msgBase.height ?? 0) > pHeight - titleHeight) msgBase.height = pHeight - 10 - titleHeight
+        msgBase.originalWidth  = msgBase.width
+        msgBase.originalHeight = msgBase.height
+        if (parseInt(String(msgBase.width)) < 0) msgBase.width = pWidth + (msgBase.width ?? 0)
+        if (parseInt(String(msgBase.width)) < 10) msgBase.width = 10
+        if (parseInt(String(msgBase.height)) < 0) msgBase.height = pHeight + (msgBase.height ?? 0) - titleHeight
+        if (parseInt(String(msgBase.height)) < 10) msgBase.height = 10
         // negative value means margin
-        if (options.originalHeight < 0) options.height = pHeight + options.originalHeight - titleHeight
-        if (options.originalWidth < 0) options.width = pWidth + options.originalWidth * 2 // x 2 because there is left and right margin
-        const head = query(where.box).find(where.after) // needed for z-index manipulations
-        if (!options.tmp) {
-            options.tmp = {
-                zIndex: head.css('z-index'),
+        if ((msgBase.originalHeight ?? 0) < 0) msgBase.height = pHeight + (msgBase.originalHeight ?? 0) - titleHeight
+        if ((msgBase.originalWidth ?? 0) < 0) msgBase.width = pWidth + (msgBase.originalWidth ?? 0) * 2 // x 2 because there is left and right margin
+        const head = query(where.box).find(where.after as string) // needed for z-index manipulations
+        if (!msgBase.tmp) {
+            msgBase.tmp = {
+                zIndex: String(head.css('z-index')),
                 overflow: styles.overflow
             }
         }
         // remove message
-        if (options.html === '' && options.body === '' && options.buttons === '') {
+        if (msgBase.html === '' && msgBase.body === '' && msgBase.buttons === '') {
             removeLast()
         } else {
-            options.msgIndex = query(where.box).find('.w2ui-message').length
-            if (options.msgIndex === 0 && typeof this.lock == 'function') {
+            msgBase.msgIndex = query(where.box).find('.w2ui-message').length
+            if (msgBase.msgIndex === 0 && typeof this.lock == 'function') {
                 query(where.box).css('overflow', 'hidden')
                 if (where.owner) { // where.praram is used in the panel
                     where.owner.lock(where.param)
@@ -1276,48 +1458,51 @@ class Utils {
                 }
             }
             // send back previous messages
-            query(where.box).find('.w2ui-message').css('z-index', 1390)
-            head.css('z-index', 1501)
+            query(where.box).find('.w2ui-message').css('z-index', '1390')
+            head.css('z-index', '1501')
             // add message
             const content = `
-                <div id="w2ui-message-${where.owner?.name}-${options.msgIndex}" class="w2ui-message" data-mousedown="stop"
-                    style="z-index: 1500; left: ${((pWidth - options.width) / 2)}px; top: ${titleHeight}px;
-                        width: ${options.width}px; height: ${options.height}px; transform: translateY(-${options.height}px)"
-                    ${options.hideOn.includes('click')
+                <div id="w2ui-message-${where.owner?.name}-${msgBase.msgIndex}" class="w2ui-message" data-mousedown="stop"
+                    style="z-index: 1500; left: ${((pWidth - (msgBase.width ?? 0)) / 2)}px; top: ${titleHeight}px;
+                        width: ${msgBase.width}px; height: ${msgBase.height}px; transform: translateY(-${msgBase.height}px)"
+                    ${(msgBase.hideOn ?? []).includes('click')
                         ? where.param
                             ? `data-click='["message", "${where.param}"]`
                             : 'data-click="message"'
                         : ''}>
                     <span name="hidden-first" tabindex="0" style="position: absolute; top: 0; outline: none"></span>
-                    ${options.html}
+                    ${msgBase.html}
                     <span name="hidden-last" tabindex="0" style="position: absolute; top: 0; outline: none"></span>
                 </div>`
             if (query(where.after).length > 0) {
-                query(where.box).find(where.after).after(content)
+                query(where.box).find(where.after as string).after(content)
             } else {
                 query(where.box).prepend(content)
             }
-            options.box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${options.msgIndex}`)[0]
-            w2utils.bindEvents(options.box, this)
-            query(options.box)
+            // any: DOM elements get _msg_options + _msg_prevFocus dynamic properties at open time
+            msgBase.box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
+            w2utils.bindEvents(msgBase.box, this as unknown as Record<string, unknown>)
+            query(msgBase.box)
                 .addClass('animating')
             // remember options and prev focus
-            options.box._msg_options = options
-            options.box._msg_prevFocus = document.activeElement
+            ;(msgBase.box as unknown as Record<string, unknown>)['_msg_options'] = msgBase
+            ;(msgBase.box as unknown as Record<string, unknown>)['_msg_prevFocus'] = document.activeElement
             // timeout is needs so that callBacks are setup
             setTimeout(() => {
                 // before event
-                edata = options.trigger('open', { target: this.name, box: options.box, self: options })
-                if (edata.isCancelled === true) {
-                    query(where.box).find(`#w2ui-message-${where.owner?.name}-${options.msgIndex}`).remove()
-                    if (options.msgIndex === 0) {
-                        head.css('z-index', options.tmp.zIndex)
-                        query(where.box).css('overflow', options.tmp.overflow)
+                // any: trigger is mixed in from w2base; edata is a w2event with isCancelled + finish()
+                edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('open', { target: (this as unknown as Record<string, unknown>)['name'], box: msgBase.box, self: msgBase })
+                const edataR = edata as Record<string, unknown>
+                if (edataR['isCancelled'] === true) {
+                    query(where.box).find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
+                    if (msgBase.msgIndex === 0) {
+                        head.css('z-index', msgBase.tmp!.zIndex)
+                        query(where.box).css('overflow', msgBase.tmp!.overflow)
                     }
                     return
                 }
                 // slide down
-                query(options.box).css({
+                query(msgBase.box).css({
                     transition: '0.3s',
                     transform: 'translateY(0px)'
                 })
@@ -1326,59 +1511,62 @@ class Utils {
             openTimer = setTimeout(() => {
                 // has to be on top of lock
                 query(where.box)
-                    .find(`#w2ui-message-${where.owner?.name}-${options.msgIndex}`)
+                    .find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`)
                     .removeClass('animating')
                     .css({ 'transition': '0s' })
                 // event after
-                edata.finish()
+                ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
             }, 300)
         }
         // action handler
-        options.action = (action, event) => {
-            let click = options.actions?.[action]
-            if (click instanceof Object && click.onClick) click = click.onClick
+        msgBase.action = (action: string, event: unknown) => {
+            let click = msgBase.actions?.[action]
+            if (click instanceof Object && (click as Record<string, unknown>)['onClick']) click = (click as Record<string, unknown>)['onClick'] as unknown
             // event before
-            const edata = options.trigger('action', { target: this.name, action, self: options,
-                originalEvent: event, value: options.input ? options.input.value : null })
-            if (edata.isCancelled === true) return
+            // any: trigger is mixed in from w2base
+            const edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('action', { target: (this as unknown as Record<string, unknown>)['name'], action, self: msgBase,
+                originalEvent: event, value: msgBase.input ? (msgBase.input as HTMLInputElement).value : null })
+            const edataR = edata as Record<string, unknown>
+            if (edataR['isCancelled'] === true) return
             // default actions
             if (typeof click === 'function') click(edata)
             // event after
-            edata.finish()
+            ;(edataR['finish'] as (() => void) | undefined)?.()
         }
-        options.close = () => {
-            edata = options.trigger('close', { target: 'self', box: options.box, self: options })
-            if (edata.isCancelled === true) return
+        msgBase.close = () => {
+            // any: trigger is mixed in from w2base
+            edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('close', { target: 'self', box: msgBase.box, self: msgBase })
+            const edataR = edata as Record<string, unknown>
+            if (edataR['isCancelled'] === true) return
             clearTimeout(openTimer)
-            if (query(options.box).hasClass('animating')) {
+            if (query(msgBase.box).hasClass('animating')) {
                 clearTimeout(closeTimer)
-                closeComplete(options)
+                closeComplete(msgOpts)
                 return
             }
             // default behavior
-            query(options.box)
+            query(msgBase.box)
                 .addClass('w2ui-closing animating')
                 .css({
                     'transition': '0.15s',
-                    'transform': 'translateY(-' + options.height + 'px)'
+                    'transform': 'translateY(-' + msgBase.height + 'px)'
                 })
-            if (options.msgIndex !== 0) {
+            if ((msgBase.msgIndex ?? 0) !== 0) {
                 // previous message
-                query(where.box).find(`#w2ui-message-${where.owner?.name}-${options.msgIndex-1}`).css('z-index', 1499)
+                query(where.box).find(`#w2ui-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
             }
-            closeTimer = setTimeout(() => { closeComplete(options) }, 150)
+            closeTimer = setTimeout(() => { closeComplete(msgOpts) }, 150)
         }
-        options.setFocus = (focus) => {
+        msgBase.setFocus = (focus: number | string | null | undefined) => {
             // in message or popup
             const cnt = query(where.box).find('.w2ui-message').length - 1
             const box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${cnt}`)
             const sel = 'input, button, select, textarea, [contentEditable], .w2ui-input'
             if (focus != null) {
-                const el = isNaN(focus)
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ? box.find(sel).filter(focus).get(0) as any
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    : box.find(sel).get(focus) as any
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const el: any = typeof focus === 'string'
+                    ? box.find(sel).filter(focus).get(0)
+                    : box.find(sel).get(focus as number)
                 el?.focus()
             } else {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1417,7 +1605,7 @@ class Utils {
         return prom
     }
 
-    alert(where, options) {
+    alert(where: W2MessageWhere, options?: W2MessageOptions | string | number): W2MessageProm | undefined {
         return this.message(where, options)
     }
 
@@ -1432,19 +1620,24 @@ class Utils {
      *    })
      *    .yes(event => console.log(event))
      */
-    confirm(where, options) {
+    confirm(where: W2MessageWhere, options?: W2MessageOptions | string | number): W2MessageProm | undefined {
+        // any: options is normalized in-place; shape is W2MessageOptions at runtime
+        let msgOpts: Record<string, unknown> = {}
         if (['string', 'number'].includes(typeof options)) {
-            options = { text: options }
+            msgOpts = { text: options }
+        } else if (arguments.length == 1) {
+            msgOpts = where as unknown as Record<string, unknown>
+        } else {
+            msgOpts = (options ?? {}) as unknown as Record<string, unknown>
         }
-        if (arguments.length == 1) {
-            options = where
-        }
-        w2utils.normButtons(options, { yes: 'Yes', no: 'No' })
-        options.cancelAction ??= 'No'
-        const prom = w2utils.message(where, options)
+        w2utils.normButtons(msgOpts, { yes: 'Yes', no: 'No' })
+        msgOpts['cancelAction'] ??= 'No'
+        const prom = w2utils.message(where, msgOpts as unknown as W2MessageOptions)
         if (prom) {
-            prom.action(event => {
-                event.detail.self.close()
+            prom.action((event: unknown) => {
+                const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+                const self = d?.['self'] as Record<string, unknown>
+                ;(self?.['close'] as (() => void) | undefined)?.()
             })
         }
         return prom
@@ -1463,55 +1656,66 @@ class Utils {
      *    })
      *    .ok(event => console.log(event))
      */
-    prompt(where, options) {
+    prompt(where: W2MessageWhere, options?: W2MessageOptions | string | number) {
+        // any: options is normalized in-place; shape is W2MessageOptions at runtime
+        let msgOpts: Record<string, unknown> = {}
         if (['string', 'number'].includes(typeof options)) {
-            options = { label: options }
+            msgOpts = { label: options }
+        } else if (arguments.length == 1) {
+            msgOpts = where as unknown as Record<string, unknown>
+        } else {
+            msgOpts = (options ?? {}) as unknown as Record<string, unknown>
         }
-        if (arguments.length == 1) {
-            options = where
-        }
-        options.cancelAction ??= 'Cancel'
-        if (options.label) {
-            options.focus = 0 // the input should be in focus, which is first in the popup
-            options.body = (options.textarea
+        msgOpts['cancelAction'] ??= 'Cancel'
+        if (msgOpts['label']) {
+            msgOpts['focus'] = 0 // the input should be in focus, which is first in the popup
+            msgOpts['body'] = (msgOpts['textarea']
                 ? `<div class="w2ui-prompt textarea">
-                     <div>${options.label}</div>
-                     <textarea id="w2prompt" class="w2ui-input" ${options.attrs ?? ''}
+                     <div>${msgOpts['label']}</div>
+                     <textarea id="w2prompt" class="w2ui-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event"></textarea>
                    </div>`
                 : `<div class="w2ui-prompt w2ui-centered">
-                     <label>${options.label}&nbsp;</label>
-                     <input id="w2prompt" class="w2ui-input" ${options.attrs ?? ''}
+                     <label>${msgOpts['label']}&nbsp;</label>
+                     <input id="w2prompt" class="w2ui-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event">
                    </div>`
             )
         }
-        w2utils.normButtons(options, { ok: w2utils.lang('Ok'), cancel: w2utils.lang('Cancel') })
-        const prom = w2utils.message(where, options)
+        w2utils.normButtons(msgOpts, { ok: w2utils.lang('Ok'), cancel: w2utils.lang('Cancel') })
+        const prom = w2utils.message(where, msgOpts as unknown as W2MessageOptions)
         if (prom) {
-            prom.change = function(callBack) {
-                prom.self.on('change.prom', callBack)
+            prom.change = function(callBack: (event: unknown) => void) {
+                const selfR = prom.self as unknown as Record<string, unknown>
+                ;(selfR?.['on'] as ((ev: string, cb: (event: unknown) => void) => void) | undefined)?.('change.prom', callBack)
                 return prom
             }
             prom
-                .action(event => {
-                    event.detail.self.close()
+                .action((event: unknown) => {
+                    const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+                    const self = d?.['self'] as Record<string, unknown>
+                    ;(self?.['close'] as (() => void) | undefined)?.()
                 })
-                .then(event => {
-                    event.detail.self.input = query(event.detail.box).find('#w2prompt').get(0)
-                    query(event.detail.box)
+                .then((event: unknown) => {
+                    const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+                    ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#w2prompt').get(0)
+                    query(d?.['box'])
                         .find('#w2prompt')
-                        .on('keydown', (event: any) => {
-                            if (event.keyCode == 13 && event.shiftKey === false) {
-                                event.preventDefault()
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .on('keydown', (evt: any) => {
+                            if (evt.keyCode == 13 && evt.shiftKey === false) {
+                                evt.preventDefault()
                             }
                         })
-                        .on('keyup', (event: any) => {
-                            const edata = prom.self.trigger('change', { value: event.target.value, input: event.target, originalEvent: event })
-                            if (event.keyCode == 13 && event.shiftKey === false) {
-                                prom.self.action('Ok', event)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        .on('keyup', (evt: any) => {
+                            const self = d?.['self'] as Record<string, unknown>
+                            // any: trigger is mixed in from w2base
+                            const edata = (self?.['trigger'] as (..._a: unknown[]) => unknown)?.('change', { value: evt.target.value, input: evt.target, originalEvent: evt })
+                            if (evt.keyCode == 13 && evt.shiftKey === false) {
+                                ;(self?.['action'] as (..._a: unknown[]) => unknown)?.('Ok', evt)
                             }
-                            edata.finish()
+                            ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
                         })
                 })
         }
@@ -1524,42 +1728,42 @@ class Utils {
      * @param {*} options
      * @returns  options
      */
-    normButtons(options, btn) {
-        options.actions = options.actions ?? {}
+    normButtons(options: Record<string, unknown>, btn: Record<string, unknown>): Record<string, unknown> {
+        options['actions'] = options['actions'] ?? {}
         const btns = Object.keys(btn)
         btns.forEach(name => {
-            const action = options['btn_' + name]
+            const action = options['btn_' + name] as Record<string, unknown> | undefined
             if (action) {
                 btn[name] = {
-                    text: w2utils.lang(action.text ?? btn[name] ?? ''),
-                    class: action.class ?? '',
-                    style: action.style ?? '',
-                    attrs: action.attrs ?? ''
+                    text: w2utils.lang(String(action['text'] ?? btn[name] ?? '')),
+                    class: action['class'] ?? '',
+                    style: action['style'] ?? '',
+                    attrs: action['attrs'] ?? ''
                 }
                 delete options['btn_' + name]
             }
-            ['text', 'class', 'style', 'attrs'].forEach(suffix => {
+            ;['text', 'class', 'style', 'attrs'].forEach(suffix => {
                 if (options[name + '_' + suffix]) {
                     if (typeof btn[name] == 'string') {
                         btn[name] = { text: btn[name] }
                     }
-                    btn[name][suffix] = options[name + '_' + suffix]
+                    ;(btn[name] as Record<string, unknown>)[suffix] = options[name + '_' + suffix]
                     delete options[name + '_' + suffix]
                 }
             })
         })
         if (btns.includes('yes') && btns.includes('no')) {
             if (w2utils.settings.macButtonOrder) {
-                w2utils.extend(options.actions, { no: btn.no, yes: btn.yes })
+                w2utils.extend(options['actions'], { no: btn['no'], yes: btn['yes'] })
             } else {
-                w2utils.extend(options.actions, { yes: btn.yes, no: btn.no })
+                w2utils.extend(options['actions'], { yes: btn['yes'], no: btn['no'] })
             }
         }
         if (btns.includes('ok') && btns.includes('cancel')) {
             if (w2utils.settings.macButtonOrder) {
-                w2utils.extend(options.actions, { cancel: btn.cancel, ok: btn.ok })
+                w2utils.extend(options['actions'], { cancel: btn['cancel'], ok: btn['ok'] })
             } else {
-                w2utils.extend(options.actions, { ok: btn.ok, cancel: btn.cancel })
+                w2utils.extend(options['actions'], { ok: btn['ok'], cancel: btn['cancel'] })
             }
         }
         return options
@@ -1582,68 +1786,71 @@ class Utils {
      *  }
      * @returns promise
      */
-    notify(text, options) {
+    notify(text: string | Record<string, unknown>, options?: Record<string, unknown>): Promise<void> {
         return new Promise<void>(resolve => {
+            // any: text can be an options object; normalize in-place
+            let opts: Record<string, unknown> = options ?? {}
+            let textStr: string = ''
             if (typeof text == 'object') {
-                options = text
-                text = options.text
+                opts = text
+                textStr = String(opts['text'] ?? '')
+            } else {
+                textStr = String(text ?? '')
             }
-            options = options || {}
-            options.where = options.where ?? document.body
-            options.timeout = options.timeout ?? 15_000 // 15 secodns or will be hidden on route change
+            opts['where'] ??= document.body
+            opts['timeout'] ??= 15_000 // 15 seconds or will be hidden on route change
             if (typeof this.tmp.notify_resolve == 'function') {
-                this.tmp.notify_resolve()
+                ;(this.tmp.notify_resolve as () => void)()
                 query(this.tmp.notify_where).find('#w2ui-notify').remove()
             }
             this.tmp.notify_resolve = resolve
-            this.tmp.notify_where = options.where
-            clearTimeout(this.tmp.notify_timer)
-            if (text) {
-                if (typeof options.actions == 'object') {
-                    const actions = {}
-                    Object.keys(options.actions).forEach(action => {
+            this.tmp.notify_where = opts['where']
+            clearTimeout(this.tmp.notify_timer as number)
+            if (textStr) {
+                if (typeof opts['actions'] == 'object') {
+                    const actions: Record<string, string> = {}
+                    Object.keys(opts['actions'] as Record<string, unknown>).forEach(action => {
                         actions[action] = `<a class="w2ui-notify-link" value="${action}">${action}</a>`
                     })
-                    text = this.execTemplate(text, actions)
+                    textStr = this.execTemplate(textStr, actions)
                 }
                 const html = `
-                    <div id="w2ui-notify" style="${options.where == document.body ? 'position: fixed' : ''}">
-                        <div class="${options.class ?? ''} ${options.error ? 'w2ui-notify-error' : ''} ${options.success ? 'w2ui-notify-success' : ''}">
-                            ${text}
+                    <div id="w2ui-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
+                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'w2ui-notify-error' : ''} ${opts['success'] ? 'w2ui-notify-success' : ''}">
+                            ${textStr}
                             <span class="w2ui-notify-close w2ui-icon-cross"></span>
                         </div>
                     </div>`
-                query(options.where).append(html)
-                query(options.where).find('#w2ui-notify').find('.w2ui-notify-close')
-                    .on('click', event => {
-                        query(options.where).find('#w2ui-notify').remove()
+                query(opts['where']).append(html)
+                query(opts['where']).find('#w2ui-notify').find('.w2ui-notify-close')
+                    .on('click', _event => {
+                        query(opts['where']).find('#w2ui-notify').remove()
                         resolve()
                     })
-                if (options.actions) {
-                    query(options.where).find('#w2ui-notify .w2ui-notify-link')
+                if (opts['actions']) {
+                    query(opts['where']).find('#w2ui-notify .w2ui-notify-link')
                         .on('click', event => {
-                            const value = query(event.target).attr('value')
-                            options.actions[value]()
-                            query(options.where).find('#w2ui-notify').remove()
+                            const value = query((event as Event).target).attr('value')
+                            ;((opts['actions'] as Record<string, unknown>)[value] as () => void)()
+                            query(opts['where']).find('#w2ui-notify').remove()
                             resolve()
                         })
                 }
-                if (options.timeout > 0) {
+                if ((opts['timeout'] as number) > 0) {
                     this.tmp.notify_timer = setTimeout(() => {
-                        query(options.where).find('#w2ui-notify').remove()
+                        query(opts['where']).find('#w2ui-notify').remove()
                         resolve()
-                    }, options.timeout)
+                    }, opts['timeout'] as number)
                 }
             }
         })
     }
 
-    getSize(el, type) {
-        el = query(el) // for backward compatibility
+    getSize(el: unknown, type: string): number {
+        const $el = query(el) // for backward compatibility
         let ret = 0
-        if (el.length > 0) {
-            el = el[0]
-            const styles = getComputedStyle(el)
+        if ($el.length > 0) {
+            const styles = getComputedStyle($el[0] as Element)
             switch (type) {
                 case 'width' :
                     ret = parseFloat(styles.width)
@@ -1654,7 +1861,8 @@ class Utils {
                     if (styles.height === 'auto') ret = 0
                     break
                 default:
-                    ret = parseFloat(styles[type] ?? 0) || 0
+                    // any: type is a CSS property name; CSSStyleDeclaration is indexable by string
+                    ret = parseFloat(String(styles[type as keyof CSSStyleDeclaration] ?? '')) || 0
                     break
             }
         }
@@ -1821,13 +2029,14 @@ class Utils {
                         } catch (e) {
                             console.error('Invalid regular expression:', e)
                             // Fallback to standard innerHTML replace
-                            el.innerHTML = _replace(el.innerHTML, pattern, options.raplace)
+                            // any: el from query.each() is Node; cast to HTMLElement for innerHTML
+                            ;(el as HTMLElement).innerHTML = _replace((el as HTMLElement).innerHTML, pattern, options.raplace)
                         }
                     })
                 } else {
                     // Standard innerHTML replace for non-regex
                     items.forEach(item => {
-                        el.innerHTML = _replace(el.innerHTML, item, options.raplace)
+                        ;(el as HTMLElement).innerHTML = _replace((el as HTMLElement).innerHTML, item, options.raplace)
                     })
                 }
             })
@@ -1865,7 +2074,7 @@ class Utils {
         }
     }
 
-    lang(phrase, params) {
+    lang(phrase: string, params?: Record<string, string>): string {
         if (!phrase || this.settings.phrases == null // if no phrases at all
                 || typeof phrase !== 'string' || '<=>='.includes(phrase)) {
             return this.execTemplate(phrase, params)
@@ -1892,17 +2101,18 @@ class Utils {
         return this.execTemplate(translation, params)
     }
 
-    locale(locale, keepPhrases, noMerge) {
-        return new Promise<void>((resolve, reject) => {
+    locale(locale: string | string[] | Record<string, unknown>, keepPhrases?: boolean, noMerge?: boolean): Promise<{ file: string; data: unknown } | void> {
+        return new Promise<{ file: string; data: unknown } | void>((resolve, reject) => {
             // if locale is an array we call this function recursively and merge the results
             if (Array.isArray(locale)) {
                 this.settings.phrases = {}
-                const proms = []
-                const files = {}
-                locale.forEach((file, ind) => {
+                const proms: Array<Promise<unknown>> = []
+                const files: Record<string, unknown> = {}
+                const localeArr = locale as string[]
+                localeArr.forEach((file, ind) => {
                     if (file.length === 5) {
                         file = 'locale/'+ file.toLowerCase() +'.json'
-                        locale[ind] = file
+                        localeArr[ind] = file
                     }
                     proms.push(this.locale(file, true, false))
                 })
@@ -1911,7 +2121,7 @@ class Utils {
                         // order of files is important to merge
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         res.forEach((r: any) => { if (r.value) files[r.value.file] = r.value.data })
-                        locale.forEach(file => {
+                        localeArr.forEach(file => {
                             this.settings = this.extend({}, this.settings, files[file])
                         })
                         resolve()
@@ -1921,17 +2131,18 @@ class Utils {
             if (!locale) locale = 'en-us'
 
             // if locale is an object, then merge it with w2utils.settings
-            if (locale instanceof Object) {
+            if (typeof locale === 'object') {
                 this.settings = this.extend({}, this.settings, w2locale, locale)
                 return
             }
 
-            if (locale.length === 5) {
-                locale = 'locale/'+ locale.toLowerCase() +'.json'
+            let localeStr = locale as string
+            if (localeStr.length === 5) {
+                localeStr = 'locale/'+ localeStr.toLowerCase() +'.json'
             }
 
             // load from the file
-            fetch(locale, { method: 'GET' })
+            fetch(localeStr, { method: 'GET' })
                 .then(res => res.json())
                 .then(data => {
                     if (noMerge !== true) {
@@ -1943,10 +2154,10 @@ class Utils {
                             this.settings = this.extend({}, this.settings, w2locale, { phrases: {} }, data)
                         }
                     }
-                    resolve({ file: locale, data })
+                    resolve({ file: localeStr, data })
                 })
                 .catch((err) => {
-                    console.log('ERROR: Cannot load locale '+ locale)
+                    console.log('ERROR: Cannot load locale '+ localeStr)
                     reject(err)
                 })
         })
@@ -1960,7 +2171,7 @@ class Utils {
             </div>
         `
         query('body').append(html)
-        this.tmp.scrollBarSize = 100 - query('#_scrollbar_width > div')[0].clientWidth
+        this.tmp.scrollBarSize = 100 - (query('#_scrollbar_width > div')[0] as HTMLElement).clientWidth
         query('#_scrollbar_width').remove()
         return this.tmp.scrollBarSize
     }
@@ -2060,18 +2271,19 @@ class Utils {
         return caretOffset
     }
 
-    setCursorPosition(input, pos, posEnd) {
+    setCursorPosition(input: HTMLElement | null, pos: number, posEnd?: number): void {
         if (input == null) return
         const range   = document.createRange()
-        let el
+        let el: Node | null = null
         const sel = window.getSelection()
         if (['INPUT', 'TEXTAREA'].includes(input.tagName)) {
-            input.setSelectionRange(pos, posEnd ?? pos)
+            ;(input as HTMLInputElement).setSelectionRange(pos, posEnd ?? pos)
         } else {
             for (let i = 0; i < input.childNodes.length; i++) {
-                let tmp = query(input.childNodes[i]).text()
-                if (input.childNodes[i].tagName) {
-                    tmp = query(input.childNodes[i]).html()
+                // any: query().text() / .html() returns string|Query; cast to string
+                let tmp = String(query(input.childNodes[i]).text())
+                if ((input.childNodes[i] as HTMLElement).tagName) {
+                    tmp = String(query(input.childNodes[i]).html())
                     tmp = tmp.replace(/&lt;/g, '<')
                         .replace(/&gt;/g, '>')
                         .replace(/&amp;/g, '&')
@@ -2088,7 +2300,9 @@ class Utils {
                 }
             }
             if (el == null) return
-            if (pos > el.length) pos = el.length
+            // any: el is a Text node at this point; cast to access .length
+            const elLen = (el as Text).length ?? 0
+            if (pos > elLen) pos = elLen
             range.setStart(el, pos)
             if (posEnd) {
                 range.setEnd(el, posEnd)
@@ -2100,10 +2314,10 @@ class Utils {
         }
     }
 
-    parseColor(str) {
+    parseColor(str: string | null | undefined): W2Color | null {
         if (typeof str !== 'string') return null; else str = str.trim().toUpperCase()
         if (str[0] === '#') str = str.substr(1)
-        let color = {}
+        let color: W2Color = { r: 0, g: 0, b: 0, a: 1 }
         if (str.length === 3) {
             color = {
                 r: parseInt(str[0] + str[0], 16),
@@ -2148,14 +2362,14 @@ class Utils {
         return color
     }
 
-    colorContrast(color1, color2) {
+    colorContrast(color1: string, color2: string): string {
         const lum1 = calcLumens(color1)
         const lum2 = calcLumens(color2)
         const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05)
         return ratio.toFixed(2)
 
-        function calcLumens(color) {
-            const { r, g, b } = w2utils.parseColor(color) ?? { r: 0, g: 0, b: 0 }
+        function calcLumens(color: string): number {
+            const { r, g, b } = w2utils.parseColor(color) ?? { r: 0, g: 0, b: 0, a: 1 }
             const gamma = 2.2
             const normR = r / 255
             const normG = g / 255
@@ -2221,34 +2435,34 @@ class Utils {
         }
     }
 
-    tooltip(html, options) {
+    tooltip(html: string | Record<string, unknown>, options?: Record<string, unknown>): string {
         let showOn = 'mouseenter'
         let hideOn = 'mouseleave'
+        let opts: Record<string, unknown> = options ?? {}
         if (typeof html == 'object') {
-            options = html
+            opts = html
         }
-        options = options || {}
         if (typeof html == 'string') {
-            options.html = html
+            opts = { ...opts, html }
         }
-        if (options.showOn) {
-            showOn = options.showOn
-            delete options.showOn
+        if (opts['showOn']) {
+            showOn = opts['showOn'] as string
+            delete opts['showOn']
         }
-        if (options.hideOn) {
-            hideOn = options.hideOn
-            delete options.hideOn
+        if (opts['hideOn']) {
+            hideOn = opts['hideOn'] as string
+            delete opts['hideOn']
         }
-        if (!options.name) options.name = 'no-name'
+        if (!opts['name']) opts['name'] = 'no-name'
         // base64 is needed to avoid '"<> and other special chars conflicts
         const actions = ` on${showOn}="w2tooltip.show(this, `
-                + `JSON.parse(w2utils.base64decode('${this.base64encode(JSON.stringify(options))}')))" `
-                + `on${hideOn}="w2tooltip.hide('${options.name}')"`
+                + `JSON.parse(w2utils.base64decode('${this.base64encode(JSON.stringify(opts))}')))" `
+                + `on${hideOn}="w2tooltip.hide('${opts['name']}')"`
         return actions
     }
 
     // determins if it is plain Object, not DOM element, nor a function, event, etc.
-    isPlainObject(value) {
+    isPlainObject(value: unknown): boolean {
         if (value == null) { // null or undefined
             return false
         }
@@ -2267,41 +2481,42 @@ class Utils {
      * you can choose to include them or not, by default they are included.
      * You can also exclude certain elements from final object if used with options: { exclude }
      */
-    clone(obj, options) {
-        let ret
-        options = Object.assign({ functions: true, elements: true, events: true, exclude: [] }, options ?? {})
+    clone(obj: unknown, options?: Partial<W2CloneOptions>): unknown {
+        const opts = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {})
         if (Array.isArray(obj)) {
-            ret = Array.from(obj)
-            ret.forEach((value, ind) => {
-                ret[ind] = this.clone(value, { ...options, parent: (options.parent ?? '') + '[]' })
+            const arr: unknown[] = Array.from(obj)
+            arr.forEach((value, ind) => {
+                arr[ind] = this.clone(value, { ...opts, parent: (opts.parent ?? '') + '[]' })
             })
+            return arr
         } else if (this.isPlainObject(obj)) {
-            ret = {}
+            const ret: Record<string, unknown> = {}
             Object.assign(ret, obj)
             // delete excluded keys
-            if (Array.isArray(options.exclude)) {
-                options.exclude.forEach(key => { delete ret[key] })
+            if (Array.isArray(opts.exclude)) {
+                opts.exclude.forEach((key: string) => { delete ret[key] })
             }
             Object.keys(ret).forEach(key => {
-                if (typeof options.exclude == 'function' && options.exclude(key, { obj, parent: options.parent ?? '' })) {
+                if (typeof opts.exclude == 'function' && opts.exclude(key, { obj, parent: opts.parent ?? '' })) {
                     ret[key] = undefined
                 } else {
-                    ret[key] = this.clone(ret[key], { ...options, parent: (options.parent ?? '') + (options.parent != null ? '.' : '') + key })
+                    ret[key] = this.clone(ret[key], { ...opts, parent: (opts.parent ?? '') + (opts.parent != null ? '.' : '') + key })
                 }
                 if (ret[key] === undefined) delete ret[key] // do not include undefined elements
             })
+            return ret
         } else {
-            if ((obj instanceof Function && !options.functions)
-                    || (obj instanceof Node && !options.elements)
-                    || (obj instanceof Event && !options.events)
+            if ((obj instanceof Function && !opts.functions)
+                    || (obj instanceof Node && !opts.elements)
+                    || (obj instanceof Event && !opts.events)
             ) {
                 // do not include these objects, otherwise include them uncloned
+                return undefined
             } else {
                 // primitive variable or function, event, dom element, etc, -  all these are not cloned
-                ret = obj
+                return obj
             }
         }
-        return ret
     }
 
     /**
@@ -2356,35 +2571,36 @@ class Utils {
      * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
      * @license    MIT License
      */
-    naturalCompare(a, b) {
-        let i, codeA, codeB = 1, posA = 0, posB = 0
-        const alphabet = String.alphabet
+    naturalCompare(a: unknown, b: unknown): number {
+        let i: number, codeA: number, codeB = 1, posA = 0, posB = 0
+        // any: String.alphabet is an optional user-defined extension for custom sort order (non-standard)
+        const alphabet = (String as unknown as Record<string, unknown>)['alphabet'] as string | undefined
 
-        function getCode(str, pos, code) {
+        function getCode(str: string, pos: number, code?: number): number {
             if (code) {
-                for (i = pos; code = getCode(str, i), code < 76 && code > 65;) ++i
+                for (i = pos; (code = getCode(str, i)) , code < 76 && code > 65;) ++i
                 return +str.slice(pos - 1, i)
             }
-            code = alphabet && alphabet.indexOf(str.charAt(pos))
-            return code > -1 ? code + 76 : ((code = str.charCodeAt(pos) || 0), code < 45 || code > 127) ? code
-                : code < 46 ? 65 // -
-                : code < 48 ? code - 1
-                : code < 58 ? code + 18 // 0-9
-                : code < 65 ? code - 11
-                : code < 91 ? code + 11 // A-Z
-                : code < 97 ? code - 37
-                : code < 123 ? code + 5 // a-z
-                : code - 63
+            let c: number = alphabet ? alphabet.indexOf(str.charAt(pos)) : -1
+            return c > -1 ? c + 76 : ((c = str.charCodeAt(pos) || 0), c < 45 || c > 127) ? c
+                : c < 46 ? 65 // -
+                : c < 48 ? c - 1
+                : c < 58 ? c + 18 // 0-9
+                : c < 65 ? c - 11
+                : c < 91 ? c + 11 // A-Z
+                : c < 97 ? c - 37
+                : c < 123 ? c + 5 // a-z
+                : c - 63
         }
 
-
-        if ((a+='') != (b+='')) for (;codeB;) {
-            codeA = getCode(a, posA++)
-            codeB = getCode(b, posB++)
+        const aStr = '' + a, bStr = '' + b
+        if (aStr != bStr) for (;codeB;) {
+            codeA = getCode(aStr, posA++)
+            codeB = getCode(bStr, posB++)
 
             if (codeA < 76 && codeB < 76 && codeA > 66 && codeB > 66) {
-                codeA = getCode(a, posA, posA)
-                codeB = getCode(b, posB, posA = i)
+                codeA = getCode(aStr, posA, posA)
+                codeB = getCode(bStr, posB, posA = i)
                 posB  = i
             }
 
@@ -2398,7 +2614,7 @@ class Utils {
      * is { id: ..., text: ... }. In options you can pass { itemMap: { id: 'id_field', text: 'text_field' }} that will be used
      * to find out id and text fields.
      */
-    normMenu(menu, options = {}) {
+    normMenu(menu: unknown, options: W2NormMenuOptions = {}): W2MenuItem[] | undefined {
         if (Array.isArray(menu)) {
             menu.forEach((it, m) => {
                 if (typeof it === 'string' || typeof it === 'number') {
@@ -2434,8 +2650,8 @@ class Utils {
      * Takes Url object and fetchOptions and changes it in place applying selected user dataType. Since
      * dataType is in w2utils. This method is used in grid, form and tooltip to prepare fetch parameters
      */
-    prepareParams(url, fetchOptions, options = {}) {
-        const dataType = options?.dataType ?? w2utils.settings.dataType
+    prepareParams(url: URL, fetchOptions: Record<string, unknown>, options: Record<string, unknown> = {}): Record<string, unknown> {
+        const dataType = (options?.['dataType'] as string | undefined) ?? w2utils.settings.dataType
         let postParams = fetchOptions.body
         fetchOptions.method = String(fetchOptions.method).toUpperCase()
         switch (dataType) {
@@ -2446,11 +2662,12 @@ class Utils {
              */
             case 'RESTFULL':
             case 'RESTFULJSON': {
-                if (['POST', 'PUT', 'DELETE'].includes(fetchOptions.method)) {
-                    fetchOptions.headers['Content-Type'] = 'application/json'
+                if (['POST', 'PUT', 'DELETE'].includes(String(fetchOptions['method']))) {
+                    ;(fetchOptions['headers'] as Record<string, string>)['Content-Type'] = 'application/json'
                 }
-                if (fetchOptions.method == 'GET') {
-                    if (dataType == 'RESTFULLJSON') {
+                if (String(fetchOptions['method']) == 'GET') {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    if ((dataType as any) == 'RESTFULLJSON') { // note: pre-existing typo in original code (RESTFULLJSON vs RESTFULJSON)
                         postParams = { request: postParams }
                     }
                     body2params()
@@ -2466,21 +2683,21 @@ class Utils {
             case 'HTTP':
             case 'HTTPJSON':
             case 'JSON': {
-                if (fetchOptions.method == 'GET') {
+                if (String(fetchOptions['method']) == 'GET') {
                     if (dataType == 'JSON' || dataType === 'HTTPJSON') {
                         postParams = { request: postParams }
                     }
                     body2params()
                 } else {
-                    fetchOptions.headers['Content-Type'] = 'application/json'
-                    fetchOptions.method = 'POST'
+                    ;(fetchOptions['headers'] as Record<string, string>)['Content-Type'] = 'application/json'
+                    fetchOptions['method'] = 'POST'
                 }
                 break
             }
             default: {
-                if (typeof dataType == 'fuction') {
+                if (typeof dataType == 'function') {
                     // do nothing, it is custom function that will handle everything
-                    fetchOptions = dataType(url, fetchOptions, options)
+                    fetchOptions = (dataType as unknown as (u: URL, f: Record<string, unknown>, o: Record<string, unknown>) => Record<string, unknown>)(url, fetchOptions, options)
                 } else {
                     console.log(`ERROR: Unsupported dataType "${dataType}". Supported types are JSON (default), HTTP, RESTFULL. For backward compatibility HTTPJSON is same as JSON. RESTULFLJSON will encode GET request as JSON.`)
                 }
@@ -2492,26 +2709,30 @@ class Utils {
         return fetchOptions
 
         function body2params() {
-            Object.keys(postParams).forEach(key => {
-                let param = postParams[key]
+            const pp = postParams as Record<string, unknown>
+            Object.keys(pp).forEach(key => {
+                let param: unknown = pp[key]
                 if (typeof param == 'object') param = JSON.stringify(param)
-                url.searchParams.append(key, param)
+                url.searchParams.append(key, String(param ?? ''))
             })
-            delete fetchOptions.body
+            delete fetchOptions['body']
         }
     }
 
-    bindEvents(selector, subject) {
+    bindEvents(selector: unknown, subject: Record<string, unknown>): void {
         // format is
         // <div ... data-<event>='["<method>","param1","param2",...]'> -- should be valid JSON (no undefined)
         // <div ... data-<event>="<method>|param1|param2">
         // -- can have "event", "this", "stop", "stopPrevent", "alert" - as predefined objects
-        if (selector.length == 0) return
+        // any: selector can be Element, Node[], Query, or string; normalize via query()
+        const selectorR = selector as Record<string, unknown>
+        if ((selectorR?.['length'] as number) == 0) return
         // for backward compatibility
-        if (selector?.[0] instanceof Node) {
-            selector = Array.isArray(selector) ? selector : selector.get()
+        let normalizedSelector = selector
+        if (selectorR?.[0] instanceof Node) {
+            normalizedSelector = Array.isArray(selector) ? selector : (selector as { get(): unknown[] }).get()
         }
-        query(selector).each((el) => {
+        query(normalizedSelector).each((el) => {
             const actions = query(el).data()
             Object.keys(actions).forEach(name => {
                 const events = ['click', 'dblclick', 'mouseenter', 'mouseleave', 'mouseover', 'mouseout', 'mousedown', 'mousemove', 'mouseup',
@@ -2519,22 +2740,24 @@ class Utils {
                 if (events.indexOf(String(name).toLowerCase()) == -1) {
                     return
                 }
-                let params = actions[name]
-                if (typeof params == 'string') {
-                    params = params.split('|').map(key => {
-                        if (key === 'true') key = true
-                        if (key === 'false') key = false
-                        if (key === 'undefined') key = undefined
-                        if (key === 'null') key = null
-                        if (parseFloat(key) == key) key = parseFloat(key)
+                let params: unknown[] = Array.isArray(actions[name]) ? actions[name] as unknown[] : [actions[name]]
+                if (typeof actions[name] == 'string') {
+                    params = (actions[name] as string).split('|').map(key => {
+                        // any: key is progressively coerced from string to typed value
+                        let val: unknown = key
+                        if (key === 'true') val = true
+                        if (key === 'false') val = false
+                        if (key === 'undefined') val = undefined
+                        if (key === 'null') val = null
+                        if (typeof val === 'string' && parseFloat(val) == (val as unknown as number)) val = parseFloat(val)
                         const quotes = ['\'', '"', '`']
-                        if (typeof key == 'string' && quotes.includes(key[0]) && quotes.includes(key[key.length-1])) {
-                            key = key.substring(1, key.length-1)
+                        if (typeof val == 'string' && quotes.includes(val[0]) && quotes.includes(val[val.length-1])) {
+                            val = val.substring(1, val.length-1)
                         }
-                        return key
+                        return val
                     })
                 }
-                const method = params[0]
+                const method = String(params[0]) // params[0] is the method name
                 params = params.slice(1) // should be new array
                 query(el)
                     .off(name + '.w2utils-bind')
@@ -2558,7 +2781,8 @@ class Utils {
                                 if (subject[method] == null) {
                                     throw new Error(`Cannot dispatch event as the method "${method}" does not exist.`)
                                 }
-                                subject[method](...params.map((key, _ind) => {
+                                // any: subject[method] is a function mixed in at runtime; cast required
+                                ;(subject[method] as (...args: unknown[]) => void)(...params.map((key, _ind) => {
                                     switch (String(key).toLowerCase()) {
                                         case 'event':
                                             return event
