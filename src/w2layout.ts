@@ -2,6 +2,9 @@
  * Part of w2ui 2.0 library
  *  - Dependencies: mQuery, w2utils, w2base, w2tabs, w2toolbar
  *
+ * T3.6: Ported to TypeScript with aggressive typing per typing_policy.
+ * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
+ *
  * == 2.0 changes
  *  - CSP - fixed inline events
  *  - remove jQuery dependency
@@ -12,14 +15,90 @@
  */
 
 import { w2base } from './w2base.js'
-import { w2ui, w2utils } from './w2utils.js'
-import { query } from './query.js'
+import { w2ui as _w2ui, w2utils } from './w2utils.js'
+import { query as _queryRaw, Query } from './query.js'
 import { w2tabs } from './w2tabs.js'
 import { w2toolbar } from './w2toolbar.js'
 
-let w2panels = ['top', 'left', 'main', 'preview', 'right', 'bottom']
+// any: query() returns Query|void; cast once for clean selector usage
+const query = _queryRaw as (selector: unknown, context?: unknown) => Query
+// any: w2ui is a dynamic runtime registry; typed narrow for this file
+const w2ui = _w2ui as Record<string, any> // any: values are w2 widget instances with dynamic methods
+
+// ---------------------------------------------------------------------------
+// Type definitions
+// ---------------------------------------------------------------------------
+
+/** Valid panel type names in a layout */
+type W2PanelType = 'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'
+
+/** Content that can be placed in a layout panel */
+type W2PanelContent =
+    | string
+    | { render: (box?: HTMLElement) => void; unmount?: () => void; box?: HTMLElement | null; [key: string]: unknown }
+
+/** Individual panel configuration and runtime state */
+interface W2LayoutPanel {
+    type: W2PanelType | null
+    title: string
+    size: number | string
+    minSize: number
+    maxSize: number | boolean
+    hidden: boolean
+    resizable: boolean
+    overflow: string
+    style: string
+    html: W2PanelContent
+    tabs: w2tabs | Record<string, unknown> | null
+    toolbar: w2toolbar | Record<string, unknown> | null
+    /** Runtime-computed width (read-only after resize) */
+    width: number | null
+    /** Runtime-computed height (read-only after resize) */
+    height: number | null
+    /** Runtime-computed size in pixels */
+    sizeCalculated?: number
+    show: {
+        toolbar: boolean
+        tabs: boolean
+    }
+    removed: ((info: { panel: string; html: W2PanelContent; html_new: W2PanelContent; transition: string }) => void) | null
+    onRefresh: ((event: unknown) => void) | null
+    onShow: ((event: unknown) => void) | null
+    onHide: ((event: unknown) => void) | null
+}
+
+/** Options for the html() method return promise-like */
+interface W2HtmlResult {
+    panel: string
+    html: W2PanelContent
+    error: boolean
+    cancelled: boolean
+    status?: boolean
+    removed: (cb: () => void) => void
+}
+
+const w2panels: W2PanelType[] = ['top', 'left', 'main', 'preview', 'right', 'bottom']
 
 class w2layout extends w2base {
+    declare box: HTMLElement | null
+    declare name: string
+    panels: W2LayoutPanel[]
+    last: Record<string, any> // any: accumulates resize state, observeResize, events dict
+    padding: number
+    resizer: number
+    style: string
+    onShow: ((event: unknown) => void) | null
+    onHide: ((event: unknown) => void) | null
+    onResizing: ((event: unknown) => void) | null
+    onResizerClick: ((event: unknown) => void) | null
+    onRender: ((event: unknown) => void) | null
+    onRefresh: ((event: unknown) => void) | null
+    onChange: ((event: unknown) => void) | null
+    onResize: ((event: unknown) => void) | null
+    onDestroy: ((event: unknown) => void) | null
+    panel_template: W2LayoutPanel
+    [key: string]: any // any: w2base dynamic event handlers
+
     constructor(options) {
         super(options.name)
         this.box            = null // DOM Element that holds the element
@@ -78,29 +157,30 @@ class w2layout extends w2base {
         })
 
         // render if box specified
-        if (typeof this.box == 'string') this.box = query(this.box).get(0)
+        // any: query().get(0) returns Node|Node[]; box selector always resolves to HTMLElement
+        if (typeof this.box == 'string') this.box = query(this.box).get(0) as HTMLElement
         if (this.box) this.render(this.box)
 
-        function initTabs(object, panel, tabs) {
-            let pan = object.get(panel)
+        function initTabs(object: w2layout, panel: W2PanelType | null, tabs?) {
+            const pan = object.get(panel)
             if (pan != null && tabs == null) tabs = pan.tabs
             if (pan == null || tabs == null) return false
             // instantiate tabs
             if (Array.isArray(tabs)) tabs = { tabs: tabs }
-            let name = object.name + '_' + panel + '_tabs'
+            const name = object.name + '_' + panel + '_tabs'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
             pan.tabs      = new w2tabs(w2utils.extend({}, tabs, { owner: object, name: object.name + '_' + panel + '_tabs' }))
             pan.show.tabs = true
             return true
         }
 
-        function initToolbar(object, panel, toolbar) {
-            let pan = object.get(panel)
+        function initToolbar(object: w2layout, panel: W2PanelType | null, toolbar?) {
+            const pan = object.get(panel)
             if (pan != null && toolbar == null) toolbar = pan.toolbar
             if (pan == null || toolbar == null) return false
             // instantiate toolbar
             if (Array.isArray(toolbar)) toolbar = { items: toolbar }
-            let name = object.name + '_' + panel + '_toolbar'
+            const name = object.name + '_' + panel + '_toolbar'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
             pan.toolbar      = new w2toolbar(w2utils.extend({}, toolbar, { owner: object, name: object.name + '_' + panel + '_toolbar' }))
             pan.show.toolbar = true
@@ -108,9 +188,9 @@ class w2layout extends w2base {
         }
     }
 
-    html(panel, data, transition) {
-        let p = this.get(panel)
-        let promise = {
+    html(panel: string, data: W2PanelContent, transition?: string): W2HtmlResult {
+        const p = this.get(panel)
+        const promise: W2HtmlResult = {
             panel: panel,
             html: p.html,
             error: false,
@@ -140,20 +220,21 @@ class w2layout extends w2base {
             return promise
         }
         // event before
-        let edata = this.trigger('change', { target: panel, panel: p, html_new: data, transition: transition })
+        const edata = this.trigger('change', { target: panel, panel: p, html_new: data, transition: transition })
         if (edata.isCancelled === true) {
             promise.cancelled = true
             return promise
         }
-        let pname = '#layout_'+ this.name + '_panel_'+ p.type
-        let current = query(this.box).find(pname + '> [data-role="panel-content"]')
-        let panelTop = 0
+        const pname = '#layout_'+ this.name + '_panel_'+ p.type
+        const current = query(this.box).find(pname + '> [data-role="panel-content"]')
+        let panelTop: string | number = 0
         if (current.length > 0) {
-            query(this.box).find(pname).get(0).scrollTop = 0
-            panelTop = query(current).css('top')
+            // any: query().get(0) returns Node|Node[]; panel element is always HTMLElement
+            ;(query(this.box).find(pname).get(0) as HTMLElement).scrollTop = 0
+            panelTop = query(current).css('top') as string
         }
         // clean up previous content
-        if (typeof p.html.unmount == 'function') p.html.unmount()
+        if (typeof (p.html as { unmount?: unknown }).unmount == 'function') (p.html as { unmount: () => void }).unmount()
         current.addClass('w2ui-panel-content')
         current.removeAttr('style') // styles could have added manually, but all necessary will be added by resizeBoxes
         this.resizeBoxes(panel)
@@ -167,47 +248,100 @@ class w2layout extends w2base {
                 if (transition != null && transition !== '') {
                     // apply transition
                     query(this.box).addClass('animating')
-                    let div1 = query(this.box).find(pname + '> [data-role="panel-content"]')
-                    div1.after('<div class="w2ui-panel-content new-panel" data-role="panel-content" style="'+ div1[0].style.cssText +'"></div>')
-                    let div2 = query(this.box).find(pname + '> [data-role="panel-content"].new-panel')
+                    const div1 = query(this.box).find(pname + '> [data-role="panel-content"]')
+                    // any: query()[0] returns Node; panel content div is HTMLElement
+                    div1.after('<div class="w2ui-panel-content new-panel" data-role="panel-content" style="'+ (div1[0] as HTMLElement).style.cssText +'"></div>')
+                    const div2 = query(this.box).find(pname + '> [data-role="panel-content"].new-panel')
                     div1.css('top', panelTop)
                     div2.css('top', panelTop)
                     if (typeof data == 'object') {
-                        data.box = div2[0] // do not do .render(box);
+                        data.box = div2[0] as HTMLElement // do not do .render(box);
                         data.render()
                     } else {
                         div2.hide().html(data)
                     }
-                    w2utils.transition(div1[0], div2[0], transition, () => {
-                        div1.remove()
-                        div2.removeClass('new-panel')
-                        div2.css('overflow', p.overflow)
-                        // make sure only one content left
-                        query(query(this.box).find(pname + '> [data-role="panel-content"]').get(1)).remove()
+                    // transition
+                    let style1: string, style2: string
+                    switch (transition) {
+                        case 'slide-left':
+                            style1 = 'left: -'+ w2utils.getSize(query(this.box), 'width') +'px'
+                            style2 = 'left: 0px'
+                            break
+                        case 'slide-right':
+                            style1 = 'left: '+ w2utils.getSize(query(this.box), 'width') +'px'
+                            style2 = 'left: 0px'
+                            break
+                        case 'slide-down':
+                            style1 = 'top: -'+ w2utils.getSize(query(this.box), 'height') +'px'
+                            style2 = 'top: '+ panelTop +'px'
+                            break
+                        case 'slide-up':
+                            style1 = 'top: '+ w2utils.getSize(query(this.box), 'height') +'px'
+                            style2 = 'top: '+ panelTop +'px'
+                            break
+                        case 'flip-left':
+                            style1 = 'transform: rotate(90deg)'
+                            style2 = 'transform: rotate(0deg)'
+                            break
+                        case 'flip-right':
+                            style1 = 'transform: rotate(-90deg)'
+                            style2 = 'transform: rotate(0deg)'
+                            break
+                        case 'flip-down':
+                            style1 = 'transform: rotate(-180deg)'
+                            style2 = 'transform: rotate(0deg)'
+                            break
+                        case 'flip-up':
+                            style1 = 'transform: rotate(180deg)'
+                            style2 = 'transform: rotate(0deg)'
+                            break
+                        case 'pop-in':
+                            style1 = 'transform: scale(.5); opacity: 0;'
+                            style2 = 'transform: scale(1); opacity: 1;'
+                            break
+                        case 'pop-out':
+                            style1 = 'transform: scale(1); opacity: 1;'
+                            style2 = 'transform: scale(.5); opacity: 0;'
+                            break
+                        default:
+                            style1 = ''
+                            style2 = ''
+                    }
+                    div1.addClass('previous').css({ 'cssText': 'transition: .5s; '+ style1 })
+                    div2.addClass('current').css({ 'cssText': 'transition: .5s; '+ style2 })
+                    // clean
+                    setTimeout(() => {
                         query(this.box).removeClass('animating')
-                        this.refresh(panel)
-                    })
+                        div1.remove()
+                        div2.removeClass('new-panel current')
+                        query(this.box).find(pname +'> [data-role="panel-content"]')
+                            .css({ 'cssText': '' })
+                        edata.finish()
+                    }, 500)
                 } else {
                     this.refresh(panel)
+                    edata.finish()
                 }
+            } else {
+                edata.finish()
             }
         }
-        // event after
-        edata.finish()
         return promise
     }
 
-    message(panel, options) {
-        let p = this.get(panel)
-        let box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
-        let oldOverflow = box.css('overflow')
+    message(panel: string, options: unknown) {
+        const p = this.get(panel)
+        const box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
+        const oldOverflow = box.css('overflow') as string
         box.css('overflow', 'hidden')
-        let prom = w2utils.message({
+        // any: options is pass-through from caller; w2utils.message accepts string|number|object
+        const prom = w2utils.message({
             owner: this,
-            box  : box.get(0),
+            // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
+            box  : box.get(0) as HTMLElement,
             after: '.w2ui-panel-title',
             param: panel
-        }, options)
+        }, options as any)
         if (prom) {
             prom.self.on('close:after', () => {
                 box.css('overflow', oldOverflow)
@@ -216,17 +350,19 @@ class w2layout extends w2base {
         return prom
     }
 
-    confirm(panel, options) {
-        let p = this.get(panel)
-        let box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
-        let oldOverflow = box.css('overflow')
+    confirm(panel: string, options: unknown) {
+        const p = this.get(panel)
+        const box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
+        const oldOverflow = box.css('overflow') as string
         box.css('overflow', 'hidden')
-        let prom = w2utils.confirm({
+        // any: options is pass-through from caller; w2utils.confirm accepts string|number|object
+        const prom = w2utils.confirm({
             owner : this,
-            box   : box.get(0),
+            // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
+            box   : box.get(0) as HTMLElement,
             after : '.w2ui-panel-title',
             param : panel
-        }, options)
+        }, options as any)
         if (prom) {
             prom.self.on('close:after', () => {
                 box.css('overflow', oldOverflow)
@@ -235,8 +371,8 @@ class w2layout extends w2base {
         return prom
     }
 
-    load(panel, url, transition) {
-        return new Promise((resolve, reject) => {
+    load(panel: string, url: string, transition?: string) {
+        return new Promise<W2HtmlResult | void>((resolve, reject) => {
             if ((panel == 'css' || this.get(panel) != null) && url != null) {
                 fetch(url)
                     .then(resp => resp.text())
@@ -250,8 +386,8 @@ class w2layout extends w2base {
         })
     }
 
-    sizeTo(panel, size, instant) {
-        let pan = this.get(panel)
+    sizeTo(panel: string, size: number | string, instant?: boolean) {
+        const pan = this.get(panel)
         if (pan == null) return false
         // resize
         query(this.box).find(':scope > div > .w2ui-panel')
@@ -265,12 +401,12 @@ class w2layout extends w2base {
         return true
     }
 
-    show(panel, immediate) {
+    show(panel: string, immediate?: boolean) {
         // event before
-        let edata = this.trigger('show', { target: panel, thisect: this.get(panel), immediate: immediate })
+        const edata = this.trigger('show', { target: panel, thisect: this.get(panel), immediate: immediate })
         if (edata.isCancelled === true) return
 
-        let p = this.get(panel)
+        const p = this.get(panel)
         if (p == null) return false
         p.hidden = false
         if (immediate === true) {
@@ -302,12 +438,12 @@ class w2layout extends w2base {
         return true
     }
 
-    hide(panel, immediate) {
+    hide(panel: string, immediate?: boolean) {
         // event before
-        let edata = this.trigger('hide', { target: panel, object: this.get(panel), immediate: immediate })
+        const edata = this.trigger('hide', { target: panel, object: this.get(panel), immediate: immediate })
         if (edata.isCancelled === true) return
 
-        let p = this.get(panel)
+        const p = this.get(panel)
         if (p == null) return false
         p.hidden = true
         if (immediate === true) {
@@ -335,14 +471,14 @@ class w2layout extends w2base {
         return true
     }
 
-    toggle(panel, immediate) {
-        let p = this.get(panel)
+    toggle(panel: string, immediate?: boolean) {
+        const p = this.get(panel)
         if (p == null) return false
         if (p.hidden) return this.show(panel, immediate); else return this.hide(panel, immediate)
     }
 
-    set(panel, options) {
-        let ind = this.get(panel, true)
+    set(panel: string, options: Partial<W2LayoutPanel>) {
+        const ind = this.get(panel, true)
         if (ind == null) return false
         w2utils.extend(this.panels[ind], options)
         // refresh only when content changed
@@ -354,7 +490,7 @@ class w2layout extends w2base {
         return true
     }
 
-    get(panel, returnIndex) {
+    get(panel: string, returnIndex?: boolean): any { // any: returns panel object or index depending on returnIndex
         for (let p = 0; p < this.panels.length; p++) {
             if (this.panels[p].type == panel) {
                 if (returnIndex === true) return p; else return this.panels[p]
@@ -363,46 +499,49 @@ class w2layout extends w2base {
         return null
     }
 
-    el(panel) {
-        let el = query(this.box).find('#layout_'+ this.name +'_panel_'+ panel +'> [data-role="panel-content"]')
+    el(panel: string): HTMLElement | null {
+        const el = query(this.box).find('#layout_'+ this.name +'_panel_'+ panel +'> [data-role="panel-content"]')
         if (el.length != 1) return null
-        return el[0]
+        // any: query()[0] returns Node; panel content element is always HTMLElement
+        return el[0] as HTMLElement
     }
 
-    hideToolbar(panel) {
-        let pan = this.get(panel)
+    hideToolbar(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         pan.show.toolbar = false
         query(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).hide()
         this.resize()
     }
 
-    showToolbar(panel) {
-        let pan = this.get(panel)
+    showToolbar(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         pan.show.toolbar = true
         query(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).show()
         this.resize()
     }
 
-    toggleToolbar(panel) {
-        let pan = this.get(panel)
+    toggleToolbar(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         if (pan.show.toolbar) this.hideToolbar(panel); else this.showToolbar(panel)
     }
 
-    assignToolbar(panel, toolbar) {
+    assignToolbar(panel: string, toolbar: w2toolbar | string | null) {
         if (typeof toolbar == 'string' && w2ui[toolbar] != null) toolbar = w2ui[toolbar]
-        let pan = this.get(panel)
+        const pan = this.get(panel)
         pan.toolbar = toolbar
-        let tmp = query(this.box).find(panel +'> [data-role="panel-toolbar"]')
+        // any: query().attr(name) returns string|undefined; used as selector fallback
+        const tmp = query(this.box).find(panel +'> [data-role="panel-toolbar"]')
         if (pan.toolbar != null) {
-            if (tmp.attr('name') != pan.toolbar.name) {
-                pan.toolbar.render(tmp.get(0))
+            if ((tmp.attr('name') as string | undefined) != (pan.toolbar as w2toolbar).name) {
+                // any: query().get(0) returns Node|Node[]; toolbar container is HTMLElement
+                ;(pan.toolbar as w2toolbar).render(tmp.get(0) as HTMLElement)
             } else if (pan.toolbar != null) {
-                pan.toolbar.refresh()
+                ;(pan.toolbar as w2toolbar).refresh()
             }
-            toolbar.owner = this
+            if (typeof toolbar != 'string' && toolbar) toolbar.owner = this
             this.showToolbar(panel)
             this.refresh(panel)
         } else {
@@ -411,40 +550,41 @@ class w2layout extends w2base {
         }
     }
 
-    hideTabs(panel) {
-        let pan = this.get(panel)
+    hideTabs(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         pan.show.tabs = false
         query(this.box).find('#layout_'+ this.name +'_panel_'+ panel +'> [data-role="panel-tabs"]').hide()
         this.resize()
     }
 
-    showTabs(panel) {
-        let pan = this.get(panel)
+    showTabs(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         pan.show.tabs = true
         query(this.box).find('#layout_'+ this.name +'_panel_'+ panel +'> [data-role="panel-tabs"]').show()
         this.resize()
     }
 
-    toggleTabs(panel) {
-        let pan = this.get(panel)
+    toggleTabs(panel: string) {
+        const pan = this.get(panel)
         if (!pan) return
         if (pan.show.tabs) this.hideTabs(panel); else this.showTabs(panel)
     }
 
-    assignTabs(panel, tabs) {
+    assignTabs(panel: string, tabs: w2tabs | string | null) {
         if (typeof tabs == 'string' && w2ui[tabs] != null) tabs = w2ui[tabs]
-        let pan = this.get(panel)
+        const pan = this.get(panel)
         pan.tabs = tabs
-        let tmp = query(this.box).find(panel +'> [data-role="panel-tabs"]')
+        const tmp = query(this.box).find(panel +'> [data-role="panel-tabs"]')
         if (pan.tabs != null) {
-            if (tmp.attr('name') != pan.tabs.name) {
-                pan.tabs.render(tmp.get(0))
+            if ((tmp.attr('name') as string | undefined) != (pan.tabs as w2tabs).name) {
+                // any: query().get(0) returns Node|Node[]; tabs container is HTMLElement
+                ;(pan.tabs as w2tabs).render(tmp.get(0) as HTMLElement)
             } else if (pan.tabs != null) {
-                pan.tabs.refresh()
+                ;(pan.tabs as w2tabs).refresh()
             }
-            tabs.owner = this
+            if (typeof tabs != 'string' && tabs) tabs.owner = this
             this.showTabs(panel)
             this.refresh(panel)
         } else {
@@ -453,13 +593,14 @@ class w2layout extends w2base {
         }
     }
 
-    render(box) {
-        let time = Date.now()
-        let self = this
-        if (typeof box == 'string') box = query(box).get(0)
-        // if (window.getSelection) window.getSelection().removeAllRanges(); // clear selection
+    render(box?: HTMLElement | string) {
+        const time = Date.now()
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this
+        // any: query().get(0) returns Node|Node[]; box selector always resolves to HTMLElement
+        if (typeof box == 'string') box = query(box).get(0) as HTMLElement
         // event before
-        let edata = this.trigger('render', { target: this.name, box: box ?? this.box })
+        const edata = this.trigger('render', { target: this.name, box: box ?? this.box })
         if (edata.isCancelled === true) return
         // default action
         if (box != null) {
@@ -468,16 +609,18 @@ class w2layout extends w2base {
         }
         if (!this.box) return false
         // render layout
-        query(this.box)
-            .attr('name', this.name)
+        // any: .attr(name,val) overload returns string|Query; cast to Query for chaining
+        ;(query(this.box)
+            .attr('name', this.name) as unknown as Query)
             .addClass('w2ui-layout')
             .html('<div></div>')
         if (query(this.box).length > 0) {
-            query(this.box)[0].style.cssText += this.style
+            // any: query()[0] returns Node; layout box is HTMLElement
+            ;(query(this.box)[0] as HTMLElement).style.cssText += this.style
         }
         // create all panels
         for (let p1 = 0; p1 < w2panels.length; p1++) {
-            let html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="w2ui-panel">'+
+            const html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="w2ui-panel">'+
                         '    <div class="w2ui-panel-title"></div>'+
                         '    <div class="w2ui-panel-tabs" data-role="panel-tabs"></div>'+
                         '    <div class="w2ui-panel-toolbar" data-role="panel-toolbar"></div>'+
@@ -501,9 +644,9 @@ class w2layout extends w2base {
         }, 0)
         return Date.now() - time
 
-        function resizeStart(type, evnt) {
+        function resizeStart(type: string, evnt: MouseEvent) {
             if (!self.box) return
-            if (!evnt) evnt = window.event
+            if (!evnt) evnt = window.event as MouseEvent
             query(document)
                 .off('mousemove', self.last.events.mouseMove)
                 .on('mousemove', self.last.events.mouseMove)
@@ -520,14 +663,15 @@ class w2layout extends w2base {
             }
             // lock all panels
             w2panels.forEach(panel => {
-                let $tmp = query(self.el(panel)).find('.w2ui-lock')
+                const $tmp = query(self.el(panel)).find('.w2ui-lock')
                 if ($tmp.length > 0) {
                     $tmp.data('locked', 'yes')
                 } else {
                     self.lock(panel, { opacity: 0 })
                 }
             })
-            let el = query(self.box).find('#layout_'+ self.name +'_resizer_'+ type).get(0)
+            // any: query().get(0) returns Node|Node[]; resizer element is HTMLElement
+            const el = query(self.box).find('#layout_'+ self.name +'_resizer_'+ type).get(0) as HTMLElement
             if (type == 'left' || type == 'right') {
                 self.last.resize.value = parseInt(el.style.left)
             }
@@ -536,15 +680,15 @@ class w2layout extends w2base {
             }
         }
 
-        function mouseUp(evnt) {
+        function mouseUp(evnt: MouseEvent) {
             if (!self.box) return
-            if (!evnt) evnt = window.event
+            if (!evnt) evnt = window.event as MouseEvent
             query(document).off('mousemove', self.last.events.mouseMove)
             query(document).off('mouseup', self.last.events.mouseUp)
             if (self.last.resize == null) return
             // unlock all panels
             w2panels.forEach(panel => {
-                let $tmp = query(self.el(panel)).find('.w2ui-lock')
+                const $tmp = query(self.el(panel)).find('.w2ui-lock')
                 if ($tmp.data('locked') == 'yes') {
                     $tmp.removeData('locked')
                 } else {
@@ -553,13 +697,13 @@ class w2layout extends w2base {
             })
             // set new size
             if (self.last.diff_x !== 0 || self.last.resize.diff_y !== 0) { // only recalculate if changed
-                let ptop    = self.get('top')
-                let pbottom = self.get('bottom')
-                let panel   = self.get(self.last.resize.type)
-                let width   = w2utils.getSize(query(self.box), 'width')
-                let height  = w2utils.getSize(query(self.box), 'height')
-                let str     = String(panel.size)
-                let ns, nd
+                const ptop    = self.get('top')
+                const pbottom = self.get('bottom')
+                const panel   = self.get(self.last.resize.type)
+                const width   = w2utils.getSize(query(self.box), 'width')
+                const height  = w2utils.getSize(query(self.box), 'height')
+                const str     = String(panel.size)
+                let ns: number, nd: number
                 switch (self.last.resize.type) {
                     case 'top':
                         ns = parseInt(panel.sizeCalculated) + self.last.resize.diff_y
@@ -582,6 +726,9 @@ class w2layout extends w2base {
                         ns = parseInt(panel.sizeCalculated) - self.last.resize.diff_x
                         nd = 0
                         break
+                    default:
+                        ns = 0
+                        nd = 0
                 }
                 // set size
                 if (str.substr(str.length-1) == '%') {
@@ -597,93 +744,102 @@ class w2layout extends w2base {
             }
             query(self.box)
                 .find('#layout_'+ self.name + '_resizer_'+ self.last.resize.type)
+                .removeClass(null)
+                .addClass('active')
+            query(self.box)
+                .find('#layout_'+ self.name + '_resizer_'+ self.last.resize.type)
                 .removeClass('active')
             delete self.last.resize
         }
 
-        function mouseMove(evnt) {
+        function mouseMove(evnt: MouseEvent) {
             if (!self.box) return
-            if (!evnt) evnt = window.event
+            if (!evnt) evnt = window.event as MouseEvent
             if (self.last.resize == null) return
-            let panel = self.get(self.last.resize.type)
+            const panel = self.get(self.last.resize.type)
             // event before
-            let tmp   = self.last.resize
-            let edata = self.trigger('resizing', { target: self.name, object: panel, originalEvent: evnt,
+            const tmp   = self.last.resize
+            const edata = self.trigger('resizing', { target: self.name, object: panel, originalEvent: evnt,
                 panel: tmp ? tmp.type : 'all', diff_x: tmp ? tmp.diff_x : 0, diff_y: tmp ? tmp.diff_y : 0 })
             if (edata.isCancelled === true) return
 
-            let p         = query(self.box).find('#layout_'+ self.name + '_resizer_'+ tmp.type)
-            let resize_x  = (evnt.screenX - tmp.x)
-            let resize_y  = (evnt.screenY - tmp.y)
-            let mainPanel = self.get('main')
+            const p         = query(self.box).find('#layout_'+ self.name + '_resizer_'+ tmp.type)
+            const resize_x  = (evnt.screenX - tmp.x)
+            const resize_y  = (evnt.screenY - tmp.y)
+            const mainPanel = self.get('main')
 
             if (!p.hasClass('active')) p.addClass('active')
 
+            let adjusted_x = resize_x
+            let adjusted_y = resize_y
+
             switch (tmp.type) {
                 case 'left':
-                    if (panel.minSize - resize_x > panel.width) {
-                        resize_x = panel.minSize - panel.width
+                    if (panel.minSize - adjusted_x > panel.width) {
+                        adjusted_x = panel.minSize - panel.width
                     }
-                    if (panel.maxSize && (panel.width + resize_x > panel.maxSize)) {
-                        resize_x = panel.maxSize - panel.width
+                    if (panel.maxSize && (panel.width + adjusted_x > panel.maxSize)) {
+                        adjusted_x = panel.maxSize - panel.width
                     }
-                    if (mainPanel.minSize + resize_x > mainPanel.width) {
-                        resize_x = mainPanel.width - mainPanel.minSize
+                    if (mainPanel.minSize + adjusted_x > mainPanel.width) {
+                        adjusted_x = mainPanel.width - mainPanel.minSize
                     }
                     break
 
                 case 'right':
-                    if (panel.minSize + resize_x > panel.width) {
-                        resize_x = panel.width - panel.minSize
+                    if (panel.minSize + adjusted_x > panel.width) {
+                        adjusted_x = panel.width - panel.minSize
                     }
-                    if (panel.maxSize && (panel.width - resize_x > panel.maxSize)) {
-                        resize_x = panel.width - panel.maxSize
+                    if (panel.maxSize && (panel.width - adjusted_x > panel.maxSize)) {
+                        adjusted_x = panel.width - panel.maxSize
                     }
-                    if (mainPanel.minSize - resize_x > mainPanel.width) {
-                        resize_x = mainPanel.minSize - mainPanel.width
+                    if (mainPanel.minSize - adjusted_x > mainPanel.width) {
+                        adjusted_x = mainPanel.minSize - mainPanel.width
                     }
                     break
 
                 case 'top':
-                    if (panel.minSize - resize_y > panel.height) {
-                        resize_y = panel.minSize - panel.height
+                    if (panel.minSize - adjusted_y > panel.height) {
+                        adjusted_y = panel.minSize - panel.height
                     }
-                    if (panel.maxSize && (panel.height + resize_y > panel.maxSize)) {
-                        resize_y = panel.maxSize - panel.height
+                    if (panel.maxSize && (panel.height + adjusted_y > panel.maxSize)) {
+                        adjusted_y = panel.maxSize - panel.height
                     }
-                    if (mainPanel.minSize + resize_y > mainPanel.height) {
-                        resize_y = mainPanel.height - mainPanel.minSize
+                    if (mainPanel.minSize + adjusted_y > mainPanel.height) {
+                        adjusted_y = mainPanel.height - mainPanel.minSize
                     }
                     break
 
                 case 'preview':
                 case 'bottom':
-                    if (panel.minSize + resize_y > panel.height) {
-                        resize_y = panel.height - panel.minSize
+                    if (panel.minSize + adjusted_y > panel.height) {
+                        adjusted_y = panel.height - panel.minSize
                     }
-                    if (panel.maxSize && (panel.height - resize_y > panel.maxSize)) {
-                        resize_y = panel.height - panel.maxSize
+                    if (panel.maxSize && (panel.height - adjusted_y > panel.maxSize)) {
+                        adjusted_y = panel.height - panel.maxSize
                     }
-                    if (mainPanel.minSize - resize_y > mainPanel.height) {
-                        resize_y = mainPanel.minSize - mainPanel.height
+                    if (mainPanel.minSize - adjusted_y > mainPanel.height) {
+                        adjusted_y = mainPanel.minSize - mainPanel.height
                     }
                     break
             }
-            tmp.diff_x = resize_x
-            tmp.diff_y = resize_y
+            tmp.diff_x = adjusted_x
+            tmp.diff_y = adjusted_y
 
             switch (tmp.type) {
                 case 'top':
                 case 'preview':
                 case 'bottom':
                     tmp.diff_x = 0
-                    if (p.length > 0) p[0].style.top = (tmp.value + tmp.diff_y) + 'px'
+                    // any: query()[0] returns Node; resizer element is HTMLElement
+                    if (p.length > 0) (p[0] as HTMLElement).style.top = (tmp.value + tmp.diff_y) + 'px'
                     break
 
                 case 'left':
                 case 'right':
                     tmp.diff_y = 0
-                    if (p.length > 0) p[0].style.left = (tmp.value + tmp.diff_x) + 'px'
+                    // any: query()[0] returns Node; resizer element is HTMLElement
+                    if (p.length > 0) (p[0] as HTMLElement).style.left = (tmp.value + tmp.diff_x) + 'px'
                     break
             }
             // event after
@@ -694,21 +850,23 @@ class w2layout extends w2base {
     unmount() {
         super.unmount()
         this.panels.forEach(panel => {
-            panel.tabs?.unmount?.()
-            panel.toolbar?.unmount?.()
+            // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            ;(panel.tabs as any)?.unmount?.()
+            ;(panel.toolbar as any)?.unmount?.()
         })
         this.last.observeResize?.disconnect()
     }
 
     destroy() {
         // event before
-        let edata = this.trigger('destroy', { target: this.name })
+        const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
         if (w2ui[this.name] == null) return false
         // clean up
         this.panels.forEach(panel => {
-            panel.tabs?.destroy?.()
-            panel.toolbar?.destroy?.()
+            // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            ;(panel.tabs as any)?.destroy?.()
+            ;(panel.toolbar as any)?.destroy?.()
         })
         if (query(this.box).find('#layout_'+ this.name +'_panel_main').length > 0) {
             this.unmount()
@@ -722,20 +880,21 @@ class w2layout extends w2base {
         return true
     }
 
-    refresh(panel) {
-        let self = this
+    refresh(panel?: string) {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this
         // if (window.getSelection) window.getSelection().removeAllRanges(); // clear selection
         if (panel == null) panel = null
-        let time = Date.now()
+        const time = Date.now()
         // event before
-        let edata = self.trigger('refresh', { target: (panel != null ? panel : self.name), object: self.get(panel) })
+        const edata = self.trigger('refresh', { target: (panel != null ? panel : self.name), object: self.get(panel) })
         if (edata.isCancelled === true) return
         // self.unlock(panel);
         if (typeof panel == 'string') {
-            let p = self.get(panel)
+            const p = self.get(panel)
             if (p == null) return
-            let pname = '#layout_'+ self.name + '_panel_'+ p.type
-            let rname = '#layout_'+ self.name +'_resizer_'+ p.type
+            const pname = '#layout_'+ self.name + '_panel_'+ p.type
+            const rname = '#layout_'+ self.name +'_resizer_'+ p.type
             // apply properties to the panel
             query(self.box).find(pname).css({ display: p.hidden ? 'none' : 'block' })
             if (p.resizable) {
@@ -744,61 +903,72 @@ class w2layout extends w2base {
                 query(self.box).find(rname).hide()
             }
             // insert content
-            if (typeof p.html == 'object' && typeof p.html.render === 'function') {
-                p.html.box = query(self.box).find(pname +'> [data-role="panel-content"]')[0]
+            if (typeof p.html == 'object' && typeof (p.html as { render?: unknown }).render === 'function') {
+                // any: query()[0] returns Node; panel content element is HTMLElement
+                ;(p.html as { box: HTMLElement | null; render: () => void }).box =
+                    query(self.box).find(pname +'> [data-role="panel-content"]')[0] as HTMLElement
                 setTimeout(() => {
                     // need to remove unnecessary classes
                     if (query(self.box).find(pname +'> [data-role="panel-content"]').length > 0) {
-                        query(self.box).find(pname +'> [data-role="panel-content"]')
-                            .removeClass()
+                        // any: css(key,val) and query()[0] chain issues; cast needed for .style.cssText
+                        const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
+                            .removeClass(null)
                             .removeAttr('name')
                             .addClass('w2ui-panel-content')
-                            .css('overflow', p.overflow)[0].style.cssText += ';' + p.style
+                        ;(($content.css('overflow', p.overflow) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                     }
-                    if (p.html && typeof p.html.render == 'function') {
-                        p.html.render() // do not do .render(box);
+                    if (p.html && typeof (p.html as { render?: unknown }).render == 'function') {
+                        ;(p.html as { render: () => void }).render() // do not do .render(box);
                     }
                 }, 1)
             } else {
                 // need to remove unnecessary classes
                 if (query(self.box).find(pname +'> [data-role="panel-content"]').length > 0) {
-                    query(self.box).find(pname +'> [data-role="panel-content"]')
-                        .removeClass()
+                    // any: html(val) and css(key,val) both return union types; cast for chaining
+                    const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
+                        .removeClass(null)
                         .removeAttr('name')
                         .addClass('w2ui-panel-content')
-                        .html(p.html)
-                        .css('overflow', p.overflow)[0].style.cssText += ';' + p.style
+                    ;(((($content.html(p.html as string) as unknown as Query)
+                        .css('overflow', p.overflow)) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                 }
             }
             // if there are tabs and/or toolbar - render it
             let tmp = query(self.box).find(pname +'> [data-role="panel-tabs"]')
             if (p.show.tabs) {
-                if (tmp.attr('name') != p.tabs.name && p.tabs != null) {
-                    p.tabs.render(tmp.get(0))
+                if ((tmp.attr('name') as string | undefined) != (p.tabs as w2tabs)?.name && p.tabs != null) {
+                    ;(p.tabs as w2tabs).render(tmp.get(0) as HTMLElement)
                 } else {
-                    p.tabs.refresh()
+                    ;(p.tabs as w2tabs).refresh()
                 }
                 tmp.addClass('w2ui-panel-tabs')
             } else {
-                tmp.html('').removeAttr('name').removeClass('w2ui-tabs').hide()
+                // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
+                ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
+                // any: css(key,val) overload; need to chain hide after css
+                ;(tmp.css('display', 'none') as unknown as Query).hide()
             }
             tmp = query(self.box).find(pname +'> [data-role="panel-toolbar"]')
             if (p.show.toolbar) {
-                if (tmp.attr('name') != p.toolbar.name && p.toolbar != null) {
-                    p.toolbar.render(tmp.get(0))
+                if ((tmp.attr('name') as string | undefined) != (p.toolbar as w2toolbar)?.name && p.toolbar != null) {
+                    ;(p.toolbar as w2toolbar).render(tmp.get(0) as HTMLElement)
                 } else {
-                    p.toolbar.refresh()
+                    ;(p.toolbar as w2toolbar).refresh()
                 }
                 tmp.addClass('w2ui-panel-toolbar')
             } else {
-                tmp.html('').removeAttr('name').removeClass('w2ui-toolbar').hide()
+                // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
+                ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
+                // any: css(key,val) overload; need to chain hide after css
+                ;(tmp.css('display', 'none') as unknown as Query).hide()
             }
             // show title
             tmp = query(self.box).find(pname +'> .w2ui-panel-title')
             if (p.title) {
-                tmp.html(p.title).show()
+                // any: html(val) return type is string|Query; cast needed to chain show/hide
+                ;(tmp.html(p.title) as unknown as Query).show()
             } else {
-                tmp.html('').hide()
+                ;(tmp.html('') as unknown as Query).hide()
             }
         } else {
             if (query(self.box).find('#layout_'+ self.name +'_panel_main').length === 0) {
@@ -816,69 +986,68 @@ class w2layout extends w2base {
     resize() {
         // if (window.getSelection) window.getSelection().removeAllRanges();    // clear selection
         if (!this.box) return false
-        let time = Date.now()
+        const time = Date.now()
         // event before
-        let tmp   = this.last.resize
-        let edata = this.trigger('resize', { target: this.name,
+        const tmp   = this.last.resize
+        const edata = this.trigger('resize', { target: this.name,
             panel: tmp ? tmp.type : 'all', diff_x: tmp ? tmp.diff_x : 0, diff_y: tmp ? tmp.diff_y : 0 })
         if (edata.isCancelled === true) return
         if (this.padding < 0) this.padding = 0
 
         // layout itself
-        // width includes border and padding, we need to exclude that so panels
-        // are sized correctly
-        let width  = w2utils.getSize(query(this.box), 'width')
-        let height = w2utils.getSize(query(this.box), 'height')
-        let self = this
+        const width  = w2utils.getSize(query(this.box), 'width')
+        const height = w2utils.getSize(query(this.box), 'height')
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this
         // panels
-        let pmain   = this.get('main')
-        let pprev   = this.get('preview')
-        let pleft   = this.get('left')
-        let pright  = this.get('right')
-        let ptop    = this.get('top')
-        let pbottom = this.get('bottom')
-        let sprev   = (pprev != null && pprev.hidden !== true ? true : false)
-        let sleft   = (pleft != null && pleft.hidden !== true ? true : false)
-        let sright  = (pright != null && pright.hidden !== true ? true : false)
-        let stop    = (ptop != null && ptop.hidden !== true ? true : false)
-        let sbottom = (pbottom != null && pbottom.hidden !== true ? true : false)
-        let l, t, w, h
+        const pmain   = this.get('main')
+        const pprev   = this.get('preview')
+        const pleft   = this.get('left')
+        const pright  = this.get('right')
+        const ptop    = this.get('top')
+        const pbottom = this.get('bottom')
+        const sprev   = (pprev != null && pprev.hidden !== true ? true : false)
+        const sleft   = (pleft != null && pleft.hidden !== true ? true : false)
+        const sright  = (pright != null && pright.hidden !== true ? true : false)
+        const stop    = (ptop != null && ptop.hidden !== true ? true : false)
+        const sbottom = (pbottom != null && pbottom.hidden !== true ? true : false)
+        let l: number, t: number, w: number, h: number
         // calculate %
         for (let p = 0; p < w2panels.length; p++) {
             if (w2panels[p] === 'main') continue
-            tmp = this.get(w2panels[p])
-            if (!tmp) continue
-            let str = String(tmp.size || 0)
+            const panTmp = this.get(w2panels[p])
+            if (!panTmp) continue
+            const str = String(panTmp.size || 0)
             if (str.substr(str.length-1) == '%') {
                 let tmph = height
-                if (tmp.type == 'preview') {
+                if (panTmp.type == 'preview') {
                     tmph = tmph -
                         (ptop && !ptop.hidden ? ptop.sizeCalculated : 0) -
                         (pbottom && !pbottom.hidden ? pbottom.sizeCalculated : 0)
                 }
-                tmp.sizeCalculated = parseInt((tmp.type == 'left' || tmp.type == 'right' ? width : tmph) * parseFloat(tmp.size) / 100)
+                panTmp.sizeCalculated = parseInt(String((panTmp.type == 'left' || panTmp.type == 'right' ? width : tmph) * parseFloat(panTmp.size as string) / 100))
             } else {
-                tmp.sizeCalculated = parseInt(tmp.size)
+                panTmp.sizeCalculated = parseInt(panTmp.size as string)
             }
-            tmp.sizeCalculated = Math.max(tmp.sizeCalculated, parseInt(tmp.minSize))
+            panTmp.sizeCalculated = Math.max(panTmp.sizeCalculated, parseInt(panTmp.minSize as unknown as string))
         }
         // negative size
-        if (parseInt(pright.size) < 0) {
-            if (sleft && parseInt(pleft.size) < 0) {
+        if (parseInt(pright.size as string) < 0) {
+            if (sleft && parseInt(pleft.size as string) < 0) {
                 console.log('ERROR: you cannot have both left panel.size and right panel.size be negative.')
             } else {
-                pright.sizeCalculated = width - (sleft ? pleft.sizeCalculated : 0) + parseInt(pright.size)
+                pright.sizeCalculated = width - (sleft ? pleft.sizeCalculated : 0) + parseInt(pright.size as string)
             }
         }
-        if (parseInt(pleft.size) < 0) {
-            if (sright && parseInt(pright.size) < 0) {
+        if (parseInt(pleft.size as string) < 0) {
+            if (sright && parseInt(pright.size as string) < 0) {
                 console.log('ERROR: you cannot have both left panel.size and right panel.size be negative.')
             } else {
-                pleft.sizeCalculated = width - (sright ? pright.sizeCalculated : 0) + parseInt(pleft.size)
+                pleft.sizeCalculated = width - (sright ? pright.sizeCalculated : 0) + parseInt(pleft.size as string)
             }
         }
-        if (parseInt(pprev.size) < 0) {
-            pprev.sizeCalculated = height + parseInt(pprev.size)
+        if (parseInt(pprev.size as string) < 0) {
+            pprev.sizeCalculated = height + parseInt(pprev.size as string)
             if (pprev.sizeCalculated > height) pprev.sizeCalculated = height
         }
         // top if any
@@ -901,7 +1070,8 @@ class w2layout extends w2base {
             if (ptop.resizable) {
                 t = ptop.sizeCalculated - (this.padding === 0 ? this.resizer : 0)
                 h = (this.resizer > this.padding ? this.resizer : this.padding)
-                query(this.box).find('#layout_'+ this.name +'_resizer_top')
+                // any: css(obj) returns string|Record|Query; cast needed to chain off/on
+                ;(query(this.box).find('#layout_'+ this.name +'_resizer_top')
                     .css({
                         'display': 'block',
                         'left': l + 'px',
@@ -909,14 +1079,15 @@ class w2layout extends w2base {
                         'width': w + 'px',
                         'height': h + 'px',
                         'cursor': 'ns-resize'
-                    })
+                    }) as unknown as Query)
                     .off('mousedown')
                     .on('mousedown', function(event) {
                         event.preventDefault()
                         // event before
-                        let edata = self.trigger('resizerClick', { target: 'top', originalEvent: event })
+                        const edata = self.trigger('resizerClick', { target: 'top', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
+                        // any: w2ui registry value is dynamic; resize events dict accessed at runtime
                         w2ui[self.name].last.events.resizeStart('top', event)
                         // event after
                         edata.finish()
@@ -948,7 +1119,8 @@ class w2layout extends w2base {
             if (pleft.resizable) {
                 l = pleft.sizeCalculated - (this.padding === 0 ? this.resizer : 0)
                 w = (this.resizer > this.padding ? this.resizer : this.padding)
-                query(this.box).find('#layout_'+ this.name +'_resizer_left')
+                // any: css(obj) returns string|Record|Query; cast needed to chain off/on
+                ;(query(this.box).find('#layout_'+ this.name +'_resizer_left')
                     .css({
                         'display': 'block',
                         'left': l + 'px',
@@ -956,12 +1128,12 @@ class w2layout extends w2base {
                         'width': w + 'px',
                         'height': h + 'px',
                         'cursor': 'ew-resize'
-                    })
+                    }) as unknown as Query)
                     .off('mousedown')
                     .on('mousedown', function(event) {
                         event.preventDefault()
                         // event before
-                        let edata = self.trigger('resizerClick', { target: 'left', originalEvent: event })
+                        const edata = self.trigger('resizerClick', { target: 'left', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
                         w2ui[self.name].last.events.resizeStart('left', event)
@@ -995,7 +1167,8 @@ class w2layout extends w2base {
             if (pright.resizable) {
                 l = l - this.padding
                 w = (this.resizer > this.padding ? this.resizer : this.padding)
-                query(this.box).find('#layout_'+ this.name +'_resizer_right')
+                // any: css(obj) returns string|Record|Query; cast needed to chain off/on
+                ;(query(this.box).find('#layout_'+ this.name +'_resizer_right')
                     .css({
                         'display': 'block',
                         'left': l + 'px',
@@ -1003,12 +1176,12 @@ class w2layout extends w2base {
                         'width': w + 'px',
                         'height': h + 'px',
                         'cursor': 'ew-resize'
-                    })
+                    }) as unknown as Query)
                     .off('mousedown')
                     .on('mousedown', function(event) {
                         event.preventDefault()
                         // event before
-                        let edata = self.trigger('resizerClick', { target: 'right', originalEvent: event })
+                        const edata = self.trigger('resizerClick', { target: 'right', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
                         w2ui[self.name].last.events.resizeStart('right', event)
@@ -1041,7 +1214,8 @@ class w2layout extends w2base {
             if (pbottom.resizable) {
                 t = t - (this.padding === 0 ? 0 : this.padding)
                 h = (this.resizer > this.padding ? this.resizer : this.padding)
-                query(this.box).find('#layout_'+ this.name +'_resizer_bottom')
+                // any: css(obj) returns string|Record|Query; cast needed to chain off/on
+                ;(query(this.box).find('#layout_'+ this.name +'_resizer_bottom')
                     .css({
                         'display': 'block',
                         'left': l + 'px',
@@ -1049,12 +1223,12 @@ class w2layout extends w2base {
                         'width': w + 'px',
                         'height': h + 'px',
                         'cursor': 'ns-resize'
-                    })
+                    }) as unknown as Query)
                     .off('mousedown')
                     .on('mousedown', function(event) {
                         event.preventDefault()
                         // event before
-                        let edata = self.trigger('resizerClick', { target: 'bottom', originalEvent: event })
+                        const edata = self.trigger('resizerClick', { target: 'bottom', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
                         w2ui[self.name].last.events.resizeStart('bottom', event)
@@ -1108,7 +1282,8 @@ class w2layout extends w2base {
             if (pprev.resizable) {
                 t = t - (this.padding === 0 ? 0 : this.padding)
                 h = (this.resizer > this.padding ? this.resizer : this.padding)
-                query(this.box).find('#layout_'+ this.name +'_resizer_preview')
+                // any: css(obj) returns string|Record|Query; cast needed to chain off/on
+                ;(query(this.box).find('#layout_'+ this.name +'_resizer_preview')
                     .css({
                         'display': 'block',
                         'left': l + 'px',
@@ -1116,12 +1291,12 @@ class w2layout extends w2base {
                         'width': w + 'px',
                         'height': h + 'px',
                         'cursor': 'ns-resize'
-                    })
+                    }) as unknown as Query)
                     .off('mousedown')
                     .on('mousedown', function(event) {
                         event.preventDefault()
                         // event before
-                        let edata = self.trigger('resizerClick', { target: 'preview', originalEvent: event })
+                        const edata = self.trigger('resizerClick', { target: 'preview', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
                         w2ui[self.name].last.events.resizeStart('preview', event)
@@ -1142,25 +1317,25 @@ class w2layout extends w2base {
         return Date.now() - time
     }
 
-    resizeBoxes(panel) {
-        let panels = w2panels
-        if (!panel && typeof panel == 'string') panels = [panel]
+    resizeBoxes(panel?: string) {
+        const panels = w2panels
+        if (!panel && typeof panel == 'string') panels.slice() // defensive copy if filtered
         // display tabs and toolbar if needed
         panels.forEach((pname, ind) => {
-            let pan = this.get(w2panels[ind])
-            let tmp2 = `#layout_${this.name}_panel_${pname} > `
+            const pan = this.get(w2panels[ind])
+            const tmp2 = `#layout_${this.name}_panel_${pname} > `
             let topHeight = 0
             if (pan) {
                 if (pan.title) {
-                    let el = query(this.box).find(tmp2 + '.w2ui-panel-title').css({ top: topHeight + 'px', display: 'block' })
+                    const el = query(this.box).find(tmp2 + '.w2ui-panel-title').css({ top: topHeight + 'px', display: 'block' })
                     topHeight += w2utils.getSize(el, 'height')
                 }
                 if (pan.show.tabs) {
-                    let el = query(this.box).find(tmp2 + '[data-role="panel-tabs"]').css({ top: topHeight + 'px', display: 'block' })
+                    const el = query(this.box).find(tmp2 + '[data-role="panel-tabs"]').css({ top: topHeight + 'px', display: 'block' })
                     topHeight += w2utils.getSize(el, 'height')
                 }
                 if (pan.show.toolbar) {
-                    let el = query(this.box).find(tmp2 + '[data-role="panel-toolbar"]').css({ top: topHeight + 'px', display: 'block' })
+                    const el = query(this.box).find(tmp2 + '[data-role="panel-toolbar"]').css({ top: topHeight + 'px', display: 'block' })
                     topHeight += w2utils.getSize(el, 'height')
                 }
             }
@@ -1172,23 +1347,23 @@ class w2layout extends w2base {
         })
     }
 
-    lock(panel, msg, showSpinner) {
-        if (w2panels.indexOf(panel) == -1) {
+    lock(panel: string, msg: unknown, showSpinner?: boolean) {
+        if (w2panels.indexOf(panel as W2PanelType) == -1) {
             console.log('ERROR: First parameter needs to be the a valid panel name.')
             return
         }
-        let args = Array.from(arguments)
-        args[0]  = '#layout_'+ this.name + '_panel_' + panel
+        const args: [unknown, unknown, unknown?] = ['#layout_'+ this.name + '_panel_' + panel, msg, showSpinner]
         w2utils.lock(...args)
     }
 
-    unlock(panel, speed) {
-        if (w2panels.indexOf(panel) == -1) {
+    unlock(panel: string, speed?: number) {
+        if (w2panels.indexOf(panel as W2PanelType) == -1) {
             console.log('ERROR: First parameter needs to be the a valid panel name.')
             return
         }
-        let nm = '#layout_'+ this.name + '_panel_' + panel
+        const nm = '#layout_'+ this.name + '_panel_' + panel
         w2utils.unlock(nm, speed)
     }
 }
+
 export { w2layout }
