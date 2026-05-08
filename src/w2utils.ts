@@ -108,7 +108,7 @@ interface W2Color {
 }
 
 /** Options for w2utils.marker() */
-interface W2MarkerOptions {
+interface _W2MarkerOptions {
     onlyFirst?: boolean
     wholeWord?: boolean
     isRegex?: boolean
@@ -124,7 +124,7 @@ interface W2RouteKey {
 }
 
 /** Parsed route as returned by w2utils.parseRoute() */
-interface W2ParsedRoute {
+interface _W2ParsedRoute {
     path: RegExp
     keys: W2RouteKey[]
 }
@@ -156,7 +156,7 @@ interface W2CloneOptions {
 }
 
 /** Promise-chain handle returned by w2utils.message() / .confirm() / .prompt() */
-interface W2MessageProm {
+export interface W2MessageProm {
     self: w2base
     action(callBack: (event: unknown) => void): W2MessageProm
     close(callBack: (event: unknown) => void): W2MessageProm
@@ -1589,7 +1589,7 @@ class Utils {
             // keep focus/blur inside popup
             query(box)
                 .find(sel + ',[name=hidden-first],[name=hidden-last]')
-                .on('blur.keep-focus', function (event) {
+                .on('blur.keep-focus', function (_event) {
                     setTimeout(() => {
                         const focus = document.activeElement
                         const inside = focus != null && query(box).find(sel).filter(focus as Node).length > 0
@@ -1908,6 +1908,7 @@ class Utils {
         str: any,
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         replace_obj: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ): any {
         if (typeof str !== 'string' || !replace_obj || typeof replace_obj !== 'object') {
             return str
@@ -2519,6 +2520,7 @@ class Utils {
      * you can choose to include them or not, by default they are included.
      * You can also exclude certain elements from final object if used with options: { exclude }
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clone(obj: unknown, options?: Partial<W2CloneOptions>): any {
         const opts: Required<W2CloneOptions> = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {}) as Required<W2CloneOptions>
         if (Array.isArray(obj)) {

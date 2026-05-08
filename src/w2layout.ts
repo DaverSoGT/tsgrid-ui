@@ -23,6 +23,7 @@ import { w2toolbar } from './w2toolbar.js'
 // any: query() returns Query|void; cast once for clean selector usage
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 // any: w2ui is a dynamic runtime registry; typed narrow for this file
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2ui = _w2ui as Record<string, any> // any: values are w2 widget instances with dynamic methods
 
 // ---------------------------------------------------------------------------
@@ -83,6 +84,7 @@ class w2layout extends w2base {
     declare box: HTMLElement | null
     declare name: string
     panels: W2LayoutPanel[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: Record<string, any> // any: accumulates resize state, observeResize, events dict
     padding: number
     resizer: number
@@ -97,6 +99,7 @@ class w2layout extends w2base {
     onResize: ((event: unknown) => void) | null
     onDestroy: ((event: unknown) => void) | null
     panel_template: W2LayoutPanel
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: w2base dynamic event handlers
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -344,6 +347,7 @@ class w2layout extends w2base {
             box  : box.get(0) as HTMLElement,
             after: '.w2ui-panel-title',
             param: panel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
             prom.self.on('close:after', () => {
@@ -365,6 +369,7 @@ class w2layout extends w2base {
             box   : box.get(0) as HTMLElement,
             after : '.w2ui-panel-title',
             param : panel
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
             prom.self.on('close:after', () => {
@@ -493,6 +498,7 @@ class w2layout extends w2base {
         return true
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(panel: string, returnIndex?: boolean): any { // any: returns panel object or index depending on returnIndex
         for (let p = 0; p < this.panels.length; p++) {
             const pan = this.panels[p]
@@ -855,7 +861,9 @@ class w2layout extends w2base {
         super.unmount()
         this.panels.forEach(panel => {
             // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.unmount?.()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.unmount?.()
         })
         this.last['observeResize']?.disconnect()
@@ -869,7 +877,9 @@ class w2layout extends w2base {
         // clean up
         this.panels.forEach(panel => {
             // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.destroy?.()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.destroy?.()
         })
         if (query(this.box).find('#layout_'+ this.name +'_panel_main').length > 0) {

@@ -62,6 +62,7 @@ class Dialog extends w2base {
     declare name: string
     status: string
     tmp: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handleResize: (event?: any) => void
     _promCreated!: (value?: unknown) => void
     _promOpened!: (value?: unknown) => void
@@ -105,7 +106,7 @@ class Dialog extends w2base {
         this['onMove']     = null
         this.tmp        = {}
         // event handler for resize
-        this.handleResize = (event) => {
+        this.handleResize = (_event) => {
             // if it was moved by the user, do not auto resize
             if (!this.options.moved) {
                 this.center(undefined, undefined, true)
@@ -120,6 +121,7 @@ class Dialog extends w2base {
      * - w2popup.open({ body: 'text', title: 'caption', actions: ["Close"] }).close(() => { w2popup.close() })
      * - w2popup.open({ body: 'text', title: 'caption', actions: { Close() { w2popup.close() }} })
      */
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     open(options?: any, extraOptions?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
@@ -262,6 +264,7 @@ class Dialog extends w2base {
             `
             msg = `<div id="w2ui-popup" class="w2ui-popup w2ui-anim-open animating ${!options.blockPage ? 'w2ui-non-blocking' : ''}" style="${w2utils.stripSpaces(styles)}"></div>`
             query('body').append(msg)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(query('#w2ui-popup')[0] as any)._w2popup = {
                 self: this,
                 created: new Promise((resolve) => { this._promCreated = resolve }),
@@ -395,6 +398,7 @@ class Dialog extends w2base {
         }
         query(window).on('resize', this.handleResize)
         // initialize move; any: drag-state bag mutated dynamically in mvStart/mvMove/mvStop
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tmp: any = {
             changing : false,
             mvMove   : mvMove,
@@ -420,6 +424,7 @@ class Dialog extends w2base {
         return prom
 
         // handlers
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mvStart(evt: any, resizer?: any) {
             if (!evt) evt = window.event
             self.status = resizer ? 'resizing' : 'moving'
@@ -500,6 +505,7 @@ class Dialog extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     load(options: any) {
         return new Promise((resolve, reject) => {
             if (typeof options == 'string') {
@@ -520,11 +526,13 @@ class Dialog extends w2base {
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     template(data: any, id: any, options: any = {}) {
         let html
         try {
             html = query(data)
         } catch (e) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             html = (_queryRaw as any).html(data)
         }
         if (id) html = html.filter('#' + id)
@@ -539,11 +547,15 @@ class Dialog extends w2base {
         return this.open(options)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action(action: any, event?: any) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let click: any = this.options.actions?.[action]
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (click instanceof Object && (click as any).onClick) click = (click as any).onClick
         // event before
         const edata = this.trigger('action', { action, target: 'popup', self: this,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             originalEvent: event, value: this['input'] ? (this['input'] as any).value : null })
         if (edata.isCancelled === true) return
         // default actions
@@ -552,6 +564,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keydown(event: any) {
         if (this.options && !this.options.keyboard) return
         // trigger event
@@ -574,6 +587,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     close(immediate?: any) {
         // trigger event
         const edata = this.trigger('close', { target: 'popup' })
@@ -676,6 +690,7 @@ class Dialog extends w2base {
         this.open(this.defaults)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options: any) {
         return w2utils.message({
             owner: this,
@@ -684,6 +699,7 @@ class Dialog extends w2base {
         }, options)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
         return w2utils.confirm({
             owner: this,
@@ -692,6 +708,7 @@ class Dialog extends w2base {
         }, options)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFocus(focus?: any) {
         const box = query('#w2ui-popup')
         const sel = 'input, button, select, textarea, [contentEditable], [tabindex], .w2ui-input'
@@ -707,10 +724,13 @@ class Dialog extends w2base {
         // keep focus/blur inside popup
         query(box).find(sel)
             .off('.keep-focus')
-            .on('blur.keep-focus', function (event: any) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .on('blur.keep-focus', function (_event: any) {
                 setTimeout(() => {
                     const focus = document.activeElement
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const inside = query(box).find(sel).filter(focus as any).length > 0
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const name = query(focus as any).attr('name')
                     if (!inside && focus && focus !== document.body) {
                         (query(box).find(sel).get(0) as HTMLElement)?.focus()
@@ -725,14 +745,17 @@ class Dialog extends w2base {
             })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
         w2utils.lock(query('#w2ui-popup'), msg, showSpinner)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unlock(speed?: any) {
         w2utils.unlock(query('#w2ui-popup'), speed)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     center(width?: any, height?: any, force?: any) {
         let maxW, maxH
         if (window.innerHeight == undefined) {
@@ -765,6 +788,7 @@ class Dialog extends w2base {
         return { top, left, width, height }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resize(newWidth: any, newHeight: any, callBack?: any) {
         return new Promise(resolve => {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -795,6 +819,7 @@ class Dialog extends w2base {
         // see if there are messages and resize them
         query('#w2ui-popup .w2ui-message').each((node: Node) => {
             const msg = node as HTMLElement
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mopt = (msg as any)._msg_options
             const popup = query('#w2ui-popup')
             if (parseInt(mopt.width) < 10) mopt.width = 10

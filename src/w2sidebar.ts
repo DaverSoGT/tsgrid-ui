@@ -75,9 +75,13 @@ interface W2SidebarSortOptions {
 class w2sidebar extends w2base {
     declare box: HTMLElement | null
     declare name: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodes: any[] // any: sidebar node tree has dynamic shape
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     img: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any
     style: string
     hasFocus: boolean
@@ -90,8 +94,10 @@ class w2sidebar extends w2base {
     routeData: Record<string, unknown>
     multi: boolean
     skipRefresh: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates move, renaming, observeResize
     node_template: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -193,6 +199,7 @@ class w2sidebar extends w2base {
         if (this.box) this.render(this.box)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     add(parent?: any, nodes?: any) {
         if (nodes === undefined) {
             // need to be in reverse order
@@ -206,6 +213,7 @@ class w2sidebar extends w2base {
         return this.insert(parent, null, nodes)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insert(parent?: any, before?: any, nodes?: any) {
         let txt, ind, tmp, node, nd
         if (nodes === undefined && typeof parent == 'string') {
@@ -272,6 +280,7 @@ class w2sidebar extends w2base {
         return tmp
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) { // multiple arguments
         let effected = 0
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -300,6 +309,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(parent?: any, id?: any, node?: any) {
         if (node === undefined) {
             // need to be in reverse order
@@ -333,6 +343,7 @@ class w2sidebar extends w2base {
         return false
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(parent?: any, id?: any, returnIndex?: any): any { // can be just called get(id) or get(id, true)
         if (arguments.length === 0) {
             const all = []
@@ -392,6 +403,7 @@ class w2sidebar extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     find(parent?: any, params?: any, results?: any): any { // can be just called find({ selected: true })
         // TODO: rewrite with this.each()
         if (arguments.length == 1) {
@@ -504,6 +516,7 @@ class w2sidebar extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = [] // any: node ids can be string|number at runtime
@@ -519,6 +532,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = [] // any: node ids can be string|number at runtime
@@ -534,6 +548,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = [] // any: node ids can be string|number at runtime
@@ -549,6 +564,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = [] // any: node ids can be string|number at runtime
@@ -691,6 +707,7 @@ class w2sidebar extends w2base {
         return true
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collapseAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         if (parent == null) parent = this
@@ -704,6 +721,7 @@ class w2sidebar extends w2base {
         return true
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expandAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         if (parent == null) parent = this
@@ -855,7 +873,7 @@ class w2sidebar extends w2base {
                 self.unselect()
                 self.click(event.detail.item.id, event.detail.originalEvent)
             },
-            onHide(event) {
+            onHide(_event) {
                 self.unselect()
             }
         })
@@ -1326,6 +1344,7 @@ class w2sidebar extends w2base {
                 contextMenu: true,
                 items: this['menu'],
                 originalEvent: event
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any // any: AttachReturn not exported from w2tooltip; select is optional on it
             menuAttach?.select?.((evt: unknown) => {
                 this.menuClick(id, (evt as { detail: unknown }).detail)
@@ -1425,6 +1444,7 @@ class w2sidebar extends w2base {
             })
             .on('keydown', function(event) {
                 // any: w2ui is Record<string,unknown>; keydown is a method on the registered sidebar
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const w2obj = w2ui[obj.name] as any // any: w2ui registry value is dynamic
                 w2obj?.keydown?.call(w2obj, event)
             })
@@ -1456,7 +1476,7 @@ class w2sidebar extends w2base {
                 .css('top', (query(this.box).find('.w2ui-sidebar-top').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
             query(this.box).find('.w2ui-flat')
                 .off('click')
-                .on('click', event => { this.goFlat() })
+                .on('click', _event => { this.goFlat() })
         }
         if (this['bottomHTML'] !== '') {
             query(this.box).find('.w2ui-sidebar-bottom').html(this['bottomHTML'])
@@ -1946,6 +1966,7 @@ class w2sidebar extends w2base {
         this.last.observeResize?.disconnect()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
         w2utils.lock(this.box, msg, showSpinner)
     }

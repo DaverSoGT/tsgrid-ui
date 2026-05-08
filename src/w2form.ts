@@ -48,11 +48,13 @@ import { w2tooltip as _w2tooltip } from './w2tooltip.js'
 import { w2field } from './w2field.js'
 
 // any: w2tooltip has complex show/hide overloads; cast once for clean call sites
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2tooltip = _w2tooltip as any
 // query() always returns Query at runtime; cast to remove void from union
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
 class w2form extends w2base {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: dynamic properties added via w2utils.extend and field access
 
     declare name: string
@@ -60,21 +62,30 @@ class w2form extends w2base {
     declare box: HTMLElement | null
     url: string | { get?: string; save?: string }
     method: string | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     routeData: Record<string, any> // any: route params are user-supplied
     formURL: string
     formHTML: string
     page: number
     pageStyle: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recid: any // any: recid can be string, number, or null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     fields: any[] // any: field definitions vary by type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     actions: Record<string, any> // any: action can be function or object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: Record<string, any> // any: record values depend on field definitions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     original: Record<string, any> | null
     dataType: string | null
     saveCleanRecord: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     postData: Record<string, any> // any: user-defined post data
     httpHeaders: Record<string, string>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     toolbar: any // any: w2toolbar instance or config object
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tabs: any // any: w2tabs instance or config object
     style: string
     focus: number | string
@@ -85,6 +96,7 @@ class w2form extends w2base {
     last: {
         fetchCtrl: AbortController | null
         fetchOptions: RequestInit | null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         errors: any[] // any: error objects vary by validation type
         errorsShown?: boolean
         observeResize?: ResizeObserver
@@ -111,6 +123,7 @@ class w2form extends w2base {
     LIST_TYPES: string[]
     W2FIELD_TYPES: string[]
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(options: Record<string, any>) { // any: options bag is user-supplied
         super(options['name'])
         this.name         = ''
@@ -242,8 +255,11 @@ class w2form extends w2base {
         if (typeof this.box == 'string') this.box = query(this.box).get(0) as HTMLElement
         if (this.box) this.render(this.box)
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function _processFields(fields: any): { fields: any[]; tabs: any[] } { // any: field definitions vary widely
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const newFields: any[] = []
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tabs: any[] = []
             // if it is an object
             if (w2utils.isPlainObject(fields)) {
@@ -266,6 +282,7 @@ class w2form extends w2base {
                         fields.push(fld)
                     } else if (fld.type == 'tab') {
                         // add tab
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const tab: any = { id: key, text: key } // any: tab shape is dynamic
                         if (fld.style) {
                             tab.style = fld.style
@@ -273,6 +290,7 @@ class w2form extends w2base {
                         tabs.push(tab)
                         // add page to fields
                         const sub = _processFields(fld.fields).fields
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         sub.forEach((fld2: any) => {
                             fld2.html = fld2.html || {}
                             fld2.html.page = tabs.length -1
@@ -285,6 +303,7 @@ class w2form extends w2base {
                     }
                 })
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 function _process(fld: any): any { // any: field shapes vary
                     const ignore = ['html']
                     if (fld.html == null) fld.html = {}
@@ -299,6 +318,7 @@ class w2form extends w2base {
                     return fld
                 }
 
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 function _process2(fld: any, fld2: any): void { // any: field shapes vary
                     const ignore = ['style', 'html']
                     Object.keys(fld).forEach((key => {
@@ -312,6 +332,7 @@ class w2form extends w2base {
                 }
             }
             // process groups
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields.forEach((field: any) => {
                 if (field.type == 'group') {
                     // group properties
@@ -323,7 +344,9 @@ class w2form extends w2base {
                     }
                     // loop through fields
                     if (Array.isArray(field.fields)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.fields.forEach((gfield: any) => {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const fld = w2utils.clone(gfield) as any // any: clone returns unknown; field defs are dynamic
                             if (fld.html == null) fld.html = {}
                             w2utils.extend(fld.html, group)
@@ -340,6 +363,7 @@ class w2form extends w2base {
                         })
                     }
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const fld = w2utils.clone(field) as any // any: clone returns unknown; field defs are dynamic
                     if (fld.field == null && fld.name != null) {
                         console.log('NOTICE: form field.name property is deprecated, please use field.field. Field ->', field)
@@ -352,6 +376,7 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(field?: string, returnIndex?: boolean): any { // any: returns field object or index or array of names
         if (arguments.length === 0) {
             const all: string[] = []
@@ -369,6 +394,7 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(field: string, obj: Record<string, any>): boolean { // any: obj extends field definition
         for (let f = 0; f < this.fields.length; f++) {
             if (this.fields[f].field == field) {
@@ -381,11 +407,13 @@ class w2form extends w2base {
         return false
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getValue(field: string, original?: boolean): any { // any: record values vary by field type
         if (this.nestedFields) {
             let val = undefined
             try { // need this to make sure no error in fields
                 const rec = original === true ? this.original : this.record
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = String(field).split('.').reduce((rec: any, i: string) => { return rec[i] }, rec)
             } catch (_event) {
             }
@@ -395,6 +423,7 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setValue(field: string, value: any, noRefresh?: boolean): boolean { // any: value varies by field type
         // will not refresh the form!
         if (value === '' || value == null
@@ -443,6 +472,7 @@ class w2form extends w2base {
         let previous = this.getValue(name)
         const original = this.getValue(name, true)
         // ordinary input control
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let current: any = el.value // any: current value type depends on field type
         // should not be set to '', incosistent logic
         // if (previous == null) previous = ''
@@ -523,10 +553,12 @@ class w2form extends w2base {
         return { current, previous, original } // current - in input, previous - in form.record, original - before form change
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findItem(item: any, items: any[]): any { // any: item and items shapes vary by field type
         return items.find(it => (it.id === item || it.id === item?.id))
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFieldValue(name: string, value: any): void { // any: value varies by field type
         const field = this.get(name)
         if (field == null) return
@@ -541,6 +573,7 @@ class w2form extends w2base {
                 value = value?.id ?? value
                 const inputs = query(el).closest('.w2ui-field-group').find('input')
                 const items  = field.options.items
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((it: any, ind: number) => { // any: item shapes vary by field
                     const input = inputs.filter(`[data-index="${ind}"]`)
                     if (it.id === value) { // need exact match so to match empty string and 0
@@ -566,9 +599,11 @@ class w2form extends w2base {
                         value = []
                     }
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 value = value.map((val: any) => val?.id ?? val) // any: val can be object or primitive
                 const inputs = query(el).closest('div.w2ui-field-group').find('input')
                 const items  = field.options.items
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((it: any, ind: number) => { // any: item shapes vary
                     const input = inputs.filter(`[data-index="${ind}"]`)
                     input.prop('checked', value.includes(it.id) ? true : false)
@@ -583,12 +618,14 @@ class w2form extends w2base {
             }
             case 'list':
             case 'combo': {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let item: any = value // any: list item is { id, text, ... }
                 const map = field.options?.itemMap
                 /**
                  * if it is a "simple" value, then find item in options.items
                  */
                 if (item?.id == null && Array.isArray(field.options?.items)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
                         const val = w2utils.getNested(it, map?.id ?? 'id')
                         if (val === value) item = it
@@ -598,6 +635,7 @@ class w2form extends w2base {
                  * If item.id is there, but item.text is not there, then look up item.text in options.items
                  */
                 if (item?.id != null && item?.text == null && Array.isArray(field.options?.items)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
                         const id = w2utils.getNested(it, map?.id ?? 'id')
                         if (id === item.id) {
@@ -631,8 +669,10 @@ class w2form extends w2base {
                 const items = [...value]
                 // find item in options.items, if any
                 let updated = false
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any, ind: number) => { // any: item can be primitive or object
                     if (item?.id == null && Array.isArray(field.options.items)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.options.items.forEach((it: any) => {
                             if (it.id == item) {
                                 items[ind] = it
@@ -686,22 +726,27 @@ class w2form extends w2base {
                 break
         }
         // now go through all fields and see if there is a dependent field
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((fld: any) => { // any: field definition shape
             if (fld?.options?.parentList != null) {
                 let updated: boolean | undefined
                 let values = this.getValue(fld.options.parentList)
                 if (Array.isArray(values)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     values = values.map((vv: any) => vv.id)
                 } else {
                     values = values?.id != null ? [values.id] : []
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 fld.options?.items?.forEach?.((item: any) => { // any: item shape varies
                     const parent = w2utils.getNested(item, fld.options.parentField ?? 'parentId')
                     if (parent == null) {
                         return
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const possible = w2utils.clone(Array.isArray(parent) ? parent : [parent]) as any[] // any: clone returns unknown; items are dynamic
                     possible.unshift('')
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const includes = values.some((item: any) => possible.includes(item))
                     if (includes && item.hidden === true) {
                         item.hidden = false
@@ -716,19 +761,24 @@ class w2form extends w2base {
                     if (value?.id != null) value = value.id
                     // if item is not visible, then clear its field
                     if (fld.type == 'enum') {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const valid = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
                         let values = this.getValue(fld.field)
                         if (!Array.isArray(values)) values = [values]
                         // make sure they are objects
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         values = values.map((it: any) => {
                             if (typeof it == 'string' || typeof it == 'number') {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 it = fld.options.items.find((ii: any) => ii.id == it)
                             }
                             return it
                         })
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const new_values = values.filter((it: any) => valid.includes(it.id))
                         this.setValue(fld.field, new_values, true)
                     } else {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         fld.options.items.forEach((it: any) => {
                             if (it.id == value && it.hidden) {
                                 this.setValue(fld.field, null, true)
@@ -806,6 +856,7 @@ class w2form extends w2base {
                 query(group).show()
             }
         })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function isHidden($els: any): boolean { // any: $els is a Query object
             let flag = true
             $els.each((node: Node) => {
@@ -819,6 +870,7 @@ class w2form extends w2base {
     hideGroup(groupName: string): void {
         const fields: string[] = []
         let current = ''
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((fld: any) => { // any: field definition
             if (fld.html.group != null && fld.html.group !== '') {
                 current = String(fld.html.group).toLowerCase()
@@ -834,6 +886,7 @@ class w2form extends w2base {
     showGroup(groupName: string): void {
         const fields: string[] = []
         let current = ''
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((fld: any) => { // any: field definition
             if (fld.html.group != null && fld.html.group !== '') {
                 current = String(fld.html.group).toLowerCase()
@@ -872,10 +925,12 @@ class w2form extends w2base {
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reload(callBack?: (() => void)): Promise<any> { // any: promise resolves with server data
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
             // this.clear();
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return this.request(callBack) as Promise<any> // request() is void | Promise; url+recid guarantee it returns Promise
         } else {
             // this.refresh(); // no need to refresh
@@ -884,6 +939,7 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clear(...args: any[]): void { // any: args are field names or nothing
         if (args.length != 0) {
             args.forEach((field) => {
@@ -917,16 +973,20 @@ class w2form extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options: any): any { // any: options is a w2utils.message config object
         return w2utils.message({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: w2form has [key:string]:any but TS can't verify lock/unlock signature match
             box  : this.box,
             after: '.w2ui-form-header'
         }, options)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any): any { // any: options is a w2utils.confirm config object
         return w2utils.confirm({
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: same as message() above
             box  : this.box,
             after: '.w2ui-form-header'
@@ -937,6 +997,7 @@ class w2form extends w2base {
     validate(showErrors?: boolean): any[] | undefined { // any: error objects vary by field type
         if (showErrors == null) showErrors = true
         // validate before saving
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const errors: any[] = [] // any: error shape varies by validation
         for (let f = 0; f < this.fields.length; f++) {
             const field = this.fields[f]
@@ -1048,6 +1109,7 @@ class w2form extends w2base {
         ;(query(errors[0].field.$el).parents('.w2ui-field').get(0) as Element).scrollIntoView({ block: 'nearest', inline: 'nearest' })
         // show errors
         // show only for visible controls
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         errors.forEach((error: any) => { // any: error shape varies
             const opt = w2utils.extend({
                 anchorClass: 'w2ui-error',
@@ -1083,19 +1145,23 @@ class w2form extends w2base {
 
     hideErrors(): void {
         this.last.errorsShown = false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((field: any) => { // any: field definition
             w2tooltip.hide(`${this.name}-${field.field}-error`)
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getChanges(): Record<string, any> | null { // any: diff values vary by field type
         // TODO: not working on nested structures
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let diff: Record<string, any> = {}
         if (this.original != null && typeof this.original == 'object' && Object.keys(this.record).length !== 0) {
             diff = doDiff(this.record, this.original, {})
         }
         return diff
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function doDiff(record: any, original: any, result: any): any { // any: record/original/result shapes vary
             if (Array.isArray(record) && Array.isArray(original)) {
                 while (record.length < original.length) {
@@ -1114,8 +1180,10 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCleanRecord(strict?: boolean): Record<string, any> { // any: record values vary by field type
         const data = w2utils.clone(this.record)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((fld: any) => { // any: field definition
             if (fld.type == 'columns' || fld.field == null) {
                 return
@@ -1127,6 +1195,7 @@ class w2form extends w2base {
                     this.setValue.call(tmp, fld.field, val.id)
                 }
                 if (Array.isArray(val)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     val.forEach((item: any, ind: number) => { // any: item shape varies
                         if (w2utils.isPlainObject(item) && item.id) {
                             val[ind] = item.id
@@ -1142,6 +1211,7 @@ class w2form extends w2base {
             if (fld.type == 'file') {
                 const tmp = { nestedFields: true, record: data }
                 const val = this.getValue.call(tmp, fld.field) ?? []
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val.forEach((v: any) => { // any: file item shape
                     delete v.file
                     delete v.modified
@@ -1158,9 +1228,11 @@ class w2form extends w2base {
         return data
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     request(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary by server API
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const responseProm = new Promise((res, rej) => { resolve = res; reject = rej })
         // check for multiple params
@@ -1171,6 +1243,7 @@ class w2form extends w2base {
         if (postData == null) postData = {}
         if (!this.url || (typeof this.url === 'object' && !this.url.get)) return
         // build parameters list
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {} // any: params bag is built dynamically
         // add list params
         params.action = 'get'
@@ -1223,6 +1296,7 @@ class w2form extends w2base {
                 }
                 resp.json()
                     .catch(processError)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .then((data: any) => { // any: server response shape varies by API
                         // event before
                         const edata = self.trigger('load', {
@@ -1260,6 +1334,7 @@ class w2form extends w2base {
         edata.finish()
         return responseProm
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function processError(response: any): void { // any: response is Response or Error depending on failure mode
             if (response.name === 'AbortError') {
                 // request was aborted by the form
@@ -1284,13 +1359,16 @@ class w2form extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     submit(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: matches save()
         return this.save(postData, callBack)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     save(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const saveProm = new Promise((res, rej) => { resolve = res; reject = rej })
         // check for multiple params
@@ -1309,6 +1387,7 @@ class w2form extends w2base {
         }
         self.lock(w2utils.lang(self.msgSaving) + ' <span id="'+ self.name +'_progress"></span>')
         // build parameters list
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {} // any: params bag built dynamically
         // add list params
         params.action = 'save'
@@ -1359,6 +1438,7 @@ class w2form extends w2base {
                 // parse server response
                 resp.json()
                     .catch(processError)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .then((data: any) => { // any: server response shape varies
                         // event before
                         const edata = self.trigger('save', {
@@ -1386,6 +1466,7 @@ class w2form extends w2base {
         edata.finish()
         return saveProm
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function processError(response: any): void { // any: response is Response or Error
             if (response?.name === 'AbortError') {
                 // request was aborted by the form
@@ -1397,6 +1478,7 @@ class w2form extends w2base {
             if (edata2.isCancelled === true) return
             // default behavior
             if (response.status && response.status != 200) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 response.json().then((data: any) => { // any: error response body
                     // BUG FIX: original code used `?? response.statusText` which was unreachable
                     // because string concatenation (response.status + ': ' + data.message) always
@@ -1454,12 +1536,14 @@ class w2form extends w2base {
         if (page != null) this.page = page
         // if it was auto size, resize it
         if (query(this.box).data('autoSize') === true) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (query(this.box).get(0) as any).clientHeight = 0 // any: clientHeight is read-only but set for autosize
         }
         this.refresh()
     }
 
     generateHTML(): string | false {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const pages: any[] = [] // any: page structure is built dynamically
         let group = ''
         let page: number | undefined
@@ -1638,6 +1722,7 @@ class w2form extends w2base {
             }
             if (field.type == 'columns') {
                 html += `<div class="w2ui-field-columns" style="${field.style ?? ''}">`
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 field.columns.forEach((col: any) => { // any: column definition varies
                     html += `<div style="${col.style}"> ${col.content} </div>`
                 })
@@ -1662,6 +1747,7 @@ class w2form extends w2base {
                     </div>`
             } else if (field.html.anchor != null) {
                 const span = (field.html.span != null ? 'w2ui-span'+ field.html.span : 'w2ui-span0')
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let label = w2utils.lang(field.type != 'checkbox' ? field.html.label : field.html.text, true as any) // any: second arg is suppress-warning flag in runtime JS but typed as Record
                 const text = w2utils.lang(field.type != 'checkbox' ? field.html.text : '')
                 if (field.html.span == -1) {
@@ -1779,6 +1865,7 @@ class w2form extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getAction(action: string): any { // any: returns Query object
         const ret = query(this.box).find('.w2ui-buttons button[name="' + action + '"]')
         if (ret.length === 0) {
@@ -1836,6 +1923,7 @@ class w2form extends w2base {
             this.tabs?.resize?.()
             this.toolbar?.resize?.()
             // resize switch fields
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.fields.forEach((field: any) => { // any: field definition
                 if (field.type == 'switch') {
                     field.toolbar?.resize?.()
@@ -1865,6 +1953,7 @@ class w2form extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(...args: any[]): number { // any: args are optional field names
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -1877,10 +1966,12 @@ class w2form extends w2base {
         let fields = Array.from(this.fields.keys())
         if (args.length > 0) {
             fields = args
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .map((fld: any, _ind: number) => {
                     if (typeof fld != 'string') console.log('ERROR: Arguments in refresh functions should be field names')
                     return this.get(fld, true) // get index of field
                 })
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((fld: any, _ind: number) => {
                     if (fld != null) return true; else return false
                 })
@@ -1936,6 +2027,7 @@ class w2form extends w2base {
             }
             field.$el
                 .off('.w2form')
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('change.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     const value = self.getFieldValue(field.field)
                     if (value == null) return
@@ -1956,6 +2048,7 @@ class w2form extends w2base {
                     // event after
                     edata2.finish()
                 })
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('input.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     self.rememberOriginal()
                     const value = self.getFieldValue(field.field)
@@ -2032,6 +2125,7 @@ class w2form extends w2base {
                 if (items == null) field.options.items = []
                 if (field.type == 'switch') {
                     // should not have .text if it is not explicitly set, or toolbar will have text
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     items.forEach((item: any, ind: number) => { // any: item varies
                         return items[ind] = typeof item != 'object'
                             ? { id: item, text: item }
@@ -2044,11 +2138,14 @@ class w2form extends w2base {
             // switch
             if (field.type == 'switch') {
                 if (field.toolbar) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ;(w2ui[this.name + '_' + field.name + '_tb'] as any).destroy() // any: w2ui registry returns unknown
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 field.options?.items?.forEach?.((it: any) => it.text == null ? it.text = '' : '')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const items: any[] = w2utils.normMenu.call(this, field.options.items, field.options) ?? [] // any: toolbar item shape varies
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any) => item.type ??= 'radio') // any: toolbar item shape
                 field.toolbar = new w2toolbar({
                     box: field.$el.prev().get(0),
@@ -2109,6 +2206,7 @@ class w2form extends w2base {
                             self.rememberOriginal()
                             const value = self.getFieldValue(field.name)
                             if (value == null) return
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const tbItem = (field.toolbar.items as any[])[ind]
                             value.current = tbItem?.id
                             const edata = self.trigger('change', { target: field.name, field: field.name, value, originalEvent: event })
@@ -2132,6 +2230,7 @@ class w2form extends w2base {
                 // generate options
                 const items = field.options.items
                 let options = ''
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any) => { // any: select item shape
                     options += `<option value="${item.id}">${item.text}</option>`
                 })
@@ -2146,7 +2245,9 @@ class w2form extends w2base {
             // map and arrays
             if (['map', 'array'].includes(field.type)) {
                 // need closure
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (function (obj: w2form, field: any) { // any: field definition
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.el.mapAdd = function(field: any, div: any, cnt: number, empty?: boolean) { // any: field/div shapes
                         const attr = (field.disabled ? ' readOnly ' : '') + (field.html.tabindex_str || '')
                         let html = `<input type="text" ${(field.html.value.attr ?? '') + attr} class="w2ui-input ${field.html.class ?? ''} w2ui-map value">`
@@ -2156,6 +2257,7 @@ class w2form extends w2base {
                             html = field.html.render.call(self, { empty: empty === true, ind: cnt, field, div })
                             // make sure all inputs have names as it is important for array objects
                             if (!field.el._errorDisplayed) {
+                                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 (_queryRaw as any).html(html).filter('input, textarea').each((node: Node) => {
                                     const inp = node as HTMLInputElement
                                     const name = inp.dataset['name'] ?? inp['name']
@@ -2186,8 +2288,10 @@ class w2form extends w2base {
                             }
                         }
                     }
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.el.mapRefresh = function(map: any, div: any): void { // any: map can be object or array
                         // generate options
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         let keys: any[] = [], $k: any, $v: any // any: query objects for key/value inputs
                         if (field.type == 'map') {
                             if (!w2utils.isPlainObject(map)) map = {}
@@ -2196,6 +2300,7 @@ class w2form extends w2base {
                         }
                         if (field.type == 'array') {
                             if (!Array.isArray(map)) map = []
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             keys = map.map((item: any, ind: number) => { return ind })
                         }
                         // delete fields (including empty one)
@@ -2227,6 +2332,7 @@ class w2form extends w2base {
                                 $v = fld.find('.w2ui-map.value')
                                 let val = map[key]
                                 if (field.type == 'array') {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const tmp = map.filter((it: any) => { return it?.key == key ? true : false})
                                     if (tmp.length > 0) val = tmp[0].value
                                 }
@@ -2334,7 +2440,9 @@ class w2form extends w2base {
                                 const $cnt = query(event.target).closest('.w2ui-map-container')
                                 // delete empty
                                 if (typeof field.html?.render == 'function') {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((kk: any) => {
+                                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const val = [...(new Set(Object.values(kk).filter((vv: any) => typeof vv != 'boolean')))]
                                         return !(val.length == 0 || (val.length == 1 && val[0] === ''))
                                     })
@@ -2344,6 +2452,7 @@ class w2form extends w2base {
                                     current._order = current._order.filter((k: string) => k !== '')
                                     delete current['']
                                 } else if (field.type == 'array') {
+                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((k: any) => k !== '')
                                 }
                                 const edata = self.trigger('change', { target: field.field, field: field.field, originalEvent: event,
@@ -2437,6 +2546,7 @@ class w2form extends w2base {
         // init toolbar regardless it is defined or not
         if (typeof this.toolbar.render !== 'function') {
             this.toolbar = new w2toolbar(w2utils.extend({}, this.toolbar, { name: this.name +'_toolbar', owner: this }))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.toolbar.on('click', function(this: any, event: CustomEvent) { // any: toolbar context
                 const edata = self.trigger('toolbar', { target: event.target, originalEvent: event })
                 if (edata.isCancelled === true) return
@@ -2450,6 +2560,7 @@ class w2form extends w2base {
         // init tabs regardless it is defined or not
         if (typeof this.tabs.render !== 'function') {
             this.tabs = new w2tabs(w2utils.extend({}, this.tabs, { name: this.name +'_tabs', owner: this, active: this.tabs.active }))
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.tabs.on('click', function(this: any, event: CustomEvent) { // any: tabs context
                 self.goto(this.get(event.target, true))
             })
@@ -2464,6 +2575,7 @@ class w2form extends w2base {
         this.resize()
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(this.request() as Promise<any>).catch((_error: any) => this.refresh()) // request() is void|Promise; url+recid guarantee it returns Promise
         } else {
             this.refresh()
@@ -2510,11 +2622,13 @@ class w2form extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFocus(focus?: number | string): any { // any: returns Query object with focused element
         if (typeof focus === 'undefined'){
             // no argument - use form's focus property
             focus = this.focus
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let $input: any // any: Query object or undefined
         // focus field by index
         if (w2utils.isInt(focus)){

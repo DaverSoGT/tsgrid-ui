@@ -38,13 +38,17 @@ class w2toolbar extends w2base {
     declare box: HTMLElement | null
     declare name: string
     routeData: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items: any[] // any: toolbar items have dynamic shape
     right: string | string[]
     tooltip: string
     item_template: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates badge, pendingRefresh, etc.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _refresh: (opts: any) => void
     _refreshDebounced: () => void
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,6 +212,7 @@ class w2toolbar extends w2base {
         if (skipRefresh !== true) this.resize()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) {
         let effected = 0
         args.forEach(item => {
@@ -233,6 +238,7 @@ class w2toolbar extends w2base {
         return true
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean, items?: any[]): any {
         if (arguments.length === 0) {
             const all = []
@@ -298,7 +304,9 @@ class w2toolbar extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -316,7 +324,9 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -334,7 +344,9 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -352,7 +364,9 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -370,7 +384,9 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     check(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -388,7 +404,9 @@ class w2toolbar extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uncheck(...args: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         args.forEach((item: any) => { // any: item id can be string or number
@@ -470,13 +488,15 @@ class w2toolbar extends w2base {
                      * Need to clear all previous event listeners, since tooltip name is reused and it finds the old configuration and
                      * extends it. If events are not cleared, it would trigger old listeners too.
                      */
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const overlay: any = w2tooltip.get(this.name + '-drop')
                     if (overlay?.displayed) overlay.hide()
                     overlay?.listeners?.splice(0)
 
                     // timeout is needed to make sure previous overlay hides
                     setTimeout(() => {
-                        const hideDrop = (id: any, btn?: any) => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const hideDrop = (id: any, _btn?: any) => {
                             // need a closure to capture id variable
                             return () => {
                                 this.set(id, { checked: false })
@@ -493,6 +513,7 @@ class w2toolbar extends w2base {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                             .hide(hideDrop(it.id, btn))
                         }
@@ -521,6 +542,7 @@ class w2toolbar extends w2base {
                                 name : this.name + '-drop',
                                 anchor: el[0],
                                 data: { item: it, btn }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -541,6 +563,7 @@ class w2toolbar extends w2base {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -587,8 +610,9 @@ class w2toolbar extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, line?: any, instant?: any) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             const scrollBox    = query(this.box).find(`.w2ui-tb-line:nth-child(${line}) .w2ui-scroll-wrapper`)
             const scrollBoxEl  = scrollBox.get(0) as HTMLElement
             const scrollLeft   = scrollBoxEl.scrollLeft
@@ -618,6 +642,7 @@ class w2toolbar extends w2base {
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
         if (typeof box == 'string') box = query(box).get(0) as HTMLElement
@@ -680,6 +705,7 @@ class w2toolbar extends w2base {
         return Date.now() - time
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
         // event before
@@ -725,6 +751,7 @@ class w2toolbar extends w2base {
             w2utils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
         } else {
             // refresh
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.box).find(selector).replace((_queryRaw as any).html(html))
             const newBtn = query(this.box).find(selector)
             w2utils.bindEvents(newBtn, this)
@@ -1027,6 +1054,7 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     change(id?: any, value?: any, dynamic?: any) {
         const it = this.get(id)
         const input = query(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(id)).find('input.w2ui-toolbar-input')

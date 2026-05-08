@@ -42,9 +42,13 @@ const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
 // any: w2menu/w2color/w2date/w2tooltip have rich return types with .select()/.hide()/.show()
 // that are hard to match from external call sites; cast once here for clean usage
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2menu    = _w2menu as any // any: overlay manager with .show()/.hide()/.get() returning dynamic overlay objects
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2color   = _w2color as any // any: color picker with .show() returning AttachReturn with .select()/.liveUpdate()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2date    = _w2date as any // any: date picker with .show()/.inRange()/.str2min()/.min2str() etc.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2tooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide() accepting flexible option shapes
 
 // ---------------------------------------------------------------------------
@@ -75,6 +79,7 @@ interface W2FieldNumericOptions {
     numberRE?: RegExp
     moneyRE?: RegExp
     percentRE?: RegExp
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options extended dynamically in init()
 }
 
@@ -86,6 +91,7 @@ interface W2FieldColorOptions {
     arrows?: boolean
     advanced?: boolean | null
     transparent?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
@@ -101,6 +107,7 @@ interface W2FieldDateOptions {
     blockWeekdays?: number[]
     colored?: Record<string, string>
     btnNow?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
@@ -114,6 +121,7 @@ interface W2FieldTimeOptions {
     end?: string | null
     btnNow?: boolean
     noMinutes?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
@@ -132,18 +140,23 @@ interface W2FieldDateTimeOptions {
     colored?: Record<string, string>
     btnNow?: boolean
     noMinutes?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
 /** List/combo-field options */
 interface W2FieldListOptions {
     type?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _items_fun?: ((...args: any[]) => any) | null // any: function signature varies
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected?: Record<string, any> | null // any: selected item shape
     itemMap?: { id: string; text: string } | null
     match?: 'contains' | 'is' | 'begins' | 'ends'
     filter?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compare?: ((...args: any[]) => any) | null // any: user-defined compare function
     prefix?: string
     suffix?: string
@@ -152,11 +165,14 @@ interface W2FieldListOptions {
     url?: string | null
     method?: string | null
     postData?: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recId?: string | ((item: any) => any) | null // any: mapping function result
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recText?: string | ((item: any) => any) | null // any: mapping function result
     debounce?: number
     minLength?: number
     cacheMax?: number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderDrop?: ((...args: any[]) => string) | null // any: render function
     maxDropHeight?: number
     maxDropWidth?: number | null
@@ -168,29 +184,40 @@ interface W2FieldListOptions {
     hideSelected?: boolean
     msgNoItems?: string
     msgSearch?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSearch?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRequest?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onLoad?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError?: ((...args: any[]) => void) | null // any: event callback
     index?: number[]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
 /** Enum-field options */
 interface W2FieldEnumOptions {
     type?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _items_fun?: ((...args: any[]) => any) | null // any: function signature varies
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected?: any[] // any: array of selected items
     itemMap?: { id: string; text: string } | null
     max?: number
     match?: 'contains' | 'is' | 'begins' | 'ends'
     filter?: boolean
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compare?: ((...args: any[]) => any) | null // any: user-defined compare function
     url?: string | null
     method?: string | null
     postData?: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recId?: string | ((item: any) => any) | null // any: mapping function result
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recText?: string | ((item: any) => any) | null // any: mapping function result
     debounce?: number
     minLength?: number
@@ -198,7 +225,9 @@ interface W2FieldEnumOptions {
     maxItemWidth?: number
     maxDropHeight?: number
     maxDropWidth?: number | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderItem?: ((item: any, ind: number, removeBtn: string) => string) | null // any: render result
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderDrop?: ((...args: any[]) => string) | null // any: render function
     style?: string
     openOnFocus?: boolean
@@ -208,27 +237,41 @@ interface W2FieldEnumOptions {
     hideSelected?: boolean
     msgNoItems?: string
     msgSearch?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAdd?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onNew?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRemove?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onSearch?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRequest?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onLoad?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onError?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onScroll?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
 /** File-field options */
 interface W2FieldFileOptions {
     type?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected?: any[] // any: array of file objects
     max?: number
     maxSize?: number
     maxFileSize?: number
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     renderItem?: ((item: any, ind: number, removeBtn: string) => string) | null // any: render result
     maxItemWidth?: number
     maxDropHeight?: number
@@ -238,11 +281,17 @@ interface W2FieldFileOptions {
     align?: 'left' | 'right' | 'both' | 'none'
     altRows?: boolean
     style?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAdd?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRemove?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options may be user-extended
 }
 
@@ -261,13 +310,21 @@ type W2FieldOptions =
 interface W2FieldInput {
     type?: string
     el?: HTMLElement | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAdd?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onNew?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRemove?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onScroll?: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: options extended dynamically
 }
 
@@ -279,6 +336,7 @@ interface W2FieldHelpers {
     search?: HTMLElement | null
     search_focus?: HTMLInputElement // input element for list type
     multi?: Query // Query wrapper for enum/file multi-container
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: helpers are added dynamically
 }
 
@@ -293,9 +351,11 @@ interface W2FieldTmp {
     'max-height'?: number
     'current_width'?: number
     pholder?: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     overlay?: any // any: w2menu overlay instance with dynamic .overlay sub-object
     openedOnFocus?: boolean
     sizeTimer?: ReturnType<typeof setInterval>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: temp state grows dynamically
 }
 
@@ -319,16 +379,24 @@ type W2FieldElement = HTMLInputElement | HTMLTextAreaElement
 
 class w2field extends w2base {
     el: W2FieldElement | null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected: any // any: can be null, an object (list), or an array (enum/file)
     helpers: W2FieldHelpers
     type: string
     options: W2FieldOptions
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onAdd: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onNew: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onRemove: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseEnter: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onMouseLeave: ((...args: any[]) => void) | null // any: event callback
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onScroll: ((...args: any[]) => void) | null // any: event callback
     tmp: W2FieldTmp
 
@@ -361,10 +429,15 @@ class w2field extends w2base {
         this.onScroll    = opts.onScroll ?? null
         this.tmp         = {} // temp object
         // clean up some options
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onClick
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseEnter
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseLeave
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onScroll
 
         if (this.el) {
@@ -386,7 +459,9 @@ class w2field extends w2base {
     }
 
     init(): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let options = this.options as any // any: options shape depends on type; accessed via key-lookup below
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let defaults: Record<string, any> // any: defaults are type-specific bags assembled per switch case
 
         // only for INPUT or TEXTAREA
@@ -395,7 +470,7 @@ class w2field extends w2base {
             return
         }
         // non-null: guarded above; use local alias so TypeScript tracks narrowing
-        const fieldEl = this.el
+        const _fieldEl = this.el
 
         switch (this.type) {
             case 'text':
@@ -562,6 +637,7 @@ class w2field extends w2base {
                     query(this.el).addClass('w2ui-select')
                     // if simple value - look it up
                     if (!w2utils.isPlainObject(options.selected) && Array.isArray(options.items)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         options.items.forEach((item: any) => { // any: item in items array
                             if (item && item.id === options.selected) {
                                 options.selected = w2utils.clone(item)
@@ -708,7 +784,9 @@ class w2field extends w2base {
         this.change(new Event('change'))
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(): any { // any: return varies by type (string for text, array for enum/file, object for list)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let ret: any // any: return type varies by field type
         if (['list', 'enum', 'file'].indexOf(this.type) !== -1) {
             ret = this.selected
@@ -718,6 +796,7 @@ class w2field extends w2base {
         return ret
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(val: any, append?: boolean): void { // any: val can be string, object, array depending on type
         if (['list', 'enum', 'file'].indexOf(this.type) !== -1) {
             const overlay = w2menu.get(this.el!.id + '_menu')
@@ -744,6 +823,7 @@ class w2field extends w2base {
         if (['list', 'enum'].indexOf(this.type) !== -1) {
             const overlay = w2menu.get(this.el!.id + '_menu')
             overlay?.hide()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const items = (this.options as any).items // any: items array is type-specific
             if (items && items[ind]) {
                 if (this.type == 'list') {
@@ -763,6 +843,7 @@ class w2field extends w2base {
     }
 
     refresh(): number {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
         const time    = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -849,6 +930,7 @@ class w2field extends w2base {
         if (['enum', 'file'].includes(this.type) && div) {
             let html = ''
             if (Array.isArray(this.selected)) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 this.selected.forEach((it: any, ind: number) => { // any: selected item shape varies by type
                     if (it == null) return
                     html += `
@@ -929,9 +1011,11 @@ class w2field extends w2base {
                     const target = query(mouseEvent.target).closest('.li-item')
                     const index  = target.attr('index')
                     // any: selected is dynamic array; index from attr() may be undefined
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const item   = index != null ? (this.selected as any[])[Number(index)] : undefined
                     if (query(target).hasClass('li-search')) return
                     mouseEvent.stopPropagation()
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let edata: any // any: trigger() returns an event-data object with dynamic properties
                     // default behavior
                     if (query(mouseEvent.target).hasClass('w2ui-list-remove')) {
@@ -954,6 +1038,7 @@ class w2field extends w2base {
                         query(mouseEvent.target).remove()
                     } else {
                         // trigger event
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         edata = this.trigger('click', { target: this.el, originalEvent: (mouseEvent as any).originalEvent, item })
                         if (edata.isCancelled === true) return
                         // if file - show image preview
@@ -1124,11 +1209,13 @@ class w2field extends w2base {
         delete this.el!._w2field
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clean(val: any): any { // any: val can be string or number; returns cleaned string or number
         // issue #499
         if (typeof val === 'number'){
             return val
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
         val = String(val).trim()
         // clean
@@ -1157,7 +1244,9 @@ class w2field extends w2base {
         return val
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     format(val: any): any { // any: val is the raw field value; return is the formatted display string
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
         // auto format numbers or money
         if (options.autoFormat && val !== '') {
@@ -1180,7 +1269,9 @@ class w2field extends w2base {
             }
             // if default group symbol does not match - replase it
             const group = (1000).toLocaleString(w2utils.settings.locale, { useGrouping: true }).slice(1, 2)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (group !== (this.options as any).groupSymbol) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = val.replaceAll(group, (this.options as any).groupSymbol)
             }
         }
@@ -1225,8 +1316,11 @@ class w2field extends w2base {
             // convert linux timestamps
             let tmp = parseInt(this.el!.value)
             if (w2utils.isInt(this.el!.value) && tmp > 3000) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (this.type === 'time') tmp = w2utils.formatTime(new Date(tmp), (this.options as any).format) as any // any: formatTime returns string
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (this.type === 'date') tmp = w2utils.formatDate(new Date(tmp), (this.options as any).format) as any // any: formatDate returns string
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (this.type === 'datetime') tmp = w2utils.formatDateTime(new Date(tmp), (this.options as any).format) as any // any: formatDateTime returns string
                 ;(query(this.el).val(String(tmp)) as Query).trigger('input').trigger('change')
             }
@@ -1270,6 +1364,7 @@ class w2field extends w2base {
         if (this.type == 'list' && document.activeElement == this.el) {
             this.helpers.search_focus?.focus()
             // update overlay if needed
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
                 setTimeout(() => {
@@ -1292,6 +1387,7 @@ class w2field extends w2base {
                 return
             }
             // regenerate items
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (typeof (this.options as any)._items_fun == 'function') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).items = w2utils.normMenu.call(this, (this.options as any)._items_fun, this.options as any) // any: options is W2FieldOptions which is a superset of W2NormMenuOptions
@@ -1312,6 +1408,7 @@ class w2field extends w2base {
             }
             this.resize()
             // update overlay if needed
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
                 setTimeout(() => {
@@ -1333,12 +1430,14 @@ class w2field extends w2base {
 
         if (['int', 'float', 'money', 'currency', 'percent'].includes(this.type)) {
             if (val !== '') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let newVal: any = val // any: newVal may be string or number after clean()
                 let error = ''
                 if (!this.isStrValid(val)) { // validity is also checked in blur
                     newVal = ''
                 } else {
                     const rVal = this.clean(val)
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const options = this.options as any // any: options shape depends on type
                     if (options.min != null && rVal < options.min) {
                         newVal = options.min
@@ -1349,6 +1448,7 @@ class w2field extends w2base {
                         error = `Should be <= ${options.max}`
                     }
                 }
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this.options as any).autoCorrect) {
                     ;(query(this.el).val(newVal) as Query).trigger('input').trigger('change')
                     if (error) {
@@ -1363,11 +1463,13 @@ class w2field extends w2base {
             }
         }
         // date or time
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['date', 'time', 'datetime'].includes(this.type) && (this.options as any).autoCorrect) {
             if (val !== '') {
                 const check = this.type == 'date' ? w2utils.isDate :
                     (this.type == 'time' ? w2utils.isTime : w2utils.isDateTime)
                 if (!w2date.inRange(this.el!.value, this.options)
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         || !check.bind(w2utils)(this.el!.value, (this.options as any).format)) {
                     // if not in range or wrong value - clear it
                     ;(query(this.el).val('') as Query).trigger('input').trigger('change')
@@ -1392,9 +1494,11 @@ class w2field extends w2base {
     }
 
     keyDown(event: KeyboardEvent, extra?: { keyCode?: number }): false | void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
         const key     = event.keyCode || (extra && extra.keyCode)
         let cancel  = false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let val: any, inc: number, daymil: number, dt: Date | boolean, newValue: number, newDT: string // any: val holds current field value (string or number)
         // ignore wrong pressed key
         if (['int', 'float', 'money', 'currency', 'percent', 'hex', 'bin', 'color', 'alphanumeric'].includes(this.type)) {
@@ -1402,6 +1506,7 @@ class w2field extends w2base {
                 if (!this.isStrValid(event.key ?? '1', true) && // valid & is not arrows, dot, comma, etc keys
                         ![9, 8, 13, 27, 37, 38, 39, 40, 46].includes(event.keyCode)) {
                     event.preventDefault()
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if (event.stopPropagation) event.stopPropagation(); else (event as any).cancelBubble = true // any: cancelBubble is legacy IE
                     return false
                 }
@@ -1565,6 +1670,7 @@ class w2field extends w2base {
             this.refresh()
         }
         if (this.type == 'combo') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (![9, 16, 27].includes(event.keyCode) && (this.options as any).openOnFocus !== true) {
                 // do not show when receives focus on tab or shift + tab or on esc
                 this.updateOverlay()
@@ -1593,20 +1699,25 @@ class w2field extends w2base {
         }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     findItemIndex(items: any[], id: any, parents?: number[]): number[] { // any: items/id vary by field type
         let inds: number[] = []
         if (!parents) parents = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['list', 'combo', 'enum'].includes(this.type) && (this.options as any).url) {
             // remove source, so get it from overlay
             const overlay = w2menu.get(this.el!.id + '_menu')
             if (overlay) {
                 items = overlay.options.items
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).items = items
             }
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items.forEach((item: any, ind: number) => { // any: item shape varies by field type
             if (item.id === id) {
                 inds = parents.concat([ind])
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).index = [ind]
             }
             if (inds.length == 0 && item.items && item.items.length > 0) {
@@ -1619,7 +1730,9 @@ class w2field extends w2base {
     }
 
     updateOverlay(_indexOnly?: boolean): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let params: any // any: params object is assembled per-type and passed to w2menu/w2color/w2date
         // color
         if (this.type === 'color') {
@@ -1728,9 +1841,11 @@ class w2field extends w2base {
         let isValid = true
         switch (this.type) {
             case 'int':
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isInt(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
@@ -1738,18 +1853,23 @@ class w2field extends w2base {
                 ch = ch.replace(/%/g, '')
             // falls through to float
             case 'float':
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', '', (this.options as any).decimalSymbol, (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isFloat(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'money':
             case 'currency':
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).decimalSymbol, (this.options as any).groupSymbol, (this.options as any).currency.prefix,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.options as any).currency.suffix].includes(ch)) {
                     isValid = true
                 } else {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     isValid = w2utils.isFloat(ch.replace((this.options as any).moneyRE, ''))
                 }
                 break
@@ -1768,6 +1888,7 @@ class w2field extends w2base {
     }
 
     addPrefix(): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).prefix) {
             return
         }
@@ -1778,6 +1899,7 @@ class w2field extends w2base {
         }
         // remove if already displayed
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query(this.el).before(`<div class="w2ui-field-helper">${(this.options as any).prefix}</div>`)
         const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
         query(helper)
@@ -1805,6 +1927,7 @@ class w2field extends w2base {
     }
 
     addSuffix(): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).suffix && !(this.options as any).arrows) {
             return
         }
@@ -1814,6 +1937,7 @@ class w2field extends w2base {
             this.tmp['old-padding-right'] = styles['padding-right']
         }
         let pr = parseInt(styles['padding-right'] || '0')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).arrows) {
             // remove if already displayed
             if (this.helpers.arrows) query(this.helpers.arrows).remove()
@@ -1854,10 +1978,12 @@ class w2field extends w2base {
             query(this.el).css('padding-right', pr + 'px !important')
             this.helpers.arrows = arrowHelper
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).suffix !== '') {
             // remove if already displayed
             if (this.helpers.suffix) query(this.helpers.suffix).remove()
             // add fresh
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.el).after(`<div class="w2ui-field-helper">${(this.options as any).suffix}</div>`)
             const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
             query(suffixHelper)
@@ -2011,7 +2137,7 @@ class w2field extends w2base {
                 <div class="w2ui-multi-file">
                     <input name="attachment" class="file-input" type="file" tabindex="-1"'
                         style="width: 100%; height: 100%; opacity: 0" title=""
-                        ${(this.options as any).max !== 1 ? 'multiple' : ''}
+                        ${(this.options as { max?: number }).max !== 1 ? 'multiple' : ''}
                         ${query(this.el).prop('readOnly') || query(this.el).prop('disabled') ? 'disabled': ''}
                         ${query(this.el).attr('accept') ? ' accept="'+ query(this.el).attr('accept') +'"': ''}>
                 </div>
@@ -2099,7 +2225,9 @@ class w2field extends w2base {
     }
 
     addFile(file: File): void {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type (file-specific here)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const selected = this.selected as any[] // any: selected is array of file-like objects
         const newItem: {
             name: string
@@ -2120,6 +2248,7 @@ class w2field extends w2base {
         let cnt = 0
         const errors: string[] = []
         if (Array.isArray(selected)) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selected.forEach((item: any) => { // any: item is a file-like object
                 if (item.name == file.name && item.size == file.size) {
                     errors.push(w2utils.lang('The file "${name}" (${size}) is already added.', {

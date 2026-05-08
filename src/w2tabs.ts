@@ -24,16 +24,20 @@ const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 class w2tabs extends w2base {
     declare box: HTMLElement | null
     declare name: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     active: any
     reorder: boolean
     flow: string
     tooltip: string
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tabs: any[] // any: tab objects have dynamic shape
     routeData: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates reordering state, observeResize, moving bag
     right: string
     style: string
     tab_template: Record<string, unknown>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,6 +125,7 @@ class w2tabs extends w2base {
         return Promise.all(proms)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...ids: any[]) {
         let effected = 0
         ids.forEach(it => {
@@ -153,6 +158,7 @@ class w2tabs extends w2base {
         return true
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean): any {
         if (arguments.length === 0) {
             const all = []
@@ -172,7 +178,9 @@ class w2tabs extends w2base {
         return null
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...ids: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
             const tab = this.get(it)
@@ -184,7 +192,9 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...ids: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
             const tab = this.get(it)
@@ -196,7 +206,9 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...ids: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
             const tab = this.get(it)
@@ -208,7 +220,9 @@ class w2tabs extends w2base {
         return effected
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...ids: any[]) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
             const tab = this.get(it)
@@ -378,6 +392,7 @@ class w2tabs extends w2base {
             </div>`
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
         if (this.flow == 'up') {
@@ -415,6 +430,7 @@ class w2tabs extends w2base {
         return Date.now() - time
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
         if (typeof box == 'string') box = query(box).get(0)
@@ -518,8 +534,9 @@ class w2tabs extends w2base {
             })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, instant?: any) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             const scrollBox  = query(this.box).find('.w2ui-scroll-wrapper')
             const scrollBoxEl = scrollBox.get(0) as HTMLElement
             const scrollLeft = scrollBoxEl.scrollLeft
@@ -545,8 +562,9 @@ class w2tabs extends w2base {
         })
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scrollIntoView(id?: any, instant?: any) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             if (id == null) id = this.active
             const tab = this.get(id)
             if (tab == null) return
@@ -654,8 +672,9 @@ class w2tabs extends w2base {
         event?.stopPropagation()
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animateClose(id?: any) {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             const $tab  = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
             const width = ($tab.get(0) as HTMLElement).clientWidth || 0
             const anim = `<div class="tab-animate-close" style="display: inline-block; flex-shrink: 0; width: ${width}px; transition: width 0.25s"></div>`
@@ -671,9 +690,10 @@ class w2tabs extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animateInsert(id: any, tab: any): Promise<void> { // any: id/tab objects have dynamic shape
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, _reject) => {
             let $before = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
             const tabHTML = this.getTabHTML(tab.id)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const $tab    = (_queryRaw as any).html(tabHTML) as Query
             if ($before.length == 0) {
                 $before = query(this.box).find('#tabs_tabs_right')
@@ -686,6 +706,7 @@ class w2tabs extends w2base {
                 const $tmp  = query(this.box).find('#' + $tab.attr('id'))
                 const width = ($tmp.get(0) as HTMLElement)?.clientWidth ?? 0
                 // insert animation div
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const $anim = (_queryRaw as any).html('<div class="tab-animate-insert" style="flex-shrink: 0; width: 0; transition: width 0.25s"></div>') as Query
                 $before.before($anim)
                 // hide tab and move it in the right position
