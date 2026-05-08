@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "bundler",
+        "lib": ["ES2022", "DOM", "DOM.Iterable"],
+        "types": [],
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "skipLibCheck": true,
+        "incremental": true,
+        "tsBuildInfoFile": ".tscache/tsbuildinfo",
+        "sourceMap": true,
+        "useDefineForClassFields": true,
+        "forceConsistentCasingInFileNames": true,
+        "outDir": "dist/types",
+        "rootDir": "src"
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist", "demos", "test", "specs", "es6mods", "libs", "server"]
+}
