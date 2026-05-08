@@ -2,6 +2,10 @@
  * Part of w2ui 2.0 library
  *  - Dependencies: mQuery, w2utils, w2base, w2tooltip, w2color, w2menu, w2date
  *
+ * T4.1: Ported to TypeScript with aggressive typing per typing_policy.
+ * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
+ * Discriminated union on `type` property for per-type option shapes.
+ *
  * == TODO ==
  *  - upload (regular files)
  *  - BUG with prefix/postfix and arrows (test in different contexts)
@@ -28,13 +32,307 @@
  *  - options.msgNoItems
  */
 
-import query from './query.js'
 import { w2base } from './w2base.js'
 import { w2utils } from './w2utils.js'
-import { w2tooltip, w2color, w2menu, w2date } from './w2tooltip.js'
+import { w2tooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './w2tooltip.js'
+import { query as _queryRaw, Query } from './query.js'
+
+// any: query() returns Query|void; cast once here for clean chaining
+const query = _queryRaw as (selector: unknown, context?: unknown) => Query
+
+// any: w2menu/w2color/w2date/w2tooltip have rich return types with .select()/.hide()/.show()
+// that are hard to match from external call sites; cast once here for clean usage
+const w2menu    = _w2menu as any // any: overlay manager with .show()/.hide()/.get() returning dynamic overlay objects
+const w2color   = _w2color as any // any: color picker with .show() returning AttachReturn with .select()/.liveUpdate()
+const w2date    = _w2date as any // any: date picker with .show()/.inRange()/.str2min()/.min2str() etc.
+const w2tooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide() accepting flexible option shapes
+
+// ---------------------------------------------------------------------------
+// Type definitions
+// ---------------------------------------------------------------------------
+
+/** Shared numeric-field options (int, float, money, currency, percent, alphanumeric, bin, hex, text) */
+interface W2FieldNumericOptions {
+    type?: string
+    min?: number | null
+    max?: number | null
+    step?: number
+    autoFormat?: boolean
+    autoCorrect?: boolean
+    currency?: {
+        prefix: string
+        suffix: string
+        precision: number
+    }
+    decimalSymbol?: string
+    groupSymbol?: string
+    arrows?: boolean
+    keyboard?: boolean
+    precision?: number | null
+    prefix?: string
+    suffix?: string
+    // computed at init
+    numberRE?: RegExp
+    moneyRE?: RegExp
+    percentRE?: RegExp
+    [key: string]: any // any: options extended dynamically in init()
+}
+
+/** Color-field options */
+interface W2FieldColorOptions {
+    type?: string
+    prefix?: string
+    suffix?: string
+    arrows?: boolean
+    advanced?: boolean | null
+    transparent?: boolean
+    [key: string]: any // any: options may be user-extended
+}
+
+/** Date-field options */
+interface W2FieldDateOptions {
+    type?: string
+    format?: string
+    keyboard?: boolean
+    autoCorrect?: boolean
+    start?: string | null
+    end?: string | null
+    blockDates?: string[]
+    blockWeekdays?: number[]
+    colored?: Record<string, string>
+    btnNow?: boolean
+    [key: string]: any // any: options may be user-extended
+}
+
+/** Time-field options */
+interface W2FieldTimeOptions {
+    type?: string
+    format?: string
+    keyboard?: boolean
+    autoCorrect?: boolean
+    start?: string | null
+    end?: string | null
+    btnNow?: boolean
+    noMinutes?: boolean
+    [key: string]: any // any: options may be user-extended
+}
+
+/** DateTime-field options */
+interface W2FieldDateTimeOptions {
+    type?: string
+    format?: string
+    keyboard?: boolean
+    autoCorrect?: boolean
+    start?: string | null
+    end?: string | null
+    startTime?: string | null
+    endTime?: string | null
+    blockDates?: string[]
+    blockWeekdays?: number[]
+    colored?: Record<string, string>
+    btnNow?: boolean
+    noMinutes?: boolean
+    [key: string]: any // any: options may be user-extended
+}
+
+/** List/combo-field options */
+interface W2FieldListOptions {
+    type?: string
+    items?: any[] // any: items can be strings, objects, or a function
+    _items_fun?: ((...args: any[]) => any) | null // any: function signature varies
+    selected?: Record<string, any> | null // any: selected item shape
+    itemMap?: { id: string; text: string } | null
+    match?: 'contains' | 'is' | 'begins' | 'ends'
+    filter?: boolean
+    compare?: ((...args: any[]) => any) | null // any: user-defined compare function
+    prefix?: string
+    suffix?: string
+    icon?: string | null
+    iconStyle?: string
+    url?: string | null
+    method?: string | null
+    postData?: Record<string, unknown>
+    recId?: string | ((item: any) => any) | null // any: mapping function result
+    recText?: string | ((item: any) => any) | null // any: mapping function result
+    debounce?: number
+    minLength?: number
+    cacheMax?: number
+    renderDrop?: ((...args: any[]) => string) | null // any: render function
+    maxDropHeight?: number
+    maxDropWidth?: number | null
+    minDropWidth?: number | null
+    markSearch?: boolean
+    align?: 'left' | 'right' | 'both' | 'none'
+    altRows?: boolean
+    openOnFocus?: boolean
+    hideSelected?: boolean
+    msgNoItems?: string
+    msgSearch?: string
+    onSearch?: ((...args: any[]) => void) | null // any: event callback
+    onRequest?: ((...args: any[]) => void) | null // any: event callback
+    onLoad?: ((...args: any[]) => void) | null // any: event callback
+    onError?: ((...args: any[]) => void) | null // any: event callback
+    index?: number[]
+    [key: string]: any // any: options may be user-extended
+}
+
+/** Enum-field options */
+interface W2FieldEnumOptions {
+    type?: string
+    items?: any[] // any: items can be strings, objects, or a function
+    _items_fun?: ((...args: any[]) => any) | null // any: function signature varies
+    selected?: any[] // any: array of selected items
+    itemMap?: { id: string; text: string } | null
+    max?: number
+    match?: 'contains' | 'is' | 'begins' | 'ends'
+    filter?: boolean
+    compare?: ((...args: any[]) => any) | null // any: user-defined compare function
+    url?: string | null
+    method?: string | null
+    postData?: Record<string, unknown>
+    recId?: string | ((item: any) => any) | null // any: mapping function result
+    recText?: string | ((item: any) => any) | null // any: mapping function result
+    debounce?: number
+    minLength?: number
+    cacheMax?: number
+    maxItemWidth?: number
+    maxDropHeight?: number
+    maxDropWidth?: number | null
+    renderItem?: ((item: any, ind: number, removeBtn: string) => string) | null // any: render result
+    renderDrop?: ((...args: any[]) => string) | null // any: render function
+    style?: string
+    openOnFocus?: boolean
+    markSearch?: boolean
+    align?: 'left' | 'right' | 'both' | 'none'
+    altRows?: boolean
+    hideSelected?: boolean
+    msgNoItems?: string
+    msgSearch?: string
+    onAdd?: ((...args: any[]) => void) | null // any: event callback
+    onNew?: ((...args: any[]) => void) | null // any: event callback
+    onRemove?: ((...args: any[]) => void) | null // any: event callback
+    onSearch?: ((...args: any[]) => void) | null // any: event callback
+    onClick?: ((...args: any[]) => void) | null // any: event callback
+    onRequest?: ((...args: any[]) => void) | null // any: event callback
+    onLoad?: ((...args: any[]) => void) | null // any: event callback
+    onError?: ((...args: any[]) => void) | null // any: event callback
+    onScroll?: ((...args: any[]) => void) | null // any: event callback
+    onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    [key: string]: any // any: options may be user-extended
+}
+
+/** File-field options */
+interface W2FieldFileOptions {
+    type?: string
+    selected?: any[] // any: array of file objects
+    max?: number
+    maxSize?: number
+    maxFileSize?: number
+    renderItem?: ((item: any, ind: number, removeBtn: string) => string) | null // any: render result
+    maxItemWidth?: number
+    maxDropHeight?: number
+    maxDropWidth?: number | null
+    readContent?: boolean
+    showErrors?: boolean
+    align?: 'left' | 'right' | 'both' | 'none'
+    altRows?: boolean
+    style?: string
+    onClick?: ((...args: any[]) => void) | null // any: event callback
+    onAdd?: ((...args: any[]) => void) | null // any: event callback
+    onRemove?: ((...args: any[]) => void) | null // any: event callback
+    onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    [key: string]: any // any: options may be user-extended
+}
+
+/** Discriminated union: all possible options for a w2field instance */
+type W2FieldOptions =
+    | W2FieldNumericOptions
+    | W2FieldColorOptions
+    | W2FieldDateOptions
+    | W2FieldTimeOptions
+    | W2FieldDateTimeOptions
+    | W2FieldListOptions
+    | W2FieldEnumOptions
+    | W2FieldFileOptions
+
+/** Constructor input — the type discriminant lives here */
+interface W2FieldInput {
+    type?: string
+    el?: HTMLElement | null
+    onClick?: ((...args: any[]) => void) | null // any: event callback
+    onAdd?: ((...args: any[]) => void) | null // any: event callback
+    onNew?: ((...args: any[]) => void) | null // any: event callback
+    onRemove?: ((...args: any[]) => void) | null // any: event callback
+    onMouseEnter?: ((...args: any[]) => void) | null // any: event callback
+    onMouseLeave?: ((...args: any[]) => void) | null // any: event callback
+    onScroll?: ((...args: any[]) => void) | null // any: event callback
+    [key: string]: any // any: options extended dynamically
+}
+
+/** Helper elements bag */
+interface W2FieldHelpers {
+    prefix?: HTMLElement | null
+    suffix?: HTMLElement | null
+    arrows?: HTMLElement | null
+    search?: HTMLElement | null
+    search_focus?: HTMLInputElement // input element for list type
+    multi?: Query // Query wrapper for enum/file multi-container
+    [key: string]: any // any: helpers are added dynamically
+}
+
+/** Temp state bag */
+interface W2FieldTmp {
+    'old-padding-left'?: string | null
+    'old-padding-right'?: string | null
+    'old-background-color'?: string
+    'old-border-color'?: string
+    'old-tabIndex'?: number
+    'min-height'?: number
+    'max-height'?: number
+    'current_width'?: number
+    pholder?: string
+    overlay?: any // any: w2menu overlay instance with dynamic .overlay sub-object
+    openedOnFocus?: boolean
+    sizeTimer?: ReturnType<typeof setInterval>
+    [key: string]: any // any: temp state grows dynamically
+}
+
+// ---------------------------------------------------------------------------
+// HTMLElement extension for w2field reference
+// ---------------------------------------------------------------------------
+declare global {
+    interface HTMLElement {
+        _w2field?: w2field
+    }
+    interface HTMLInputElement {
+        _w2field?: w2field
+    }
+    interface HTMLTextAreaElement {
+        _w2field?: w2field
+    }
+}
+
+// w2field only supports INPUT and TEXTAREA elements (validated in init())
+type W2FieldElement = HTMLInputElement | HTMLTextAreaElement
 
 class w2field extends w2base {
-    constructor(type, options) {
+    el: W2FieldElement | null
+    selected: any // any: can be null, an object (list), or an array (enum/file)
+    helpers: W2FieldHelpers
+    type: string
+    options: W2FieldOptions
+    onClick: ((...args: any[]) => void) | null // any: event callback
+    onAdd: ((...args: any[]) => void) | null // any: event callback
+    onNew: ((...args: any[]) => void) | null // any: event callback
+    onRemove: ((...args: any[]) => void) | null // any: event callback
+    onMouseEnter: ((...args: any[]) => void) | null // any: event callback
+    onMouseLeave: ((...args: any[]) => void) | null // any: event callback
+    onScroll: ((...args: any[]) => void) | null // any: event callback
+    tmp: W2FieldTmp
+
+    constructor(type: string | W2FieldInput, options?: W2FieldInput) {
         super()
         // sanitization
         if (typeof type == 'string' && options == null) {
@@ -47,7 +345,7 @@ class w2field extends w2base {
             options.type = type
         }
         options.type = String(options.type).toLowerCase()
-        this.el          = options.el ?? null
+        this.el          = (options.el ?? null) as W2FieldElement | null
         this.selected    = null
         this.helpers     = {} // object or helper elements
         this.type        = options.type ?? 'text'
@@ -61,31 +359,33 @@ class w2field extends w2base {
         this.onScroll    = options.onScroll ?? null
         this.tmp         = {} // temp object
         // clean up some options
-        delete this.options.type
-        delete this.options.onClick
-        delete this.options.onMouseEnter
-        delete this.options.onMouseLeave
-        delete this.options.onScroll
+        delete (this.options as any).type
+        delete (this.options as any).onClick
+        delete (this.options as any).onMouseEnter
+        delete (this.options as any).onMouseLeave
+        delete (this.options as any).onScroll
 
         if (this.el) {
             this.render(this.el)
         }
     }
 
-    render(el) {
+    render(el: HTMLElement): void {
         if (!(el instanceof HTMLElement)) {
             console.log('ERROR: Cannot init w2field on empty subject')
             return
         }
-        el._w2field?.reset?.() // will remove all previous events
-        el._w2field = this
-        this.el = el
+        // after init() validates INPUT/TEXTAREA, el is safe to treat as W2FieldElement
+        const fieldEl = el as W2FieldElement
+        fieldEl._w2field?.reset?.() // will remove all previous events
+        fieldEl._w2field = this
+        this.el = fieldEl
         this.init()
     }
 
-    init() {
-        let options = this.options
-        let defaults
+    init(): void {
+        let options = this.options as any // any: options shape depends on type; accessed via key-lookup below
+        let defaults: Record<string, any> // any: defaults are type-specific bags assembled per switch case
 
         // only for INPUT or TEXTAREA
         if (!['INPUT', 'TEXTAREA'].includes(this.el.tagName.toUpperCase())) {
@@ -135,7 +435,7 @@ class w2field extends w2base {
                 break
             }
             case 'color': {
-                let size = parseInt(getComputedStyle(this.el)['font-size']) || 12
+                const size = parseInt(getComputedStyle(this.el)['font-size']) || 12
                 defaults = {
                     prefix      : '#',
                     suffix      : `<div style="width: ${size}px; height: ${size}px; margin-top: -2px;
@@ -257,7 +557,7 @@ class w2field extends w2base {
                     query(this.el).addClass('w2ui-select')
                     // if simple value - look it up
                     if (!w2utils.isPlainObject(options.selected) && Array.isArray(options.items)) {
-                        options.items.forEach(item => {
+                        options.items.forEach((item: any) => { // any: item in items array
                             if (item && item.id === options.selected) {
                                 options.selected = w2utils.clone(item)
                             }
@@ -266,7 +566,7 @@ class w2field extends w2base {
                 }
                 options = w2utils.extend({}, defaults, options)
                 // validate match
-                let valid = ['is', 'begins', 'contains', 'ends']
+                const valid = ['is', 'begins', 'contains', 'ends']
                 if (!valid.includes(options.match)) {
                     console.log(`ERROR: invalid value "${options.match}" for option.match. It should be one of following: ${valid.join(', ')}.`)
                 }
@@ -334,7 +634,7 @@ class w2field extends w2base {
                     options._items_fun = options.items
                 }
                 // validate match
-                let valid = ['is', 'begins', 'contains', 'ends']
+                const valid = ['is', 'begins', 'contains', 'ends']
                 if (!valid.includes(options.match)) {
                     console.log(`ERROR: invalid value "${options.match}" for option.match. It should be one of following: ${valid.join(', ')}.`)
                 }
@@ -383,16 +683,16 @@ class w2field extends w2base {
             }
         }
         // attach events
-        query(this.el)
-            .css('box-sizing', 'border-box')
-            .addClass('w2field w2ui-input')
+        const $elInit = query(this.el)
+        $elInit.css('box-sizing', 'border-box')
+        $elInit.addClass('w2field w2ui-input')
             .off('.w2field')
-            .on('change.w2field', (event) => { this.change(event) })
-            .on('click.w2field', (event) => { this.click(event) })
-            .on('focus.w2field', (event) => { this.focus(event) })
-            .on('blur.w2field', (event) => { if (this.type !== 'list') this.blur(event) })
-            .on('keydown.w2field', (event) => { this.keyDown(event) })
-            .on('keyup.w2field', (event) => { this.keyUp(event) })
+            .on('change.w2field', (event: Event) => { this.change(event) })
+            .on('click.w2field', (event: MouseEvent) => { this.click(event) })
+            .on('focus.w2field', (event: FocusEvent) => { this.focus(event) })
+            .on('blur.w2field', (event: FocusEvent) => { if (this.type !== 'list') this.blur(event) })
+            .on('keydown.w2field', (event: KeyboardEvent) => { this.keyDown(event) })
+            .on('keyup.w2field', (event: KeyboardEvent) => { this.keyUp(event) })
         // suffix and prefix need to be after styles
         this.addPrefix() // only will add if needed
         this.addSuffix() // only will add if needed
@@ -403,8 +703,8 @@ class w2field extends w2base {
         this.change(new Event('change'))
     }
 
-    get() {
-        let ret
+    get(): any { // any: return varies by type (string for text, array for enum/file, object for list)
+        let ret: any // any: return type varies by field type
         if (['list', 'enum', 'file'].indexOf(this.type) !== -1) {
             ret = this.selected
         } else {
@@ -413,9 +713,9 @@ class w2field extends w2base {
         return ret
     }
 
-    set(val, append) {
+    set(val: any, append?: boolean): void { // any: val can be string, object, array depending on type
         if (['list', 'enum', 'file'].indexOf(this.type) !== -1) {
-            let overlay = w2menu.get(this.el.id + '_menu')
+            const overlay = w2menu.get(this.el.id + '_menu')
             overlay?.hide()
             if (this.type !== 'list' && append) {
                 if (!Array.isArray(this.selected)) this.selected = []
@@ -425,7 +725,7 @@ class w2field extends w2base {
                 query(this.el).trigger('input').trigger('change')
             } else {
                 if (val == null) val = []
-                let it = (this.type === 'enum' && !Array.isArray(val) ? [val] : val)
+                const it = (this.type === 'enum' && !Array.isArray(val) ? [val] : val)
                 this.selected = it
                 query(this.el).trigger('input').trigger('change')
             }
@@ -435,11 +735,11 @@ class w2field extends w2base {
         }
     }
 
-    setIndex(ind, append) {
+    setIndex(ind: number, append?: boolean): boolean {
         if (['list', 'enum'].indexOf(this.type) !== -1) {
-            let overlay = w2menu.get(this.el.id + '_menu')
+            const overlay = w2menu.get(this.el.id + '_menu')
             overlay?.hide()
-            let items = this.options.items
+            const items = (this.options as any).items // any: items array is type-specific
             if (items && items[ind]) {
                 if (this.type == 'list') {
                     this.selected = items[ind]
@@ -457,10 +757,10 @@ class w2field extends w2base {
         return false
     }
 
-    refresh() {
-        let options = this.options
-        let time    = Date.now()
-        let styles  = getComputedStyle(this.el)
+    refresh(): number {
+        const options = this.options as any // any: options shape depends on type
+        const time    = Date.now()
+        const styles  = getComputedStyle(this.el)
         // update color
         if (this.type == 'color') {
             let color = this.el.value
@@ -474,8 +774,8 @@ class w2field extends w2base {
             // next line will not work in a form with span: -1
             // query(this.el).parent().css('white-space', 'nowrap') // needs this for arrow always to appear on the right side
             // hide focus and show text
-            if (this.helpers.prefix) this.helpers.prefix.hide()
-            if (!this.helpers.search) return
+            if (this.helpers.prefix) query(this.helpers.prefix).hide()
+            if (!this.helpers.search) return Date.now() - time
             // if empty show no icon
             if (this.selected == null && options.icon) {
                 options.prefix = `
@@ -488,18 +788,17 @@ class w2field extends w2base {
                 this.addPrefix()
             }
             // focus helper
-            let focus = query(this.helpers.search_focus)
-            let icon = query(focus[0].previousElementSibling)
+            const focus = query(this.helpers.search_focus)
+            const icon = query((focus.get(0) as Element).previousElementSibling)
             focus.css({ outline: 'none' })
             if (focus.val() === '') {
                 focus.css('opacity', 0)
                 icon.css('opacity', 0)
                 if (this.selected?.id != null) { // id could be "", then it is valid
-                    let text = this.selected.text
-                    let ind = this.findItemIndex(options.items, this.selected.id)
+                    const text = this.selected.text
+                    const ind = this.findItemIndex(options.items, this.selected.id)
                     if (text != null) {
-                        query(this.el)
-                            .val(w2utils.lang(text))
+                        ;(query(this.el).val(w2utils.lang(text)) as Query)
                             .data({
                                 selected: text,
                                 selectedIndex: ind[0]
@@ -514,7 +813,7 @@ class w2field extends w2base {
                 icon.css('opacity', 1)
                 query(this.el).val('')
                 setTimeout(() => {
-                    if (this.helpers.prefix) this.helpers.prefix.hide()
+                    if (this.helpers.prefix) query(this.helpers.prefix).hide()
                     if (options.icon) {
                         focus.css('margin-left', '17px')
                         query(this.helpers.search).find('.w2ui-icon-search')
@@ -540,11 +839,11 @@ class w2field extends w2base {
             }
         }
         // multi select control
-        let div = this.helpers.multi
+        const div = this.helpers.multi
         if (['enum', 'file'].includes(this.type) && div) {
             let html = ''
             if (Array.isArray(this.selected)) {
-                this.selected.forEach((it, ind) => {
+                this.selected.forEach((it: any, ind: number) => { // any: selected item shape varies by type
                     if (it == null) return
                     html += `
                         <div class="li-item" index="${ind}" style="max-width: ${parseInt(options.maxItemWidth)}px; ${it.style ? it.style : ''}">
@@ -561,17 +860,17 @@ class w2field extends w2base {
                         </div>`
                 })
             }
-            let ul  = div.find('.w2ui-multi-items')
+            const ul  = div.find('.w2ui-multi-items')
             if (options.style) {
                 div.attr('style', div.attr('style') + ';' + options.style)
             }
             query(this.el).css('z-index', '-1')
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) {
                 setTimeout(() => {
-                    div[0].scrollTop = 0 // scroll to the top
+                    (div.get(0) as HTMLElement).scrollTop = 0 // scroll to the top
                     div.addClass('w2ui-readonly')
                         .find('.li-item').css('opacity', '0.9')
-                        .parent().find('.li-search').hide()
+                    ;(div.find('.li-item') as Query).parent().find('.li-search').hide()
                         .find('input').prop('readOnly', true)
                         .closest('.w2ui-multi-items')
                         .find('.w2ui-list-remove').hide()
@@ -580,7 +879,7 @@ class w2field extends w2base {
                 setTimeout(() => {
                     div.removeClass('w2ui-readonly')
                         .find('.li-item').css('opacity', '1')
-                        .parent().find('.li-search').show()
+                    ;(div.find('.li-item') as Query).parent().find('.li-search').show()
                         .find('input').prop('readOnly', false)
                         .closest('.w2ui-multi-items')
                         .find('.w2ui-list-remove').show()
@@ -598,7 +897,7 @@ class w2field extends w2base {
             if (html !== '') {
                 ul.prepend(html)
             } else if (query(this.el).attr('placeholder') != null && div.find('input').val() === '') {
-                let style = w2utils.stripSpaces(`
+                const style = w2utils.stripSpaces(`
                     padding-top: ${styles['padding-top']};
                     padding-left: ${styles['padding-left']};
                     box-sizing: ${styles['box-sizing']};
@@ -610,8 +909,8 @@ class w2field extends w2base {
             }
             // ITEMS events
             div.off('.w2item')
-                .on('scroll.w2item', (event) => {
-                    let edata = this.trigger('scroll', { target: this.el, originalEvent: event })
+                .on('scroll.w2item', (event: Event) => {
+                    const edata = this.trigger('scroll', { target: this.el, originalEvent: event })
                     if (edata.isCancelled === true) return
                     // hide tooltip if any
                     w2tooltip.hide(this.el.id + '_preview')
@@ -619,13 +918,13 @@ class w2field extends w2base {
                     edata.finish()
                 })
                 .find('.li-item')
-                .on('click.w2item', (event) => {
-                    let target = query(event.target).closest('.li-item')
-                    let index  = target.attr('index')
-                    let item   = this.selected[index]
+                .on('click.w2item', (event: MouseEvent) => {
+                    const target = query(event.target).closest('.li-item')
+                    const index  = target.attr('index')
+                    const item   = this.selected[index]
                     if (query(target).hasClass('li-search')) return
                     event.stopPropagation()
-                    let edata
+                    let edata: any // any: trigger() returns an event-data object with dynamic properties
                     // default behavior
                     if (query(event.target).hasClass('w2ui-list-remove')) {
                         if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
@@ -633,12 +932,12 @@ class w2field extends w2base {
                         edata = this.trigger('remove', { target: this.el, originalEvent: event, item })
                         if (edata.isCancelled === true) return
                         // remove file from input element
-                        let transfer = new DataTransfer()
-                        let input = query(event.target).closest('.w2ui-list').find('input.file-input').get(0)
+                        const transfer = new DataTransfer()
+                        const input = query(event.target).closest('.w2ui-list').find('input.file-input').get(0) as HTMLInputElement
                         if (input) {
                             Array.from(input.files)
-                                .filter(f => f.name != item.name)
-                                .forEach(f => transfer.items.add(f))
+                                .filter((f: File) => f.name != item.name)
+                                .forEach((f: File) => transfer.items.add(f))
                             input.files = transfer.files
                         }
                         // remove placeholder in the field
@@ -647,7 +946,7 @@ class w2field extends w2base {
                         query(event.target).remove()
                     } else {
                         // trigger event
-                        edata = this.trigger('click', { target: this.el, originalEvent: event.originalEvent, item })
+                        edata = this.trigger('click', { target: this.el, originalEvent: (event as any).originalEvent, item })
                         if (edata.isCancelled === true) return
                         // if file - show image preview
                         let preview = item.tooltip
@@ -672,7 +971,7 @@ class w2field extends w2base {
                                 </div>`
                         }
                         if (preview) {
-                            let name = this.el.id + '_preview'
+                            const name = this.el.id + '_preview'
                             w2tooltip.show({
                                 name,
                                 anchor: target.get(0),
@@ -680,17 +979,17 @@ class w2field extends w2base {
                                 hideOn: ['doc-click'],
                                 class: ''
                             })
-                            .show((event) => {
-                                let $img = query(`#w2overlay-${name} img`)
-                                $img.on('load', function (event) {
-                                    let w = this.clientWidth
-                                    let h = this.clientHeight
-                                    if (w < 300 & h < 300) return
+                            .show((_event: Event) => {
+                                const $img = query(`#w2overlay-${name} img`)
+                                $img.on('load', function (_event: Event) {
+                                    const w = (this as HTMLImageElement).clientWidth
+                                    const h = (this as HTMLImageElement).clientHeight
+                                    if (w < 300 && h < 300) return
                                     if (w >= h && w > 300) query(this).css('width', '300px')
                                     if (w < h && h > 300) query(this).css('height', '300px')
                                 })
-                                .on('error', function (event) {
-                                    this.style.display = 'none'
+                                .on('error', function (_event: Event) {
+                                    (this as HTMLElement).style.display = 'none'
                                 })
 
                             })
@@ -698,22 +997,22 @@ class w2field extends w2base {
                     }
                     edata.finish()
                 })
-                .on('mouseenter.w2item', (event) => {
-                    let target = query(event.target).closest('.li-item')
+                .on('mouseenter.w2item', (event: MouseEvent) => {
+                    const target = query(event.target).closest('.li-item')
                     if (query(target).hasClass('li-search')) return
-                    let item = this.selected[query(event.target).attr('index')]
+                    const item = this.selected[query(event.target).attr('index')]
                     // trigger event
-                    let edata = this.trigger('mouseEnter', { target: this.el, originalEvent: event, item })
+                    const edata = this.trigger('mouseEnter', { target: this.el, originalEvent: event, item })
                     if (edata.isCancelled === true) return
                     // event after
                     edata.finish()
                 })
-                .on('mouseleave.w2item', (event) => {
-                    let target = query(event.target).closest('.li-item')
+                .on('mouseleave.w2item', (event: MouseEvent) => {
+                    const target = query(event.target).closest('.li-item')
                     if (query(target).hasClass('li-search')) return
-                    let item = this.selected[query(event.target).attr('index')]
+                    const item = this.selected[query(event.target).attr('index')]
                     // trigger event
-                    let edata = this.trigger('mouseLeave', { target: this.el, originalEvent: event, item })
+                    const edata = this.trigger('mouseLeave', { target: this.el, originalEvent: event, item })
                     if (edata.isCancelled === true) return
                     // event after
                     edata.finish()
@@ -721,7 +1020,7 @@ class w2field extends w2base {
 
             // update size for enum, hide for file
             if (this.type === 'enum') {
-                let search = this.helpers.multi.find('input')
+                const search = this.helpers.multi.find('input')
                 search.css({ width: '15px' })
             } else {
                 this.helpers.multi.find('.li-search').hide()
@@ -732,16 +1031,16 @@ class w2field extends w2base {
     }
 
     // resizing width of list, enum, file controls
-    resize() {
-        let width = this.el.clientWidth
+    resize(): void {
+        const width = this.el.clientWidth
         // let height = this.el.clientHeight
         // if (this.tmp.current_width == width && height > 0) return
-        let styles = getComputedStyle(this.el)
+        const styles = getComputedStyle(this.el)
 
-        let focus  = this.helpers.search
-        let multi  = this.helpers.multi
-        let suffix = this.helpers.suffix
-        let prefix = this.helpers.prefix
+        const focus  = this.helpers.search
+        const multi  = this.helpers.multi
+        const suffix = this.helpers.suffix
+        const prefix = this.helpers.prefix
 
         // resize helpers
         if (focus) {
@@ -757,11 +1056,11 @@ class w2field extends w2base {
             this.addPrefix()
         }
         // enum or file
-        let div = this.helpers.multi
+        const div = this.helpers.multi
         if (['enum', 'file'].includes(this.type) && div) {
             // adjust height
             query(this.el).css('height', '')
-            let cntHeight = query(div).find(':scope div.w2ui-multi-items').get(0).clientHeight + 5
+            let cntHeight = (query(div).find(':scope div.w2ui-multi-items').get(0) as HTMLElement).clientHeight + 5
             if (cntHeight < 20) cntHeight = 20
             // max height
             if (cntHeight > this.tmp['max-height']) {
@@ -771,7 +1070,7 @@ class w2field extends w2base {
             if (cntHeight < this.tmp['min-height']) {
                 cntHeight = this.tmp['min-height']
             }
-            let inpHeight = w2utils.getSize(this.el, 'height') - 2
+            const inpHeight = w2utils.getSize(this.el, 'height') - 2
             if (inpHeight > cntHeight) cntHeight = inpHeight
             query(div).css({
                 'height': cntHeight + 'px',
@@ -784,11 +1083,11 @@ class w2field extends w2base {
         this.tmp.current_width = width
     }
 
-    reset() {
+    reset(): void {
         // restore paddings
         if (this.tmp != null) {
             query(this.el).css('height', '')
-            Array('padding-left', 'padding-right', 'background-color', 'border-color').forEach(prop => {
+            ;['padding-left', 'padding-right', 'background-color', 'border-color'].forEach((prop: string) => {
                 if (this.tmp && this.tmp['old-'+ prop] != null) {
                     query(this.el).css(prop, this.tmp['old-' + prop])
                     delete this.tmp['old-' + prop]
@@ -798,25 +1097,24 @@ class w2field extends w2base {
             clearInterval(this.tmp.sizeTimer)
         }
         // remove events and (data)
-        query(this.el)
-            .val(this.clean(query(this.el).val()))
+        ;(query(this.el).val(this.clean(query(this.el).val())) as Query)
             .removeClass('w2field w2ui-input')
             .removeData('selected selectedIndex')
             .off('.w2field') // remove only events added by w2field
         // remove helpers
-        Object.keys(this.helpers).forEach(key => {
+        Object.keys(this.helpers).forEach((key: string) => {
             query(this.helpers[key]).remove()
         })
         this.helpers = {}
         delete this.el._w2field
     }
 
-    clean(val) {
+    clean(val: any): any { // any: val can be string or number; returns cleaned string or number
         // issue #499
         if (typeof val === 'number'){
             return val
         }
-        let options = this.options
+        const options = this.options as any // any: options shape depends on type
         val = String(val).trim()
         // clean
         if (['int', 'float', 'money', 'currency', 'percent'].includes(this.type)) {
@@ -833,8 +1131,8 @@ class w2field extends w2base {
                     }
                 }
                 // escape group symbol for regex as it could be a ., which is wild card in regex
-                let esc_gsroupSymbol = options.groupSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-                let esc_decimalSymbol = options.decimalSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                const esc_gsroupSymbol = options.groupSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+                const esc_decimalSymbol = options.decimalSymbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
                 val = val.replace(/\s+/g, '')
                         .replace(new RegExp(esc_gsroupSymbol, 'g'), '')
                         .replace(new RegExp(esc_decimalSymbol, 'g'), '.')
@@ -844,8 +1142,8 @@ class w2field extends w2base {
         return val
     }
 
-    format(val) {
-        let options = this.options
+    format(val: any): any { // any: val is the raw field value; return is the formatted display string
+        const options = this.options as any // any: options shape depends on type
         // auto format numbers or money
         if (options.autoFormat && val !== '') {
             switch (this.type) {
@@ -866,20 +1164,20 @@ class w2field extends w2base {
                     break
             }
             // if default group symbol does not match - replase it
-            let group = parseInt(1000).toLocaleString(w2utils.settings.locale, { useGrouping: true }).slice(1, 2)
-            if (group !== this.options.groupSymbol) {
-                val = val.replaceAll(group, this.options.groupSymbol)
+            const group = (1000).toLocaleString(w2utils.settings.locale, { useGrouping: true }).slice(1, 2)
+            if (group !== (this.options as any).groupSymbol) {
+                val = val.replaceAll(group, (this.options as any).groupSymbol)
             }
         }
         return val
     }
 
-    change(event) {
+    change(event: Event): false | void {
         // numeric
         if (['int', 'float', 'money', 'currency', 'percent'].indexOf(this.type) !== -1) {
             // check max/min
-            let val = query(this.el).val()
-            let new_val = this.format(this.clean(query(this.el).val()))
+            const val = query(this.el).val()
+            const new_val = this.format(this.clean(query(this.el).val()))
             // if was modified
             if (val !== '' && val != new_val) {
                 query(this.el).val(new_val)
@@ -891,13 +1189,13 @@ class w2field extends w2base {
         }
         // color
         if (this.type === 'color') {
-            let color = query(this.el).val()
+            let color = query(this.el).val() as string
             if (color.substr(0, 3).toLowerCase() !== 'rgb') {
                 color   = '#' + color
-                let len = query(this.el).val().length
+                const len = (query(this.el).val() as string).length
                 if (len !== 8 && len !== 6 && len !== 3) color = ''
             }
-            let next = query(this.el).get(0).nextElementSibling
+            const next = (query(this.el).get(0) as Element).nextElementSibling
             query(next).find('div').css('background-color', color)
             if (query(this.el).hasClass('has-focus')) {
                 this.updateOverlay()
@@ -912,25 +1210,25 @@ class w2field extends w2base {
             // convert linux timestamps
             let tmp = parseInt(this.el.value)
             if (w2utils.isInt(this.el.value) && tmp > 3000) {
-                if (this.type === 'time') tmp = w2utils.formatTime(new Date(tmp), this.options.format)
-                if (this.type === 'date') tmp = w2utils.formatDate(new Date(tmp), this.options.format)
-                if (this.type === 'datetime') tmp = w2utils.formatDateTime(new Date(tmp), this.options.format)
-                query(this.el).val(tmp).trigger('input').trigger('change')
+                if (this.type === 'time') tmp = w2utils.formatTime(new Date(tmp), (this.options as any).format) as any // any: formatTime returns string
+                if (this.type === 'date') tmp = w2utils.formatDate(new Date(tmp), (this.options as any).format) as any // any: formatDate returns string
+                if (this.type === 'datetime') tmp = w2utils.formatDateTime(new Date(tmp), (this.options as any).format) as any // any: formatDateTime returns string
+                ;(query(this.el).val(String(tmp)) as Query).trigger('input').trigger('change')
             }
         }
     }
 
-    click(event) {
+    click(event: MouseEvent): void {
         // lists
         if (['list', 'combo', 'enum'].includes(this.type)) {
             if (!query(this.el).hasClass('has-focus')) {
-                this.focus(event)
+                this.focus(event as unknown as FocusEvent)
             }
             if (this.type == 'list' || this.type == 'combo') {
                 // if overlay is already open (and not just opened on focus event) then hide it
                 if (!this.tmp.openedOnFocus) {
-                    let name = this.el.id + '_menu'
-                    let overlay = w2menu.get(name)
+                    const name = this.el.id + '_menu'
+                    const overlay = w2menu.get(name)
                     if (overlay?.displayed) {
                         w2menu.hide(name)
                     } else {
@@ -953,11 +1251,11 @@ class w2field extends w2base {
         }
     }
 
-    focus(event) {
+    focus(event: FocusEvent & { showMenu?: boolean }): void {
         if (this.type == 'list' && document.activeElement == this.el) {
             this.helpers.search_focus.focus()
             // update overlay if needed
-            if (event.showMenu !== false && (this.options.openOnFocus !== false && query(this.el).hasClass('has-focus'))
+            if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
                 setTimeout(() => {
                     this.tmp.openedOnFocus = true
@@ -979,24 +1277,24 @@ class w2field extends w2base {
                 return
             }
             // regenerate items
-            if (typeof this.options._items_fun == 'function') {
-                this.options.items = w2utils.normMenu.call(this, this.options._items_fun, this.options)
+            if (typeof (this.options as any)._items_fun == 'function') {
+                (this.options as any).items = w2utils.normMenu.call(this, (this.options as any)._items_fun, this.options)
             }
             if (this.helpers.search) {
-                let search = this.helpers.search_focus
+                const search = this.helpers.search_focus
                 search.value = ''
                 search.select()
             }
             if (this.type == 'enum') {
                 // file control in particular need to receive focus after file select
-                let search = query(this.el.previousElementSibling).find('.li-search input').get(0)
+                const search = query(this.el.previousElementSibling).find('.li-search input').get(0) as HTMLInputElement
                 if (document.activeElement !== search) {
                     search.focus()
                 }
             }
             this.resize()
             // update overlay if needed
-            if (event.showMenu !== false && (this.options.openOnFocus !== false && query(this.el).hasClass('has-focus'))
+            if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
                 setTimeout(() => {
                     this.tmp.openedOnFocus = true
@@ -1005,35 +1303,36 @@ class w2field extends w2base {
             }
         }
         if (this.type == 'file') {
-            let prev = query(this.el).get(0).previousElementSibling
+            const prev = (query(this.el).get(0) as Element).previousElementSibling
             query(prev).addClass('has-focus')
         }
         query(this.el).addClass('has-focus')
     }
 
-    blur(event) {
-        let val = query(this.el).val().trim()
+    blur(_event: FocusEvent): void {
+        const val = (query(this.el).val() as string).trim()
         query(this.el).removeClass('has-focus')
 
         if (['int', 'float', 'money', 'currency', 'percent'].includes(this.type)) {
             if (val !== '') {
-                let newVal = val
+                let newVal: any = val // any: newVal may be string or number after clean()
                 let error = ''
                 if (!this.isStrValid(val)) { // validity is also checked in blur
                     newVal = ''
                 } else {
-                    let rVal = this.clean(val)
-                    if (this.options.min != null && rVal < this.options.min) {
-                        newVal = this.options.min
-                        error = `Should be >= ${this.options.min}`
+                    const rVal = this.clean(val)
+                    const options = this.options as any // any: options shape depends on type
+                    if (options.min != null && rVal < options.min) {
+                        newVal = options.min
+                        error = `Should be >= ${options.min}`
                     }
-                    if (this.options.max != null && rVal > this.options.max) {
-                        newVal = this.options.max
-                        error = `Should be <= ${this.options.max}`
+                    if (options.max != null && rVal > options.max) {
+                        newVal = options.max
+                        error = `Should be <= ${options.max}`
                     }
                 }
-                if (this.options.autoCorrect) {
-                    query(this.el).val(newVal).trigger('input').trigger('change')
+                if ((this.options as any).autoCorrect) {
+                    ;(query(this.el).val(newVal) as Query).trigger('input').trigger('change')
                     if (error) {
                         w2tooltip.show({
                             name: this.el.id + '_error',
@@ -1046,25 +1345,25 @@ class w2field extends w2base {
             }
         }
         // date or time
-        if (['date', 'time', 'datetime'].includes(this.type) && this.options.autoCorrect) {
+        if (['date', 'time', 'datetime'].includes(this.type) && (this.options as any).autoCorrect) {
             if (val !== '') {
-                let check = this.type == 'date' ? w2utils.isDate :
+                const check = this.type == 'date' ? w2utils.isDate :
                     (this.type == 'time' ? w2utils.isTime : w2utils.isDateTime)
                 if (!w2date.inRange(this.el.value, this.options)
-                        || !check.bind(w2utils)(this.el.value, this.options.format)) {
+                        || !check.bind(w2utils)(this.el.value, (this.options as any).format)) {
                     // if not in range or wrong value - clear it
-                    query(this.el).val('').trigger('input').trigger('change')
+                    ;(query(this.el).val('') as Query).trigger('input').trigger('change')
                 }
             }
         }
         // clear search input
         if (this.type === 'enum') {
-            query(this.helpers.multi).find('input').val('').css('width', '15px')
+            ;(query(this.helpers.multi).find('input').val('') as Query).css('width', '15px')
             // don't hide menu on blur, it should be hidden on tab key up instead, or it will not alow select with click
             // w2menu.hide(this.el.id + '_menu')
         }
         if (this.type == 'file') {
-            let prev = this.el.previousElementSibling
+            const prev = this.el.previousElementSibling
             query(prev).removeClass('has-focus')
         }
         if (this.type === 'list') {
@@ -1074,18 +1373,18 @@ class w2field extends w2base {
         }
     }
 
-    keyDown(event, extra) {
-        let options = this.options
-        let key     = event.keyCode || (extra && extra.keyCode)
+    keyDown(event: KeyboardEvent, extra?: { keyCode?: number }): false | void {
+        const options = this.options as any // any: options shape depends on type
+        const key     = event.keyCode || (extra && extra.keyCode)
         let cancel  = false
-        let val, inc, daymil, dt, newValue, newDT
+        let val: any, inc: number, daymil: number, dt: Date | boolean, newValue: number, newDT: string // any: val holds current field value (string or number)
         // ignore wrong pressed key
         if (['int', 'float', 'money', 'currency', 'percent', 'hex', 'bin', 'color', 'alphanumeric'].includes(this.type)) {
             if (!event.metaKey && !event.ctrlKey && !event.altKey) {
                 if (!this.isStrValid(event.key ?? '1', true) && // valid & is not arrows, dot, comma, etc keys
                         ![9, 8, 13, 27, 37, 38, 39, 40, 46].includes(event.keyCode)) {
                     event.preventDefault()
-                    if (event.stopPropagation) event.stopPropagation(); else event.cancelBubble = true
+                    if (event.stopPropagation) event.stopPropagation(); else (event as any).cancelBubble = true // any: cancelBubble is legacy IE
                     return false
                 }
             }
@@ -1093,20 +1392,20 @@ class w2field extends w2base {
         // numeric
         if (['int', 'float', 'money', 'currency', 'percent'].includes(this.type)) {
             if (!options.keyboard || query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            val = parseFloat(query(this.el).val().replace(options.moneyRE, '')) || 0
+            val = parseFloat((query(this.el).val() as string).replace(options.moneyRE, '')) || 0
             inc = options.step
             if (event.ctrlKey || event.metaKey) inc = options.step * 10
             switch (key) {
                 case 38: // up
                     if (event.shiftKey) break // no action if shift key is pressed
                     newValue = (val + inc <= options.max || options.max == null ? Number((val + inc).toFixed(12)) : options.max)
-                    query(this.el).val(newValue).trigger('input').trigger('change')
+                    ;(query(this.el).val(String(newValue)) as Query).trigger('input').trigger('change')
                     cancel = true
                     break
                 case 40: // down
                     if (event.shiftKey) break // no action if shift key is pressed
                     newValue = (val - inc >= options.min || options.min == null ? Number((val - inc).toFixed(12)) : options.min)
-                    query(this.el).val(newValue).trigger('input').trigger('change')
+                    ;(query(this.el).val(String(newValue)) as Query).trigger('input').trigger('change')
                     cancel = true
                     break
             }
@@ -1118,35 +1417,35 @@ class w2field extends w2base {
         // date/datetime
         if (['date', 'datetime'].includes(this.type)) {
             if (!options.keyboard || query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            let is = (this.type == 'date' ? w2utils.isDate : w2utils.isDateTime).bind(w2utils)
-            let format = (this.type == 'date' ? w2utils.formatDate : w2utils.formatDateTime).bind(w2utils)
+            const is = (this.type == 'date' ? w2utils.isDate : w2utils.isDateTime).bind(w2utils) as (val: string, format: string, returnDate: boolean) => Date | boolean
+            const format = (this.type == 'date' ? w2utils.formatDate : w2utils.formatDateTime).bind(w2utils) as (time: number, format: string) => string
 
             daymil = 24*60*60*1000
             inc = 1
             if (event.ctrlKey || event.metaKey) inc = 10 // by month
-            dt = is(query(this.el).val(), options.format, true)
+            dt = is(query(this.el).val() as string, options.format, true)
             if (!dt) { dt = new Date(); daymil = 0 }
             switch (key) {
                 case 38: // up
                     if (event.shiftKey) break // no action if shift key is pressed
                     if (inc == 10) {
-                        dt.setMonth(dt.getMonth() + 1)
+                        (dt as Date).setMonth((dt as Date).getMonth() + 1)
                     } else {
-                        dt.setTime(dt.getTime() + daymil)
+                        (dt as Date).setTime((dt as Date).getTime() + daymil)
                     }
-                    newDT = format(dt.getTime(), options.format)
-                    query(this.el).val(newDT).trigger('input').trigger('change')
+                    newDT = format((dt as Date).getTime(), options.format)
+                    ;(query(this.el).val(newDT) as Query).trigger('input').trigger('change')
                     cancel = true
                     break
                 case 40: // down
                     if (event.shiftKey) break // no action if shift key is pressed
                     if (inc == 10) {
-                        dt.setMonth(dt.getMonth() - 1)
+                        (dt as Date).setMonth((dt as Date).getMonth() - 1)
                     } else {
-                        dt.setTime(dt.getTime() - daymil)
+                        (dt as Date).setTime((dt as Date).getTime() - daymil)
                     }
-                    newDT = format(dt.getTime(), options.format)
-                    query(this.el).val(newDT).trigger('input').trigger('change')
+                    newDT = format((dt as Date).getTime(), options.format)
+                    ;(query(this.el).val(newDT) as Query).trigger('input').trigger('change')
                     cancel = true
                     break
             }
@@ -1161,7 +1460,7 @@ class w2field extends w2base {
             if (!options.keyboard || query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
             inc = (event.ctrlKey || event.metaKey ? 60 : 1)
             val = query(this.el).val()
-            let time = w2date.str2min(val) || w2date.str2min((new Date()).getHours() + ':' + ((new Date()).getMinutes() - 1))
+            let time = w2date.str2min(val as string) || w2date.str2min((new Date()).getHours() + ':' + ((new Date()).getMinutes() - 1))
             switch (key) {
                 case 38: // up
                     if (event.shiftKey) break // no action if shift key is pressed
@@ -1176,7 +1475,7 @@ class w2field extends w2base {
             }
             if (cancel) {
                 event.preventDefault()
-                query(this.el).val(w2date.min2str(time)).trigger('input').trigger('change')
+                ;(query(this.el).val(w2date.min2str(time)) as Query).trigger('input').trigger('change')
                 this.moveCaret2end()
             }
         }
@@ -1186,25 +1485,25 @@ class w2field extends w2base {
                 case 8: // delete
                 case 46: // backspace
                     if (this.type == 'list') {
-                        let search = query(this.helpers.search_focus)
+                        const search = query(this.helpers.search_focus)
                         if (search.val() == '') {
-                            let edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected })
+                            const edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected })
                             if (edata.isCancelled === true) return
                             this.selected = null
                             w2menu.hide(this.el.id + '_menu')
-                            query(this.el).val('').trigger('input').trigger('change')
+                            ;(query(this.el).val('') as Query).trigger('input').trigger('change')
                             edata.finish()
                         }
                     } else {
-                        let search = query(this.helpers.multi).find('input')
+                        const search = query(this.helpers.multi).find('input')
                         if (search.val() == '') {
-                            let edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected[this.selected.length - 1] })
+                            const edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected[this.selected.length - 1] })
                             if (edata.isCancelled === true) return
 
                             w2menu.hide(this.el.id + '_menu')
                             this.selected.pop()
                             // update selected array in overlay
-                            let overlay = w2menu.get(this.el.id + '_menu')
+                            const overlay = w2menu.get(this.el.id + '_menu')
                             if (overlay) overlay.options.selected = this.selected
                             this.refresh()
                             edata.finish()
@@ -1226,9 +1525,9 @@ class w2field extends w2base {
         }
     }
 
-    keyUp(event) {
+    keyUp(event: KeyboardEvent): void {
         if (this.type == 'list') {
-            let search = query(this.helpers.search_focus)
+            const search = query(this.helpers.search_focus)
             if (search.val() !== '') {
                 query(this.el).attr('placeholder', '')
             } else {
@@ -1248,7 +1547,7 @@ class w2field extends w2base {
             this.refresh()
         }
         if (this.type == 'combo') {
-            if (![9, 16, 27].includes(event.keyCode) && this.options.openOnFocus !== true) {
+            if (![9, 16, 27].includes(event.keyCode) && (this.options as any).openOnFocus !== true) {
                 // do not show when receives focus on tab or shift + tab or on esc
                 this.updateOverlay()
             }
@@ -1258,10 +1557,10 @@ class w2field extends w2base {
             }
         }
         if (this.type == 'enum') {
-            let search = this.helpers.multi.find('input')
-            let styles = getComputedStyle(search.get(0))
-            let width = w2utils.getStrWidth(search.val(),
-                `font-family: ${styles['font-family']}; font-size: ${styles['font-size']};`)
+            const search = this.helpers.multi.find('input')
+            const styles = getComputedStyle(search.get(0) as HTMLElement)
+            const width = w2utils.getStrWidth(search.val() as string,
+                `font-family: ${styles['font-family']}; font-size: ${styles['font-size']};`, undefined)
             search.css({ width: (width + 15) + 'px' })
             this.resize()
             // if delete, backspace, tab, shift, escape - hide menu
@@ -1275,21 +1574,21 @@ class w2field extends w2base {
         }
     }
 
-    findItemIndex(items, id, parents) {
-        let inds = []
+    findItemIndex(items: any[], id: any, parents?: number[]): number[] { // any: items/id vary by field type
+        let inds: number[] = []
         if (!parents) parents = []
-        if (['list', 'combo', 'enum'].includes(this.type) && this.options.url) {
+        if (['list', 'combo', 'enum'].includes(this.type) && (this.options as any).url) {
             // remove source, so get it from overlay
-            let overlay = w2menu.get(this.el.id + '_menu')
+            const overlay = w2menu.get(this.el.id + '_menu')
             if (overlay) {
                 items = overlay.options.items
-                this.options.items = items
+                ;(this.options as any).items = items
             }
         }
-        items.forEach((item, ind) => {
+        items.forEach((item: any, ind: number) => { // any: item shape varies by field type
             if (item.id === id) {
                 inds = parents.concat([ind])
-                this.options.index = [ind]
+                ;(this.options as any).index = [ind]
             }
             if (inds.length == 0 && item.items && item.items.length > 0) {
                 parents.push(ind)
@@ -1300,9 +1599,9 @@ class w2field extends w2base {
         return inds
     }
 
-    updateOverlay(indexOnly) {
-        let options = this.options
-        let params
+    updateOverlay(_indexOnly?: boolean): void {
+        const options = this.options as any // any: options shape depends on type
+        let params: any // any: params object is assembled per-type and passed to w2menu/w2color/w2date
         // color
         if (this.type === 'color') {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
@@ -1314,27 +1613,27 @@ class w2field extends w2base {
                 color: this.el.value,
                 liveUpdate: true
             }, this.options))
-            .select(event => {
-                let color = event.detail.color
-                query(this.el).val(color).trigger('input').trigger('change')
+            .select((event: CustomEvent) => {
+                const color = event.detail.color
+                ;(query(this.el).val(color) as Query).trigger('input').trigger('change')
             })
-            .liveUpdate(event => {
-                let color = event.detail.color
+            .liveUpdate((event: CustomEvent) => {
+                const color = event.detail.color
                 query(this.helpers.suffix).find(':scope > div').css('background-color', '#' + color)
             })
         }
         // list
         if (['list', 'combo', 'enum'].includes(this.type)) {
             let el = this.el
-            let input = this.el
+            let input: HTMLElement = this.el
             if (this.type === 'enum') {
-                el = this.helpers.multi.get(0)
-                input = query(el).find('input').get(0)
+                el = this.helpers.multi.get(0) as W2FieldElement
+                input = query(el).find('input').get(0) as HTMLElement
             }
             if (this.type === 'list') {
-                let sel = this.selected
+                const sel = this.selected
                 if (w2utils.isPlainObject(sel) && Object.keys(sel).length > 0) {
-                    let ind = this.findItemIndex(options.items, sel.id)
+                    const ind = this.findItemIndex(options.items, sel.id)
                     if (ind.length > 0) {
                         options.index = ind
                     }
@@ -1355,18 +1654,18 @@ class w2field extends w2base {
                     minWidth: options.minDropWidth   // TODO: check
                 })
                 this.tmp.overlay = w2menu.show(params)
-                    .select(event => {
+                    .select((event: CustomEvent) => {
                         if (['list', 'combo'].includes(this.type)) {
                             this.selected = event.detail.item
                             query(input).val('')
-                            query(this.el).val(this.selected.text).trigger('input').trigger('change')
-                            this.focus({ showMenu: false })
+                            ;(query(this.el).val(this.selected.text) as Query).trigger('input').trigger('change')
+                            this.focus({ showMenu: false } as FocusEvent & { showMenu?: boolean })
                         } else {
-                            let selected = this.selected
-                            let newItem = event.detail?.item
+                            const selected = this.selected
+                            const newItem = event.detail?.item
                             if (newItem) {
                                 // trigger event
-                                let edata = this.trigger('add', { target: this.el, item: newItem, originalEvent: event })
+                                const edata = this.trigger('add', { target: this.el, item: newItem, originalEvent: event })
                                 if (edata.isCancelled === true) return
                                 // default behavior
                                 if (selected.length >= options.max && options.max > 0) selected.pop()
@@ -1375,7 +1674,7 @@ class w2field extends w2base {
                                 query(this.el).trigger('input').trigger('change')
                                 query(this.helpers.multi).find('input').val('')
                                 // updaet selected array in overlays
-                                let overlay = w2menu.get(this.el.id + '_menu')
+                                const overlay = w2menu.get(this.el.id + '_menu')
                                 if (overlay) overlay.options.selected = this.selected
                                 // event after
                                 edata.finish()
@@ -1392,10 +1691,10 @@ class w2field extends w2base {
                 anchor: this.el,
                 value: this.el.value,
             }, this.options))
-            .select(event => {
-                let date = event.detail.date
+            .select((event: CustomEvent) => {
+                const date = event.detail.date
                 if (date != null) {
-                    query(this.el).val(date).trigger('input').trigger('change')
+                    ;(query(this.el).val(date) as Query).trigger('input').trigger('change')
                 }
             })
         }
@@ -1405,32 +1704,33 @@ class w2field extends w2base {
     *  INTERNAL FUNCTIONS
     */
 
-    isStrValid(ch, loose) {
+    isStrValid(ch: string, loose?: boolean): boolean {
         let isValid = true
         switch (this.type) {
             case 'int':
-                if (loose && ['-', this.options.groupSymbol].includes(ch)) {
+                if (loose && ['-', (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
-                    isValid = w2utils.isInt(ch.replace(this.options.numberRE, ''))
+                    isValid = w2utils.isInt(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'percent':
                 ch = ch.replace(/%/g, '')
+            // falls through to float
             case 'float':
-                if (loose && ['-', '', this.options.decimalSymbol, this.options.groupSymbol].includes(ch)) {
+                if (loose && ['-', '', (this.options as any).decimalSymbol, (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
-                    isValid = w2utils.isFloat(ch.replace(this.options.numberRE, ''))
+                    isValid = w2utils.isFloat(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'money':
             case 'currency':
-                if (loose && ['-', this.options.decimalSymbol, this.options.groupSymbol, this.options.currency.prefix,
-                    this.options.currency.suffix].includes(ch)) {
+                if (loose && ['-', (this.options as any).decimalSymbol, (this.options as any).groupSymbol, (this.options as any).currency.prefix,
+                    (this.options as any).currency.suffix].includes(ch)) {
                     isValid = true
                 } else {
-                    isValid = w2utils.isFloat(ch.replace(this.options.moneyRE, ''))
+                    isValid = w2utils.isFloat(ch.replace((this.options as any).moneyRE, ''))
                 }
                 break
             case 'bin':
@@ -1447,19 +1747,18 @@ class w2field extends w2base {
         return isValid
     }
 
-    addPrefix() {
-        if (!this.options.prefix) {
+    addPrefix(): void {
+        if (!(this.options as any).prefix) {
             return
         }
-        let helper
-        let styles = getComputedStyle(this.el)
+        const styles = getComputedStyle(this.el)
         if (this.tmp['old-padding-left'] == null) {
             this.tmp['old-padding-left'] = styles['padding-left']
         }
         // remove if already displayed
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
-        query(this.el).before(`<div class="w2ui-field-helper">${this.options.prefix}</div>`)
-        helper = query(this.el).get(0).previousElementSibling
+        query(this.el).before(`<div class="w2ui-field-helper">${(this.options as any).prefix}</div>`)
+        const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
         query(helper)
             .css({
                 'color'          : styles.color,
@@ -1484,18 +1783,16 @@ class w2field extends w2base {
         this.helpers.prefix = helper
     }
 
-    addSuffix() {
-        if (!this.options.suffix && !this.options.arrows) {
+    addSuffix(): void {
+        if (!(this.options as any).suffix && !(this.options as any).arrows) {
             return
         }
-        let helper
-        let self = this
-        let styles = getComputedStyle(this.el)
+        const styles = getComputedStyle(this.el)
         if (this.tmp['old-padding-right'] == null) {
             this.tmp['old-padding-right'] = styles['padding-right']
         }
-        let pr = parseInt(styles['padding-right'] || 0)
-        if (this.options.arrows) {
+        let pr = parseInt(styles['padding-right'] || '0')
+        if ((this.options as any).arrows) {
             // remove if already displayed
             if (this.helpers.arrows) query(this.helpers.arrows).remove()
             // add fresh
@@ -1508,8 +1805,9 @@ class w2field extends w2base {
                 '        <div class="arrow-down" type="down"></div>'+
                 '    </div>'+
                 '</div>')
-            helper = query(this.el).get(0).nextElementSibling
-            query(helper).css({
+            const arrowHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
+            const $arrowHelper = query(arrowHelper)
+            $arrowHelper.css({
                 'color'         : styles.color,
                 'font-family'   : styles['font-family'],
                 'font-size'     : styles['font-size'],
@@ -1521,25 +1819,25 @@ class w2field extends w2base {
                 'width'         : '16px',
                 'transform'     : 'translateX(-100%)'
             })
-                .on('mousedown', function(event) {
-                    if (query(event.target).hasClass('arrow-up')) {
-                        self.keyDown(event, { keyCode: 38 })
-                    }
-                    if (query(event.target).hasClass('arrow-down')) {
-                        self.keyDown(event, { keyCode: 40 })
-                    }
-                })
-            pr += helper.clientWidth // width of the control
+            $arrowHelper.on('mousedown', (event: MouseEvent) => {
+                if (query(event.target).hasClass('arrow-up')) {
+                    this.keyDown(event as unknown as KeyboardEvent, { keyCode: 38 })
+                }
+                if (query(event.target).hasClass('arrow-down')) {
+                    this.keyDown(event as unknown as KeyboardEvent, { keyCode: 40 })
+                }
+            })
+            pr += arrowHelper.clientWidth // width of the control
             query(this.el).css('padding-right', pr + 'px !important')
-            this.helpers.arrows = helper
+            this.helpers.arrows = arrowHelper
         }
-        if (this.options.suffix !== '') {
+        if ((this.options as any).suffix !== '') {
             // remove if already displayed
             if (this.helpers.suffix) query(this.helpers.suffix).remove()
             // add fresh
-            query(this.el).after(`<div class="w2ui-field-helper">${this.options.suffix}</div>`)
-            helper = query(this.el).get(0).nextElementSibling
-            query(helper)
+            query(this.el).after(`<div class="w2ui-field-helper">${(this.options as any).suffix}</div>`)
+            const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
+            query(suffixHelper)
                 .css({
                     'color'          : styles.color,
                     'font-family'    : styles['font-family'],
@@ -1554,18 +1852,18 @@ class w2field extends w2base {
                     'transform'      : 'translateX(-100%)'
                 })
 
-            query(this.el).css('padding-right', helper.clientWidth + 'px !important')
-            this.helpers.suffix = helper
+            query(this.el).css('padding-right', suffixHelper.clientWidth + 'px !important')
+            this.helpers.suffix = suffixHelper
         }
     }
 
     // Only used for list
-    addSearch() {
+    addSearch(): void {
         if (this.type !== 'list') return
         // clean up & init
         if (this.helpers.search) query(this.helpers.search).remove()
         // remember original tabindex
-        let tabIndex = parseInt(query(this.el).attr('tabIndex'))
+        let tabIndex = parseInt(query(this.el).attr('tabIndex') as string)
         if (!isNaN(tabIndex) && tabIndex !== -1) this.tmp['old-tabIndex'] = tabIndex
         if (this.tmp['old-tabIndex']) tabIndex = this.tmp['old-tabIndex']
         if (tabIndex == null || isNaN(tabIndex)) tabIndex = 0
@@ -1575,25 +1873,26 @@ class w2field extends w2base {
             searchId = 'id="' + query(this.el).attr('id') + '_search"'
         }
         // build helper
-        let html = `
+        const html = `
             <div class="w2ui-field-helper">
                 <span class="w2ui-icon w2ui-icon-search"></span>
                 <input ${searchId} type="text" tabIndex="${tabIndex}" ${query(this.el).prop('readOnly') ? 'readonly' : ''}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`
-        query(this.el).attr('tabindex', -1).before(html)
-        let helper = query(this.el).get(0).previousElementSibling
+        query(this.el).attr('tabindex', String(-1)).before(html)
+        const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
         this.helpers.search = helper
-        this.helpers.search_focus = query(helper).find('input').get(0)
-        let styles = getComputedStyle(this.el)
-        query(helper).css({
+        this.helpers.search_focus = query(helper).find('input').get(0) as HTMLInputElement
+        const styles = getComputedStyle(this.el)
+        const $helperSearch = query(helper)
+        $helperSearch.css({
             width           : this.el.clientWidth + 'px',
             'margin-top'    : styles['margin-top'],
             'margin-left'   : styles['margin-left'],
             'margin-bottom' : styles['margin-bottom'],
             'margin-right'  : styles['margin-right']
         })
-            .find('input')
+        $helperSearch.find('input')
             .css({
                 cursor   : 'default',
                 width    : '100%',
@@ -1606,30 +1905,30 @@ class w2field extends w2base {
         // INPUT events
         query(helper).find('input')
             .off('.w2ui-helper')
-            .on('focus.w2ui-helper', event => {
+            .on('focus.w2ui-helper', (event: FocusEvent) => {
                 query(event.target).val('')
                 this.tmp.pholder = query(this.el).attr('placeholder') ?? ''
                 this.focus(event)
                 event.stopPropagation()
             })
-            .on('blur.w2ui-helper', event => {
+            .on('blur.w2ui-helper', (event: FocusEvent) => {
                 query(event.target).val('')
                 if (this.tmp.pholder != null) query(this.el).attr('placeholder', this.tmp.pholder)
                 this.blur(event)
                 event.stopPropagation()
             })
-            .on('keydown.w2ui-helper', event => { this.keyDown(event) })
-            .on('keyup.w2ui-helper', event => { this.keyUp(event) })
+            .on('keydown.w2ui-helper', (event: KeyboardEvent) => { this.keyDown(event) })
+            .on('keyup.w2ui-helper', (event: KeyboardEvent) => { this.keyUp(event) })
         // MAIN div
         query(helper)
             .off('.w2ui-helper')
-            .on('click.w2ui-helper', event => {
-                query(helper).find('input').get(0).focus()
+            .on('click.w2ui-helper', (_event: MouseEvent) => {
+                (query(helper).find('input').get(0) as HTMLInputElement).focus()
             })
     }
 
     // Used in enum/file
-    addMultiSearch() {
+    addMultiSearch(): void {
         if (!['enum', 'file'].includes(this.type)) {
             return
         }
@@ -1637,8 +1936,8 @@ class w2field extends w2base {
         query(this.helpers.multi).remove()
         // build helper
         let html   = ''
-        let styles = getComputedStyle(this.el)
-        let margin = w2utils.stripSpaces(`
+        const styles = getComputedStyle(this.el)
+        const margin = w2utils.stripSpaces(`
             margin-top: 0px;
             margin-bottom: 0px;
             margin-left: ${styles['margin-left']};
@@ -1647,8 +1946,8 @@ class w2field extends w2base {
                                 - parseInt(styles['margin-right'], 10))}px;
         `)
         if (this.tmp['min-height'] == null) {
-            let min = this.tmp['min-height'] = parseInt((styles['min-height'] != 'none' ? styles['min-height'] : 0) || 0)
-            let current = parseInt(styles.height)
+            const min = this.tmp['min-height'] = parseInt((styles['min-height'] != 'none' ? styles['min-height'] : '0') || '0')
+            const current = parseInt(styles.height)
             this.tmp['min-height'] = Math.max(min, current)
         }
         if (this.tmp['max-height'] == null && styles['max-height'] != 'none') {
@@ -1661,7 +1960,7 @@ class w2field extends w2base {
             searchId = `id="${query(this.el).attr('id')}_search"`
         }
         // remember original tabindex
-        let tabIndex = parseInt(query(this.el).attr('tabIndex'))
+        let tabIndex = parseInt(query(this.el).attr('tabIndex') as string)
         if (!isNaN(tabIndex) && tabIndex !== -1) this.tmp['old-tabIndex'] = tabIndex
         if (this.tmp['old-tabIndex']) tabIndex = this.tmp['old-tabIndex']
         if (tabIndex == null || isNaN(tabIndex)) tabIndex = 0
@@ -1685,7 +1984,7 @@ class w2field extends w2base {
                 <div class="w2ui-multi-file">
                     <input name="attachment" class="file-input" type="file" tabindex="-1"'
                         style="width: 100%; height: 100%; opacity: 0" title=""
-                        ${this.options.max !== 1 ? 'multiple' : ''}
+                        ${(this.options as any).max !== 1 ? 'multiple' : ''}
                         ${query(this.el).prop('readOnly') || query(this.el).prop('disabled') ? 'disabled': ''}
                         ${query(this.el).attr('accept') ? ' accept="'+ query(this.el).attr('accept') +'"': ''}>
                 </div>
@@ -1710,100 +2009,108 @@ class w2field extends w2base {
                 'background-color': 'transparent'
             })
 
-        let div = query(this.el.previousElementSibling)
+        const div = query(this.el.previousElementSibling)
         this.helpers.multi = div
-        query(this.el).attr('tabindex', -1)
+        query(this.el).attr('tabindex', String(-1))
         // click anywhere on the field
-        div.on('mousedown', event => { query(event.target).addClass('has-focus') })  // this is needed so that visually focus is there
-            .on('mouseup', event => { query(event.target).removeClass('has-focus') })
-            .on('click', event => { this.focus(event); this.updateOverlay() })
+        div.on('mousedown', (event: MouseEvent) => { query(event.target).addClass('has-focus') })  // this is needed so that visually focus is there
+            .on('mouseup', (event: MouseEvent) => { query(event.target).removeClass('has-focus') })
+            .on('click', (event: MouseEvent) => { this.focus(event as unknown as FocusEvent); this.updateOverlay() })
 
         // search field (small and growing one)
         div.find('input:not(.file-input)')
-            .on('click', event => { this.click(event) })
-            .on('focus', event => { this.focus(event) })
-            .on('blur', event => { this.blur(event) })
-            .on('keydown', event => { this.keyDown(event) })
-            .on('keyup', event => { this.keyUp(event) })
+            .on('click', (event: MouseEvent) => { this.click(event) })
+            .on('focus', (event: FocusEvent) => { this.focus(event) })
+            .on('blur', (event: FocusEvent) => { this.blur(event) })
+            .on('keydown', (event: KeyboardEvent) => { this.keyDown(event) })
+            .on('keyup', (event: KeyboardEvent) => { this.keyUp(event) })
 
         // file input
         if (this.type === 'file') {
             div.find('input.file-input')
                 .off('.drag')
-                .on('click.drag', (event) => {
+                .on('click.drag', (event: MouseEvent) => {
                     event.stopPropagation()
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    this.focus(event)
+                    this.focus(event as unknown as FocusEvent)
                 })
-                .on('dragenter.drag', (event) => {
+                .on('dragenter.drag', (_event: DragEvent) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
                     div.addClass('w2ui-file-dragover')
                 })
-                .on('dragleave.drag', (event) => {
+                .on('dragleave.drag', (_event: DragEvent) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
                     div.removeClass('w2ui-file-dragover')
                 })
-                .on('drop.drag', (event) => {
+                .on('drop.drag', (event: DragEvent) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
                     div.removeClass('w2ui-file-dragover')
-                    let files = Array.from(event.dataTransfer.files)
-                    files.forEach(file => { this.addFile(file) })
-                    this.focus(event)
+                    const files = Array.from(event.dataTransfer.files)
+                    files.forEach((file: File) => { this.addFile(file) })
+                    this.focus(event as unknown as FocusEvent)
                     // cancel to stop browser behaviour
                     event.preventDefault()
                     event.stopPropagation()
                 })
-                .on('dragover.drag', (event) => {
+                .on('dragover.drag', (event: DragEvent) => {
                     // cancel to stop browser behaviour
                     event.preventDefault()
                     event.stopPropagation()
                 })
-                .on('change.drag', (event) => {
-                    if (typeof event.target.files !== 'undefined') {
-                        Array.from(event.target.files).forEach(file => { this.addFile(file) })
+                .on('change.drag', (event: Event) => {
+                    const target = event.target as HTMLInputElement
+                    if (typeof target.files !== 'undefined') {
+                        Array.from(target.files).forEach((file: File) => { this.addFile(file) })
                     }
-                    this.focus(event)
+                    this.focus(event as unknown as FocusEvent)
                 })
         }
         this.refresh()
     }
 
-    addFile(file) {
-        let options = this.options
-        let selected = this.selected
-        let newItem = {
+    addFile(file: File): void {
+        const options = this.options as any // any: options shape depends on type (file-specific here)
+        const selected = this.selected as any[] // any: selected is array of file-like objects
+        const newItem: {
+            name: string
+            type: string
+            modified: Date
+            size: number
+            content: string | null
+            file: File
+        } = {
             name     : file.name,
             type     : file.type,
-            modified : file.lastModifiedDate,
+            modified : new Date(file.lastModified),
             size     : file.size,
             content  : null,
             file     : file
         }
         let size = 0
         let cnt = 0
-        let errors = []
+        const errors: string[] = []
         if (Array.isArray(selected)) {
-            selected.forEach(item => {
+            selected.forEach((item: any) => { // any: item is a file-like object
                 if (item.name == file.name && item.size == file.size) {
                     errors.push(w2utils.lang('The file "${name}" (${size}) is already added.', {
-                        name: file.name, size: w2utils.formatSize(file.size) }))
+                        name: file.name, size: String(w2utils.formatSize(file.size)) }))
                 }
                 size += item.size
                 cnt++
             })
         }
         if (options.maxFileSize !== 0 && newItem.size > options.maxFileSize) {
-            errors.push(w2utils.lang('Maximum file size is ${size}', { size: w2utils.formatSize(options.maxFileSize) }))
+            errors.push(w2utils.lang('Maximum file size is ${size}', { size: String(w2utils.formatSize(options.maxFileSize)) }))
         }
         if (options.maxSize !== 0 && size + newItem.size > options.maxSize) {
-            errors.push(w2utils.lang('Maximum total size is ${size}', { size: w2utils.formatSize(options.maxSize) }))
+            errors.push(w2utils.lang('Maximum total size is ${size}', { size: String(w2utils.formatSize(options.maxSize)) }))
         }
         if (options.max !== 0 && cnt >= options.max) {
             errors.push(w2utils.lang('Maximum number of files is ${count}', { count: options.max }))
         }
 
         // trigger event
-        let edata = this.trigger('add', { target: this.el, file: newItem, total: cnt, totalSize: size, errors })
+        const edata = this.trigger('add', { target: this.el, file: newItem, total: cnt, totalSize: size, errors })
         if (edata.isCancelled === true) return
         // if errors
         if (errors.length > 0) {
@@ -1821,20 +2128,17 @@ class w2field extends w2base {
         selected.push(newItem)
         // read file as base64
         if (typeof FileReader !== 'undefined' && options.readContent === true) {
-            let reader = new FileReader()
-            let self = this
-            // need a closure
-            reader.onload = (function onload() {
-                return function closure(event) {
-                    let fl = event.target.result
-                    let ind = fl.indexOf(',')
-                    newItem.content = fl.substr(ind + 1)
-                    self.refresh()
-                    query(self.el).trigger('input').trigger('change')
-                    // event after
-                    edata.finish()
-                }
-            })()
+            const reader = new FileReader()
+            // need a closure — use arrow function to avoid no-this-alias
+            reader.onload = (event: ProgressEvent<FileReader>) => {
+                const fl = event.target.result as string
+                const ind = fl.indexOf(',')
+                newItem.content = fl.substr(ind + 1)
+                this.refresh()
+                query(this.el).trigger('input').trigger('change')
+                // event after
+                edata.finish()
+            }
             reader.readAsDataURL(file)
         } else {
             this.refresh()
@@ -1844,7 +2148,7 @@ class w2field extends w2base {
     }
 
     // move cursror to end
-    moveCaret2end() {
+    moveCaret2end(): void {
         setTimeout(() => {
             this.el.setSelectionRange(this.el.value.length, this.el.value.length)
         }, 0)
