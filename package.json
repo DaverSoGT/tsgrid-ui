@@ -37,7 +37,6 @@
     "dev": "tsup --watch"
   },
   "devDependencies": {
-    "@babel/core": "^7.19.3",
     "@playwright/test": "^1.59.1",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -45,7 +44,6 @@
     "eslint": "^8.25.0",
     "eslint-plugin-align-assignments": "^1.1.2",
     "gulp": "^4.0.2",
-    "gulp-babel": "^8.0.0",
     "gulp-clean-css": "^4.3.0",
     "gulp-concat": "^2.6.1",
     "gulp-header": "^2.0.9",
@@ -53,7 +51,6 @@
     "gulp-less": "^4.0.1",
     "gulp-rename": "^2.0.0",
     "gulp-replace": "^1.0.0",
-    "gulp-uglify": "^3.0.2",
     "run-script-os": "^1.1.6",
     "tsup": "^8.5.1",
     "typescript": "^5.9.3"

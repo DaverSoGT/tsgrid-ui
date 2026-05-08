@@ -1,75 +1,17 @@
 /* eslint-env node */
-/* w2ui 2.0 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). Phase 1 of ts-native-port migration. */
+/* w2ui 2.1 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). */
 const gulp     = require('gulp')
 const header   = require('gulp-header')
 const iconfont = require('gulp-iconfont')
 const less     = require('gulp-less')
 const cleanCSS = require('gulp-clean-css')
-const uglify   = require('gulp-uglify')
 const concat   = require('gulp-concat')
 const rename   = require('gulp-rename')
 const replace  = require('gulp-replace')
 const del      = require('del')
-// const babel    = require('gulp-babel')
-// const { exec } = require('child_process')
 const comments = {
     w2ui : '/* w2ui 2.0.x (nightly) ('+ (new Date()).toLocaleString('en-us') +') (c) http://w2ui.com, vitmalina@gmail.com */\n'
 }
-
-const legacy_replace = `export {
-    w2ui, w2utils, query, w2locale, w2event, w2base,
-    w2popup, w2alert, w2confirm, w2prompt, Dialog,
-    w2tooltip, w2menu, w2color, w2date, Tooltip,
-    w2toolbar, w2sidebar, w2tabs, w2layout, w2grid, w2form, w2field
-}`
-const legacy_code = `
-// Compatibility with CommonJS and AMD modules
-!(function(global, w2ui) {
-if (typeof define == 'function' && define.amd) {
-    return define(() => w2ui)
-}
-if (typeof exports != 'undefined') {
-    if (typeof module != 'undefined' && module.exports) {
-        return exports = module.exports = w2ui
-    }
-    global = exports
-}
-if (global) {
-    Object.keys(w2ui).forEach(key => {
-        global[key] = w2ui[key]
-    })
-}
-})(self, {
-    w2ui, w2utils, query, w2locale, w2event, w2base,
-    w2popup, w2alert, w2confirm, w2prompt, Dialog,
-    w2tooltip, w2menu, w2color, w2date, Tooltip,
-    w2toolbar, w2sidebar, w2tabs, w2layout, w2grid, w2form, w2field
-});`
-
-const exports_es6 = `export {
-    w2ui, w2utils, query, w2locale, w2event, w2base,
-    w2popup, w2alert, w2confirm, w2prompt, Dialog,
-    w2tooltip, w2menu, w2color, w2date, Tooltip,
-    w2toolbar, w2sidebar, w2tabs, w2layout, w2grid, w2form, w2field
-}`
-
-const files_es6 = [
-    'src/w2base.js', // order of files is important
-    'src/w2locale.js',
-    'src/query.js',
-    'src/w2utils.js',
-    'src/w2popup.js',
-    'src/w2tooltip.js',
-    'src/w2toolbar.js',
-    'src/w2sidebar.js',
-    'src/w2tabs.js',
-    'src/w2layout.js',
-    'src/w2grid.js',
-    'src/w2form.js',
-    'src/w2field.js'
-]
-const files_legacy = Array.from(files_es6)
-files_legacy.push('src/w2compat.js')
 
 let tasks = {
 
@@ -99,80 +41,6 @@ let tasks = {
             .pipe(rename({ suffix: '.min' }))
             .pipe(header(comments.w2ui))
             .pipe(gulp.dest('dist/'))
-    },
-
-    pack(cb) {
-        let count = 0
-        console.log('  - update dist/w2ui.js')
-        console.log('  - update dist/w2ui_es6.js')
-        gulp.src(files_legacy)
-            .pipe(concat('w2ui.js'))
-            .pipe(replace(/^(import.*'|export.*}|module\.exports.*})$\n/gm, ''))
-            .pipe(replace('import.meta.url', 'undefined'))
-            .pipe(replace('\n\n', '\n'))
-            .pipe(replace(legacy_replace, legacy_code))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            .on('end', () => { check() })
-
-        gulp.src(files_es6)
-            .pipe(concat('w2ui.es6.js'))
-            .pipe(replace(/^(import.*'|export.*}|module\.exports.*})$\n/gm, ''))
-            .pipe(replace('\n\n', '\n'))
-            .pipe(replace('export { w2field }', exports_es6))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            .on('end', () => { check() })
-
-        function check() {
-            count++
-            if (count == 2) cb()
-        }
-    },
-
-    build(cb) {
-        return gulp
-            .src(files_legacy)
-            .pipe(concat('w2ui.js'))
-            .pipe(replace(/^(import.*'|export.*}|module\.exports.*})$\n/gm, ''))
-            .pipe(replace('import.meta.url', 'undefined'))
-            .pipe(replace('\n\n', '\n'))
-            .pipe(replace(legacy_replace, legacy_code))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            // min file
-            .pipe(uglify({
-                warnings: false,
-                sourceMap: false
-            }))
-            .pipe(rename({ suffix: '.min' }))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            .on('end', () => {
-                cb()
-            })
-    },
-
-    build_es6(cb) {
-        return gulp
-            .src(files_es6)
-            .pipe(concat('w2ui.es6.js'))
-            .pipe(replace(/^(import.*'|export.*}|module\.exports.*})$\n/gm, ''))
-            .pipe(replace('\n\n', '\n'))
-            .pipe(replace('export { w2field }', exports_es6))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            // min file
-            .pipe(uglify({
-                warnings: false,
-                sourceMap: false
-            }))
-            .pipe(rename({ suffix: '.min' }))
-            .pipe(header(comments.w2ui))
-            .pipe(gulp.dest('dist/'))
-            .on('end', () => {
-                cb()
-            })
     },
 
     icons(cb) {
@@ -315,18 +183,11 @@ let tasks = {
     },
 }
 
-// JS bundle tasks (pack, build, build_es6) are DISABLED — tsup owns the JS bundle.
-// Gulp retains ownership of: clean, less, icons, locales, watch (Less/icons only).
-// To build JS: npm run build:js (tsup + wrap-legacy.mjs)
-// To build CSS: npm run build:css (gulp less && gulp icons)
-// To build all: npm run build
+// Gulp owns: clean, less, icons, locales, watch (Less/icons only).
+// JS bundling lives in tsup.config.ts (driven by `pnpm build:js`).
 exports.default = gulp.series(tasks.clean, tasks.less)
 exports.dev     = tasks.watch
 exports.clean   = tasks.clean
 exports.less    = gulp.series(tasks.less)
 exports.icons   = gulp.series(tasks.icons, tasks.less)
 exports.locales = tasks.locales
-// Kept for reference but no longer wired to npm run build:
-// exports.pack    = tasks.pack      // DISABLED: tsup owns JS bundling
-// exports.build   = ...             // DISABLED: tsup owns JS bundling
-// exports.build_es6 = ...           // DISABLED: tsup owns JS bundling
