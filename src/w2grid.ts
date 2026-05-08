@@ -77,8 +77,8 @@ const w2menu    = _w2menu as any    // any: menu overlay with dynamic option sha
 const w2tooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 
 // ---------------------------------------------------------------------------
-// Type definitions — T5.1 (skeleton + CRUD)
-// Additional interfaces added in T5.2–T5.9 as clusters are typed
+// Type definitions — T5.1 (skeleton + CRUD); T5.2 (column + search cluster)
+// Additional interfaces added in T5.3–T5.9 as clusters are typed
 // ---------------------------------------------------------------------------
 
 /** A single data record stored in the grid */
@@ -127,6 +127,52 @@ interface W2GridFetch {
     controller: AbortController | null
     loaded: boolean
     hasMore: boolean
+}
+
+/** Column definition — T5.2 */
+interface W2GridColumn {
+    field: string
+    text: string | ((col: W2GridColumn) => string)
+    size?: string | number        // CSS size e.g. '100px' or '20%'
+    min?: number                  // minimum pixel width (for resize)
+    max?: number                  // maximum pixel width (for resize)
+    frozen?: boolean              // if true column is frozen (left-pinned)
+    hidden?: boolean              // if true column is hidden
+    hideable?: boolean            // if false user cannot hide/show via menu
+    resizable?: boolean           // if false resize handle is omitted
+    sortable?: boolean            // if false column header is not clickable for sort
+    searchable?: boolean | string // if true/string auto-adds a search field
+    sortMode?: string             // 'default' | 'natural' | 'i18n' | function
+    editable?: boolean | { type: string; [key: string]: any } | ((rec: W2GridRecord, cell: any) => any)
+    render?: string | ((record: W2GridRecord, index: number, colIndex: number) => string)
+    tooltip?: string              // tooltip shown on column header hover
+    style?: string                // inline CSS for cells in this column
+    attr?: string                 // HTML attributes for <td> elements
+    clipboardCopy?: boolean | ((record: W2GridRecord, cell: any) => string) // if true/function show clipboard copy icon in cells
+    colspan?: Record<string, number> | ((record: W2GridRecord, index: number) => number)
+    sizeCalculated?: string       // runtime-computed pixel width string (e.g. '120px')
+    sizeOriginal?: string | number // original size before resize operations
+    sizeType?: string             // 'px' or '%'
+    gridMinWidth?: number         // minimum grid width for this column to be visible
+    [key: string]: any            // any: custom per-column metadata
+}
+
+/** Search field definition — T5.2 */
+interface W2GridSearch {
+    field: string
+    label?: string
+    caption?: string              // deprecated alias for label
+    type: string                  // 'text' | 'int' | 'float' | 'date' | 'list' | 'enum' | 'new-column' | ...
+    hidden?: boolean
+    attr?: string                 // HTML attributes for the search input
+    text?: string                 // extra text/HTML rendered in the search row
+    style?: string                // CSS style for the search cell
+    operator?: string             // default operator key for this search
+    operators?: string[]          // override available operators for this search
+    options?: Record<string, any> // extra options passed to w2field (list items, etc.)
+    value?: any                   // current value of the search field (runtime)
+    svalue?: any                  // display value for enum/list searches (runtime)
+    [key: string]: any            // any: custom per-search metadata
 }
 
 /** Internal last-state object */
@@ -178,11 +224,11 @@ class w2grid extends w2base {
 
     declare name: string
     declare box: HTMLElement | null
-    columns: any[]        // any: typed in T5.2 as W2GridColumn[]
-    columnGroups: any[]   // any: column group shapes typed in T5.2
+    columns: W2GridColumn[]
+    columnGroups: any[]   // any: column group shapes — span/text/main/style; minimal typing for T5.2
     records: W2GridRecord[]
     summary: W2GridRecord[]
-    searches: any[]       // any: typed in T5.2 as W2GridSearch[]
+    searches: W2GridSearch[]
     toolbar: any          // any: w2toolbar instance or config object
     ranges: any[]         // any: range descriptors typed in T5.4
     contextMenu: any[]    // any: context menu item shapes
@@ -939,7 +985,9 @@ class w2grid extends w2base {
         }
     }
 
-    addColumn(before: any, columns?: any) {
+    /** Add one or more columns. If `columns` is omitted, `before` is treated as the column(s) to append. */
+    // any: `before` is reassigned inside the body (number | string → number); TS can't narrow post-assignment
+    addColumn(before: any, columns?: any): number {
         let added = 0
         if (columns === undefined) {
             columns = before
@@ -981,7 +1029,10 @@ class w2grid extends w2base {
         return removed
     }
 
-    getColumn(field?: string, returnIndex?: boolean) {
+    getColumn(): string[]
+    getColumn(field: string, returnIndex: true): number | null
+    getColumn(field: string, returnIndex?: false): W2GridColumn | null
+    getColumn(field?: string, returnIndex?: boolean): string[] | number | W2GridColumn | null {
         // no arguments - return fields of all columns
         if (field === undefined) {
             const ret = []
@@ -997,7 +1048,7 @@ class w2grid extends w2base {
         return null
     }
 
-    updateColumn(fields, updates) {
+    updateColumn(fields: string | string[], updates: Partial<W2GridColumn> | Record<string, any>) {
         let effected = 0
         fields = (Array.isArray(fields) ? fields : [fields])
         fields.forEach((colName) => {
@@ -1033,7 +1084,9 @@ class w2grid extends w2base {
         return this.updateColumn(fields, { hidden: true })
     }
 
-    addSearch(before: any, search?: any) {
+    /** Add one or more search fields. If `search` is omitted, `before` is treated as the search(es) to append. */
+    // any: `before` is reassigned inside the body (number | string → number); TS can't narrow post-assignment
+    addSearch(before: any, search?: any): number {
         let added = 0
         if (search === undefined) {
             search = before
@@ -1063,7 +1116,10 @@ class w2grid extends w2base {
         return removed
     }
 
-    getSearch(field?: string, returnIndex?: boolean) {
+    getSearch(): string[]
+    getSearch(field: string, returnIndex: true): number | null
+    getSearch(field: string, returnIndex?: false): W2GridSearch | null
+    getSearch(field?: string, returnIndex?: boolean): string[] | number | W2GridSearch | null {
         // no arguments - return fields of all searches
         if (field === undefined) {
             const ret = []
@@ -1121,7 +1177,7 @@ class w2grid extends w2base {
         return hidden
     }
 
-    getSearchData(field) {
+    getSearchData(field: string): Record<string, any> | null {
         for (let i = 0; i < this.searchData.length; i++) {
             if (this.searchData[i].field == field) return this.searchData[i]
         }
@@ -1158,7 +1214,7 @@ class w2grid extends w2base {
         }
         // process sortData
         for (let i = 0; i < this.sortData.length; i++) {
-            const column = this.getColumn(this.sortData[i].field)
+            const column = this.getColumn(this.sortData[i].field) as W2GridColumn | null
             if (!column) return // TODO: ability to sort columns when they are not part of colums array
             if (typeof column.render == 'string') {
                 if (['date', 'age'].indexOf(column.render.split(':')[0]) != -1) {
@@ -1250,12 +1306,12 @@ class w2grid extends w2base {
                     aa = obj.parseField(a, sortFld)
                     bb = obj.parseField(b, sortFld)
                 }
-                const col = obj.getColumn(fld)
-                if (col && Object.keys(col.editable).length > 0) { // for drop editable fields and drop downs
+                const col = obj.getColumn(fld) as W2GridColumn | null
+                if (col && col.editable && Object.keys(col.editable).length > 0) { // for drop editable fields and drop downs
                     if (w2utils.isPlainObject(aa) && aa.text) aa = aa.text
                     if (w2utils.isPlainObject(bb) && bb.text) bb = bb.text
                 }
-                const ret = compareCells(aa, bb, i, obj.sortData[i].direction, col.sortMode || 'default')
+                const ret = compareCells(aa, bb, i, obj.sortData[i].direction, col?.sortMode || 'default')
                 if (ret !== 0) return ret
             }
             // break tie for similar records,
@@ -1391,9 +1447,9 @@ class w2grid extends w2base {
             let orEqual = false
             for (let j = 0; j < obj.searchData.length; j++) {
                 const sdata = obj.searchData[j]
-                let search = obj.getSearch(sdata.field)
+                let search = obj.getSearch(sdata.field) as W2GridSearch | null
                 if (sdata == null) continue
-                if (search == null) search = { field: sdata.field, type: sdata.type }
+                if (search == null) search = { field: sdata.field, type: sdata.type } as W2GridSearch
                 // поиск среди изменений
                 const val1b = rec.w2ui?.changes?.[search.field] ?? obj.parseField(rec, search.field)
                 val1 = (val1b != null && (typeof val1b != 'object' || val1b.toString != defaultToString))
@@ -3047,7 +3103,7 @@ class w2grid extends w2base {
             }
             if (s == -1) { // -1 is All Fields search
                 if (!this.multiSearch || !this.show.searchAll) continue
-                search = { field: 'all', label: 'All Fields' }
+                search = { field: 'all', label: 'All Fields', type: 'text' } as W2GridSearch
             } else {
                 if (column != null && column.hideable === false) continue
                 if (search.hidden === true) {
@@ -4860,7 +4916,7 @@ class w2grid extends w2base {
             }
             if (col.frozen || col.hidden)
                 continue
-            const cSize = parseInt(col.sizeCalculated ? col.sizeCalculated : col.size)
+            const cSize = parseInt(col.sizeCalculated ? col.sizeCalculated : String(col.size ?? 0))
             sWidth   += cSize
         }
         if (!found)
@@ -7098,7 +7154,7 @@ class w2grid extends w2base {
                     // default action
                     obj.last.tmp.x = (event.screenX - obj.last.tmp.x)
                     obj.last.tmp.y = (event.screenY - obj.last.tmp.y)
-                    const newWidth   = (parseInt(obj.columns[obj.last.tmp.col].size) + obj.last.tmp.x) + 'px'
+                    const newWidth   = (parseInt(String(obj.columns[obj.last.tmp.col].size ?? 0)) + obj.last.tmp.x) + 'px'
                     obj.columns[obj.last.tmp.col].size = newWidth
                     if (timer) clearTimeout(timer)
                     timer = setTimeout(() => {
@@ -7220,7 +7276,7 @@ class w2grid extends w2base {
         let sWidth = 0
         for (let i = 0; i < this.columns.length; i++) {
             if (this.columns[i].frozen || this.columns[i].hidden) continue
-            const cSize = parseInt(this.columns[i].sizeCalculated ? this.columns[i].sizeCalculated : this.columns[i].size)
+            const cSize = parseInt(this.columns[i].sizeCalculated ? this.columns[i].sizeCalculated : String(this.columns[i].size ?? 0))
             sWidth += cSize
         }
         if (records[0]?.clientWidth < sWidth) bodyOverflowX = true
@@ -7356,12 +7412,13 @@ class w2grid extends w2base {
             for (let i = 0; i < this.columns.length; i++) {
                 const col = this.columns[i]
                 if (col.hidden) continue
-                if (String(col.size).substr(String(col.size).length-2).toLowerCase() == 'px') {
-                    width_max -= parseFloat(col.size)
-                    this.columns[i].sizeCalculated = col.size
+                const sizeStr = String(col.size ?? 0)
+                if (sizeStr.substr(sizeStr.length-2).toLowerCase() == 'px') {
+                    width_max -= parseFloat(sizeStr)
+                    this.columns[i].sizeCalculated = sizeStr
                     this.columns[i].sizeType = 'px'
                 } else {
-                    percent += parseFloat(col.size)
+                    percent += parseFloat(sizeStr)
                     this.columns[i].sizeType = '%'
                     delete col.sizeCorrected
                 }
@@ -7372,7 +7429,7 @@ class w2grid extends w2base {
                     const col = this.columns[i]
                     if (col.hidden) continue
                     if (col.sizeType == '%') {
-                        col.sizeCorrected = Math.round(parseFloat(col.size) * 100 * 100 / percent) / 100 + '%'
+                        col.sizeCorrected = Math.round(parseFloat(String(col.size ?? 0)) * 100 * 100 / percent) / 100 + '%'
                     }
                 }
             }
@@ -7383,10 +7440,10 @@ class w2grid extends w2base {
                 if (col.sizeType == '%') {
                     if (this.columns[i].sizeCorrected != null) {
                         // make it 1px smaller, so margin of error can be calculated correctly
-                        this.columns[i].sizeCalculated = Math.floor(width_max * parseFloat(col.sizeCorrected) / 100) - 1 + 'px'
+                        this.columns[i].sizeCalculated = Math.floor(width_max * parseFloat(String(col.sizeCorrected)) / 100) - 1 + 'px'
                     } else {
                         // make it 1px smaller, so margin of error can be calculated correctly
-                        this.columns[i].sizeCalculated = Math.floor(width_max * parseFloat(col.size) / 100) - 1 + 'px'
+                        this.columns[i].sizeCalculated = Math.floor(width_max * parseFloat(String(col.size ?? 0)) / 100) - 1 + 'px'
                     }
                 }
             }
@@ -7397,8 +7454,8 @@ class w2grid extends w2base {
             const col = this.columns[i]
             if (col.hidden) continue
             if (col.min == null) col.min = 20
-            if (parseInt(col.sizeCalculated) < parseInt(col.min)) col.sizeCalculated = col.min + 'px'
-            if (parseInt(col.sizeCalculated) > parseInt(col.max)) col.sizeCalculated = col.max + 'px'
+            if (parseInt(col.sizeCalculated) < (col.min as number)) col.sizeCalculated = col.min + 'px'
+            if (col.max != null && parseInt(col.sizeCalculated) > (col.max as number)) col.sizeCalculated = col.max + 'px'
             width_cols += parseInt(col.sizeCalculated)
         }
         let width_diff = parseInt(width_box) - width_cols
@@ -7855,7 +7912,7 @@ class w2grid extends w2base {
             let operators = [...(this.operators[this.operatorsMap[search.type]] ?? [])] // need a copy
             if (search.operators) operators = [...search.operators] // need a copy as this variable will be changed
             // normalize
-            if (w2utils.isPlainObject(operator)) operator = operator.oper
+            if (w2utils.isPlainObject(operator)) operator = (operator as any).oper
             operators.forEach((oper, ind) => {
                 if (w2utils.isPlainObject(oper)) operators[ind] = oper.oper
             })
@@ -7951,7 +8008,7 @@ class w2grid extends w2base {
             }
             for (let i = 0; i < self.columnGroups.length; i++) {
                 const colg = self.columnGroups[i]
-                const col  = self.columns[ii] || {}
+                const col: W2GridColumn = self.columns[ii] ?? {} as W2GridColumn
                 if (colg.colspan != null) colg.span = colg.colspan
                 if (colg.span == null || colg.span != parseInt(colg.span)) colg.span = 1
                 if (col.text == null && col.caption != null) {
@@ -8210,7 +8267,7 @@ class w2grid extends w2base {
             let cLeft  = 0
             for (let i = 0; i < this.columns.length; i++) {
                 if (this.columns[i].frozen || this.columns[i].hidden) continue
-                const cSize = parseInt(this.columns[i].sizeCalculated ? this.columns[i].sizeCalculated : this.columns[i].size)
+                const cSize = parseInt(this.columns[i].sizeCalculated ? this.columns[i].sizeCalculated : String(this.columns[i].size ?? 0))
                 if (cLeft + cSize + 30 > this.last.vscroll.scrollLeft && colStart == null) colStart = i
                 if (cLeft + cSize - 30 > this.last.vscroll.scrollLeft + sWidth && colEnd == null) colEnd = i
                 cLeft += cSize
@@ -8848,7 +8905,7 @@ class w2grid extends w2base {
                     continue
                 }
                 let col = this.getColumn(tmp[0])
-                if (col == null) col = { field: tmp[0], caption: tmp[0] } // if not found in columns
+                if (col == null) col = { field: tmp[0], text: tmp[0], caption: tmp[0] } as W2GridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
                 if (rec?.w2ui?.changes?.[col.field] != null) {
@@ -8886,7 +8943,7 @@ class w2grid extends w2base {
                 }
                 const tmp = String(fld).split(':')
                 let col = this.getColumn(tmp[0])
-                if (col == null) col = { field: tmp[0], caption: tmp[0] } // if not found in columns
+                if (col == null) col = { field: tmp[0], text: tmp[0], caption: tmp[0] } as W2GridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
                 if (rec?.w2ui?.changes?.[col.field] != null) {
@@ -8965,13 +9022,13 @@ class w2grid extends w2base {
             let params
             // predefined formatters
             if (typeof render == 'string') {
-                const tmp = col.render.toLowerCase().replace('|', ':').split(':')
+                const tmp = render.toLowerCase().replace('|', ':').split(':')
                 // formatters
                 let func = w2utils.formatters[tmp[0]]
                 if (col.options && col.options.autoFormat === false) {
                     func = null
                 }
-                render = func
+                render = func as any
                 params = tmp[1]
             }
             if (typeof render == 'function' && record != null) {
@@ -9011,7 +9068,7 @@ class w2grid extends w2base {
             }
             // if it is an object
             if (typeof render == 'object') {
-                const tmp = render[value]
+                const tmp = (render as any)[value]
                 if (tmp != null && tmp !== '') {
                     value = tmp
                 }
