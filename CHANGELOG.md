@@ -18,6 +18,8 @@
 - **Build pipeline**: Gulp's regex-based concat + import/export stripping replaced by **tsup** (esbuild + dual ESM/CJS + `.d.ts` rollup). Gulp continues to handle Less compilation and iconfont generation. `pnpm build` is the new entry point (replaces `npx gulp`).
 - **ESLint config**: per-extension overrides — `align-assignments` retained for `.js` files (no TS-equivalent plugin exists), `@typescript-eslint/recommended` active for `.ts` files. `dot-notation` disabled on `.ts` (bracket access on dynamic types is intentional).
 - **`prepareParams()` in w2utils**: `dataType` parameter handling restructured to a `switch(dataType)` statement (was an if/else chain). Custom function `dataType` values now correctly execute (see Fixed below).
+- **`w2utils.locale()` return type**: now resolves to `Promise<{ file, data } | void>` (previously `Promise<void>`). Callers that `await locale(...)` can read the loaded file path and parsed payload directly without a second fetch. Backward-compatible — code that ignored the resolved value still works.
+- **`w2form` delegated-event registration**: input/textarea handlers in `w2form` now use jQuery-style delegated-event objects (`{ delegate: 'input, textarea' }`) instead of raw selector strings. Behavior is unchanged; the new shape plays nicely with strict typings and modern delegation libraries.
 - **Package manager**: standardized on **pnpm** (lockfile is `pnpm-lock.yaml`). Compound scripts (`build`, `test`, `verify`) use `pnpm`; top-level scripts unchanged.
 - **`package.json` exports**: dual-package conditional exports map (`types` / `import` / `require`) so both ESM and CJS consumers resolve the right artifact.
 
