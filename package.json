@@ -19,11 +19,11 @@
     "typecheck": "tsc --noEmit",
     "build:css": "gulp less && gulp icons",
     "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs",
-    "build": "npm run build:css && npm run build:js",
+    "build": "pnpm build:css && pnpm build:js",
     "smoke": "playwright test",
     "smoke:update": "playwright test --update-snapshots",
-    "verify": "npm run lint && npm run typecheck && npm run smoke",
-    "test": "npm run lint && npm run typecheck",
+    "verify": "pnpm lint && pnpm typecheck && pnpm smoke",
+    "test": "pnpm lint && pnpm typecheck",
     "dev": "tsup --watch"
   },
   "devDependencies": {
