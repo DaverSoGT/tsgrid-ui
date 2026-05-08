@@ -1869,7 +1869,7 @@ class Utils {
         return ret
     }
 
-    getStrDimentions(str, styles, raw) {
+    getStrDimentions(str: string, styles?: string, raw?: boolean) {
         let div = query('body > #_tmp_width')
         if (div.length === 0) {
             query('body').append('<div id="_tmp_width" style="position: absolute; top: -9000px;"></div>')
@@ -1878,7 +1878,7 @@ class Utils {
         if (raw === undefined && str.trim().startsWith('<') && str.trim().endsWith('>')) {
             raw = true
         }
-        ;(div.html(raw ? str : this.encodeTags(str ?? '')) as Query).attr('style', `position: absolute; top: -9000px; ${styles || ''}`)
+        ;(div.html(raw ? str : this.encodeTags(str ?? '') as string) as Query).attr('style', `position: absolute; top: -9000px; ${styles || ''}`)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const width = (div[0] as any).clientWidth
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1887,11 +1887,11 @@ class Utils {
         return { width, height }
     }
 
-    getStrWidth(str, styles, raw) {
+    getStrWidth(str: string, styles?: string, raw?: boolean) {
         return this.getStrDimentions(str, styles, raw).width
     }
 
-    getStrHeight(str, styles, raw) {
+    getStrHeight(str: string, styles?: string, raw?: boolean) {
         return this.getStrDimentions(str, styles, raw).height
     }
 
@@ -2074,7 +2074,7 @@ class Utils {
         }
     }
 
-    lang(phrase: string, params?: Record<string, string>): string {
+    lang(phrase: string, params?: Record<string, string | number> | boolean): string {
         if (!phrase || this.settings.phrases == null // if no phrases at all
                 || typeof phrase !== 'string' || '<=>='.includes(phrase)) {
             return this.execTemplate(phrase, params)
@@ -2481,7 +2481,7 @@ class Utils {
      * you can choose to include them or not, by default they are included.
      * You can also exclude certain elements from final object if used with options: { exclude }
      */
-    clone(obj: unknown, options?: Partial<W2CloneOptions>): unknown {
+    clone(obj: unknown, options?: Partial<W2CloneOptions>): any {
         const opts = Object.assign({ functions: true, elements: true, events: true, exclude: [] as W2CloneOptions['exclude'], parent: '' }, options ?? {})
         if (Array.isArray(obj)) {
             const arr: unknown[] = Array.from(obj)
