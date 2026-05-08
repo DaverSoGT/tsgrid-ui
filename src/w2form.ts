@@ -112,8 +112,8 @@ class w2form extends w2base {
     W2FIELD_TYPES: string[]
 
     constructor(options: Record<string, any>) { // any: options bag is user-supplied
-        super(options.name)
-        this.name         = null
+        super(options['name'])
+        this.name         = ''
         this.header       = ''
         this.box          = null // HTML element that hold this element
         this.url          = ''
@@ -132,8 +132,8 @@ class w2form extends w2base {
         this.saveCleanRecord = true // if true, it will submit clean record when saving
         this.postData     = {}
         this.httpHeaders  = {}
-        this.toolbar      = {} // if not empty, then it is toolbar
-        this.tabs         = {} // if not empty, then it is tabs object
+        this['toolbar']   = {} // if not empty, then it is toolbar
+        this['tabs']      = {} // if not empty, then it is tabs object
         this.style        = ''
         this.focus        = 0 // focus first or other element
         this.autosize     = true // autosize, if false the container must have a height set
@@ -174,11 +174,11 @@ class w2form extends w2base {
         w2utils.extend(this, options)
 
         // remember items
-        const record   = options.record
-        const original = options.original
-        const fields   = options.fields
-        const toolbar  = options.toolbar
-        let tabs     = options.tabs
+        const record   = options['record']
+        const original = options['original']
+        const fields   = options['fields']
+        const toolbar  = options['toolbar']
+        let tabs       = options['tabs']
         // extend items
         Object.assign(this, { record: {}, original: null, fields: [], tabs: {}, toolbar: {}, handlers: [] })
         // preprocess fields
@@ -215,6 +215,7 @@ class w2form extends w2base {
             }
         }
         for (const p in original) { // it is an object
+            if (this.original == null) this.original = {}
             if (w2utils.isPlainObject(original[p])) {
                 this.original[p] = w2utils.clone(original[p])
             } else {
@@ -434,9 +435,10 @@ class w2form extends w2base {
         }
     }
 
-    getFieldValue(name: string): { current: any; previous: any; original: any } { // any: values vary by field type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    getFieldValue(name: string): { current: any; previous: any; original: any } | undefined { // any: values vary by field type
         const field = this.get(name)
-        if (field == null) return
+        if (field == null) return undefined
         const el = field.el
         let previous = this.getValue(name)
         const original = this.getValue(name, true)
@@ -468,7 +470,8 @@ class w2form extends w2base {
             current = []
             const selected = query(el).closest('.w2ui-field-group').find('input:checked')
             if (selected.length > 0) {
-                selected.each((el: HTMLElement) => {
+                selected.each((node: Node) => {
+                    const el = node as HTMLElement
                     const item = field.options.items[query(el).data('index') as number]
                     current.push(item.id)
                 })
@@ -503,8 +506,9 @@ class w2form extends w2base {
                 const value = query(div).find('.w2ui-map.value').val()
                 if (typeof field.html?.render == 'function') {
                     current[_ind] ??= {}
-                    query(div).find('input, textarea').each((inp: HTMLInputElement) => {
-                        const name = inp.dataset.name ?? inp.name
+                    query(div).find('input, textarea').each((node: Node) => {
+                        const inp = node as HTMLInputElement
+                        const name = inp.dataset['name'] ?? inp['name']
                         if (name != null && name != '') {
                             current[_ind][name] = ['checkbox', 'radio'].includes(inp.type) ? inp.checked : inp.value
                         }
@@ -794,7 +798,8 @@ class w2form extends w2base {
 
     updateEmptyGroups(): void {
         // hide empty groups
-        query(this.box).find('.w2ui-group').each((group: HTMLElement) =>{
+        query(this.box).find('.w2ui-group').each((node: Node) =>{
+            const group = node as HTMLElement
             if (isHidden(query(group).find('.w2ui-field'))) {
                 query(group).hide()
             } else {
@@ -803,7 +808,8 @@ class w2form extends w2base {
         })
         function isHidden($els: any): boolean { // any: $els is a Query object
             let flag = true
-            $els.each((el: HTMLElement) => {
+            $els.each((node: Node) => {
+                const el = node as HTMLElement
                 if (el.style.display != 'none') flag = false
             })
             return flag
@@ -927,7 +933,8 @@ class w2form extends w2base {
         }, options)
     }
 
-    validate(showErrors?: boolean): any[] { // any: error objects vary by field type
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    validate(showErrors?: boolean): any[] | undefined { // any: error objects vary by field type
         if (showErrors == null) showErrors = true
         // validate before saving
         const errors: any[] = [] // any: error shape varies by validation
@@ -1181,7 +1188,8 @@ class w2form extends w2base {
         this.original = null
         // call server to get data
         this.lock(w2utils.lang(this.msgRefresh))
-        let url: any = edata.detail.url // any: url can be string or object with .get/.save
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let url: any = edata.detail['url'] // any: url can be string or object with .get/.save
         if (typeof url === 'object' && url.get) url = url.get
         if (this.last.fetchCtrl) try { this.last.fetchCtrl.abort() } catch (_e) {}
         // process url with routeData
@@ -1189,23 +1197,25 @@ class w2form extends w2base {
             const info = w2utils.parseRoute(url)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
-                    if (this.routeData[info.keys[k].name] == null) continue
-                    url = url.replace((new RegExp(':'+ info.keys[k].name, 'g')), this.routeData[info.keys[k].name])
+                    const routeKey = info.keys[k]
+                    if (routeKey == null || this.routeData[routeKey.name] == null) continue
+                    url = url.replace((new RegExp(':'+ routeKey.name, 'g')), this.routeData[routeKey.name])
                 }
             }
         }
         url = new URL(url, location.href)
         const fetchOptions = w2utils.prepareParams(url, {
-            method: edata.detail.httpMethod,
-            headers: edata.detail.httpHeaders,
-            body: edata.detail.postData
+            method: edata.detail['httpMethod'],
+            headers: edata.detail['httpHeaders'],
+            body: edata.detail['postData']
         }, { dataType: this.dataType, caller: this, action: 'request' })
         this.last.fetchCtrl = new AbortController()
-        fetchOptions.signal = this.last.fetchCtrl.signal
+        fetchOptions['signal'] = this.last.fetchCtrl.signal
         this.last.fetchOptions = fetchOptions
         fetch(url, fetchOptions)
             .catch(processError)
-            .then((resp: Response | undefined) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .then((resp: any) => { // any: after .catch(), type is void|Response; cast to any to access status/json safely
                 if (resp?.status != 200) {
                     // if resp is undefined, it means request was aborted
                     if (resp) processError(resp)
@@ -1290,7 +1300,7 @@ class w2form extends w2base {
         }
         // validation
         const errors = self.validate(true)
-        if (errors.length !== 0) return
+        if ((errors?.length ?? 0) !== 0) return
         // submit save
         if (postData == null) postData = {}
         if (!self.url || (typeof self.url === 'object' && !self.url.save)) {
@@ -1313,7 +1323,8 @@ class w2form extends w2base {
             postData: params, httpHeaders: self.httpHeaders })
         if (edata.isCancelled === true) return
         // default action
-        let url: any = edata.detail.url // any: url can be string or object
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let url: any = edata.detail['url'] // any: url can be string or object
         if (typeof url === 'object' && url.save) url = url.save
         if (self.last.fetchCtrl) self.last.fetchCtrl.abort()
         // process url with routeData
@@ -1321,23 +1332,25 @@ class w2form extends w2base {
             const info = w2utils.parseRoute(url)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
-                    if (self.routeData[info.keys[k].name] == null) continue
-                    url = url.replace((new RegExp(':'+ info.keys[k].name, 'g')), self.routeData[info.keys[k].name])
+                    const routeKey = info.keys[k]
+                    if (routeKey == null || self.routeData[routeKey.name] == null) continue
+                    url = url.replace((new RegExp(':'+ routeKey.name, 'g')), self.routeData[routeKey.name])
                 }
             }
         }
         url = new URL(url, location.href)
         const fetchOptions = w2utils.prepareParams(url, {
-            method: edata.detail.httpMethod,
-            headers: edata.detail.httpHeaders,
-            body: edata.detail.postData
+            method: edata.detail['httpMethod'],
+            headers: edata.detail['httpHeaders'],
+            body: edata.detail['postData']
         }, { dataType: this.dataType, caller: this, action: 'save' })
         this.last.fetchCtrl = new AbortController()
-        fetchOptions.signal = this.last.fetchCtrl.signal
+        fetchOptions['signal'] = this.last.fetchCtrl.signal
         this.last.fetchOptions = fetchOptions
         fetch(url, fetchOptions)
             .catch(processError)
-            .then((resp: Response | undefined) => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            .then((resp: any) => { // any: after .catch(), type is void|Response; cast to any for safe access
                 self.unlock()
                 if (resp?.status != 200) {
                     processError(resp ?? {})
@@ -1602,7 +1615,7 @@ class w2form extends w2base {
             }
             if (group !== '') {
                 if (page != field.html.page || column != field.html.column || (field.html.group && (group != field.html.group))) {
-                    pages[page][column] += '\n   </div>\n  </div>'
+                    pages[page!][column!] += '\n   </div>\n  </div>'
                     group                = ''
                 }
             }
@@ -1690,7 +1703,7 @@ class w2form extends w2base {
             page   = field.html.page
             column = field.html.column
         }
-        if (group !== '') pages[page][column] += '\n   </div>\n  </div>'
+        if (group !== '') pages[page!][column!] += '\n   </div>\n  </div>'
         if (this.tabs.tabs) {
             for (let i = 0; i < this.tabs.tabs.length; i++) if (pages[i] == null) pages[i] = []
         }
@@ -1856,11 +1869,11 @@ class w2form extends w2base {
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: needed for nested function declarations (resizeElements, event handlers) that rebind `this`
-        if (!this.box) return
-        if (!this.isGenerated || !query(this.box).html()) return
+        if (!this.box) return 0
+        if (!this.isGenerated || !query(this.box).html()) return 0
         // event before
         const edata = this.trigger('refresh', { target: this.name, page: this.page, field: args[0], fields: args })
-        if (edata.isCancelled === true) return
+        if (edata.isCancelled === true) return 0
         let fields = Array.from(this.fields.keys())
         if (args.length > 0) {
             fields = args
@@ -1873,7 +1886,8 @@ class w2form extends w2base {
                 })
         } else {
             // update field.page with page it belongs too
-            query(this.box).find('input, textarea, select').each((el: HTMLElement) => {
+            query(this.box).find('input, textarea, select').each((node: Node) => {
+                const el = node as HTMLElement
                 const name = (query(el).attr('name') != null ? query(el).attr('name') : query(el).attr('id'))
                 const field = this.get(name)
                 if (field) {
@@ -1908,7 +1922,10 @@ class w2form extends w2base {
         }
         // refresh values of fields
         for (let f = 0; f < fields.length; f++) {
-            const field = this.fields[fields[f]]
+            const fieldIdx = fields[f]
+            if (fieldIdx == null) continue
+            const field = this.fields[fieldIdx]
+            if (field == null) continue
             if (field.name == null && field.field != null) field.name = field.field
             if (field.field == null && field.name != null) field.field = field.name
             field.$el = query(this.box).find(`[name='${String(field.name).replace(/\\/g, '\\\\')}']`)
@@ -1921,6 +1938,7 @@ class w2form extends w2base {
                 .off('.w2form')
                 .on('change.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     const value = self.getFieldValue(field.field)
+                    if (value == null) return
                     // clear error class
                     if (['enum', 'file'].includes(field.type)) {
                         const helper = field.w2field?.helpers?.multi
@@ -1941,6 +1959,7 @@ class w2form extends w2base {
                 .on('input.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     self.rememberOriginal()
                     const value = self.getFieldValue(field.field)
+                    if (value == null) return
                     // save previous for change event
                     if (this._previous == null) {
                         this._previous = value.previous
@@ -1988,17 +2007,21 @@ class w2form extends w2base {
             }
         }
         // attach actions on buttons
-        query(this.box).find('button, input[type=button]').each((el: HTMLElement) => {
+        query(this.box).find('button, input[type=button]').each((node: Node) => {
+            const el = node as HTMLElement
             query(el).off('click').on('click', function(this: HTMLElement & { value: string; id: string; name: string }, event: Event) {
                 let action = this.value
                 if (this.id) action = this.id
-                if (this.name) action = this.name
+                if (this['name']) action = this['name']
                 self.action(action, event)
             })
         })
         // init controls with record
         for (let f = 0; f < fields.length; f++) {
-            const field = this.fields[fields[f]]
+            const fieldIdx2 = fields[f]
+            if (fieldIdx2 == null) continue
+            const field = this.fields[fieldIdx2]
+            if (field == null) continue
             if (!field.el) continue
             if (!field.$el.hasClass('w2ui-input')) field.$el.addClass('w2ui-input')
             field.type = String(field.type).toLowerCase()
@@ -2024,7 +2047,8 @@ class w2form extends w2base {
                     ;(w2ui[this.name + '_' + field.name + '_tb'] as any).destroy() // any: w2ui registry returns unknown
                 }
                 field.options?.items?.forEach?.((it: any) => it.text == null ? it.text = '' : '')
-                const items = w2utils.normMenu.call(this, field.options.items, field.options)
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const items: any[] = w2utils.normMenu.call(this, field.options.items, field.options) ?? [] // any: toolbar item shape varies
                 items.forEach((item: any) => item.type ??= 'radio') // any: toolbar item shape
                 field.toolbar = new w2toolbar({
                     box: field.$el.prev().get(0),
@@ -2033,7 +2057,8 @@ class w2form extends w2base {
                     onClick(event: CustomEvent) {
                         self.rememberOriginal()
                         const value = self.getFieldValue(field.name)
-                        value.current = event.detail.item.id
+                        if (value == null) return
+                        value.current = event.detail['item'].id
                         const edata = self.trigger('change', { target: field.name, field: field.name, value, originalEvent: event })
                         if (edata.isCancelled === true) {
                             return
@@ -2083,7 +2108,9 @@ class w2form extends w2base {
                             // space or enter - apply selected
                             self.rememberOriginal()
                             const value = self.getFieldValue(field.name)
-                            value.current = field.toolbar.items[ind].id
+                            if (value == null) return
+                            const tbItem = (field.toolbar.items as any[])[ind]
+                            value.current = tbItem?.id
                             const edata = self.trigger('change', { target: field.name, field: field.name, value, originalEvent: event })
                             if (edata.isCancelled === true) {
                                 return
@@ -2129,8 +2156,9 @@ class w2form extends w2base {
                             html = field.html.render.call(self, { empty: empty === true, ind: cnt, field, div })
                             // make sure all inputs have names as it is important for array objects
                             if (!field.el._errorDisplayed) {
-                                (_queryRaw as any).html(html).filter('input, textarea').each((inp: HTMLInputElement) => {
-                                    const name = inp.dataset.name ?? inp.name
+                                (_queryRaw as any).html(html).filter('input, textarea').each((node: Node) => {
+                                    const inp = node as HTMLInputElement
+                                    const name = inp.dataset['name'] ?? inp['name']
                                     if (name == null || name == '') {
                                         console.log(`ERROR: All inputs of the field %c"${field.name}"%c must have name attribute defined. No name for %c${inp.outerHTML}`,
                                             'color: blue', '', 'color: red')
@@ -2160,7 +2188,7 @@ class w2form extends w2base {
                     }
                     field.el.mapRefresh = function(map: any, div: any): void { // any: map can be object or array
                         // generate options
-                        let keys: any[], $k: any, $v: any // any: query objects for key/value inputs
+                        let keys: any[] = [], $k: any, $v: any // any: query objects for key/value inputs
                         if (field.type == 'map') {
                             if (!w2utils.isPlainObject(map)) map = {}
                             if (map._order == null) map._order = Object.keys(map)
@@ -2183,8 +2211,9 @@ class w2form extends w2base {
                             fld.attr('data-key', key)
                             if (typeof field.html?.render == 'function') {
                                 const val = map[key]
-                                fld.find('input, textarea').each((inp: HTMLInputElement) => {
-                                    const name = inp.dataset.name ?? inp.name // <input data-name="higher priority" name="then">
+                                fld.find('input, textarea').each((node: Node) => {
+                                    const inp = node as HTMLInputElement
+                                    const name = inp.dataset['name'] ?? inp['name'] // <input data-name="higher priority" name="then">
                                     if (inp.type == 'checkbox') {
                                         inp.checked = val[name] ?? false
                                     } else if (inp.type == 'radio') {
@@ -2233,7 +2262,7 @@ class w2form extends w2base {
                         const container = (query(field.el).get(0) as Node)?.nextSibling // should be div
                         query(container)
                             .off('.mapChange')
-                            .on('mouseup.mapChange', { delegate: 'input, textarea' }, function (this: HTMLElement, event: MouseEvent) {
+                            .on('mouseup.mapChange', { delegate: 'input, textarea' }, function (this: HTMLElement, event: Event) {
                                 /***
                                  * This hack is needed for the cases when this field is refreshed and focus in bettween of mousedown and mouse up.
                                  * In such a case, the field will not get focused, but should be as there was mouse click.
@@ -2242,23 +2271,25 @@ class w2form extends w2base {
                                     (event.target as HTMLElement).focus()
                                 }
                             })
-                            .on('keyup.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: KeyboardEvent) {
-                                const $div = query(event.target).closest('.w2ui-map-field')
+                            .on('keyup.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: Event) {
+                                const kbdEvent = event as KeyboardEvent
+                                const $div = query(kbdEvent.target).closest('.w2ui-map-field')
                                 const next = ($div.get(0) as Element).nextElementSibling
                                 const prev = ($div.get(0) as Element).previousElementSibling
-                                const className = query(event.target).hasClass('key') ? 'key' : 'value'
-                                if (event.keyCode == 38 && prev) { // up key
-                                    (query(prev).find(`input.${className}, textarea.${className}, input[name="${(event.target as HTMLInputElement).name}"] textarea[name="${(event.target as HTMLInputElement).name}"]`).get(0) as HTMLInputElement | undefined)?.select()
-                                    event.preventDefault()
+                                const className = query(kbdEvent.target).hasClass('key') ? 'key' : 'value'
+                                if (kbdEvent.keyCode == 38 && prev) { // up key
+                                    (query(prev).find(`input.${className}, textarea.${className}, input[name="${(kbdEvent.target as HTMLInputElement)['name']}"] textarea[name="${(kbdEvent.target as HTMLInputElement)['name']}"]`).get(0) as HTMLInputElement | undefined)?.select()
+                                    kbdEvent.preventDefault()
                                 }
-                                if (event.keyCode == 40 && next) { // down key
-                                    ;(event.target as HTMLElement).blur() // blur is needed because it will trigger change which will re-render fields
+                                if (kbdEvent.keyCode == 40 && next) { // down key
+                                    ;(kbdEvent.target as HTMLElement).blur() // blur is needed because it will trigger change which will re-render fields
                                     const next = ($div.get(0) as Element).nextElementSibling // need to query it again because it was re-rendered
-                                    ;(query(next).find(`input.${className}, textarea.${className}, input[name="${(event.target as HTMLInputElement).name}"] textarea[name="${(event.target as HTMLInputElement).name}"]`).get(0) as HTMLInputElement | undefined)?.select()
-                                    event.preventDefault()
+                                    ;(query(next).find(`input.${className}, textarea.${className}, input[name="${(kbdEvent.target as HTMLInputElement)['name']}"] textarea[name="${(kbdEvent.target as HTMLInputElement)['name']}"]`).get(0) as HTMLInputElement | undefined)?.select()
+                                    kbdEvent.preventDefault()
                                 }
                             })
-                            .on('keydown.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: KeyboardEvent) {
+                            .on('keydown.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, _event: Event) {
+                                const event = _event as KeyboardEvent
                                 lastKey = null
                                 if (event.keyCode == 9) { // tab
                                     lastKey = 'tab'
@@ -2277,11 +2308,13 @@ class w2form extends w2base {
                                 const next = (fld.get(0) as Element).nextElementSibling
                                 // if last one, add new empty
                                 let isEmpty = true
-                                query(fld).find('input, textarea').each((el: HTMLInputElement) => {
+                                query(fld).find('input, textarea').each((node: Node) => {
+                                    const el = node as HTMLInputElement
                                     if (!['checkbox', 'button'].includes(el.type) && el.value != '') isEmpty = false
                                 })
                                 let isNextEmpty = true
-                                query(next).find('input, textarea').each((el: HTMLInputElement) => {
+                                query(next).find('input, textarea').each((node: Node) => {
+                                    const el = node as HTMLInputElement
                                     if (!['checkbox', 'button'].includes(el.type) && el.value != '') isNextEmpty = false
                                 })
                                 if (!isEmpty && !next) {
@@ -2290,11 +2323,14 @@ class w2form extends w2base {
                                     query(next).remove()
                                 }
                             })
-                            .on('change.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: KeyboardEvent) {
+                            .on('change.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, _event: Event) {
+                                const event = _event as KeyboardEvent
                                 self.rememberOriginal()
                                 // event before
+                                const _fieldValue = self.getFieldValue(field.field)
+                                if (_fieldValue == null) return
                                 // eslint-disable-next-line prefer-const
-                                let { current, previous, original } = self.getFieldValue(field.field)
+                                let { current, previous, original } = _fieldValue
                                 const $cnt = query(event.target).closest('.w2ui-map-container')
                                 // delete empty
                                 if (typeof field.html?.render == 'function') {
@@ -2304,7 +2340,7 @@ class w2form extends w2base {
                                     })
                                 } else if (field.type == 'map') {
                                     current._order = []
-                                    $cnt.find('.w2ui-map.key').each((el: HTMLInputElement) => { current._order.push(el.value) })
+                                    $cnt.find('.w2ui-map.key').each((node: Node) => { current._order.push((node as HTMLInputElement).value) })
                                     current._order = current._order.filter((k: string) => k !== '')
                                     delete current['']
                                 } else if (field.type == 'array') {
@@ -2325,10 +2361,10 @@ class w2form extends w2base {
                                 let className = ''
                                 const cnt = query(event.target).closest('.w2ui-map-container')
                                 if (field.type == 'array' || lastKey == 'tab') {
-                                    cnt.find('input, textarea').each((input: HTMLElement, ind: number) => { if (input == event.target) index = ind })
+                                    cnt.find('input, textarea').each((node: Node, ind: number) => { if (node == event.target) index = ind })
                                 } else {
                                     className = query(event.target).hasClass('key') ? '.key' : '.value'
-                                    cnt.find('input'+ className + ', textarea'+ className).each((input: HTMLElement, ind: number) => { if (input == event.target) index = ind })
+                                    cnt.find('input'+ className + ', textarea'+ className).each((node: Node, ind: number) => { if (node == event.target) index = ind })
                                 }
 
                                 // set value to the field
@@ -2336,19 +2372,20 @@ class w2form extends w2base {
 
                                 // set focus to the next input
                                 let el: HTMLElement | undefined
+                                const safeIdx = index ?? 0
                                 if (lastKey == 'tab') {
-                                    el = cnt.find('input, textarea').get(index + 1) as HTMLElement
+                                    el = cnt.find('input, textarea').get(safeIdx + 1) as HTMLElement
                                 } else if (lastKey == 'enter' && cnt.find('input.value, textarea.value').length > 0) {
                                     if (className == '.key') {
-                                        el = cnt.find('input.key, textarea.key').get(index + 1) as HTMLElement
+                                        el = cnt.find('input.key, textarea.key').get(safeIdx + 1) as HTMLElement
                                     } else {
-                                        el = cnt.find('input.value, textarea.value').get(index + 1) as HTMLElement
+                                        el = cnt.find('input.value, textarea.value').get(safeIdx + 1) as HTMLElement
                                     }
                                     if (el == null) {
-                                        el = cnt.find('input, textarea').get(index + (event.shiftKey ? -1 : 1)) as HTMLElement
+                                        el = cnt.find('input, textarea').get(safeIdx + (event.shiftKey ? -1 : 1)) as HTMLElement
                                     }
                                 } else {
-                                    el = cnt.find('input'+ className + ', textarea'+ className).eq(index + (lastKey == 'up' ? -1 : 1)).get(0) as HTMLElement
+                                    el = cnt.find('input'+ className + ', textarea'+ className).eq(safeIdx + (lastKey == 'up' ? -1 : 1)).get(0) as HTMLElement
                                 }
                                 if (el) {
                                     el.focus()
@@ -2369,7 +2406,7 @@ class w2form extends w2base {
         return Date.now() - time
     }
 
-    render(box?: HTMLElement | string): number | void {
+    override render(box?: HTMLElement | string): number | void {
         const time = Date.now()
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function callbacks where `this` is rebound (toolbar, tabs click handlers)
@@ -2450,7 +2487,7 @@ class w2form extends w2base {
         return Date.now() - time
     }
 
-    unmount(): void {
+    override unmount(): void {
         super.unmount()
         this.tabs?.unmount?.()
         this.toolbar?.unmount?.()
