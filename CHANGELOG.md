@@ -11,6 +11,7 @@
 - **Playwright smoke harness** (`test/smoke/`): 38 tests across grid, form, layout, sidebar, popup, tooltip widgets at three viewport sizes. Runs via `pnpm smoke`.
 - **Consumer smoke typecheck** (`test/consumer-smoke.ts`): independent compile-time validation that all 11 public class imports work as a library consumer.
 - **Strict mode** active across the entire codebase: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `allowJs: false`.
+- **`w2grid.getSelectionRows()` and `w2grid.getSelectionCells()`**: discriminated typed methods that replace the `any[]` return of the legacy `getSelection()`. Exported `W2GridCellSelection` interface (`{ recid, index, column }`). The legacy `getSelection(returnIndex?)` is preserved as a back-compat wrapper that returns `RecId[] | number[] | W2GridCellSelection[]` (no longer `any[]`). Prefer the split methods when the caller knows the selection mode statically.
 
 ### Changed
 
