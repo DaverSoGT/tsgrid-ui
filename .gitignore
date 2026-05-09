@@ -20,3 +20,7 @@ test/smoke/__results__/
 .tscache/
 # allow snapshot txt files (overrides *.txt rule above)
 !test/smoke/__snapshots__/**
+# local dev tooling — Claude Code skills, plugins, lockfiles
+.agents/
+.claude/
+skills-lock.json
