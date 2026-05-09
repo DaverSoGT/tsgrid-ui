@@ -4,7 +4,7 @@
 * --- on the same page (for example bootstrap)
 */
 
-.w2ui-reset {
+.tsg-reset {
     .box-sizing;
     font-family: @main-font-family;
     font-size: 12px;
@@ -48,7 +48,7 @@
     }
 }
 
-.w2ui-centered {
+.tsg-centered {
     position: absolute;
     left: 0;
     right: 0;
@@ -62,16 +62,16 @@
     padding: 10px;
 }
 
-.w2ui-disabled,
-.w2ui-readonly {
+.tsg-disabled,
+.tsg-readonly {
     background-color: #f1f1f1;
     color: #777;
 }
 
-input.w2ui-focus:not(button),
-textarea.w2ui-focus,
-select.w2ui-focus,
-div[contenteditable].w2ui-focus {
+input.tsg-focus:not(button),
+textarea.tsg-focus,
+select.tsg-focus,
+div[contenteditable].tsg-focus {
     outline-style: auto;
     outline-color: @input-focus-outline-color;
 }
@@ -81,19 +81,19 @@ div[contenteditable].w2ui-focus {
 * ---- Input Controls ----
 */
 
-input[type=button].w2ui-input {
+input[type=button].tsg-input {
     .sys-button;
     &:hover { .sys-button-hover; }
     &:active { .sys-button-active; }
 }
 
-select.w2ui-input:focus,
-div.w2ui-input:focus {
+select.tsg-input:focus,
+div.tsg-input:focus {
     outline-color: @input-focus-outline-color;
 }
 
-input:not([type=button]):not([type=submit]).w2ui-input,
-textarea.w2ui-input {
+input:not([type=button]):not([type=submit]).tsg-input,
+textarea.tsg-input {
     padding: 6px;
     border: @input-border;
     border-radius: 3px;
@@ -110,7 +110,7 @@ textarea.w2ui-input {
     }
 }
 
-select.w2ui-input {
+select.tsg-input {
     color: @input-color;
     padding: 0px 20px 0px 7px;
     line-height: 1.8;
@@ -124,7 +124,7 @@ select.w2ui-input {
     background-repeat: no-repeat, no-repeat;
 }
 
-.w2ui-icon-expand {
+.tsg-icon-expand {
     &:before {
         position: relative;
         top: 1px;
@@ -139,7 +139,7 @@ select.w2ui-input {
     }
 }
 
-.w2ui-icon-collapse {
+.tsg-icon-collapse {
     &:before {
         position: relative;
         top: -1px;
@@ -156,7 +156,7 @@ select.w2ui-input {
 
 /* On/Off switch */
 
-input[type="checkbox"].w2ui-toggle {
+input[type="checkbox"].tsg-toggle {
     position: absolute;
     opacity: 0;
     width: 46px;
@@ -180,11 +180,11 @@ input[type="checkbox"].w2ui-toggle {
         margin-left: 2px;
         margin-top: 3px;
     }
-    &.w2ui-small {
+    &.tsg-small {
         width: 30px;
         height: 23px;
     }
-    &.w2ui-small + div {
+    &.tsg-small + div {
         width: 30px;
         height: 16px;
         margin-top: 5px;
@@ -213,7 +213,7 @@ input[type="checkbox"].w2ui-toggle {
         margin-left: -1px;
     }
 
-    &.w2ui-small + div > div {
+    &.tsg-small + div > div {
         width: 16px;
         height: 16px;
     }
@@ -222,7 +222,7 @@ input[type="checkbox"].w2ui-toggle {
         transform: translate3d(24px, 0, 0);
         background-color: #ffffff;
     }
-    &.w2ui-small:checked + div > div {
+    &.tsg-small:checked + div > div {
         transform: translate3d(14px, 0, 0);
     }
 
@@ -352,11 +352,11 @@ input[type=range] {
 * ---- Common Classes ----
 */
 
-.w2ui-marker {
+.tsg-marker {
     background-color: rgba(214, 161, 252, 50%);
 }
 
-.w2ui-spinner {
+.tsg-spinner {
     display: inline-block;
     background-size: 100%;
     background-repeat: no-repeat;
@@ -365,7 +365,7 @@ input[type=range] {
 
 /* common icons */
 
-.w2ui-icon {
+.tsg-icon {
     background-repeat: no-repeat;
     height: 16px;
     width: 16px;
@@ -386,7 +386,7 @@ input[type=range] {
 * ---- Locking portion of the screen (in grid, form, layout)
 */
 
-.w2ui-lock {
+.tsg-lock {
     display: none;
     position: absolute;
     z-index: 1400;
@@ -398,7 +398,7 @@ input[type=range] {
     background-color: @lock-background-color;
 }
 
-.w2ui-lock-msg {
+.tsg-lock-msg {
     display: none;
     position: absolute;
     z-index: 1400;
@@ -419,7 +419,7 @@ input[type=range] {
     text-align: center;
     border-radius: 5px;
     border: @lock-msg-border;
-    .w2ui-spinner {
+    .tsg-spinner {
         display: inline-block;
         width: 24px;
         height: 24px;
@@ -431,12 +431,12 @@ input[type=range] {
 * ---- Scroll contet, used in toolbar and tabs ----
 */
 
-.w2ui-scroll-wrapper {
+.tsg-scroll-wrapper {
     overflow: hidden;
 }
 
-.w2ui-scroll-left,
-.w2ui-scroll-right {
+.tsg-scroll-left,
+.tsg-scroll-right {
     top: 0;
     width: 18px;
     height: 100%;
@@ -450,14 +450,14 @@ input[type=range] {
     }
 }
 
-.w2ui-scroll-left {
+.tsg-scroll-left {
     left: 0;
     box-shadow: 0px 0px 7px #5F5F5F;
     background: @overflow-background-color @image-less center center no-repeat;
     background-size: 15px 12px;
 }
 
-.w2ui-scroll-right {
+.tsg-scroll-right {
     right: 0;
     box-shadow: 0px 0px 7px #5F5F5F;
     background: @overflow-background-color @image-more center center no-repeat;
@@ -468,7 +468,7 @@ input[type=range] {
 * ---- Notification message ----
 */
 
-#w2ui-notify {
+#tsg-notify {
     pointer-events: none; // it should not be blocking events unless it is on the message
     position: absolute;
     display: flex;
@@ -501,7 +501,7 @@ input[type=range] {
         a:hover {
             color: #a2f0ff;
         }
-       span.w2ui-notify-close {
+       span.tsg-notify-close {
             padding: 6px 6px;
             border-radius: 3px;
             font-size: 13px;
@@ -515,10 +515,10 @@ input[type=range] {
             }
 
         }
-        &.w2ui-notify-error {
+        &.tsg-notify-error {
             text-shadow: none;
             background-color: rgba(255, 0, 0, 0.8) ;
-            .w2ui-notify-close {
+            .tsg-notify-close {
                 color: #ffffff ;
                 &:hover {
                     background-color: #fcadad;
@@ -526,10 +526,10 @@ input[type=range] {
                 }
             }
         }
-        &.w2ui-notify-success {
+        &.tsg-notify-success {
             text-shadow: none;
             background-color: rgba(21,192,70,.8) ;
-            .w2ui-notify-close {
+            .tsg-notify-close {
                 color: #ffffff ;
                 &:hover {
                     background-color: #7ae097;

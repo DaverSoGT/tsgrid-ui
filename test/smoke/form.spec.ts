@@ -4,11 +4,11 @@ test.describe('Form', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/test/smoke/form.html')
         await page.waitForFunction(() => (window as any)._smokeReady === true)
-        await page.waitForSelector('.TsUi-form', { state: 'attached' })
+        await page.waitForSelector('.tsg-form', { state: 'attached' })
     })
 
     test('renders form container', async ({ page }) => {
-        await expect(page.locator('.TsUi-form')).toBeAttached()
+        await expect(page.locator('.tsg-form')).toBeAttached()
     })
 
     test('renders 3 input fields', async ({ page }) => {

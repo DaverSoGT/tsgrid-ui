@@ -346,7 +346,7 @@ class TsBase {
     }
 
     /**
-     * Removes all classes that start with TsUi-* and sets box to null. It is needed so that control will
+     * Removes all classes that start with tsg-* and sets box to null. It is needed so that control will
      * release the box to be used for other widgets
      */
     unmount(): void {
@@ -355,10 +355,10 @@ class TsBase {
             return
         }
         const remove: string[] = []
-        // find classes that start with "TsUi-*"
+        // find classes that start with "tsg-*"
         if (this.box instanceof HTMLElement) {
             this.box.classList.forEach(cl => {
-                if (cl.startsWith('TsUi-')) remove.push(cl)
+                if (cl.startsWith('tsg-')) remove.push(cl)
             })
         }
         query(this.box)

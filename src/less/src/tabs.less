@@ -2,7 +2,7 @@
 * ---- Tabs ----
 */
 
-.w2ui-tabs {
+.tsg-tabs {
     cursor: default;
     overflow: hidden;
     position: relative;
@@ -11,7 +11,7 @@
     padding: 0px;
     margin: 0px;
 
-    .w2ui-tabs-line {
+    .tsg-tabs-line {
         position: absolute;
         left: 0px;
         right: 0px;
@@ -22,13 +22,13 @@
         background-color: #e2e2e2;
     }
 
-    .w2ui-scroll-left,
-    .w2ui-scroll-right {
+    .tsg-scroll-left,
+    .tsg-scroll-right {
         z-index: 30;
         display: flex;
     }
 
-    .w2ui-scroll-wrapper {
+    .tsg-scroll-wrapper {
         display: flex;
         flex-direction: row;
         flex-wrap: nowrap;
@@ -37,7 +37,7 @@
         padding: 0 2px;
         // position: relative;
         // height: 32px;
-        .w2ui-tab {
+        .tsg-tab {
             height: 28px;
             position: relative;
             z-index: 20;
@@ -57,7 +57,7 @@
                 border: 2px solid transparent;
                 border-bottom: 2px solid #0175ff;
                 margin-bottom: 0px;
-                .w2ui-tab-icon {
+                .tsg-tab-icon {
                     color: #0175ff;
                 }
             }
@@ -74,14 +74,14 @@
             &.closable {
                 padding: 6px 28px 6px 20px;
             }
-            .w2ui-tab-icon {
+            .tsg-tab-icon {
                 color: #888889;
                 margin-right: 8px;
                 display: inline-block;
                 font-size: 13px;
                 margin-top: -1px;
             }
-            .w2ui-tab-close {
+            .tsg-tab-close {
                 position: absolute;
                 right: 3px;
                 top: 5px;
@@ -115,7 +115,7 @@
             }
         }
 
-        .w2ui-tabs-right {
+        .tsg-tabs-right {
             padding: 8px 2px;
             width: 100%;
             text-align: right;
@@ -124,13 +124,13 @@
     }
 
     // upwards tabs
-    &.w2ui-tabs-up {
-        .w2ui-tabs-line {
+    &.tsg-tabs-up {
+        .tsg-tabs-line {
             top: 0px;
             bottom: auto;
         }
-        .w2ui-scroll-wrapper {
-            .w2ui-tab {
+        .tsg-scroll-wrapper {
+            .tsg-tab {
                 border: 2px solid transparent;
                 border-top: 2px solid transparent;
                 border-radius: 0 0 4px 4px;

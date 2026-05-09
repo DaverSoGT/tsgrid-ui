@@ -1137,11 +1137,11 @@ class Utils {
             style = 'position: fixed; right: 0; bottom: 0;'
         }
         query(boxSel).prepend(
-            `<div class="TsUi-lock" style="${style}"></div>` +
-            '<div class="TsUi-lock-msg"></div>'
+            `<div class="tsg-lock" style="${style}"></div>` +
+            '<div class="tsg-lock-msg"></div>'
         )
-        const $lock = query(boxSel).find('.TsUi-lock')
-        const $mess = query(boxSel).find('.TsUi-lock-msg')
+        const $lock = query(boxSel).find('.tsg-lock')
+        const $mess = query(boxSel).find('.tsg-lock-msg')
         if (!opts.msg) {
             $mess.css({
                 'background-color': 'transparent',
@@ -1151,7 +1151,7 @@ class Utils {
             })
         }
         if (opts.spinner === true) {
-            opts.msg = `<div class="TsUi-spinner" ${(!opts.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
+            opts.msg = `<div class="tsg-spinner" ${(!opts.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
                 + opts.msg
         }
         if (opts.msg) {
@@ -1207,7 +1207,7 @@ class Utils {
             boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
         }
         if (this.isInt(speed) && (speed ?? 0) > 0) {
-            query(boxSel).find('.TsUi-lock').css({
+            query(boxSel).find('.tsg-lock').css({
                 transition: ((speed ?? 0)/1000) + 's',
                 opacity: 0,
             })
@@ -1215,12 +1215,12 @@ class Utils {
             const _box = query(boxSel).get(0) as unknown as Record<string, unknown>
             clearTimeout(_box['_prevUnlock'] as number)
             _box['_prevUnlock'] = setTimeout(() => {
-                query(boxSel).find('.TsUi-lock').remove()
+                query(boxSel).find('.tsg-lock').remove()
             }, speed)
-            query(boxSel).find('.TsUi-lock-msg').remove()
+            query(boxSel).find('.tsg-lock-msg').remove()
         } else {
-            query(boxSel).find('.TsUi-lock').remove()
-            query(boxSel).find('.TsUi-lock-msg').remove()
+            query(boxSel).find('.tsg-lock').remove()
+            query(boxSel).find('.tsg-lock-msg').remove()
         }
     }
 
@@ -1262,7 +1262,7 @@ class Utils {
         // any: msgBase is the live TsMessageOptions reference shared across all closures
         let msgBase: TsMessageOptions = {}
         const removeLast = () => {
-            const msgs = query(where?.box).find('.TsUi-message')
+            const msgs = query(where?.box).find('.tsg-message')
             if (msgs.length == 0) return // no messages already
             // any: DOM element has _msg_options stored dynamically at open time
             msgBase = (msgs.get(0) as unknown as Record<string, unknown>)['_msg_options'] as TsMessageOptions || {}
@@ -1275,17 +1275,17 @@ class Utils {
             // any: DOM element has _msg_prevFocus stored dynamically at open time
             const msgBoxEl = options['box'] as Record<string, unknown> | null
             const focus = msgBoxEl?.['_msg_prevFocus'] as Element | undefined
-            if (query(where.box).find('.TsUi-message').length <= 1) {
+            if (query(where.box).find('.tsg-message').length <= 1) {
                 if (where.owner) {
                     where.owner.unlock?.(where.param, 150)
                 } else {
                     this.unlock(where.box, 150)
                 }
             } else {
-                query(where.box).find(`#TsUi-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
+                query(where.box).find(`#tsg-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
             }
             if (focus) {
-                const msg = query(focus).closest('.TsUi-message')
+                const msg = query(focus).closest('.tsg-message')
                 if (msg.length > 0) {
                     // any: DOM element has _msg_options + setFocus stored dynamically at open time
                     const opt = (msg.get(0) as unknown as Record<string, unknown>)['_msg_options'] as Record<string, unknown>
@@ -1324,7 +1324,7 @@ class Utils {
             removeLast()
             return
         }
-        if (msgBase.text != null) msgBase.body = `<div class="TsUi-centered TsUi-msg-text">${msgBase.text}</div>`
+        if (msgBase.text != null) msgBase.body = `<div class="tsg-centered tsg-msg-text">${msgBase.text}</div>`
         if (msgBase.width == null) msgBase.width = 350
         if (msgBase.height == null) msgBase.height = 170
         if (msgBase.hideOn == null) msgBase.hideOn = ['esc']
@@ -1340,7 +1340,7 @@ class Utils {
         // any: at this point msgBase has both TsMessageOptions fields AND TsBase event methods (on/off/trigger)
         const msgOpts = msgBase as unknown as Record<string, unknown>
         ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open', (event: Record<string, unknown>) => {
-            TsUtils.bindEvents(query(msgOpts['box'] as unknown).find('.TsUi-eaction'), msgOpts) // msgOpts is TsBase object
+            TsUtils.bindEvents(query(msgOpts['box'] as unknown).find('.tsg-eaction'), msgOpts) // msgOpts is TsBase object
             const detail = event['detail'] as Record<string, unknown>
             query(detail['box'] as unknown).find('button, input, textarea, [name=hidden-first]')
                 .off('.message')
@@ -1387,16 +1387,16 @@ class Utils {
                 const handler = msgBase.actions![action]
                 let btnAction: string = action
                 if (typeof handler == 'function') {
-                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
+                    msgBase.buttons += `<button class="tsg-btn tsg-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
                 }
                 if (typeof handler == 'object' && handler !== null) {
                     const h = handler as Record<string, unknown>
-                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
+                    msgBase.buttons += `<button class="tsg-btn tsg-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
                         style="${h['style'] ?? ''}" ${h['attrs'] ?? ''}>${h['text'] || action}</button>`
                     btnAction = Array.isArray(msgBase.actions) ? String(h['text']) : action
                 }
                 if (typeof handler == 'string') {
-                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
+                    msgBase.buttons += `<button class="tsg-btn tsg-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
                     btnAction = handler
                 }
                 if (typeof btnAction == 'string') {
@@ -1419,8 +1419,8 @@ class Utils {
         })
         if (msgBase.body !== '' || msgBase.buttons !== '') {
             msgBase.html = `
-                <div class="TsUi-message-body">${msgBase.body || ''}</div>
-                <div class="TsUi-message-buttons">${msgBase.buttons || ''}</div>
+                <div class="tsg-message-body">${msgBase.body || ''}</div>
+                <div class="tsg-message-buttons">${msgBase.buttons || ''}</div>
             `
         }
         let styles  = getComputedStyle(query(where.box).get(0) as Element)
@@ -1453,7 +1453,7 @@ class Utils {
         if (msgBase.html === '' && msgBase.body === '' && msgBase.buttons === '') {
             removeLast()
         } else {
-            msgBase.msgIndex = query(where.box).find('.TsUi-message').length
+            msgBase.msgIndex = query(where.box).find('.tsg-message').length
             if (msgBase.msgIndex === 0 && typeof this.lock == 'function') {
                 query(where.box).css('overflow', 'hidden')
                 if (where.owner) { // where.param is used in the panel
@@ -1465,11 +1465,11 @@ class Utils {
                 }
             }
             // send back previous messages
-            query(where.box).find('.TsUi-message').css('z-index', '1390')
+            query(where.box).find('.tsg-message').css('z-index', '1390')
             head.css('z-index', '1501')
             // add message
             const content = `
-                <div id="TsUi-message-${where.owner?.name}-${msgBase.msgIndex}" class="TsUi-message" data-mousedown="stop"
+                <div id="tsg-message-${where.owner?.name}-${msgBase.msgIndex}" class="tsg-message" data-mousedown="stop"
                     style="z-index: 1500; left: ${((pWidth - (msgBase.width ?? 0)) / 2)}px; top: ${titleHeight}px;
                         width: ${msgBase.width}px; height: ${msgBase.height}px; transform: translateY(-${msgBase.height}px)"
                     ${(msgBase.hideOn ?? []).includes('click')
@@ -1487,7 +1487,7 @@ class Utils {
                 query(where.box).prepend(content)
             }
             // any: DOM elements get _msg_options + _msg_prevFocus dynamic properties at open time
-            msgBase.box = query(where.box).find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
+            msgBase.box = query(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
             TsUtils.bindEvents(msgBase.box, this as unknown as Record<string, unknown>)
             query(msgBase.box)
                 .addClass('animating')
@@ -1501,7 +1501,7 @@ class Utils {
                 edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('open', { target: (this as unknown as Record<string, unknown>)['name'], box: msgBase.box, self: msgBase })
                 const edataR = edata as Record<string, unknown>
                 if (edataR['isCancelled'] === true) {
-                    query(where.box).find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
+                    query(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
                     if (msgBase.msgIndex === 0) {
                         head.css('z-index', msgBase.tmp!.zIndex)
                         query(where.box).css('overflow', msgBase.tmp!.overflow)
@@ -1518,7 +1518,7 @@ class Utils {
             openTimer = setTimeout(() => {
                 // has to be on top of lock
                 query(where.box)
-                    .find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`)
+                    .find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)
                     .removeClass('animating')
                     .css({ 'transition': '0s' })
                 // event after
@@ -1553,22 +1553,22 @@ class Utils {
             }
             // default behavior
             query(msgBase.box)
-                .addClass('TsUi-closing animating')
+                .addClass('tsg-closing animating')
                 .css({
                     'transition': '0.15s',
                     'transform': 'translateY(-' + msgBase.height + 'px)'
                 })
             if ((msgBase.msgIndex ?? 0) !== 0) {
                 // previous message
-                query(where.box).find(`#TsUi-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
+                query(where.box).find(`#tsg-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
             }
             closeTimer = setTimeout(() => { closeComplete(msgOpts) }, 150)
         }
         msgBase.setFocus = (focus: number | string | null | undefined) => {
             // in message or popup
-            const cnt = query(where.box).find('.TsUi-message').length - 1
-            const box = query(where.box).find(`#TsUi-message-${where.owner?.name}-${cnt}`)
-            const sel = 'input, button, select, textarea, [contentEditable], .TsUi-input'
+            const cnt = query(where.box).find('.tsg-message').length - 1
+            const box = query(where.box).find(`#tsg-message-${where.owner?.name}-${cnt}`)
+            const sel = 'input, button, select, textarea, [contentEditable], .tsg-input'
             if (focus != null) {
                 // any: parameter typed any — runtime dispatch by call site; TsUtils helper accepts heterogeneous runtime input
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1584,7 +1584,7 @@ class Utils {
 
             // clear focus if there are other messages
             query(where.box)
-                .find('.TsUi-message')
+                .find('.tsg-message')
                 .find(sel + ',[name=hidden-first],[name=hidden-last]')
                 .off('.keep-focus')
 
@@ -1682,14 +1682,14 @@ class Utils {
         if (msgOpts['label']) {
             msgOpts['focus'] = 0 // the input should be in focus, which is first in the popup
             msgOpts['body'] = (msgOpts['textarea']
-                ? `<div class="TsUi-prompt textarea">
+                ? `<div class="tsg-prompt textarea">
                      <div>${msgOpts['label']}</div>
-                     <textarea id="TsPrompt" class="TsUi-input" ${msgOpts['attrs'] ?? ''}
+                     <textarea id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event"></textarea>
                    </div>`
-                : `<div class="TsUi-prompt TsUi-centered">
+                : `<div class="tsg-prompt tsg-centered">
                      <label>${msgOpts['label']}&nbsp;</label>
-                     <input id="TsPrompt" class="TsUi-input" ${msgOpts['attrs'] ?? ''}
+                     <input id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event">
                    </div>`
             )
@@ -1815,7 +1815,7 @@ class Utils {
             opts['timeout'] ??= 15_000 // 15 seconds or will be hidden on route change
             if (typeof this.tmp['notify_resolve'] == 'function') {
                 ;(this.tmp['notify_resolve'] as () => void)()
-                query(this.tmp['notify_where']).find('#TsUi-notify').remove()
+                query(this.tmp['notify_where']).find('#tsg-notify').remove()
             }
             this.tmp['notify_resolve'] = resolve
             this.tmp['notify_where'] = opts['where']
@@ -1824,35 +1824,35 @@ class Utils {
                 if (typeof opts['actions'] == 'object') {
                     const actions: Record<string, string> = {}
                     Object.keys(opts['actions'] as Record<string, unknown>).forEach(action => {
-                        actions[action] = `<a class="TsUi-notify-link" value="${action}">${action}</a>`
+                        actions[action] = `<a class="tsg-notify-link" value="${action}">${action}</a>`
                     })
                     textStr = this.execTemplate(textStr, actions)
                 }
                 const html = `
-                    <div id="TsUi-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
-                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'TsUi-notify-error' : ''} ${opts['success'] ? 'TsUi-notify-success' : ''}">
+                    <div id="tsg-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
+                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'tsg-notify-error' : ''} ${opts['success'] ? 'tsg-notify-success' : ''}">
                             ${textStr}
-                            <span class="TsUi-notify-close TsUi-icon-cross"></span>
+                            <span class="tsg-notify-close tsg-icon-cross"></span>
                         </div>
                     </div>`
                 query(opts['where']).append(html)
-                query(opts['where']).find('#TsUi-notify').find('.TsUi-notify-close')
+                query(opts['where']).find('#tsg-notify').find('.tsg-notify-close')
                     .on('click', _event => {
-                        query(opts['where']).find('#TsUi-notify').remove()
+                        query(opts['where']).find('#tsg-notify').remove()
                         resolve()
                     })
                 if (opts['actions']) {
-                    query(opts['where']).find('#TsUi-notify .TsUi-notify-link')
+                    query(opts['where']).find('#tsg-notify .tsg-notify-link')
                         .on('click', event => {
                             const value = query((event as Event).target).attr('value') ?? ''
                             ;((opts['actions'] as Record<string, unknown>)[value] as () => void)()
-                            query(opts['where']).find('#TsUi-notify').remove()
+                            query(opts['where']).find('#tsg-notify').remove()
                             resolve()
                         })
                 }
                 if ((opts['timeout'] as number) > 0) {
                     this.tmp['notify_timer'] = setTimeout(() => {
-                        query(opts['where']).find('#TsUi-notify').remove()
+                        query(opts['where']).find('#tsg-notify').remove()
                         resolve()
                     }, opts['timeout'] as number)
                 }
@@ -1933,7 +1933,7 @@ class Utils {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     marker(el: any, items: any, options: any = { onlyFirst: false, wholeWord: false, isRegex: false}) {
         options.tag ??= 'span'
-        options.class ??= 'TsUi-marker'
+        options.class ??= 'tsg-marker'
         // any: matched is the regex capture group — dynamic string from DOM text
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         options.raplace = (matched: any) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`

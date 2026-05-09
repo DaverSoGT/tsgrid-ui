@@ -225,7 +225,7 @@ class Tooltip {
             name            : null,     // name for the overlay, otherwise input id is used
             html            : '',       // text or html
             style           : '',       // additional style for the overlay
-            class           : '',       // add class for TsUi-tooltip-body
+            class           : '',       // add class for tsg-tooltip-body
             position        : 'top|bottom',   // can be left, right, top, bottom
             draggable       : false,    // if true, then tooltip can be move with mouse
             align           : '',       // can be: both, both:XX left, right, both, top, bottom
@@ -551,10 +551,10 @@ class Tooltip {
                 return
             }
             query(overlay.box)
-                .find('.TsUi-overlay-body')
+                .find('.tsg-overlay-body')
                 .attr('style', (options.style || '') + '; ' + overlayStyles)
                 .removeClass(null) // removes all classes
-                .addClass('TsUi-overlay-body ' + options.class + (options.draggable ? ' TsUi-draggable' : ''))
+                .addClass('tsg-overlay-body ' + options.class + (options.draggable ? ' tsg-draggable' : ''))
                 .html(options.html)
             this.resize(overlay.name)
         } else {
@@ -564,10 +564,10 @@ class Tooltip {
             // normal processing
             query('body').append(
                 // pointer-events will be re-enabled leter
-                `<div id="${overlay.id}" name="${name}" style="display: none; pointer-events: none" class="TsUi-overlay"
+                `<div id="${overlay.id}" name="${name}" style="display: none; pointer-events: none" class="tsg-overlay"
                         data-click="stop" data-focusin="stop">
                     <style></style>
-                    <div class="TsUi-overlay-body TsUi-eaction ${options.class} ${options.draggable ? 'TsUi-draggable' : ''}"
+                    <div class="tsg-overlay-body tsg-eaction ${options.class} ${options.draggable ? 'tsg-draggable' : ''}"
                             style="${options.style || ''}; ${overlayStyles}" ${options.draggable ? 'data-mousedown="startDrag|event"' : ''}>
                         ${options.html}
                     </div>
@@ -589,8 +589,8 @@ class Tooltip {
             overlay.anchor.style.cssText += ';' + options.anchorStyle
         }
         if (options.anchorClass) {
-            // do not add TsUi-focus to body
-            if (!(options.anchorClass == 'TsUi-focus' && overlay.anchor == document.body)) {
+            // do not add tsg-focus to body
+            if (!(options.anchorClass == 'tsg-focus' && overlay.anchor == document.body)) {
                 query(overlay.anchor).addClass(options.anchorClass)
             }
         }
@@ -614,7 +614,7 @@ class Tooltip {
         // then insert html and it will adjust
         // any: .css() returns string|Query|undefined; at runtime with object arg it always returns Query
         ;(query(overlay.box).css('opacity', 1) as unknown as Query)
-            .find('.TsUi-overlay-body')
+            .find('.tsg-overlay-body')
             .html(options.html)
         /**
          * pointer-events: none is needed to avoid cases when popup is shown right under the cursor
@@ -623,15 +623,15 @@ class Tooltip {
         setTimeout(() => { (query(overlay.box).css({ 'pointer-events': 'auto' }) as unknown as Query).data('ready', 'yes') }, 100) // any: css() with object returns Query
 
         // bind events
-        TsUtils.bindEvents(query(overlay.box).find('.TsUi-eaction'), this as unknown as Record<string, unknown>) // any: bindEvents accepts event handler object; Tooltip is valid
+        TsUtils.bindEvents(query(overlay.box).find('.tsg-eaction'), this as unknown as Record<string, unknown>) // any: bindEvents accepts event handler object; Tooltip is valid
 
         delete overlay.needsUpdate
         // expose overlay to DOM element
         overlay.box.overlay = overlay
         // click / drag: raise stacking order among sibling overlays (DOM order, not z-index)
         query(overlay.box)
-            .off('mousedown.TsUi-bringfront')
-            .on('mousedown.TsUi-bringfront', () => {
+            .off('mousedown.tsg-bringfront')
+            .on('mousedown.tsg-bringfront', () => {
                 self.bringOverlayToFront(overlay)
             })
         // event after
@@ -805,20 +805,20 @@ class Tooltip {
         qBox.then((q: Query): Query => {
             if (pos.width != null) {
                 (q.css('width', pos.width + 'px') as unknown as Query)
-                     .find('.TsUi-overlay-body')
+                     .find('.tsg-overlay-body')
                      .css('width', '100%')
             }
             if (pos.height != null) {
                 (q.css('height', pos.height + 'px') as unknown as Query)
-                     .find('.TsUi-overlay-body')
+                     .find('.tsg-overlay-body')
                      .css('height', '100%')
             }
             return q
         })
-            .find('.TsUi-overlay-body')
-            .removeClass('TsUi-arrow-right TsUi-arrow-left TsUi-arrow-top TsUi-arrow-bottom')
+            .find('.tsg-overlay-body')
+            .removeClass('tsg-arrow-right tsg-arrow-left tsg-arrow-top tsg-arrow-bottom')
             .addClass(pos.arrow.class)
-            .closest('.TsUi-overlay')
+            .closest('.tsg-overlay')
             .find('style:first-child')
             .text(pos.arrow.style)
 
@@ -970,7 +970,7 @@ class Tooltip {
         return retPos as TooltipPosition
 
         function usePosition(pos: string) {
-            arrow.class = anchor.arrow ? anchor.arrow : `TsUi-arrow-${pos}`
+            arrow.class = anchor.arrow ? anchor.arrow : `tsg-arrow-${pos}`
             switch (pos) {
                 case 'top': {
                     left = anchor.left + (anchor.width - (width ?? content.width)) / 2
@@ -1082,8 +1082,8 @@ class Tooltip {
                     arrow.offset = arrow.offset < 0 ? -maxOffset : maxOffset
                 }
                 // any: stripSpaces returns unknown; runtime always produces a string
-                arrow.style = TsUtils.stripSpaces(`#${overlay.id} .TsUi-overlay-body:after,
-                            #${overlay.id} .TsUi-overlay-body:before {
+                arrow.style = TsUtils.stripSpaces(`#${overlay.id} .tsg-overlay-body:after,
+                            #${overlay.id} .tsg-overlay-body:before {
                                 --tip-size: ${arrowSize}px;
                                 margin-${aType}: ${arrow.offset}px;
                             }`) as string
@@ -1092,7 +1092,7 @@ class Tooltip {
     }
 
     /**
-     * Move overlay node to the end of its parent (typically body) so it stacks above other .TsUi-overlay siblings
+     * Move overlay node to the end of its parent (typically body) so it stacks above other .tsg-overlay siblings
      * without relying on z-index. No-op if it is already the last element child.
      */
     bringOverlayToFront(overlay: TooltipOverlay): void {
@@ -1106,7 +1106,7 @@ class Tooltip {
         if (event.preventDefault) {
             event.preventDefault()
         }
-        const el = query(event.target).closest('.TsUi-overlay')
+        const el = query(event.target).closest('.tsg-overlay')
         // any: overlay DOM element has .overlay property attached at runtime (line: overlay.box.overlay = overlay)
         const overlay = (el[0] as HTMLElement & { overlay?: TooltipOverlay })?.overlay
         if (overlay) {
@@ -1122,10 +1122,10 @@ class Tooltip {
             _removed: false
         }
         query(document)
-            .off('.TsUi-drag')
-            .on('selectstart.TsUi-drag, dragstart.TsUi-drag', e => e.preventDefault())
+            .off('.tsg-drag')
+            .on('selectstart.tsg-drag, dragstart.tsg-drag', e => e.preventDefault())
             .find('body')
-            .addClass('TsUi-overlay-dragging')
+            .addClass('tsg-overlay-dragging')
         query('html')
             .off('.TsColor')
             .on('mousemove.TsColor', mouseMove)
@@ -1134,9 +1134,9 @@ class Tooltip {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mouseUp(_event: any) { // any: query event
             query('html').off('.TsColor')
-            query(document).off('selectstart.TsUi-drag')
-            query(document).off('dragstart.TsUi-drag')
-            query(document.body).removeClass('TsUi-overlay-dragging')
+            query(document).off('selectstart.tsg-drag')
+            query(document).off('dragstart.tsg-drag')
+            query(document.body).removeClass('tsg-overlay-dragging')
             if (initial['moved']) {
                 const ov = initial.el[0] && (initial.el[0] as HTMLElement & { overlay?: TooltipOverlay }).overlay // any: runtime .overlay prop
                 if (ov) {
@@ -1166,8 +1166,8 @@ class Tooltip {
             })
             if (!initial._removed) {
                 initial._removed = true
-                initial.el.find(':scope > .TsUi-overlay-body')
-                    .removeClass('TsUi-arrow-right TsUi-arrow-left TsUi-arrow-top TsUi-arrow-bottom')
+                initial.el.find(':scope > .tsg-overlay-body')
+                    .removeClass('tsg-arrow-right tsg-arrow-left tsg-arrow-top tsg-arrow-bottom')
             }
         }
     }
@@ -1195,12 +1195,12 @@ class ColorTooltip extends Tooltip {
             advanced    : false,
             transparent : true,
             position    : 'top|bottom',
-            class       : 'TsUi-white',
+            class       : 'tsg-white',
             color       : '',
             updateInput : true,
             arrowSize   : 12,
             autoResize  : false,
-            anchorClass : 'TsUi-focus',
+            anchorClass : 'tsg-focus',
             autoShowOn  : 'focus',
             hideOn      : ['doc-click', 'focus-change'],
             onSelect    : null,
@@ -1255,7 +1255,7 @@ class ColorTooltip extends Tooltip {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         overlay.on('show:after.attach', (_event: any) => { // any: TsBase event
             if (ret.overlay?.box) {
-                const actions = query(ret.overlay.box).find('.TsUi-eaction')
+                const actions = query(ret.overlay.box).find('.tsg-eaction')
                 TsUtils.bindEvents(actions, this as unknown as Record<string, unknown>)
                 this.initControls(ret.overlay)
             }
@@ -1263,7 +1263,7 @@ class ColorTooltip extends Tooltip {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         overlay.on('update:after.attach', (_event: any) => { // any: TsBase event
             if (ret.overlay?.box) {
-                const actions = query(ret.overlay.box).find('.TsUi-eaction')
+                const actions = query(ret.overlay.box).find('.tsg-eaction')
                 TsUtils.bindEvents(actions, this as unknown as Record<string, unknown>)
                 this.initControls(ret.overlay)
             }
@@ -1307,7 +1307,7 @@ class ColorTooltip extends Tooltip {
         if (typeof name != 'string') {
             target = name.target
             this.index = (query(target).attr('index') ?? '').split(':').map(Number) as [number, number] // any: attr returns string; map to numbers for palette grid coordinates
-            name = query(target).closest('.TsUi-overlay').attr('name') as string // any: attr returns string|undefined; name is always present here
+            name = query(target).closest('.tsg-overlay').attr('name') as string // any: attr returns string|undefined; name is always present here
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const overlay: any = this.get(name) // any: get() returns union; runtime is TooltipOverlay when name is string
@@ -1320,9 +1320,9 @@ class ColorTooltip extends Tooltip {
             query(overlay.anchor).val(color)
         }
         overlay.newColor = color
-        query(overlay.box).find('.TsUi-color.TsUi-selected').removeClass('TsUi-selected')
+        query(overlay.box).find('.tsg-color.tsg-selected').removeClass('tsg-selected')
         if (target) {
-            query(target).addClass('TsUi-selected')
+            query(target).addClass('tsg-selected')
         }
         // event after
         edata.finish()
@@ -1355,17 +1355,17 @@ class ColorTooltip extends Tooltip {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tabClick(index: any, name: any) { // any: index is number or string; name can be string or Event-like
         if (typeof name != 'string') {
-            name = query(name.target).closest('.TsUi-overlay').attr('name')
+            name = query(name.target).closest('.tsg-overlay').attr('name')
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const overlay: any = this.get(name) // any: get() returns union; runtime is TooltipOverlay
-        const tab = query(overlay.box).find(`.TsUi-color-tab:nth-child(${index})`)
-        query(overlay.box).find('.TsUi-color-tab').removeClass('TsUi-selected')
-        query(tab).addClass('TsUi-selected')
+        const tab = query(overlay.box).find(`.tsg-color-tab:nth-child(${index})`)
+        query(overlay.box).find('.tsg-color-tab').removeClass('tsg-selected')
+        query(tab).addClass('tsg-selected')
         query(overlay.box)
-            .find('.TsUi-tab-content')
+            .find('.tsg-tab-content')
             .hide()
-            .closest('.TsUi-colors')
+            .closest('.tsg-colors')
             .find('.tab-'+ index)
             .show()
     }
@@ -1374,19 +1374,19 @@ class ColorTooltip extends Tooltip {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getColorHTML(name: any, options: any) { // any: name is string; options is TooltipOptions
         let html = `
-            <div class="TsUi-colors-header TsUi-eaction" data-mousedown="startDrag|event">
+            <div class="tsg-colors-header tsg-eaction" data-mousedown="startDrag|event">
                 Colors
             </div>
-            <div class="TsUi-colors">
-                <div class="TsUi-tab-content tab-1">`
+            <div class="tsg-colors">
+                <div class="tsg-tab-content tab-1">`
         for (let i = 0; i < this.palette.length; i++) {
-            html += '<div class="TsUi-color-row">'
+            html += '<div class="tsg-color-row">'
             for (let j = 0; j < (this.palette[i]?.length ?? 0); j++) {
                 const color = this.palette[i]![j]!
                 let border = ''
                 if (color === 'FFFFFF') border = '; border: 1px solid #efefef'
                 html += `
-                    <div class="TsUi-color TsUi-eaction ${color === 'TRANSPARENT' ? 'TsUi-no-color' : ''} ${options.color == color ? 'TsUi-selected' : ''}"
+                    <div class="tsg-color tsg-eaction ${color === 'TRANSPARENT' ? 'tsg-no-color' : ''} ${options.color == color ? 'tsg-selected' : ''}"
                         style="background-color: #${color + border};" name="${color}" index="${i}:${j}"
                         data-mousedown="select|'${color}'|event" data-mouseup="hide|${name}">&nbsp;
                     </div>`
@@ -1397,30 +1397,30 @@ class ColorTooltip extends Tooltip {
         // custom colors
         html += `
             <div style="height: 8px"></div>
-            <div class="TsUi-colors-custom">
+            <div class="tsg-colors-custom">
                 ${this.getCustomColorsHTML(name)}
             </div>`
         html += '</div>'
         // advanced tab
         html += `
-            <div class="TsUi-tab-content tab-2" style="display: none">
+            <div class="tsg-tab-content tab-2" style="display: none">
                 <div class="color-info">
                     <div class="color-preview-bg"><div class="color-preview"></div><div class="color-original"></div></div>
                     <div class="color-part">
-                        <span>H</span> <input class="TsUi-input" name="h" maxlength="3" max="360" tabindex="101">
-                        <span>R</span> <input class="TsUi-input" name="r" maxlength="3" max="255" tabindex="104">
+                        <span>H</span> <input class="tsg-input" name="h" maxlength="3" max="360" tabindex="101">
+                        <span>R</span> <input class="tsg-input" name="r" maxlength="3" max="255" tabindex="104">
                     </div>
                     <div class="color-part">
-                        <span>S</span> <input class="TsUi-input" name="s" maxlength="3" max="100" tabindex="102">
-                        <span>G</span> <input class="TsUi-input" name="g" maxlength="3" max="255" tabindex="105">
+                        <span>S</span> <input class="tsg-input" name="s" maxlength="3" max="100" tabindex="102">
+                        <span>G</span> <input class="tsg-input" name="g" maxlength="3" max="255" tabindex="105">
                     </div>
                     <div class="color-part">
-                        <span>V</span> <input class="TsUi-input" name="v" maxlength="3" max="100" tabindex="103">
-                        <span>B</span> <input class="TsUi-input" name="b" maxlength="3" max="255" tabindex="106">
+                        <span>V</span> <input class="tsg-input" name="v" maxlength="3" max="100" tabindex="103">
+                        <span>B</span> <input class="tsg-input" name="b" maxlength="3" max="255" tabindex="106">
                     </div>
                     <div class="color-part opacity">
                         <span>${TsUtils.lang('Opacity')}</span>
-                        <input class="TsUi-input" name="a" maxlength="5" max="1" tabindex="107">
+                        <input class="tsg-input" name="a" maxlength="5" max="1" tabindex="107">
                     </div>
                 </div>
                 <div class="palette" name="palette">
@@ -1436,17 +1436,17 @@ class ColorTooltip extends Tooltip {
                 </div>
                 <div class="final" name="final">
                     <span style="text-align: right"> Hex </span>
-                    <input class="TsUi-input final" name="hex" tabindex="107" style="width: 70px" readonly>
-                    <div class="TsUi-color TsUi-color-picker TsUi-eaction" data-click="pickAndUse|${name}">
-                        <span class="TsUi-icon TsUi-icon-eye-dropper"></span>
+                    <input class="tsg-input final" name="hex" tabindex="107" style="width: 70px" readonly>
+                    <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndUse|${name}">
+                        <span class="tsg-icon tsg-icon-eye-dropper"></span>
                     </div>
                 </div>
             </div>`
         // color tabs on the bottom
         html += `
-            <div class="TsUi-color-tabs">
-                <div class="TsUi-color-tab TsUi-selected TsUi-eaction" data-click="tabClick|1|event|this"><span class="TsUi-icon TsUi-icon-colors"></span></div>
-                <div class="TsUi-color-tab TsUi-eaction" data-click="tabClick|2|event|this"><span class="TsUi-icon TsUi-icon-settings"></span></div>
+            <div class="tsg-color-tabs">
+                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon tsg-icon-colors"></span></div>
+                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon tsg-icon-settings"></span></div>
                 <div style="padding: 5px; width: 100%; text-align: right;">
                     ${(typeof options.html == 'string' ? options.html : '')}
                 </div>
@@ -1457,20 +1457,20 @@ class ColorTooltip extends Tooltip {
     getCustomColorsHTML(name: string): string {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options: any = (this.get(name) as any)?.options // any: get() returns union; runtime is TooltipOverlay
-        let html = '<div class="TsUi-color-row" style="min-height: 21px">'
+        let html = '<div class="tsg-color-row" style="min-height: 21px">'
         ColorTooltip.custom_colors.forEach((color, i) => {
             let border = ''
             if (color === 'FFFFFF') border = '; border: 1px solid #efefef'
             html += `
-                <div class="TsUi-color TsUi-eaction ${color === 'TRANSPARENT' ? 'TsUi-no-color' : ''} ${options.color == color ? 'TsUi-selected' : ''}"
+                <div class="tsg-color tsg-eaction ${color === 'TRANSPARENT' ? 'tsg-no-color' : ''} ${options.color == color ? 'tsg-selected' : ''}"
                     style="background-color: #${color + border};" name="${color}" index="c:${i}"
                     data-mousedown="select|'${color}'|event" data-mouseup="hide|${name}">&nbsp;
                 </div>`
 
         })
         html += `
-                <div class="TsUi-color TsUi-color-picker TsUi-eaction" data-click="pickAndSelect|${name}|event">
-                    <span class="TsUi-icon TsUi-icon-eye-dropper"></span>
+                <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndSelect|${name}|event">
+                    <span class="tsg-icon tsg-icon-eye-dropper"></span>
                 </div>
             </div>`
         return html
@@ -1604,10 +1604,10 @@ class ColorTooltip extends Tooltip {
                 const color = overlay.tmp['initColor'] || newColor
                 query(overlay.box).find('.color-original')
                     .css('background-color', '#' + color)
-                query(overlay.box).find('.TsUi-color.TsUi-selected')
-                    .removeClass('TsUi-selected')
-                query(overlay.box).find(`.TsUi-colors [name="${color}"], .TsUi-colors [name="${initial}"]`) // color conversion might be slightly off
-                    .addClass('TsUi-selected')
+                query(overlay.box).find('.tsg-color.tsg-selected')
+                    .removeClass('tsg-selected')
+                query(overlay.box).find(`.tsg-colors [name="${color}"], .tsg-colors [name="${initial}"]`) // color conversion might be slightly off
+                    .addClass('tsg-selected')
                 // if has transparent color, open advanced tab
                 if (newColor.length == 8) {
                     self.tabClick(2, overlay.name)
@@ -1737,9 +1737,9 @@ class ColorTooltip extends Tooltip {
         const color = await this.pickColor()
         if (typeof color == 'string' && color.substr(0, 1) == '#' && [7, 9].includes(color.length)) {
             this.addCustomColor(color, name)
-            const cnt = query(event.target).closest('.TsUi-colors-custom')
+            const cnt = query(event.target).closest('.tsg-colors-custom')
             cnt.html(this.getCustomColorsHTML(name))
-            TsUtils.bindEvents(cnt.find('.TsUi-eaction'), this as unknown as Record<string, unknown>)
+            TsUtils.bindEvents(cnt.find('.tsg-eaction'), this as unknown as Record<string, unknown>)
             this.select(color.substr(1), name)
             // this.hide(name)
         }
@@ -1817,8 +1817,8 @@ class MenuTooltip extends Tooltip {
             arrowSize   : 10,
             align       : 'left',
             position    : 'bottom|top',
-            class       : 'TsUi-white',
-            anchorClass : 'TsUi-focus',
+            class       : 'tsg-white',
+            anchorClass : 'tsg-focus',
             autoShowOn  : 'focus',
             hideOn      : ['doc-click', 'focus-change', 'select'], // also can 'item-remove'
             onSelect    : null,
@@ -1877,7 +1877,7 @@ class MenuTooltip extends Tooltip {
                         }
                     }
                 }
-                const actions = query(ret.overlay.box).find('.TsUi-eaction')
+                const actions = query(ret.overlay.box).find('.tsg-eaction')
                 if (['INPUT', 'TEXTAREA'].includes(overlay.anchor.tagName)) {
                     overlay.tmp._new_search = false
                     query(overlay.anchor).on('input.search-trigger', () => {
@@ -1951,7 +1951,7 @@ class MenuTooltip extends Tooltip {
         }
         overlay.click = () => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            query(overlay.box).find('.TsUi-selected').each((el: any) => { el.click() }) // any: query.each gives Node; runtime is HTMLElement
+            query(overlay.box).find('.tsg-selected').each((el: any) => { el.click() }) // any: query.each gives Node; runtime is HTMLElement
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         overlay.on('hide:after.attach', (_event: any) => { // any: TsBase event
@@ -2006,7 +2006,7 @@ class MenuTooltip extends Tooltip {
             mdown = 'touchstart'
             mclick = 'touchend'
         }
-        query(overlay.box).find('.TsUi-menu:not(.TsUi-sub-menu)')
+        query(overlay.box).find('.tsg-menu:not(.tsg-sub-menu)')
             .off('.TsMenu')
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2015,9 +2015,9 @@ class MenuTooltip extends Tooltip {
             })
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on(`${mdown}.TsMenu`, { delegate: '.TsUi-menu-item' }, (event: any) => {
+            .on(`${mdown}.TsMenu`, { delegate: '.tsg-menu-item' }, (event: any) => {
                 const dt = event.delegate.dataset
-                const parents = query(event.delegate).closest('.TsUi-menu').data('parents')
+                const parents = query(event.delegate).closest('.tsg-menu').data('parents')
                 this.menuDown(overlay, event, dt.index, parents)
                 if (TsUtils.isMobile) {
                     // need it for mobile so that it would not generate onclick (items under menu receive focus)
@@ -2026,12 +2026,12 @@ class MenuTooltip extends Tooltip {
             })
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on(`${mclick}.TsMenu`, { delegate: '.TsUi-menu-item' }, (event: any) => {
+            .on(`${mclick}.TsMenu`, { delegate: '.tsg-menu-item' }, (event: any) => {
                 const dt = event.delegate.dataset
-                const parents = query(event.delegate).closest('.TsUi-menu').data('parents')
+                const parents = query(event.delegate).closest('.tsg-menu').data('parents')
                 this.menuClick(overlay, event, parseInt(dt['index'] ?? '0'), parents)
             })
-            .find('.TsUi-menu-item')
+            .find('.tsg-menu-item')
             .off('.TsMenu')
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2049,7 +2049,7 @@ class MenuTooltip extends Tooltip {
                 // hide previous sub-menu if any
                 // any: parameter typed any — runtime dispatch by call site; TsTooltip overlay options merge from multiple user sources at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const _menu: any = query(event.target).closest('.TsUi-menu').get(0)
+                const _menu: any = query(event.target).closest('.tsg-menu').get(0)
                 if (_menu._evt && _menu._evt.target != event.target) {
                     this.closeSubMenu(_menu._evt)
                 }
@@ -2168,9 +2168,9 @@ class MenuTooltip extends Tooltip {
     getMenuHTML(options: any) { // any: options is TooltipOptions-like with items array
         if (options.spinner) {
             return `
-            <div class="TsUi-menu">
-                <div class="TsUi-no-items">
-                    <div class="TsUi-spinner"></div>
+            <div class="tsg-menu">
+                <div class="tsg-no-items">
+                    <div class="tsg-spinner"></div>
                     ${TsUtils.lang('Loading...')}
                 </div>
             </div>`
@@ -2183,19 +2183,19 @@ class MenuTooltip extends Tooltip {
         let topHTML = ''
         if (options.search) {
             topHTML += `
-                <div class="TsUi-menu-search">
-                    <span class="TsUi-icon TsUi-icon-search"></span>
-                    <input id="menu-search" class="TsUi-input" type="text"/>
+                <div class="tsg-menu-search">
+                    <span class="tsg-icon tsg-icon-search"></span>
+                    <input id="menu-search" class="tsg-input" type="text"/>
                 </div>`
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             items.forEach((item: any) => item.hidden = false) // any: menu item shape
         }
         if (options.topHTML) {
-            topHTML += `<div class="TsUi-menu-top">${options.topHTML}</div>`
+            topHTML += `<div class="tsg-menu-top">${options.topHTML}</div>`
         }
         let menu_html = `
             ${topHTML}
-            <div class="TsUi-menu" style="${options.menuStyle}" data-parents="${parents.join('-')}">
+            <div class="tsg-menu" style="${options.menuStyle}" data-parents="${parents.join('-')}">
         `
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items.forEach((mitem: any, f: any) => { // any: menu item shape
@@ -2203,7 +2203,7 @@ class MenuTooltip extends Tooltip {
             const index = (parents.length > 0 ? parents.join('-') + '-' : '') + f
             if (icon == null) icon = null // icon might be undefined
             if (['radio', 'check'].includes(options.type) && !Array.isArray(mitem.items) && mitem.group !== false) {
-                if (mitem.checked === true) icon = 'TsUi-icon-check'; else icon = 'TsUi-icon-empty'
+                if (mitem.checked === true) icon = 'tsg-icon-check'; else icon = 'tsg-icon-empty'
             }
             if (mitem.hidden !== true) {
                 let txt  = mitem.text
@@ -2213,9 +2213,9 @@ class MenuTooltip extends Tooltip {
                 if (icon) {
                     const first = String(icon).trim().slice(0, 1)
                     if (first == '#') {
-                        icon = `<span class="TsUi-icon TsUi-icon-empty" style="background-color: ${icon}"></span>`
+                        icon = `<span class="tsg-icon tsg-icon-empty" style="background-color: ${icon}"></span>`
                     } else if (first !== '<') {
-                        icon = `<span class="TsUi-icon ${icon}"></span>`
+                        icon = `<span class="tsg-icon ${icon}"></span>`
                     }
                     icon_dsp = `<div class="menu-icon">${icon}</div>`
                 }
@@ -2225,9 +2225,9 @@ class MenuTooltip extends Tooltip {
                 }
                 // render only if non-empty
                 if (mitem.type !== 'break' && txt != null && txt !== '' && String(txt).substr(0, 2) != '--') {
-                    const classes = ['TsUi-menu-item']
+                    const classes = ['tsg-menu-item']
                     if (options.altRows == true) {
-                        classes.push(count % 2 === 0 ? 'TsUi-even' : 'TsUi-odd')
+                        classes.push(count % 2 === 0 ? 'tsg-even' : 'tsg-odd')
                     }
                     let colspan = 1
                     if (icon_dsp === '') colspan++
@@ -2244,8 +2244,8 @@ class MenuTooltip extends Tooltip {
                         if (mitem.hotkey != null) count_dsp += '<span class="menu-hotkey">' + mitem.hotkey + '</span>'
                         if (mitem.help != null) count_dsp += '<span class="menu-help">?</span>'
                     }
-                    if (mitem.disabled === true) classes.push('TsUi-disabled')
-                    if (mitem._noSearchInside === true) classes.push('TsUi-no-search-inside')
+                    if (mitem.disabled === true) classes.push('tsg-disabled')
+                    if (mitem._noSearchInside === true) classes.push('tsg-no-search-inside')
                     menu_html += `
                         <div index="${index}" class="${classes.join(' ')}" style="${mitem.style ? mitem.style : ''}"
                             data-index="${f}" data-hasSubmenu="${mitem.items != null ? 'yes' : ''}">
@@ -2259,7 +2259,7 @@ class MenuTooltip extends Tooltip {
                     // horizontal line
                     const divText = (txt ?? '').replace(/^-+/g, '')
                     menu_html  += `
-                        <div index="${index}" class="TsUi-menu-divider ${divText != '' ? 'has-text' : ''}">
+                        <div index="${index}" class="tsg-menu-divider ${divText != '' ? 'has-text' : ''}">
                             <div class="line"></div>
                             ${divText ? `<div class="text">${divText}</div>` : ''}
                         </div>`
@@ -2282,7 +2282,7 @@ class MenuTooltip extends Tooltip {
                 }
             }
             menu_html += `
-                <div class="TsUi-no-items">
+                <div class="tsg-no-items">
                     ${TsUtils.lang(msg)}
                 </div>`
         }
@@ -2365,12 +2365,12 @@ class MenuTooltip extends Tooltip {
         if (!overlay.displayed) {
             this.show(overlay.name)
         }
-        const view = query(overlay.box).find('.TsUi-overlay-body').get(0) as HTMLElement
-        const search = query(overlay.box).find('.TsUi-menu-search, .TsUi-menu-top').get(0) as HTMLElement
-        query(overlay.box).find('.TsUi-menu-item.TsUi-selected')
-            .removeClass('TsUi-selected')
-        const el = query(overlay.box).find(`.TsUi-menu-item[index="${overlay.selected}"]`)
-            .addClass('TsUi-selected')
+        const view = query(overlay.box).find('.tsg-overlay-body').get(0) as HTMLElement
+        const search = query(overlay.box).find('.tsg-menu-search, .tsg-menu-top').get(0) as HTMLElement
+        query(overlay.box).find('.tsg-menu-item.tsg-selected')
+            .removeClass('tsg-selected')
+        const el = query(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`)
+            .addClass('tsg-selected')
             .get(0) as HTMLElement
         if (el) {
             if (el.offsetTop + el.clientHeight > view.clientHeight + view.scrollTop) {
@@ -2396,7 +2396,7 @@ class MenuTooltip extends Tooltip {
     showTooltip(name: string, options?: any) {
         const overlay = Tooltip.active[name.replace(/[\s\.#]/g, '_')]
         if (!overlay || !overlay.displayed) return
-        const anchor = options?.anchor ?? query(overlay.box).find(`.TsUi-menu-item[index="${overlay.selected}"]`).get(0)
+        const anchor = options?.anchor ?? query(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`).get(0)
         // any: cast-to-any for dynamic dispatch; TsTooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tooltip = options?.tooltip ?? (overlay.selected != null ? (overlay.options.items as any)?.[overlay.selected]?.tooltip : undefined)
@@ -2428,9 +2428,9 @@ class MenuTooltip extends Tooltip {
             this.show(overlay.name)
         }
         TsTooltip.hide(overlay.name + '-tooltip')
-        query(overlay.box).find('.TsUi-no-items').hide()
+        query(overlay.box).find('.tsg-no-items').hide()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query(overlay.box).find('.TsUi-menu-item, .TsUi-menu-divider').each((el: any) => { // any: query.each gives Node; runtime is HTMLElement
+        query(overlay.box).find('.tsg-menu-item, .tsg-menu-divider').each((el: any) => { // any: query.each gives Node; runtime is HTMLElement
             const cur = this.getCurrent(name, (el as Element).getAttribute('index'))
             if (cur.item?.hidden) {
                 query(el).hide()
@@ -2444,8 +2444,8 @@ class MenuTooltip extends Tooltip {
         })
         // hide empty menus
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query(overlay.box).find('.TsUi-sub-menu').each((sub: any) => { // any: query.each gives Node; runtime is HTMLElement
-            const hasItems = (query(sub).find('.TsUi-menu-item').get() as HTMLElement[]).some(el => {
+        query(overlay.box).find('.tsg-sub-menu').each((sub: any) => { // any: query.each gives Node; runtime is HTMLElement
+            const hasItems = (query(sub).find('.tsg-menu-item').get() as HTMLElement[]).some(el => {
                 return el.style.display != 'none' ? true : false
             })
             // any: cast-to-any for dynamic dispatch; TsTooltip overlay options merge from multiple user sources at runtime
@@ -2462,13 +2462,13 @@ class MenuTooltip extends Tooltip {
         })
         // show empty message
         if (overlay.tmp['searchCount'] == 0 || (overlay.options?.items?.length ?? 0) == 0) {
-            if (query(overlay.box).find('.TsUi-no-items').length == 0) {
-                query(overlay.box).find('.TsUi-menu:not(.TsUi-sub-menu)').append(`
-                    <div class="TsUi-no-items">
+            if (query(overlay.box).find('.tsg-no-items').length == 0) {
+                query(overlay.box).find('.tsg-menu:not(.tsg-sub-menu)').append(`
+                    <div class="tsg-no-items">
                         ${TsUtils.lang(overlay.options.msgNoItems as string)}
                     </div>`)
             }
-            query(overlay.box).find('.TsUi-no-items').show()
+            query(overlay.box).find('.tsg-no-items').show()
         }
     }
 
@@ -2550,7 +2550,7 @@ class MenuTooltip extends Tooltip {
                     this.applyFilter(name, null, search)
                 }
             }
-            query(overlay.box).find('.TsUi-no-items').html(msg)
+            query(overlay.box).find('.tsg-no-items').html(msg)
             remote.search = search
             options.items = []
             overlay.tmp['remote'] = remote
@@ -2817,8 +2817,8 @@ class MenuTooltip extends Tooltip {
     menuDown(overlay: any, event: any, index: any, parents: any) {
         const options = overlay.options
         let items   = options.items
-        const icon    = query(event.delegate).find('.TsUi-icon')
-        const menu    = query(event.target).closest('.TsUi-menu:not(.TsUi-sub-menu)')
+        const icon    = query(event.delegate).find('.tsg-icon')
+        const menu    = query(event.target).closest('.tsg-menu:not(.tsg-sub-menu)')
         if (typeof items == 'function') {
             items = items({ overlay, index, parents, event })
         }
@@ -2834,9 +2834,9 @@ class MenuTooltip extends Tooltip {
                 if (other.id == item.id) return
                 if (other.group === item.group && other.checked) {
                     menu
-                        .find(`.TsUi-menu-item[index="${(parent ? parent + '-' : '') + ind}"] .TsUi-icon`)
-                        .removeClass('TsUi-icon-check')
-                        .addClass('TsUi-icon-empty')
+                        .find(`.tsg-menu-item[index="${(parent ? parent + '-' : '') + ind}"] .tsg-icon`)
+                        .removeClass('tsg-icon-check')
+                        .addClass('tsg-icon-empty')
                     items[ind].checked = false
                 }
                 if (Array.isArray(other.items)) {
@@ -2847,28 +2847,28 @@ class MenuTooltip extends Tooltip {
         if ((options.type === 'check' || options.type === 'radio') && item.group !== false
                     && !query(event.target).hasClass('menu-remove')
                     && !query(event.target).hasClass('menu-help')
-                    && !query(event.target).closest('.TsUi-menu-item').hasClass('has-sub-menu')) {
+                    && !query(event.target).closest('.tsg-menu-item').hasClass('has-sub-menu')) {
             item.checked = options.type == 'radio' ? true : !item.checked
             if (item.checked) {
                 if (options.type === 'radio') {
-                    query(event.target).closest('.TsUi-menu').find('.TsUi-icon')
-                        .removeClass('TsUi-icon-check')
-                        .addClass('TsUi-icon-empty')
+                    query(event.target).closest('.tsg-menu').find('.tsg-icon')
+                        .removeClass('tsg-icon-check')
+                        .addClass('tsg-icon-empty')
                 }
                 if (options.type === 'check' && item.group != null) {
                     uncheck(options.items)
                 }
-                icon.removeClass('TsUi-icon-empty').addClass('TsUi-icon-check')
+                icon.removeClass('tsg-icon-empty').addClass('tsg-icon-check')
             } else if (options.type === 'check') {
-                icon.removeClass('TsUi-icon-check').addClass('TsUi-icon-empty')
+                icon.removeClass('tsg-icon-check').addClass('tsg-icon-empty')
             }
         }
         // highlight record
         if (!query(event.target).hasClass('menu-remove') && !query(event.target).hasClass('menu-help')) {
-            menu.find('.TsUi-menu-item').removeClass('TsUi-selected')
+            menu.find('.tsg-menu-item').removeClass('tsg-selected')
             // click on the item that has submenu will not select the item
             if (!query(event.delegate).hasClass('has-sub-menu')) {
-                query(event.delegate).addClass('TsUi-selected')
+                query(event.delegate).addClass('tsg-selected')
             }
         }
     }
@@ -2878,7 +2878,7 @@ class MenuTooltip extends Tooltip {
     menuClick(overlay: any, event: any, index: any, parents: any) {
         const options  = overlay.options
         let items    = options.items
-        const $item    = query(event.delegate).closest('.TsUi-menu-item')
+        const $item    = query(event.delegate).closest('.tsg-menu-item')
         let keepOpen = options.hideOn.includes('select') ? false : true
         if (event.shiftKey || event.metaKey || event.ctrlKey) {
             keepOpen = true
@@ -2924,7 +2924,7 @@ class MenuTooltip extends Tooltip {
                 }
             }
             keepOpen = !options.hideOn.includes('item-remove')
-            const name = $item.closest('.TsUi-overlay').attr('name')
+            const name = $item.closest('.tsg-overlay').attr('name')
             overlay.self.update(name, items)
 
         } else if ($item.hasClass('has-sub-menu')) {
@@ -3001,7 +3001,7 @@ class MenuTooltip extends Tooltip {
             case 13: { // enter
                 if (!overlay.displayed || !overlay.selected) return
                 const { index, parents } = this.getCurrent(overlay.name)
-                event.delegate = query(overlay.box).find('.TsUi-selected').get(0)
+                event.delegate = query(overlay.box).find('.tsg-selected').get(0)
                 // reset active chain for folders
                 this.menuClick(overlay, event, parseInt(String(index)), parents)
                 filter = false
@@ -3033,7 +3033,7 @@ class MenuTooltip extends Tooltip {
                     refreshIndex = true
                 }
                 if (Array.isArray(item?.items) && item.items.length > 0 && item.expanded) {
-                    event.delegate = query(overlay.box).find(`.TsUi-menu-item[index="${index}"]`).get(0)
+                    event.delegate = query(overlay.box).find(`.tsg-menu-item[index="${index}"]`).get(0)
                     overlay.selected = index
                     this.menuClick(overlay, event, parseInt(String(index)), parents)
                 }
@@ -3044,7 +3044,7 @@ class MenuTooltip extends Tooltip {
                 if (!overlay.displayed) return
                 const { item, index, parents } = this.getCurrent(overlay.name)
                 if (Array.isArray(item?.items) && item.items.length > 0 && !item.expanded) {
-                    event.delegate = query(overlay.box).find('.TsUi-selected').get(0)
+                    event.delegate = query(overlay.box).find('.tsg-selected').get(0)
                     this.menuClick(overlay, event, parseInt(String(index)), parents)
                 }
                 filter = false
@@ -3100,7 +3100,7 @@ class DateTooltip extends Tooltip {
         this.today = td.getFullYear() + '/' + (Number(td.getMonth()) + 1) + '/' + td.getDate()
         this.defaults = TsUtils.extend({}, this.defaults, {
             position      : 'top|bottom',
-            class         : 'TsUi-calendar',
+            class         : 'tsg-calendar',
             type          : 'date', // can be date/time/datetime
             value         : '', // initial date (in TsUtils.settings format)
             format        : '',
@@ -3112,7 +3112,7 @@ class DateTooltip extends Tooltip {
             colored       : {}, // ex: { '3/13/2022': 'bg-color|text-color' }
             arrowSize     : 12,
             autoResize    : false,
-            anchorClass   : 'TsUi-focus',
+            anchorClass   : 'tsg-focus',
             autoShowOn    : 'focus',
             hideOn        : ['doc-click', 'focus-change'],
             onSelect      : null
@@ -3216,15 +3216,15 @@ class DateTooltip extends Tooltip {
             }
             const cal = this.getMonthHTML(options, month, year)
             Object.assign(overlay.tmp, cal)
-            query(overlay.box).find('.TsUi-overlay-body').html(cal.html)
+            query(overlay.box).find('.tsg-overlay-body').html(cal.html)
             this.initControls(overlay)
         }
         // any: parameter typed any — runtime dispatch by call site; TsTooltip overlay options merge from multiple user sources at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const checkJump = (event: any, dblclick?: boolean) => {
-            query(event.target).parent().find('.TsUi-jump-month, .TsUi-jump-year')
-                .removeClass('TsUi-selected')
-            query(event.target).addClass('TsUi-selected')
+            query(event.target).parent().find('.tsg-jump-month, .tsg-jump-year')
+                .removeClass('tsg-selected')
+            query(event.target).addClass('tsg-selected')
             const dt = new Date()
             let { jumpMonth, jumpYear } = overlay.tmp
             if (dblclick) {
@@ -3234,7 +3234,7 @@ class DateTooltip extends Tooltip {
             if (jumpMonth && jumpYear) {
                 const cal = this.getMonthHTML(options, jumpMonth, jumpYear)
                 Object.assign(overlay.tmp, cal)
-                query(overlay.box).find('.TsUi-overlay-body').html(cal.html)
+                query(overlay.box).find('.tsg-overlay-body').html(cal.html)
                 overlay.tmp.jump = false
                 this.initControls(overlay)
             }
@@ -3242,7 +3242,7 @@ class DateTooltip extends Tooltip {
 
         // events for next/prev buttons and title
         query(overlay.box)
-            .find('.TsUi-cal-title')
+            .find('.tsg-cal-title')
             .off('.calendar')
             // click on title
             .on('click.calendar', event => {
@@ -3254,10 +3254,10 @@ class DateTooltip extends Tooltip {
                 if (overlay.tmp.jump) {
                     const { month, year } = overlay.tmp
                     const cal = this.getMonthHTML(options, month, year)
-                    query(overlay.box).find('.TsUi-overlay-body').html(cal.html)
+                    query(overlay.box).find('.tsg-overlay-body').html(cal.html)
                     overlay.tmp.jump = false
                 } else {
-                    query(overlay.box).find('.TsUi-overlay-body .TsUi-cal-days')
+                    query(overlay.box).find('.tsg-overlay-body .tsg-cal-days')
                         .replace(this.getYearHTML())
                     const el = query(overlay.box).find(`[name="${overlay.tmp.year}"]`).get(0) as HTMLElement
                     if (el) el.scrollIntoView(true)
@@ -3267,7 +3267,7 @@ class DateTooltip extends Tooltip {
                 event.stopPropagation()
             })
             // prev button
-            .find('.TsUi-cal-previous')
+            .find('.tsg-cal-previous')
             .off('.calendar')
             .on('click.calendar', event => {
                 moveMonth(-1)
@@ -3275,14 +3275,14 @@ class DateTooltip extends Tooltip {
             })
             .parent()
             // next button
-            .find('.TsUi-cal-next')
+            .find('.tsg-cal-next')
             .off('.calendar')
             .on('click.calendar', event => {
                 moveMonth(1)
                 event.stopPropagation()
             })
         // now button
-        query(overlay.box).find('.TsUi-cal-now')
+        query(overlay.box).find('.tsg-cal-now')
             .off('.calendar')
             .on('click.calendar', _event => {
                 if (options.type == 'datetime') {
@@ -3304,10 +3304,10 @@ class DateTooltip extends Tooltip {
             .on('contextmenu.calendar', event => {
                 event.preventDefault() // prevent browser context menu
             })
-            .on('click.calendar', { delegate: '.TsUi-day.TsUi-date' }, event => {
+            .on('click.calendar', { delegate: '.tsg-day.tsg-date' }, event => {
                 if (options.type == 'datetime') {
                     overlay.newDate = query(event.target).attr('date')
-                    query(overlay.box).find('.TsUi-overlay-body').html(this.getHourHTML(overlay.options).html)
+                    query(overlay.box).find('.tsg-overlay-body').html(this.getHourHTML(overlay.options).html)
                     this.initControls(overlay)
                 } else {
                     overlay.newValue = query(event.target).attr('date')
@@ -3315,29 +3315,29 @@ class DateTooltip extends Tooltip {
                 }
             })
             // click on month
-            .on('click.calendar', { delegate: '.TsUi-jump-month' }, event => {
+            .on('click.calendar', { delegate: '.tsg-jump-month' }, event => {
                 overlay.tmp.jumpMonth = parseInt(query(event.target).attr('name') ?? '0')
                 checkJump(event)
             })
             // double click on month
-            .on('dblclick.calendar', { delegate: '.TsUi-jump-month' }, event => {
+            .on('dblclick.calendar', { delegate: '.tsg-jump-month' }, event => {
                 overlay.tmp.jumpMonth = parseInt(query(event.target).attr('name') ?? '0')
                 checkJump(event, true)
             })
             // click on year
-            .on('click.calendar', { delegate: '.TsUi-jump-year' }, event => {
+            .on('click.calendar', { delegate: '.tsg-jump-year' }, event => {
                 overlay.tmp.jumpYear = parseInt(query(event.target).attr('name') ?? '0')
                 checkJump(event)
             })
             // dbl click on year
-            .on('dblclick.calendar', { delegate: '.TsUi-jump-year' }, event => {
+            .on('dblclick.calendar', { delegate: '.tsg-jump-year' }, event => {
                 overlay.tmp.jumpYear = parseInt(query(event.target).attr('name') ?? '0')
                 checkJump(event, true)
             })
             // click on hour
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.calendar', { delegate: '.TsUi-time.hour' }, (event: any) => {
+            .on('click.calendar', { delegate: '.tsg-time.hour' }, (event: any) => {
                 const hour = Number(query(event.target).attr('hour'))
                 let min  = (this.str2min(options.value as string) ?? 0) % 60
                 if (overlay.tmp.initValue && !options.value) {
@@ -3349,21 +3349,21 @@ class DateTooltip extends Tooltip {
                 } else {
                     overlay.newValue = hour + ':' + min
                     const html = this.getMinHTML(hour, options).html
-                    query(overlay.box).find('.TsUi-overlay-body').html(html)
+                    query(overlay.box).find('.tsg-overlay-body').html(html)
                     this.initControls(overlay)
                 }
             })
             // click on minute
             // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.calendar', { delegate: '.TsUi-time.min' }, (event: any) => {
+            .on('click.calendar', { delegate: '.tsg-time.min' }, (event: any) => {
                 const hour = Math.floor((this.str2min(overlay.newValue as string) ?? 0) / 60)
                 const time = (hour * 60) + parseInt(query(event.target).attr('min') as string)
                 overlay.newValue = this.min2str(time, options.format)
                 this.hide(overlay.name)
             })
-        // After any innerHTML refresh, re-attach TsUi-eaction handlers (startDrag on title, stop on arrows, etc.)
-        TsUtils.bindEvents(query(overlay.box).find('.TsUi-eaction'), this as unknown as Record<string, unknown>)
+        // After any innerHTML refresh, re-attach tsg-eaction handlers (startDrag on title, stop on arrows, etc.)
+        TsUtils.bindEvents(query(overlay.box).find('.tsg-eaction'), this as unknown as Record<string, unknown>)
     }
 
     // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
@@ -3400,24 +3400,24 @@ class DateTooltip extends Tooltip {
         for (let i = 0; i < sdays.length; i++) {
             const isSat = (st == 'M' && i == 5) || (st != 'M' && i == 6) ? true : false
             const isSun = (st == 'M' && i == 6) || (st != 'M' && i == 0) ? true : false
-            weekDaysHeaderHTML += `<div class="TsUi-day TsUi-weekday ${isSat ? 'TsUi-sunday' : ''} ${isSun ? 'TsUi-saturday' : ''}">${sdays[i]}</div>`
+            weekDaysHeaderHTML += `<div class="tsg-day tsg-weekday ${isSat ? 'tsg-sunday' : ''} ${isSun ? 'tsg-saturday' : ''}">${sdays[i]}</div>`
         }
 
-        const calTitleClass = 'TsUi-cal-title' + (options.draggable ? ' TsUi-eaction TsUi-draggable' : '')
+        const calTitleClass = 'tsg-cal-title' + (options.draggable ? ' tsg-eaction tsg-draggable' : '')
         const calTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
 
         let html = `
             <div class="${calTitleClass}"${calTitleData}>
-                <div class="TsUi-cal-previous TsUi-eaction" data-mousedown="stop">
+                <div class="tsg-cal-previous tsg-eaction" data-mousedown="stop">
                     <div></div>
                 </div>
-                <div class="TsUi-cal-next TsUi-eaction" data-mousedown="stop">
+                <div class="tsg-cal-next tsg-eaction" data-mousedown="stop">
                     <div></div>
                 </div>
                 ${TsUtils.settings.fullmonths[month-1]}, ${year}
                 <span class="arrow-down"></span>
             </div>
-            <div class="TsUi-cal-days">
+            <div class="tsg-cal-days">
                 ${weekDaysHeaderHTML}
         `
 
@@ -3444,10 +3444,10 @@ class DateTooltip extends Tooltip {
         for (let ci = 0; ci < 42; ci++) {
             const className = []
             const dt = `${DT.getFullYear()}/${DT.getMonth()+1}/${DT.getDate()}`
-            if (DT.getDay() === DaySat) className.push('TsUi-saturday')
-            if (DT.getDay() === DaySun) className.push('TsUi-sunday')
+            if (DT.getDay() === DaySat) className.push('tsg-saturday')
+            if (DT.getDay() === DaySun) className.push('tsg-sunday')
             if (DT.getMonth() + 1 !== month) className.push('outside')
-            if (dt == this.today) className.push('TsUi-today')
+            if (dt == this.today) className.push('tsg-today')
 
             const dspDay = DT.getDate()
             let col    = ''
@@ -3465,9 +3465,9 @@ class DateTooltip extends Tooltip {
                 bgcol   = 'background-color: ' + tmp[0] + ';'
                 col     = 'color: ' + tmp[1] + ';'
             }
-            html += `<div class="TsUi-day ${this.inRange(tmp_dt, options, true)
-                            ? 'TsUi-date ' + (tmp_dt_fmt == selected_dsp ? 'TsUi-selected' : '')
-                            : 'TsUi-blocked'
+            html += `<div class="tsg-day ${this.inRange(tmp_dt, options, true)
+                            ? 'tsg-date ' + (tmp_dt_fmt == selected_dsp ? 'tsg-selected' : '')
+                            : 'tsg-blocked'
                         } ${className.join(' ')}"
                        style="${col + bgcol}" date="${tmp_dt_fmt}" data-date="${DT.getTime()}">
                             ${dspDay}
@@ -3477,7 +3477,7 @@ class DateTooltip extends Tooltip {
         html += '</div>'
         if (options.btnNow) {
             const label = TsUtils.lang('Today' + (options.type == 'datetime' ? ' & Now' : ''))
-            html += `<div class="TsUi-cal-now">${label}</div>`
+            html += `<div class="tsg-cal-now">${label}</div>`
         }
         return { html, month, year }
     }
@@ -3486,14 +3486,14 @@ class DateTooltip extends Tooltip {
         let mhtml = ''
         let yhtml = ''
         for (let m = 0; m < TsUtils.settings.fullmonths.length; m++) {
-            mhtml += `<div class="TsUi-jump-month" name="${m+1}">${TsUtils.settings.shortmonths[m]}</div>`
+            mhtml += `<div class="tsg-jump-month" name="${m+1}">${TsUtils.settings.shortmonths[m]}</div>`
         }
         for (let y = TsUtils.settings.dateStartYear; y <= TsUtils.settings.dateEndYear; y++) {
-            yhtml += `<div class="TsUi-jump-year" name="${y}">${y}</div>`
+            yhtml += `<div class="tsg-jump-year" name="${y}">${y}</div>`
         }
-        return `<div class="TsUi-cal-jump">
-            <div id="TsUi-jump-month">${mhtml}</div>
-            <div id="TsUi-jump-year">${yhtml}</div>
+        return `<div class="tsg-cal-jump">
+            <div id="tsg-jump-month">${mhtml}</div>
+            <div id="tsg-jump-year">${yhtml}</div>
         </div>`
     }
 
@@ -3519,18 +3519,18 @@ class DateTooltip extends Tooltip {
             }
             const valid = this.inRange(tm1, options) || this.inRange(tm2, options)
             tmp[Math.floor(a/8)] += `<span hour="${a}"
-                class="hour ${valid ? 'TsUi-time ' : 'TsUi-blocked'}">${time}</span>`
+                class="hour ${valid ? 'tsg-time ' : 'tsg-blocked'}">${time}</span>`
         }
-        const timeTitleClass = 'TsUi-time-title' + (options.draggable ? ' TsUi-eaction TsUi-draggable' : '')
+        const timeTitleClass = 'tsg-time-title' + (options.draggable ? ' tsg-eaction tsg-draggable' : '')
         const timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
-        const html = `<div class="TsUi-calendar">
+        const html = `<div class="tsg-calendar">
             <div class="${timeTitleClass}"${timeTitleData}>${TsUtils.lang('Select Hour')}</div>
-            <div class="TsUi-cal-time">
-                <div class="TsUi-cal-column">${tmp[0]}</div>
-                <div class="TsUi-cal-column">${tmp[1]}</div>
-                <div class="TsUi-cal-column">${tmp[2]}</div>
+            <div class="tsg-cal-time">
+                <div class="tsg-cal-column">${tmp[0]}</div>
+                <div class="tsg-cal-column">${tmp[1]}</div>
+                <div class="tsg-cal-column">${tmp[2]}</div>
             </div>
-            ${options.btnNow ? `<div class="TsUi-cal-now">${TsUtils.lang('Now')}</div>` : '' }
+            ${options.btnNow ? `<div class="tsg-cal-now">${TsUtils.lang('Now')}</div>` : '' }
         </div>`
         return { html }
     }
@@ -3554,18 +3554,18 @@ class DateTooltip extends Tooltip {
                 const fm = options.format.split('|')[0].trim()
                 tm = TsUtils.formatDate(dt, fm) + ' ' + tm
             }
-            tmp[ind] += `<span min="${a}" class="min ${(this.inRange(tm, options) ? 'TsUi-time ' : 'TsUi-blocked')}">${time}</span>`
+            tmp[ind] += `<span min="${a}" class="min ${(this.inRange(tm, options) ? 'tsg-time ' : 'tsg-blocked')}">${time}</span>`
         }
-        const timeTitleClass = 'TsUi-time-title' + (options.draggable ? ' TsUi-eaction TsUi-draggable' : '')
+        const timeTitleClass = 'tsg-time-title' + (options.draggable ? ' tsg-eaction tsg-draggable' : '')
         const timeTitleData  = options.draggable ? ' data-mousedown="startDrag|event"' : ''
-        const html = `<div class="TsUi-calendar">
+        const html = `<div class="tsg-calendar">
             <div class="${timeTitleClass}"${timeTitleData}>${TsUtils.lang('Select Minute')}</div>
-            <div class="TsUi-cal-time">
-                <div class="TsUi-cal-column">${tmp[0]}</div>
-                <div class="TsUi-cal-column">${tmp[1]}</div>
-                <div class="TsUi-cal-column">${tmp[2]}</div>
+            <div class="tsg-cal-time">
+                <div class="tsg-cal-column">${tmp[0]}</div>
+                <div class="tsg-cal-column">${tmp[1]}</div>
+                <div class="tsg-cal-column">${tmp[2]}</div>
             </div>
-            ${options.btnNow ? `<div class="TsUi-cal-now">${TsUtils.lang('Now')}</div>` : '' }
+            ${options.btnNow ? `<div class="tsg-cal-now">${TsUtils.lang('Now')}</div>` : '' }
         </div>`
         return { html }
     }

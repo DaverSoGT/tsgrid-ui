@@ -1,4 +1,4 @@
-.w2ui-popup {
+.tsg-popup {
     position: fixed;
     z-index: 1600;
     overflow: hidden;
@@ -10,7 +10,7 @@
     background-color: #fafafa;
     box-shadow: 0 0 25px #0000005d;
 
-    &.w2ui-non-blocking {
+    &.tsg-non-blocking {
         border: 1px solid #c8c8c8;
         box-shadow: 0 0 2px #555;
     }
@@ -19,23 +19,23 @@
         box-sizing: border-box;
     }
 
-    &.w2ui-anim-open {
+    &.tsg-anim-open {
         opacity: 0;
         transform: scale(0.8);
     }
 
-    &.w2ui-anim-close {
+    &.tsg-anim-close {
         opacity: 0;
         transform: scale(0.9);
     }
 
-    .w2ui-popup-title-btns {
+    .tsg-popup-title-btns {
         position: absolute;
         z-index: 1021;
         right: 0;
         margin: 10px 10px 0 0;
         font-size: 17px;
-        .w2ui-popup-button {
+        .tsg-popup-button {
             float: right;
             width: 25px;
             height: 23px;
@@ -44,21 +44,21 @@
             margin: 0 0 0 2px;
             z-index: 301;
             position: relative;
-            span.w2ui-icon {
+            span.tsg-icon {
                 width: 24px;
                 height: 23px;
                 margin-top: 0px;
             }
-            &.w2ui-popup-close:hover {
+            &.tsg-popup-close:hover {
                 color: #222;
             }
-            &.w2ui-popup-max:hover {
+            &.tsg-popup-max:hover {
                 color: #222;
             }
         }
     }
 
-    .w2ui-popup-title {
+    .tsg-popup-title {
         padding: 10px;
         border-radius: 6px 6px 0px 0px;
         .linear-gradient-vertical(#fff, #fff);
@@ -78,7 +78,7 @@
         z-index: 300;
     }
 
-    .w2ui-box, .w2ui-box-temp { // w2ui-box & w2ui-box-temp needed for transitions
+    .tsg-box, .tsg-box-temp { // tsg-box & tsg-box-temp needed for transitions
         position: absolute;
         left: 0px;
         right: 0px;
@@ -87,7 +87,7 @@
         z-index: 100;
     }
 
-    .w2ui-popup-body {
+    .tsg-popup-body {
         font-size: 12px;
         line-height: 130%;
         padding: 0px 7px 7px 7px;
@@ -99,7 +99,7 @@
         height: 100%;
     }
 
-    .w2ui-popup-buttons {
+    .tsg-popup-buttons {
         font-size: 11px;
         padding: 14px;
         border-radius: 0px 0px 6px 6px;
@@ -115,24 +115,24 @@
         z-index: 200;
     }
 
-    .w2ui-popup-no-title {
+    .tsg-popup-no-title {
         border-top-left-radius: 6px;
         border-top-right-radius: 6px;
         top: 0px;
     }
 
-    .w2ui-popup-no-buttons {
+    .tsg-popup-no-buttons {
         border-bottom-left-radius: 6px;
         border-bottom-right-radius: 6px;
         bottom: 0px;
     }
 
-    .w2ui-msg-text {
+    .tsg-msg-text {
         font-size: 14px;
         line-height: 1.5;
     }
 
-    .w2ui-prompt {
+    .tsg-prompt {
         font-size: 12px;
         padding: 0 10px;
         &.textarea {
@@ -154,7 +154,7 @@
         }
     }
 
-    .w2ui-popup-resizer {
+    .tsg-popup-resizer {
         z-index: 201;
         position: absolute;
         bottom: 2px;
@@ -210,7 +210,7 @@
 }
 
 // slide down message - not just popup, but also grid, form, layout
-.w2ui-message {
+.tsg-message {
     font-size: 12px;
     position: absolute;
     z-index: 250;
@@ -223,24 +223,24 @@
     border-radius: 0px 0px 6px 6px;
     overflow: auto;
 
-    .w2ui-msg-text {
+    .tsg-msg-text {
         font-size: 14px;
         line-height: 1.5;
     }
 
-    .w2ui-message-body {
+    .tsg-message-body {
         position: absolute;
         top: 0px;
         bottom: 45px;
         left: 0px;
         right: 0px;
         overflow: auto;
-        & .w2ui-centered {
+        & .tsg-centered {
             line-height: 1.5
         }
     }
 
-    .w2ui-message-buttons {
+    .tsg-message-buttons {
         position: absolute;
         height: 45px;
         bottom: 0px;
@@ -252,7 +252,7 @@
         padding: 8px;
     }
 
-    .w2ui-prompt {
+    .tsg-prompt {
         font-size: 12px;
         padding: 0 10px;
         &.textarea {

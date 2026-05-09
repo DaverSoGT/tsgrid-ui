@@ -4,14 +4,14 @@
     border: 1px solid silver;
 }
 
-.w2ui-field-helper {
+.tsg-field-helper {
     position: absolute;
     display: inline-block;
     line-height: 100%;
     pointer-events: none;
     .user-select(none);
 
-    .w2ui-field-up {
+    .tsg-field-up {
         position: absolute;
         top: 0px;
         padding: 2px 3px;
@@ -19,7 +19,7 @@
         pointer-events: all;
     }
 
-    .w2ui-field-down {
+    .tsg-field-down {
         position: absolute;
         bottom: 0px;
         padding: 2px 3px;
@@ -35,7 +35,7 @@
         border-top-color: #81C6FF;
     }
 
-    .w2ui-icon-search {
+    .tsg-icon-search {
         position: absolute;
         margin: 8px 0px 0px -2px;
         display: none;
@@ -49,7 +49,7 @@
     }
 
     // enum list
-    &.w2ui-list {
+    &.tsg-list {
         color: @list-color;
         position: absolute;
         padding: 0px;
@@ -74,7 +74,7 @@
             .box-shadow;
         }
 
-        .w2ui-multi-items {
+        .tsg-multi-items {
             position: absolute;
             display: inline-block;
             margin: 0px;
@@ -122,13 +122,13 @@
                     }
                 }
 
-                .w2ui-icon {
+                .tsg-icon {
                     float: left;
                     color: #828aa7;
                     margin: 1px 2px 0 -6px;
                 }
 
-                .w2ui-list-remove {
+                .tsg-list-remove {
                     float: right;
                     width: 16px;
                     height: 16px;
@@ -177,7 +177,7 @@
             }
         }
 
-        .w2ui-multi-file {
+        .tsg-multi-file {
             position: absolute;
             left: 0px;
             right: 0px;
@@ -185,17 +185,17 @@
             bottom: 0px;
         }
 
-        &.w2ui-readonly .w2ui-multi-items > .li-item:hover {
+        &.tsg-readonly .tsg-multi-items > .li-item:hover {
             background-color: @list-item-background-color;
         }
 
-        &.w2ui-file-dragover {
+        &.tsg-file-dragover {
             background-color: #E4FFDA;
             border: 1px solid #93E07D;
         }
 
         // This a DROP ZONE, will be remove when first file dropped
-        .w2ui-enum-placeholder {
+        .tsg-enum-placeholder {
             display: inline;
             position: absolute;
             pointer-events: none;
@@ -206,13 +206,13 @@
 }
 
 // tooltip for file items
-.w2ui-overlay {
-    .w2ui-file-preview {
+.tsg-overlay {
+    .tsg-file-preview {
         padding: 1px;
         background-color: white;
     }
 
-    .w2ui-file-info {
+    .tsg-file-info {
         display: grid;
         grid-template-columns: 1fr 2fr;
         color: white;
@@ -282,7 +282,7 @@
     line-height: 0;
 }
 
-.w2ui-select {
+.tsg-select {
     cursor: default;
     color: black !important;
 	background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAALCAQAAACnzwd+AAAAcklEQVR4AcXMsQFBQQDG4P9tAgC0gJYRQJZgKQMwCqCku6vVAAAA+NJHP4KHOk0aV2pRw61n4BBmyOxKQ8I4ehZeuhd3HTx6DQEGZ7sBfr2OOOOj3Yi43kMKs9sZknofOexqZ8npMygwWZTX51CipP+YA1OiZJbYYg9lAAAAAElFTkSuQmCC');

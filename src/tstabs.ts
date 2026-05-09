@@ -384,17 +384,17 @@ class TsTabs extends TsBase {
         if (tab.hidden) { addStyle += 'display: none;' }
         if (tab.disabled) { addStyle += 'opacity: 0.2;' }
         if (tab.closable && !tab.disabled) {
-            closable = `<div class="TsUi-tab-close TsUi-eaction ${this.active === tab.id ? 'active' : ''}"
+            closable = `<div class="tsg-tab-close tsg-eaction ${this.active === tab.id ? 'active' : ''}"
                 data-mousedown="stop" data-mouseup="clickClose|${tab.id}|event">
             </div>`
         }
         let icon = ''
         if (tab.icon) {
-            icon = `<span class="TsUi-tab-icon ${tab.icon}"></span>`
+            icon = `<span class="tsg-tab-icon ${tab.icon}"></span>`
         }
         return `
             <div id="tabs_${this.name}_tab_${tab.id}" style="${addStyle} ${tab.style}"
-                class="TsUi-tab TsUi-eaction ${this.active === tab.id ? 'active' : ''} ${tab.closable ? 'closable' : ''} ${tab.class ? tab.class : ''}"
+                class="tsg-tab tsg-eaction ${this.active === tab.id ? 'active' : ''} ${tab.closable ? 'closable' : ''} ${tab.class ? tab.class : ''}"
                 data-mouseenter="mouseAction|Enter|${tab.id}|event]"
                 data-mouseleave="mouseAction|Leave|${tab.id}|event]"
                 data-mousedown="mouseAction|Down|${tab.id}|event"
@@ -409,9 +409,9 @@ class TsTabs extends TsBase {
     refresh(id?: any) {
         const time = Date.now()
         if (this.flow == 'up') {
-            query(this.box).addClass('TsUi-tabs-up')
+            query(this.box).addClass('tsg-tabs-up')
         } else {
-            query(this.box).removeClass('TsUi-tabs-up')
+            query(this.box).removeClass('tsg-tabs-up')
         }
         // event before
         const edata = this.trigger('refresh', { target: (id != null ? id : this.name), object: this.get(id) })
@@ -433,7 +433,7 @@ class TsTabs extends TsBase {
                     if (tabHTML) $tab.replace(tabHTML as string)
                 }
             }
-            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .TsUi-eaction`), this)
+            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .tsg-eaction`), this)
         }
         // right html
         query(this.box).find('#tabs_'+ this.name +'_right').html(this.right)
@@ -459,20 +459,20 @@ class TsTabs extends TsBase {
         if (!this.box) return false
         // render all buttons
         const html =`
-            <div class="TsUi-tabs-line"></div>
-            <div class="TsUi-scroll-wrapper TsUi-eaction" data-mousedown="resize">
-                <div id="tabs_${this.name}_right" class="TsUi-tabs-right">${this.right}</div>
+            <div class="tsg-tabs-line"></div>
+            <div class="tsg-scroll-wrapper tsg-eaction" data-mousedown="resize">
+                <div id="tabs_${this.name}_right" class="tsg-tabs-right">${this.right}</div>
             </div>
-            <div class="TsUi-scroll-left TsUi-eaction" data-click='["scroll","left"]'></div>
-            <div class="TsUi-scroll-right TsUi-eaction" data-click='["scroll","right"]'></div>`
+            <div class="tsg-scroll-left tsg-eaction" data-click='["scroll","left"]'></div>
+            <div class="tsg-scroll-right tsg-eaction" data-click='["scroll","right"]'></div>`
         query(this.box)
             .attr('name', this.name)
-            .addClass('TsUi-reset TsUi-tabs')
+            .addClass('tsg-reset tsg-tabs')
             .html(html)
         if (query(this.box).length > 0) {
             (query(this.box)[0] as HTMLElement).style.cssText += this.style
         }
-        TsUtils.bindEvents(query(this.box).find('.TsUi-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.tsg-eaction'), this)
         // observe div resize
         this.last.observeResize = new ResizeObserver(() => { this.resize() })
         this.last.observeResize.observe(this.box)
@@ -524,8 +524,8 @@ class TsTabs extends TsBase {
                         'left': ($tab.get(0) as HTMLElement).getBoundingClientRect().left
                     })
                     $tab.css('opacity', 0)
-                    query(self.box).find('.TsUi-scroll-wrapper').append($ghost.get(0) as HTMLElement)
-                    query(self.box).find('.TsUi-tab-close').hide()
+                    query(self.box).find('.tsg-scroll-wrapper').append($ghost.get(0) as HTMLElement)
+                    query(self.box).find('.tsg-tab-close').hide()
                 }
                 self.last.moving.divX = mouseEvent.pageX - self.last.moving.x
                 $ghost.css('left', (self.last.moving.left - self.last.moving.parentX + self.last.moving.divX) + 'px')
@@ -537,7 +537,7 @@ class TsTabs extends TsBase {
                     'transition': '0.1s',
                     'left': (self.last.moving.$tab.get(0) as HTMLElement).getBoundingClientRect().left - self.last.moving.parentX
                 })
-                query(self.box).find('.TsUi-tab-close').show()
+                query(self.box).find('.tsg-tab-close').show()
                 $ghost.remove()
                 $tab.css({ opacity: self.last.moving.opacity })
                 // self.render()
@@ -552,10 +552,10 @@ class TsTabs extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
-            const scrollBox  = query(this.box).find('.TsUi-scroll-wrapper')
+            const scrollBox  = query(this.box).find('.tsg-scroll-wrapper')
             const scrollBoxEl = scrollBox.get(0) as HTMLElement
             const scrollLeft = scrollBoxEl.scrollLeft
-            const right      = scrollBox.find('.TsUi-tabs-right').get(0) as HTMLElement
+            const right      = scrollBox.find('.tsg-tabs-right').get(0) as HTMLElement
             const width1     = (scrollBox.parent().get(0) as HTMLElement).getBoundingClientRect().width
             const width2     = scrollLeft + right.offsetLeft + right.clientWidth
 
@@ -600,18 +600,18 @@ class TsTabs extends TsBase {
         // show hide overflow buttons
         if (this.box != null) {
             const box = query(this.box)
-            box.find('.TsUi-scroll-left, .TsUi-scroll-right').hide()
-            const scrollBox  = box.find('.TsUi-scroll-wrapper').get(0) as HTMLElement
-            const $right     = box.find('.TsUi-tabs-right')
+            box.find('.tsg-scroll-left, .tsg-scroll-right').hide()
+            const scrollBox  = box.find('.tsg-scroll-wrapper').get(0) as HTMLElement
+            const $right     = box.find('.tsg-tabs-right')
             const boxWidth   = (box.get(0) as HTMLElement).getBoundingClientRect().width
             const itemsWidth = ($right.length > 0 ? ($right[0] as HTMLElement).offsetLeft + ($right[0] as HTMLElement).clientWidth : 0)
             if (boxWidth < itemsWidth) {
                 // we have overflown content
                 if (scrollBox.scrollLeft > 0) {
-                    box.find('.TsUi-scroll-left').show()
+                    box.find('.tsg-scroll-left').show()
                 }
                 if (boxWidth < itemsWidth - scrollBox.scrollLeft) {
-                    box.find('.TsUi-scroll-right').show()
+                    box.find('.tsg-scroll-right').show()
                 }
             }
         }
@@ -643,7 +643,7 @@ class TsTabs extends TsBase {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     click(id: any, event?: MouseEvent): false | void { // any: id can be string or number
-        if (event && query(event.target).hasClass('TsUi-tab-close')) {
+        if (event && query(event.target).hasClass('tsg-tab-close')) {
             // do not consider click on close button as tab click
             return
         }

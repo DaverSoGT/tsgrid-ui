@@ -2,13 +2,13 @@
 * ---- Grid ----
 */
 
-.w2ui-grid {
+.tsg-grid {
     position: relative;
     border: @grid-border;
     border-radius: 2px;
     overflow: hidden !important;
 
-    > .w2ui-grid-box {
+    > .tsg-grid-box {
         position: absolute;
         overflow: hidden;
         left: 0;
@@ -19,7 +19,7 @@
 
     // ===== Grid Header =====
 
-    .w2ui-grid-header {
+    .tsg-grid-header {
         position: absolute;
         top: 0;
         left: 0;
@@ -37,7 +37,7 @@
 
     // ===== Grid Toolbar =====
 
-    .w2ui-grid-toolbar {
+    .tsg-grid-toolbar {
         position: absolute;
         border-bottom: @grid-toolbar-border;
         background-color: @grid-toolbar-background-color;
@@ -46,17 +46,17 @@
         margin: 0px;
         box-shadow: @grid-toolbar-shadow;
 
-        .w2ui-tb-button .w2ui-tb-icon {
+        .tsg-tb-button .tsg-tb-icon {
             margin: 3px 0px 0px 0px!important;
         }
 
-        .w2ui-grid-search-input {
+        .tsg-grid-search-input {
             position: relative;
             width: 300px;
             left: 0px;
             top: -3px;
 
-            .w2ui-search-down {
+            .tsg-search-down {
                 position: absolute;
                 top: 5px;
                 left: 4px;
@@ -64,7 +64,7 @@
                 font-size: 13px;
             }
 
-            .w2ui-grid-search-name {
+            .tsg-grid-search-name {
                 position: absolute;
                 margin: 3px 0px 0px 3px;
                 padding: 5px 27px 6px 10px;
@@ -93,7 +93,7 @@
                 }
             }
 
-            .w2ui-search-all {
+            .tsg-search-all {
                 outline: none !important;
                 border-radius: 4px !important;
                 line-height: normal !important;
@@ -111,7 +111,7 @@
                 }
             }
 
-            .w2ui-search-drop {
+            .tsg-search-drop {
                 position: absolute;
                 right: 2px;
                 top: 2px;
@@ -123,7 +123,7 @@
                 border-radius: 4px;
                 background-color: transparent;
 
-                span.w2ui-icon-drop {
+                span.tsg-icon-drop {
                     position: relative;
                     top: -3px;
                     color: #8d99a7;
@@ -132,14 +132,14 @@
                 &:hover,
                 &.checked {
                     background-color: #56a1e2;
-                    span.w2ui-icon-drop {
+                    span.tsg-icon-drop {
                         color: #fff;
                     }
                 }
             }
         }
 
-        .w2ui-grid-searches {
+        .tsg-grid-searches {
             display: flex;
             flex-direction: row;
             flex-wrap: nowrap;
@@ -183,7 +183,7 @@
                 margin-top: 1px;
             }
 
-            .w2ui-grid-search-logic {
+            .tsg-grid-search-logic {
                 border: 1px solid #c8c9ca !important;
                 color: #676767 !important;
             }
@@ -224,7 +224,7 @@
         }
     }
 
-    .w2ui-grid-save-search {
+    .tsg-grid-save-search {
         padding-top: 30px;
         text-align: center;
         span {
@@ -240,7 +240,7 @@
 
     // ===== Grid Body =====
 
-    .w2ui-grid-body {
+    .tsg-grid-body {
         position: absolute;
         overflow: hidden;
         padding: 0px;
@@ -251,7 +251,7 @@
             .user-select(text);
         }
 
-        .w2ui-grid-columns, .w2ui-grid-fcolumns {
+        .tsg-grid-columns, .tsg-grid-fcolumns {
             overflow: hidden;
             position: absolute;
             left: 0px;
@@ -264,7 +264,7 @@
                 height: auto;
             }
 
-            .w2ui-resizer {
+            .tsg-resizer {
                 position: absolute;
                 z-index: 1000;
                 display: block;
@@ -278,7 +278,7 @@
             }
         }
 
-        .w2ui-grid-records, .w2ui-grid-frecords {
+        .tsg-grid-records, .tsg-grid-frecords {
             position: absolute;
             left: 0px;
             right: 0px;
@@ -287,45 +287,45 @@
 
             table {
                 tr {
-                    &.w2ui-odd {
+                    &.tsg-odd {
                         color: @grid-row-color;
                         background-color: @grid-row-odd-background-color;
                         border-bottom: 1px solid #f5f5f5;
-                        &:hover, &.w2ui-record-hover {
+                        &:hover, &.tsg-record-hover {
                             color: @grid-row-hover-color;
                             background-color: @grid-row-hover-background-color;
                         }
-                        &.w2ui-empty-record:hover {
+                        &.tsg-empty-record:hover {
                             background-color: @grid-row-odd-background-color;
                         }
                     }
-                    &.w2ui-even {
+                    &.tsg-even {
                         color: @grid-row-color;
                         background-color: @grid-row-even-background-color;
                         border-bottom: 1px dotted #f5f5f5;
-                        &:hover, &.w2ui-record-hover {
+                        &:hover, &.tsg-record-hover {
                             color: @grid-row-hover-color;
                             background-color: @grid-row-hover-background-color;
                         }
-                        &.w2ui-empty-record:hover {
+                        &.tsg-empty-record:hover {
                             background-color: @grid-row-even-background-color;
                         }
                     }
-                    &.w2ui-selected, td.w2ui-selected {
+                    &.tsg-selected, td.tsg-selected {
                         color: @grid-row-selected-color !important;
                         background-color: @grid-row-selected-background-color !important;
                         border-bottom: 1px solid transparent;
                     }
-                    &.w2ui-inactive, td.w2ui-inactive {
+                    &.tsg-inactive, td.tsg-inactive {
                         background-color: @grid-row-inactive-background-color !important;
                     }
                 }
             }
 
-            .w2ui-expanded {
+            .tsg-expanded {
             }
 
-            .w2ui-expanded1 {
+            .tsg-expanded1 {
                 height: 0px;
                 border-bottom: 1px solid rgb(178, 186, 192);
                 & > div {
@@ -335,7 +335,7 @@
                 }
             }
 
-            .w2ui-expanded2 {
+            .tsg-expanded2 {
                 height: 0px;
                 border-radius: 0px;
                 border-bottom: 1px solid rgb(178, 186, 192);
@@ -346,7 +346,7 @@
                 }
             }
 
-            .w2ui-load-more {
+            .tsg-load-more {
                 cursor: pointer;
                 background-color: @grid-row-number-background-color;
                 border-right: @grid-row-border-right;
@@ -366,7 +366,7 @@
                     }
                 }
             }
-            .w2ui-reoder-empty {
+            .tsg-reoder-empty {
                 background-color: #eee;
                 border-bottom: 1px dashed #aaa;
                 border-top: 1px dashed #aaa;
@@ -380,7 +380,7 @@
             table-layout: fixed;
             width: 1px; // otherwise auto and does not work
 
-            .w2ui-head {
+            .tsg-head {
                 // border-right: 1px solid #dcdcdc;
                 // border-bottom: 1px solid #dadada;
                 // color: #656164;
@@ -409,15 +409,15 @@
                 cursor: default;
                 overflow: hidden;
 
-                &.w2ui-soft-span, &.w2ui-soft-hidden {
+                &.tsg-soft-span, &.tsg-soft-hidden {
                     border-right-color: transparent;
                 }
 
-                &.w2ui-grid-data {
+                &.tsg-grid-data {
                     margin: 0px;
                     padding: 0px;
 
-                    .w2ui-info {
+                    .tsg-info {
                         position: relative;
                         top: 0px;
                         left: -1px;
@@ -430,7 +430,7 @@
                         text-align: center;
                     }
 
-                    .w2ui-clipboard-copy {
+                    .tsg-clipboard-copy {
                         float: right;
                         margin-top: -15px;
                         width: 20px;
@@ -458,7 +458,7 @@
                         white-space: normal;
                     }
 
-                    .w2ui-show-children {
+                    .tsg-show-children {
                         width: 16px;
                         height: 10px;
                         display: inline-block;
@@ -475,7 +475,7 @@
                 }
             }
 
-            .w2ui-col-number {
+            .tsg-col-number {
                 width: 34px;
                 color: @grid-row-number-color;
                 background-color: @grid-row-number-background-color;
@@ -483,12 +483,12 @@
                     padding: 0px 7px 0px 3px;
                     text-align: right;
                 }
-                &.w2ui-head {
+                &.tsg-head {
                     cursor: pointer;
                 }
             }
 
-            .w2ui-col-select {
+            .tsg-col-select {
                 width: 26px;
                 div {
                     padding: 0px 0px;
@@ -503,7 +503,7 @@
                 }
             }
 
-            .w2ui-col-expand {
+            .tsg-col-expand {
                 width: 26px;
                 div {
                     padding: 0px 0px;
@@ -512,9 +512,9 @@
                 }
             }
 
-            .w2ui-col-order {
+            .tsg-col-order {
                 width: 26px;
-                &.w2ui-grid-data div {
+                &.tsg-grid-data div {
                     cursor: move;
                     height: 18px;
                     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgogIDxyZWN0IHN0eWxlPSJmaWxsOiAjYWFhOyIgeD0iMCIgeT0iNCIgaGVpZ2h0PSIzIiB3aWR0aD0iMTYiPjwvcmVjdD4KICA8cmVjdCBzdHlsZT0iZmlsbDogI2FhYTsiIHg9IjAiIHk9IjkiIGhlaWdodD0iMyIgd2lkdGg9IjE2Ij48L3JlY3Q+Cjwvc3ZnPg==");
@@ -524,16 +524,16 @@
                 }
             }
 
-            .w2ui-col-selected {
+            .tsg-col-selected {
                 background-color: #d1d1d1 !important;
             }
 
-            .w2ui-row-selected {
+            .tsg-row-selected {
                 background-color: #e2e2e2 !important;
             }
         }
 
-        .w2ui-intersection-marker {
+        .tsg-intersection-marker {
             position: absolute;
             top: 0;
             left: 0;
@@ -572,14 +572,14 @@
             }
         }
 
-        div.w2ui-col-header { // div needed
+        div.tsg-col-header { // div needed
             height: auto !important;
             width: 100%;
             overflow: hidden;
             padding-right: 10px !important;
         }
 
-        div.w2ui-col-header > div.w2ui-sort-up {
+        div.tsg-col-header > div.tsg-sort-up {
             border: 4px solid transparent;
             border-bottom: 5px solid #8D99A7;
             margin-top: -2px;
@@ -587,7 +587,7 @@
             float: right;
         }
 
-        div.w2ui-col-header > div.w2ui-sort-down {
+        div.tsg-col-header > div.tsg-sort-down {
             border: 4px solid transparent;
             border-top: 5px solid #8D99A7;
             margin-top: 2px;
@@ -595,11 +595,11 @@
             float: right;
         }
 
-        & .w2ui-col-group {
+        & .tsg-col-group {
             text-align: center;
         }
 
-        .w2ui-grid-scroll1 {
+        .tsg-grid-scroll1 {
             position: absolute;
             left: 0px;
             bottom: 0px;
@@ -609,7 +609,7 @@
         }
     }
 
-    .w2ui-grid-empty-msg {
+    .tsg-grid-empty-msg {
         position: absolute;
         top: 27px;
         left: 0;
@@ -628,12 +628,12 @@
         }
     }
 
-    .w2ui-changed {
+    .tsg-changed {
         .background-image(@image-changed, no-repeat, top, right);
     }
 
     // only in spreadsheet mode
-    .w2ui-edit-box {
+    .tsg-edit-box {
         position: absolute;
         z-index: 1001;
         border: 1.5px solid #6299DA;
@@ -641,17 +641,17 @@
         padding: 2px !important;
         margin: 0px !important;
         background-color: white;
-        .w2ui-editable div.w2ui-input {
+        .tsg-editable div.tsg-input {
             outline: none;
             padding: 0.5px 1.5px !important;
         }
-        .w2ui-editable input {
+        .tsg-editable input {
             top: -2px !important;
             padding: 1.5px !important;
         }
     }
 
-    .w2ui-editable {
+    .tsg-editable {
         overflow: hidden;
         height: 100% !important;
         margin: 0 !important;
@@ -669,7 +669,7 @@
             pointer-events: auto !important;
         }
 
-        div.w2ui-input {
+        div.tsg-input {
             position: relative;
             top: -0.5px;
             border: 0 transparent;
@@ -687,17 +687,17 @@
         }
     }
 
-    .w2ui-grid-summary {
+    .tsg-grid-summary {
         position: absolute;
         border-top: 1px solid gainsboro;
         box-shadow: 0px -1px 4px #f0eeee;
 
         table {
             color: @grid-summary-color;
-            .w2ui-odd {
+            .tsg-odd {
                 background-color: #fff;
             }
-            .w2ui-even {
+            .tsg-even {
                 background-color: #fbfbfb;
             }
         }
@@ -705,7 +705,7 @@
 
     // ===== Grid Footer =====
 
-    .w2ui-grid-footer {
+    .tsg-grid-footer {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -724,23 +724,23 @@
         border-bottom-left-radius: 2px;
         border-bottom-right-radius: 2px;
 
-        .w2ui-footer-left {
+        .tsg-footer-left {
             float: left;
             padding-top: 5px;
             padding-left: 5px;
         }
 
-        .w2ui-footer-right {
+        .tsg-footer-right {
             float: right;
             padding-top: 5px;
             padding-right: 5px;
         }
 
-        .w2ui-footer-center {
+        .tsg-footer-center {
             padding: 2px;
             text-align: center;
 
-            .w2ui-footer-nav {
+            .tsg-footer-nav {
                 width: 110px;
                 margin: 0 auto;
                 padding: 0px;
@@ -753,7 +753,7 @@
                     text-align: center;
                 }
 
-                a.w2ui-footer-btn {
+                a.tsg-footer-btn {
                     display: inline-block;
                     border-radius: 3px;
                     cursor: pointer;
@@ -775,7 +775,7 @@
         }
     }
 
-    .w2ui-grid-focus-input {
+    .tsg-grid-focus-input {
         position: absolute;
         top: 0;
         right: 0;
@@ -794,13 +794,13 @@
 }
 
 // SpeadSheet
-.w2ui-ss .w2ui-grid-body {
+.tsg-ss .tsg-grid-body {
 
-    .w2ui-grid-records {
-        table tr td.w2ui-selected {
+    .tsg-grid-records {
+        table tr td.tsg-selected {
             background-color: #EEF4FE !important;
         }
-        table tr td.w2ui-inactive {
+        table tr td.tsg-inactive {
             background-color: #F4F6F9 !important;
         }
         // line border
@@ -809,10 +809,10 @@
             border-bottom: 1px solid #efefef;
         }
         // no alternating rows
-        table tr.w2ui-odd,
-        table tr.w2ui-even,
-        table tr.w2ui-odd:hover,
-        table tr.w2ui-even:hover {
+        table tr.tsg-odd,
+        table tr.tsg-even,
+        table tr.tsg-odd:hover,
+        table tr.tsg-even:hover {
             background-color: inherit;
         }
         table tr:first-child td {
@@ -821,11 +821,11 @@
         }
     }
 
-    .w2ui-grid-frecords {
-        table tr td.w2ui-selected {
+    .tsg-grid-frecords {
+        table tr td.tsg-selected {
             background-color: #EEF4FE !important;
         }
-        table tr td.w2ui-inactive {
+        table tr td.tsg-inactive {
             background-color: #F4F6F9 !important;
         }
         // line border
@@ -834,10 +834,10 @@
             border-bottom: 1px solid #efefef;
         }
         // no alternating rows
-        table tr.w2ui-odd,
-        table tr.w2ui-even,
-        table tr.w2ui-odd:hover,
-        table tr.w2ui-even:hover {
+        table tr.tsg-odd,
+        table tr.tsg-even,
+        table tr.tsg-odd:hover,
+        table tr.tsg-even:hover {
             background-color: inherit;
         }
         table tr:first-child td {
@@ -845,24 +845,24 @@
         }
     }
 
-    .w2ui-selection {
+    .tsg-selection {
         position: absolute;
         z-index: 1000;
         border: 1.5px solid #6299DA; /* #457FC2; */
         border-radius: 2px;
         pointer-events: none;
 
-        &.w2ui-selection-preview {
+        &.tsg-selection-preview {
             background-color: #5a91ea08;
             border: 1px dashed silver;
         }
 
-        &.w2ui-selection-expand {
+        &.tsg-selection-expand {
             background-color: #e7f2e844;
             border: 1px dotted silver;
         }
 
-        .w2ui-selection-resizer {
+        .tsg-selection-resizer {
             cursor: crosshair;
             position: absolute;
             bottom: 0px;
@@ -877,15 +877,15 @@
             pointer-events: auto;
         }
 
-        &.w2ui-inactive {
+        &.tsg-inactive {
             border: 1.5px solid #C0C2C5;
-            .w2ui-selection-resizer {
+            .tsg-selection-resizer {
                  background-color: #B0B0B0;
             }
         }
     }
 
-    .w2ui-soft-range  {
+    .tsg-soft-range  {
         position: absolute;
         pointer-events: none;
         white-space: nowrap;
@@ -893,17 +893,17 @@
         text-overflow: ellipsis;
     }
 
-    .w2ui-changed {
+    .tsg-changed {
         background: inherit; /* do not show changed for spreadsheet */
     }
 
-    .w2ui-editable input {
+    .tsg-editable input {
         outline: none !important;
     }
 }
 
 // info bubble in the grid
-.w2ui-info-bubble {
+.tsg-info-bubble {
     table {
         font-family: @main-font-family;
         font-size: 12px;
@@ -926,9 +926,9 @@
 }
 
 // global Search slide down
-.w2ui-overlay {
+.tsg-overlay {
 
-    .w2ui-saved-searches {
+    .tsg-saved-searches {
         border-radius: 3px;
         background-color: #f8f8f8;
         background-image: none;
@@ -955,7 +955,7 @@
 
     }
 
-    .w2ui-grid-search-suggest {
+    .tsg-grid-search-suggest {
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
         padding: 10px;
@@ -964,7 +964,7 @@
         color: #444444;
     }
 
-    .w2ui-grid-search-single {
+    .tsg-grid-search-single {
         font-size: 12px;
         padding-top: 10px;
         .field {
@@ -1001,7 +1001,7 @@
         }
     }
 
-    .w2ui-grid-search-advanced {
+    .tsg-grid-search-advanced {
         text-align: left;
         padding: 0px;
         background-color: #fff;
@@ -1077,7 +1077,7 @@
     }
 }
 
-.w2ui-grid-skip {
+.tsg-grid-skip {
     width: 50px;
     margin: -6px 3px;
     padding: 3px !important;

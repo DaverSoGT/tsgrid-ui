@@ -15,15 +15,15 @@ test.describe('Popup', () => {
 
     test('popup opens and renders title', async ({ page }) => {
         await page.click('#btn-open')
-        await page.waitForSelector('.TsUi-popup', { state: 'attached' })
-        await expect(page.locator('.TsUi-popup')).toBeAttached()
-        const title = await page.locator('.TsUi-popup-title').innerText()
+        await page.waitForSelector('.tsg-popup', { state: 'attached' })
+        await expect(page.locator('.tsg-popup')).toBeAttached()
+        const title = await page.locator('.tsg-popup-title').innerText()
         expect(title).toContain('Smoke Test Popup')
     })
 
     test('popup body renders content', async ({ page }) => {
         await page.click('#btn-open')
-        await page.waitForSelector('.TsUi-popup', { state: 'attached' })
+        await page.waitForSelector('.tsg-popup', { state: 'attached' })
         await page.waitForSelector('#popup-body-content', { state: 'attached' })
         const body = page.locator('#popup-body-content')
         await expect(body).toBeAttached()

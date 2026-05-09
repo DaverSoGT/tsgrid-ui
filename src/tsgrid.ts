@@ -663,17 +663,17 @@ class TsGrid extends TsBase {
         this.msgEmpty      = '' // if not blank, then it is message when server returns no records
 
         this.buttons = {
-            'reload'   : { type: 'button', id: 'TsUi-reload', icon: 'TsUi-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
-            'columns'  : { type: 'menu-check', id: 'TsUi-column-on-off', icon: 'TsUi-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
+            'reload'   : { type: 'button', id: 'tsg-reload', icon: 'tsg-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
+            'columns'  : { type: 'menu-check', id: 'tsg-column-on-off', icon: 'tsg-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
                 overlay: { align: 'none' }
             },
-            'search'   : { type: 'html', id: 'TsUi-search',
-                html: '<div class="TsUi-icon TsUi-icon-search TsUi-search-down TsUi-action" data-click="searchShowFields"></div>'
+            'search'   : { type: 'html', id: 'tsg-search',
+                html: '<div class="tsg-icon tsg-icon-search tsg-search-down tsg-action" data-click="searchShowFields"></div>'
             },
-            'add'      : { type: 'button', id: 'TsUi-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'TsUi-icon-plus' },
-            'edit'     : { type: 'button', id: 'TsUi-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'TsUi-icon-pencil', batch: 1, disabled: true },
-            'delete'   : { type: 'button', id: 'TsUi-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'TsUi-icon-cross', batch: true, disabled: true },
-            'save'     : { type: 'button', id: 'TsUi-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'TsUi-icon-check' }
+            'add'      : { type: 'button', id: 'tsg-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'tsg-icon-plus' },
+            'edit'     : { type: 'button', id: 'tsg-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'tsg-icon-pencil', batch: 1, disabled: true },
+            'delete'   : { type: 'button', id: 'tsg-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'tsg-icon-cross', batch: true, disabled: true },
+            'save'     : { type: 'button', id: 'tsg-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'tsg-icon-check' }
         }
 
         this.operators = { // for search fields
@@ -827,7 +827,7 @@ class TsGrid extends TsBase {
         if (Array.isArray(this.defaultSearches)) {
             this.defaultSearches.forEach((search, ind) => {
                 search.id = 'default-'+ ind
-                search.icon ??= 'TsUi-icon-search'
+                search.icon ??= 'tsg-icon-search'
             })
         }
         // check if there are saved searches in localStorage
@@ -837,7 +837,7 @@ class TsGrid extends TsBase {
                 this.savedSearches.push({
                     id: search.id ?? 'none',
                     text: search.text ?? 'none',
-                    icon: 'TsUi-icon-search',
+                    icon: 'tsg-icon-search',
                     remove: true,
                     logic: search.logic ?? 'AND',
                     data: search.data ?? []
@@ -884,7 +884,7 @@ class TsGrid extends TsBase {
             } else {
                 // just update total if it it there
                 query(this.box)
-                    .find('#grid_'+ this.name + '_footer .TsUi-footer-right .TsUi-total')
+                    .find('#grid_'+ this.name + '_footer .tsg-footer-right .tsg-total')
                     .html(TsUtils.formatNumber(this.total))
             }
         } else {
@@ -1935,7 +1935,7 @@ class TsGrid extends TsBase {
 
             // do not show selection cell if it is editable
             const edit = query(this.box).find('#grid_'+ this.name + '_editable')
-            const tmp  = edit.find('.TsUi-input')
+            const tmp  = edit.find('.tsg-input')
             const tmp_ind = tmp.attr('index')
             const tmp1 = this.records[tmp_ind]?.recid
             const tmp2 = tmp.attr('column')
@@ -1945,19 +1945,19 @@ class TsGrid extends TsBase {
             range = query(this.box).find('#grid_'+ this.name +'_f'+ rg.name)
             if (td1f.length > 0 || td2f.length > 0) {
                 if (range.length === 0) {
-                    rec1.append('<div id="grid_'+ this.name +'_f' + rg.name +'" class="TsUi-selection" style="'+ rg.style +'">'+
-                                    (rg.name == 'selection' && this.show.selectionResizer ? '<div id="grid_'+ this.name +'_resizer" class="TsUi-selection-resizer"></div>' : '')+
+                    rec1.append('<div id="grid_'+ this.name +'_f' + rg.name +'" class="tsg-selection" style="'+ rg.style +'">'+
+                                    (rg.name == 'selection' && this.show.selectionResizer ? '<div id="grid_'+ this.name +'_resizer" class="tsg-selection-resizer"></div>' : '')+
                                 '</div>')
                     range = query(this.box).find('#grid_'+ this.name +'_f'+ rg.name)
                 } else {
                     range.attr('style', rg.style)
-                    range.find('.TsUi-selection-resizer').show()
+                    range.find('.tsg-selection-resizer').show()
                 }
                 if (td2f.length === 0) {
                     td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(last.recid) +' td:last-child')
                     if (td2f.length === 0) td2f = query(this.box).find('#grid_'+ this.name +'_frec_bottom td:first-child')
                     range.css('border-right', '0px')
-                    range.find('.TsUi-selection-resizer').hide()
+                    range.find('.tsg-selection-resizer').hide()
                 }
                 if (first.recid != null && last.recid != null && td1f.length > 0 && td2f.length > 0) {
                     const style = getComputedStyle(td2f[0])
@@ -1982,9 +1982,9 @@ class TsGrid extends TsBase {
             if (td1.length > 0 || td2.length > 0) {
                 if (range.length === 0) {
                     rec2.append(`
-                        <div id="grid_${this.name}_${rg.name}" class="TsUi-selection ${rg.class ?? ''}" style="${rg.style}">
+                        <div id="grid_${this.name}_${rg.name}" class="tsg-selection ${rg.class ?? ''}" style="${rg.style}">
                             ${rg.name == 'selection' && this.show.selectionResizer
-                                ? `<div id="grid_${this.name}_resizer" class="TsUi-selection-resizer"></div>`
+                                ? `<div id="grid_${this.name}_resizer" class="tsg-selection-resizer"></div>`
                                 : ''
                             }
                         </div>
@@ -2021,7 +2021,7 @@ class TsGrid extends TsBase {
         }
 
         // add resizer events
-        query(this.box).find('.TsUi-selection-resizer')
+        query(this.box).find('.tsg-selection-resizer')
             .off('.resizer')
             .on('mousedown.resizer', mouseStart)
             // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -2063,9 +2063,9 @@ class TsGrid extends TsBase {
             detail.originalName  = self.last.move.name
             detail.originalRange = self.last.move.originalRange
             query('body')
-                .off('.TsUi-' + self.name)
-                .on('mousemove.TsUi-' + self.name, mouseMove)
-                .on('mouseup.TsUi-' + self.name, mouseStop)
+                .off('.tsg-' + self.name)
+                .on('mousemove.tsg-' + self.name, mouseMove)
+                .on('mouseup.tsg-' + self.name, mouseStop)
             // do not blur grid
             event.preventDefault()
         }
@@ -2108,7 +2108,7 @@ class TsGrid extends TsBase {
                 self.addRange({
                     name: 'selection-expand',
                     range: mv.newRange,
-                    class: 'TsUi-selection-expand'
+                    class: 'tsg-selection-expand'
                 })
             }
         }
@@ -2117,7 +2117,7 @@ class TsGrid extends TsBase {
         function mouseStop(_event: any) { // any: event is MouseEvent at runtime; typed loosely to avoid EventListener mismatch
             // default behavior
             self.removeRange('selection-expand')
-            query('body').off('.TsUi-' + self.name)
+            query('body').off('.tsg-' + self.name)
             // event after
             if (self.last.move?.type == 'expand' && edata.finish) {
                 edata.finish()
@@ -2189,9 +2189,9 @@ class TsGrid extends TsBase {
                     if (sel.indexes.indexOf(index) != -1) continue
                     sel.indexes.push(index)
                     if (recEl1 && recEl2) {
-                        recEl1.addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
-                        recEl2.addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
-                        recEl1.find('.TsUi-grid-select-check').prop('checked', true)
+                        recEl1.addClass('tsg-selected').find('.tsg-col-number').addClass('tsg-row-selected')
+                        recEl2.addClass('tsg-selected').find('.tsg-col-number').addClass('tsg-row-selected')
+                        recEl1.find('.tsg-grid-select-check').prop('checked', true)
                     }
                     selected++
                 }
@@ -2239,14 +2239,14 @@ class TsGrid extends TsBase {
                     const col = new_sel_recid[t]
                     if (col_sel.indexOf(col) == -1) col_sel.push(col)
                     if (recEl1) {
-                        recEl1.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('TsUi-selected')
-                        recEl1.find('.TsUi-col-number').addClass('TsUi-row-selected')
-                        recEl1.find('.TsUi-grid-select-check').prop('checked', true)
+                        recEl1.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('tsg-selected')
+                        recEl1.find('.tsg-col-number').addClass('tsg-row-selected')
+                        recEl1.find('.tsg-grid-select-check').prop('checked', true)
                     }
                     if (recEl2) {
-                        recEl2.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('TsUi-selected')
-                        recEl2.find('.TsUi-col-number').addClass('TsUi-row-selected')
-                        recEl2.find('.TsUi-grid-select-check').prop('checked', true)
+                        recEl2.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('tsg-selected')
+                        recEl2.find('.tsg-col-number').addClass('tsg-row-selected')
+                        recEl2.find('.tsg-grid-select-check').prop('checked', true)
                     }
                     selected++
                 }
@@ -2255,7 +2255,7 @@ class TsGrid extends TsBase {
             }
             // select columns (need here for speed)
             for (let c = 0; c < col_sel.length; c++) {
-                query(this.box).find('#grid_'+ this.name +'_column_'+ col_sel[c] +' .TsUi-col-header').addClass('TsUi-col-selected')
+                query(this.box).find('#grid_'+ this.name +'_column_'+ col_sel[c] +' .tsg-col-header').addClass('tsg-col-selected')
             }
         }
         // need to sort new selection for speed
@@ -2318,13 +2318,13 @@ class TsGrid extends TsBase {
                 if (sel.indexes.indexOf(index) == -1) continue
                 // default action
                 sel.indexes.splice(sel.indexes.indexOf(index), 1)
-                recEl1.removeClass('TsUi-selected TsUi-inactive').find('.TsUi-col-number').removeClass('TsUi-row-selected')
-                recEl2.removeClass('TsUi-selected TsUi-inactive').find('.TsUi-col-number').removeClass('TsUi-row-selected')
+                recEl1.removeClass('tsg-selected tsg-inactive').find('.tsg-col-number').removeClass('tsg-row-selected')
+                recEl2.removeClass('tsg-selected tsg-inactive').find('.tsg-col-number').removeClass('tsg-row-selected')
                 if (recEl1.length != 0) {
                     recEl1[0].style.cssText = 'height: '+ this.recordHeight +'px; ' + recEl1.attr('custom_style')
                     recEl2[0].style.cssText = 'height: '+ this.recordHeight +'px; ' + recEl2.attr('custom_style')
                 }
-                recEl1.find('.TsUi-grid-select-check').prop('checked', false)
+                recEl1.find('.tsg-grid-select-check').prop('checked', false)
                 unselected++
             } else {
                 const col = args[a].column
@@ -2337,8 +2337,8 @@ class TsGrid extends TsBase {
                 if (!Array.isArray(s) || s.indexOf(col) == -1) continue
                 // default action
                 s.splice(s.indexOf(col), 1)
-                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('TsUi-selected TsUi-inactive')
-                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('TsUi-selected TsUi-inactive')
+                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('tsg-selected tsg-inactive')
+                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('tsg-selected tsg-inactive')
                 // check if any row/column still selected
                 let isColSelected = false
                 let isRowSelected = false
@@ -2348,16 +2348,16 @@ class TsGrid extends TsBase {
                     if (tmp[i]!.recid == recid) isRowSelected = true
                 }
                 if (!isColSelected) {
-                    query(this.box).find(`.TsUi-grid-columns td[col="${col}"] .TsUi-col-header, .TsUi-grid-fcolumns td[col="${col}"] .TsUi-col-header`).removeClass('TsUi-col-selected')
+                    query(this.box).find(`.tsg-grid-columns td[col="${col}"] .tsg-col-header, .tsg-grid-fcolumns td[col="${col}"] .tsg-col-header`).removeClass('tsg-col-selected')
                 }
                 if (!isRowSelected) {
-                    query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid)).find('.TsUi-col-number').removeClass('TsUi-row-selected')
+                    query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid)).find('.tsg-col-number').removeClass('tsg-row-selected')
                 }
                 unselected++
                 if (s.length === 0) {
                     delete sel.columns[index]
                     sel.indexes.splice(sel.indexes.indexOf(index), 1)
-                    recEl1.find('.TsUi-grid-select-check').prop('checked', false)
+                    recEl1.find('.tsg-grid-select-check').prop('checked', false)
                 }
             }
         }
@@ -2451,20 +2451,20 @@ class TsGrid extends TsBase {
         this.last.selection = sel
         // add selected class
         if (this.selectType == 'row') {
-            query(this.box).find('.TsUi-grid-records tr:not(.TsUi-empty-record)')
-                .addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-frecords tr:not(.TsUi-empty-record)')
-                .addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
-            query(this.box).find('input.TsUi-grid-select-check').prop('checked', true)
+            query(this.box).find('.tsg-grid-records tr:not(.tsg-empty-record)')
+                .addClass('tsg-selected').find('.tsg-col-number').addClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-frecords tr:not(.tsg-empty-record)')
+                .addClass('tsg-selected').find('.tsg-col-number').addClass('tsg-row-selected')
+            query(this.box).find('input.tsg-grid-select-check').prop('checked', true)
         } else {
-            query(this.box).find('.TsUi-grid-columns td .TsUi-col-header, .TsUi-grid-fcolumns td .TsUi-col-header').addClass('TsUi-col-selected')
-            query(this.box).find('.TsUi-grid-records tr .TsUi-col-number').addClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-records tr:not(.TsUi-empty-record)')
-                .find('.TsUi-grid-data:not(.TsUi-col-select)').addClass('TsUi-selected')
-            query(this.box).find('.TsUi-grid-frecords tr .TsUi-col-number').addClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-frecords tr:not(.TsUi-empty-record)')
-                .find('.TsUi-grid-data:not(.TsUi-col-select)').addClass('TsUi-selected')
-            query(this.box).find('input.TsUi-grid-select-check').prop('checked', true)
+            query(this.box).find('.tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header').addClass('tsg-col-selected')
+            query(this.box).find('.tsg-grid-records tr .tsg-col-number').addClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-records tr:not(.tsg-empty-record)')
+                .find('.tsg-grid-data:not(.tsg-col-select)').addClass('tsg-selected')
+            query(this.box).find('.tsg-grid-frecords tr .tsg-col-number').addClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-frecords tr:not(.tsg-empty-record)')
+                .find('.tsg-grid-data:not(.tsg-col-select)').addClass('tsg-selected')
+            query(this.box).find('input.tsg-grid-select-check').prop('checked', true)
         }
         // enable/disable toolbar buttons
         sel = this.getSelectionRows(true) as number[]
@@ -2489,17 +2489,17 @@ class TsGrid extends TsBase {
         const sel = this.last.selection
         // remove selected class
         if (this.selectType == 'row') {
-            query(this.box).find('.TsUi-grid-records tr.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
-                .find('.TsUi-col-number').removeClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-frecords tr.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
-                .find('.TsUi-col-number').removeClass('TsUi-row-selected')
-            query(this.box).find('input.TsUi-grid-select-check').prop('checked', false)
+            query(this.box).find('.tsg-grid-records tr.tsg-selected').removeClass('tsg-selected tsg-inactive')
+                .find('.tsg-col-number').removeClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-frecords tr.tsg-selected').removeClass('tsg-selected tsg-inactive')
+                .find('.tsg-col-number').removeClass('tsg-row-selected')
+            query(this.box).find('input.tsg-grid-select-check').prop('checked', false)
         } else {
-            query(this.box).find('.TsUi-grid-columns td .TsUi-col-header, .TsUi-grid-fcolumns td .TsUi-col-header').removeClass('TsUi-col-selected')
-            query(this.box).find('.TsUi-grid-records tr .TsUi-col-number').removeClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-frecords tr .TsUi-col-number').removeClass('TsUi-row-selected')
-            query(this.box).find('.TsUi-grid-data.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
-            query(this.box).find('input.TsUi-grid-select-check').prop('checked', false)
+            query(this.box).find('.tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header').removeClass('tsg-col-selected')
+            query(this.box).find('.tsg-grid-records tr .tsg-col-number').removeClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-frecords tr .tsg-col-number').removeClass('tsg-row-selected')
+            query(this.box).find('.tsg-grid-data.tsg-selected').removeClass('tsg-selected tsg-inactive')
+            query(this.box).find('input.tsg-grid-select-check').prop('checked', false)
         }
         sel.indexes = []
         sel.columns = {}
@@ -2536,9 +2536,9 @@ class TsGrid extends TsBase {
         // enable/disable toolbar search button
         if (this.show.toolbarSave) {
             if (this.getChanges().length > 0) {
-                this.toolbar.enable('TsUi-save')
+                this.toolbar.enable('tsg-save')
             } else {
-                this.toolbar.disable('TsUi-save')
+                this.toolbar.disable('tsg-save')
             }
         }
 
@@ -2925,7 +2925,7 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) {
             return
         }
-        const $btn = query(this.toolbar.box).find('.TsUi-grid-search-input .TsUi-search-drop')
+        const $btn = query(this.toolbar.box).find('.tsg-grid-search-input .tsg-search-drop')
         $btn.addClass('checked')
         // show search
         TsTooltip.show({
@@ -2935,7 +2935,7 @@ class TsGrid extends TsBase {
             html: this.getSearchesHTML(),
             align: 'left',
             arrowSize: 12,
-            class: 'TsUi-grid-search-advanced',
+            class: 'tsg-grid-search-advanced',
             hideOn: ['doc-click'],
             ...(options?.overlay ?? {})
         })
@@ -2957,7 +2957,7 @@ class TsGrid extends TsBase {
                         })
                     })
                     console.log(event.target)
-                    if (!query(event.target).hasClass('TsUi-saved-searches')) {
+                    if (!query(event.target).hasClass('tsg-saved-searches')) {
                         TsTooltip.hide(this.name + '-search-suggest')
                     }
                 })
@@ -3015,10 +3015,10 @@ class TsGrid extends TsBase {
         TsTooltip.show({
             name: this.name + '-search-props',
             anchor: el,
-            class: 'TsUi-white',
+            class: 'tsg-white',
             hideOn: 'doc-click',
             html: `
-                <div class="TsUi-grid-search-single">
+                <div class="tsg-grid-search-single">
                     <span class="field">${sf.label ?? ''}</span>
                     <span class="operator">${TsUtils.lang(oper)}</span>
                     ${Array.isArray(sd.value)
@@ -3026,7 +3026,7 @@ class TsGrid extends TsBase {
                         : `<span class="value">${val}</span>`
                     }
                     <div class="buttons">
-                        <button id="remove" class="TsUi-btn">${TsUtils.lang('Remove This Field')}</button>
+                        <button id="remove" class="tsg-btn">${TsUtils.lang('Remove This Field')}</button>
                     </div>
                 </div>`
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3149,13 +3149,13 @@ class TsGrid extends TsBase {
         this.message({
             width: 350,
             height: 150,
-            body: `<div class="TsUi-grid-save-search">
+            body: `<div class="tsg-grid-save-search">
                         <span>${TsUtils.lang(ind != -1 ? 'Update Search' : 'Save New Search')}</span>
-                        <input class="search-name TsUi-input" placeholder="${TsUtils.lang('Search name')}">
+                        <input class="search-name tsg-input" placeholder="${TsUtils.lang('Search name')}">
                    </div>`,
             buttons: `
-                <button id="grid-search-cancel" class="TsUi-btn">${TsUtils.lang('Cancel')}</button>
-                <button id="grid-search-save" class="TsUi-btn TsUi-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
+                <button id="grid-search-cancel" class="tsg-btn">${TsUtils.lang('Cancel')}</button>
+                <button id="grid-search-save" class="tsg-btn tsg-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
             `
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         })?.open(async (event: any) => { // any: TsEvent message open callback
@@ -3165,7 +3165,7 @@ class TsGrid extends TsBase {
                 this.message()
             })
             query(event.detail.box).find('#grid-search-save').on('click', () => {
-                const input = query(event.detail.box).find('.TsUi-message .search-name')
+                const input = query(event.detail.box).find('.tsg-message .search-name')
                 const name = input.val()
                 // save in savedSearches
                 if (this['searchSelected'] && ind != -1) {
@@ -3179,7 +3179,7 @@ class TsGrid extends TsBase {
                     this.savedSearches.push({
                         id: name,
                         text: name,
-                        icon: 'TsUi-icon-search',
+                        icon: 'tsg-icon-search',
                         remove: true,
                         logic: this.last.logic,
                         data: this.searchData
@@ -3208,7 +3208,7 @@ class TsGrid extends TsBase {
                 .off('.message')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keydown.message', (evt: any) => { // any: KeyboardEvent at runtime
-                    const val = String(query(event.detail.box).find('.TsUi-message-body input').val()).trim()
+                    const val = String(query(event.detail.box).find('.tsg-message-body input').val()).trim()
                     if (evt.keyCode == 13 && val != '') {
                         query(event.detail.box).find('#grid-search-save').trigger('click') // enter
                     }
@@ -3219,7 +3219,7 @@ class TsGrid extends TsBase {
                 .eq(0)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('input.message', (_evt: any) => { // any: InputEvent at runtime
-                    const $save = query(event.detail.box).closest('.TsUi-message').find('#grid-search-save')
+                    const $save = query(event.detail.box).closest('.tsg-message').find('#grid-search-save')
                     if (String(query(event.detail.box).val()).trim() === '') {
                         $save.prop('disabled', true)
                     } else {
@@ -3357,7 +3357,7 @@ class TsGrid extends TsBase {
         TsMenu.show({
             type: 'radio',
             name: this.name + '-search-fields',
-            anchor: query(this.box).find('#grid_'+ this.name +'_search_name').parent().find('.TsUi-search-down').get(0),
+            anchor: query(this.box).find('#grid_'+ this.name +'_search_name').parent().find('.tsg-search-down').get(0),
             items,
             align: 'none',
             hideOn: ['doc-click', 'select']
@@ -3897,7 +3897,7 @@ class TsGrid extends TsBase {
                 this.editDone(index, column, event)
             } else {
                 // when 2 chars entered fast (spreadsheet)
-                const input = query(this.box).find('div.TsUi-edit-box .TsUi-input')
+                const input = query(this.box).find('div.tsg-edit-box .tsg-input')
                 if (input.length > 0) {
                     if (input.get(0).tagName == 'DIV') {
                         input.text(input.text() + value)
@@ -3937,15 +3937,15 @@ class TsGrid extends TsBase {
         this.last._edit['tr'] = tr
         this.last._edit['div'] = div
         // clear previous if any (spreadsheet)
-        query(this.box).find('div.TsUi-edit-box').remove()
+        query(this.box).find('div.tsg-edit-box').remove()
         // for spreadsheet - insert into selection
         if (this.selectType != 'row') {
             query(this.box).find('#grid_'+ this.name + prefix + 'selection')
                 .attr('id', 'grid_'+ this.name + '_editable')
-                .removeClass('TsUi-selection')
-                .addClass('TsUi-edit-box')
+                .removeClass('tsg-selection')
+                .addClass('tsg-edit-box')
                 .prepend('<div style="position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;"></div>')
-                .find('.TsUi-selection-resizer')
+                .find('.tsg-selection-resizer')
                 .remove()
             div = query(this.box).find('#grid_'+ this.name + '_editable > div:first-child')
         }
@@ -3979,13 +3979,13 @@ class TsGrid extends TsBase {
         const font = `font-family: ${styles.getPropertyValue('font-family')}; font-size: ${styles.getPropertyValue('font-size')};`
         switch (edit.type) {
             case 'div': {
-                div.addClass('TsUi-editable')
-                    .html(TsUtils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="TsUi-input TsUi-focus"
+                div.addClass('tsg-editable')
+                    .html(TsUtils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="tsg-input tsg-focus"
                         contenteditable autocorrect="off" autocomplete="off" spellcheck="false"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>
                     </div>${edit.text}`))
-                input = div.find('div.TsUi-input').get(0)
+                input = div.find('div.tsg-input').get(0)
                 input.innerText = (typeof val != 'object' ? val : '')
                 if (value != null) {
                     TsUtils.setCursorPosition(input, input.innerText.length)
@@ -3995,8 +3995,8 @@ class TsGrid extends TsBase {
                 break
             }
             default: {
-                div.addClass('TsUi-editable')
-                    .html(TsUtils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="TsUi-input"
+                div.addClass('tsg-editable')
+                    .html(TsUtils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="tsg-input"
                         autocorrect="off" autocomplete="off" spellcheck="false" type="text"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>${edit.text}`))
@@ -4041,8 +4041,8 @@ class TsGrid extends TsBase {
         }
         Object.assign(this.last._edit, { input, edit })
         query(input)
-            .off('.TsUi-editable')
-            .on('blur.TsUi-editable', (event: Event) => {
+            .off('.tsg-editable')
+            .on('blur.tsg-editable', (event: Event) => {
                 if (this.last.inEditMode) {
                     const type = this.last._edit?.['edit']?.type
                     const name = query(input).data('tooltipName') // if popup is open
@@ -4057,23 +4057,23 @@ class TsGrid extends TsBase {
                     this.editDone()
                 }
             })
-            .on('mousedown.TsUi-editable', (event: Event) => {
+            .on('mousedown.tsg-editable', (event: Event) => {
                 event.stopPropagation()
             })
-            .on('click.TsUi-editable', (event: Event) => {
+            .on('click.tsg-editable', (event: Event) => {
                 expand.call(input, event)
             })
-            .on('paste.TsUi-editable', (event: Event) => {
+            .on('paste.tsg-editable', (event: Event) => {
                 // clean paste to be plain text
                 event.preventDefault()
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const text = (event as any as ClipboardEvent).clipboardData!.getData('text/plain') // any: typed as Event but is ClipboardEvent
                 document.execCommand('insertHTML', false, text)
             })
-            .on('keyup.TsUi-editable', (event: Event) => {
+            .on('keyup.tsg-editable', (event: Event) => {
                 expand.call(input, event)
             })
-            .on('keydown.TsUi-editable', (event: Event) => {
+            .on('keydown.tsg-editable', (event: Event) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const kev = event as any as KeyboardEvent // any: typed as Event but is KeyboardEvent
                 switch (kev.keyCode) {
@@ -4307,14 +4307,14 @@ class TsGrid extends TsBase {
         // remove - by updating cell data
         if (!summary) {
             if (rec.TsUi?.['changes']?.[col.field] != null) {
-                cell.addClass('TsUi-changed')
+                cell.addClass('tsg-changed')
             } else {
-                cell.removeClass('TsUi-changed')
+                cell.removeClass('tsg-changed')
             }
             cell.replace(this.getCellHTML(index, column, summary))
         }
         // remove - spreadsheet
-        query(this.box).find('div.TsUi-edit-box').remove()
+        query(this.box).find('div.tsg-edit-box').remove()
         // update toolbar buttons
         this.updateToolbar()
         // keep grid in focus if needed
@@ -4344,7 +4344,7 @@ class TsGrid extends TsBase {
                 width: 380,
                 height: 170,
                 yes_text: TsUtils.lang('Delete'),
-                yes_class: 'TsUi-btn-red',
+                yes_class: 'tsg-btn-red',
                 no_text: TsUtils.lang('Cancel'),
             // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4427,7 +4427,7 @@ class TsGrid extends TsBase {
         const rec = index != null ? this.records[index]! : null
         if (rec?.TsUi?.selectable === false && (rec?.TsUi?.children?.length ?? 0) > 0) {
             // if not a show-children button, then toggle
-            if (!query(event.target).hasClass('TsUi-show-children')) {
+            if (!query(event.target).hasClass('tsg-show-children')) {
                 this.toggle(recid)
                 return
             }
@@ -4483,7 +4483,7 @@ class TsGrid extends TsBase {
             let flag = (last.indexes.indexOf(ind ?? -1) != -1 ? true : false)
             let fselect = false
             // if clicked on the checkbox
-            if (query(event.target).closest('td').hasClass('TsUi-col-select')) fselect = true
+            if (query(event.target).closest('td').hasClass('tsg-col-select')) fselect = true
             // clear other if necessary
             if (((!event.ctrlKey && !event.shiftKey && !event.metaKey && !fselect) || !this.multiSelect) && !this['showSelectColumn']) {
                 if (this.selectType != 'row' && !last.columns[ind ?? -1]?.includes(column)) {
@@ -4598,25 +4598,25 @@ class TsGrid extends TsBase {
             items: this.initColumnOnOff()
         })
         .then(() => {
-            query('#w2overlay-context-menu .TsUi-grid-skip')
-                .off('.TsUi-grid')
-                .on('click.TsUi-grid', (evt: Event) => {
+            query('#w2overlay-context-menu .tsg-grid-skip')
+                .off('.tsg-grid')
+                .on('click.tsg-grid', (evt: Event) => {
                     evt.stopPropagation()
                 })
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keypress', (evt: any) => { // any: KeyboardEvent at runtime; typed loosely
                     if (evt.keyCode == 13) {
                         this.skip(evt.target.value)
-                        this.toolbar.click('TsUi-column-on-off') // close menu
+                        this.toolbar.click('tsg-column-on-off') // close menu
                     }
                 })
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .select((event: any) => { // any: TsMenu select event shape varies
             const id = event.detail.item.id
-            if (['TsUi-stateSave', 'TsUi-stateReset'].includes(id)) {
+            if (['tsg-stateSave', 'tsg-stateReset'].includes(id)) {
                 this[id.substring(5)]()
-            } else if (id == 'TsUi-skip') {
+            } else if (id == 'tsg-skip') {
                 // empty
             } else {
                 this.columnOnOff(event, event.detail.item.id)
@@ -4637,7 +4637,7 @@ class TsGrid extends TsBase {
             return
         }
         const col = this.columns[colIndex]!
-        const el = query(`#grid_${this.name}_column_${colIndex} .TsUi-col-header`)[0]
+        const el = query(`#grid_${this.name}_column_${colIndex} .tsg-col-header`)[0]
         if (col['autoResize'] === false || col.hidden === true || !el) {
             return true
         }
@@ -4645,7 +4645,7 @@ class TsGrid extends TsBase {
         let maxWidth = TsUtils.getStrWidth(el.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
             + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4
 
-        query(this.box).find(`.TsUi-grid-records td[col="${colIndex}"] > div`, this.box).each((el: Node) => {
+        query(this.box).find(`.tsg-grid-records td[col="${colIndex}"] > div`, this.box).each((el: Node) => {
             const htmlEl = el as HTMLElement // cast: query().each() passes Element but typed as Node
             const style = getComputedStyle(htmlEl)
             const width = TsUtils.getStrWidth(htmlEl.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
@@ -4682,7 +4682,7 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = true
-        query(this.box).removeClass('TsUi-inactive').find('.TsUi-inactive').removeClass('TsUi-inactive')
+        query(this.box).removeClass('tsg-inactive').find('.tsg-inactive').removeClass('tsg-inactive')
         setTimeout(() => {
             const txt = query(this.box).find(`#grid_${this.name}_focus`).get(0)
             if (txt && document.activeElement != txt) {
@@ -4701,8 +4701,8 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = false
-        query(this.box).addClass('TsUi-inactive').find('.TsUi-selected').addClass('TsUi-inactive')
-        query(this.box).find('.TsUi-selection').addClass('TsUi-inactive')
+        query(this.box).addClass('tsg-inactive').find('.tsg-selected').addClass('tsg-inactive')
+        query(this.box).find('.tsg-selection').addClass('tsg-inactive')
         // event after
         edata.finish()
     }
@@ -4719,7 +4719,7 @@ class TsGrid extends TsBase {
         const edata = obj.trigger('keydown', { target: obj.name, originalEvent: event })
         if (edata.isCancelled === true) return
         // default behavior
-        if (query(this.box).find('.TsUi-message').length > 0) {
+        if (query(this.box).find('.tsg-message').length > 0) {
             // if there are messages
             if (event.keyCode == 27) this.message()
             return
@@ -5400,17 +5400,17 @@ class TsGrid extends TsBase {
             if ((rec.TsUi.expanded as any) == 'none') return false
             // insert expand row
             query(this.box).find('#grid_'+ this.name +'_rec_'+ id).after(
-                `<tr id="grid_${this.name}_rec_${recid}_expanded_row" class="TsUi-expanded-row">
-                    <td colspan="100" class="TsUi-expanded2">
+                `<tr id="grid_${this.name}_rec_${recid}_expanded_row" class="tsg-expanded-row">
+                    <td colspan="100" class="tsg-expanded2">
                         <div id="grid_${this.name}_rec_${recid}_expanded"></div>
                     </td>
-                    <td class="TsUi-grid-data-last"></td>
+                    <td class="tsg-grid-data-last"></td>
                 </tr>`)
 
             query(this.box).find('#grid_'+ this.name +'_frec_'+ id).after(
-                `<tr id="grid_${this.name}_frec_${recid}_expanded_row" class="TsUi-expanded-row">
-                    ${this.show.lineNumbers ? '<td class="TsUi-col-number"></td>' : ''}
-                    <td class="TsUi-grid-data TsUi-expanded1" colspan="100">
+                `<tr id="grid_${this.name}_frec_${recid}_expanded_row" class="tsg-expanded-row">
+                    ${this.show.lineNumbers ? '<td class="tsg-col-number"></td>' : ''}
+                    <td class="tsg-grid-data tsg-expanded1" colspan="100">
                        <div id="grid_${this.name}_frec_${recid}_expanded"></div>
                     </td>
                 </tr>`)
@@ -5434,8 +5434,8 @@ class TsGrid extends TsBase {
                 row2.css({ height: innerHeight + 'px' })
             }
             // default action
-            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).attr('expanded', 'yes').addClass('TsUi-expanded')
-            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).attr('expanded', 'yes').addClass('TsUi-expanded')
+            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).attr('expanded', 'yes').addClass('tsg-expanded')
+            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).attr('expanded', 'yes').addClass('tsg-expanded')
             query(this.box).find('#grid_'+ this.name +'_cell_'+ this.get(recid, true) +'_expand div').html('-')
             rec.TsUi.expanded = true
             // event after
@@ -5494,8 +5494,8 @@ class TsGrid extends TsBase {
                 box_id: 'grid_'+ this.name +'_rec_'+ recid +'_expanded', fbox_id: 'grid_'+ this.name +'_frec_'+ recid +'_expanded' })
             if (edata.isCancelled === true) return false
             // default action
-            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).removeAttr('expanded').removeClass('TsUi-expanded')
-            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).removeAttr('expanded').removeClass('TsUi-expanded')
+            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).removeAttr('expanded').removeClass('tsg-expanded')
+            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).removeAttr('expanded').removeClass('tsg-expanded')
             query(this.box).find('#grid_'+ this.name +'_cell_'+ this.get(recid, true) +'_expand div').html('+')
             query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded').css('height', '0px')
             query(this.box).find('#grid_'+ this.name +'_frec_'+ id +'_expanded').css('height', '0px')
@@ -5875,7 +5875,7 @@ class TsGrid extends TsBase {
                     cell.style.cssText = style
                 }
                 if (className != '') {
-                    const ignore = ['TsUi-grid-data']
+                    const ignore = ['tsg-grid-data']
                     const remove: string[] = []
                     const add = className.split(' ').filter((cl: string) => !!cl) // remove empty
                     cell.classList.forEach((cl: string) => { if (!ignore.includes(cl)) remove.push(cl) })
@@ -5890,7 +5890,7 @@ class TsGrid extends TsBase {
             // record class if any
             if (rec.TsUi.class != null) {
                 if (typeof rec.TsUi.class == 'string') {
-                    const ignore = ['TsUi-odd', 'TsUi-even', 'TsUi-record']
+                    const ignore = ['tsg-odd', 'tsg-even', 'tsg-record']
                     const remove: string[] = []
                     const add = rec['TsUi']['class'].split(' ').filter((cl: string) => !!cl) // remove empty
                     if (row1 && row2) {
@@ -5902,7 +5902,7 @@ class TsGrid extends TsBase {
                     }
                 }
                 if (TsUtils.isPlainObject(rec.TsUi.class) && typeof rec.TsUi.class[pcol?.field ?? ''] == 'string') {
-                    const ignore = ['TsUi-grid-data']
+                    const ignore = ['tsg-grid-data']
                     const remove: string[] = []
                     const add = rec['TsUi']['class'][pcol!.field].split(' ').filter((cl: string) => !!cl)
                     cell.classList.forEach((cl: string) => { if (!ignore.includes(cl)) remove.push(cl) })
@@ -5935,7 +5935,7 @@ class TsGrid extends TsBase {
         const col_ind = this.getColumn(field, true)
         if (index == null || col_ind == null) return false
         const isSummary = (this.records[index] && this.records[index]!.recid == recid ? false : true)
-        const cell = query(this.box).find(`${isSummary ? '.TsUi-grid-summary ' : ''}#grid_${this.name}_data_${index}_${col_ind}`)
+        const cell = query(this.box).find(`${isSummary ? '.tsg-grid-summary ' : ''}#grid_${this.name}_data_${index}_${col_ind}`)
         if (cell.length == 0) return false
         // set cell html and changed flag
         cell.replace(this.getCellHTML(index, col_ind, isSummary))
@@ -5963,7 +5963,7 @@ class TsGrid extends TsBase {
                 tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
                 tr1.attr('custom_style', st)
                 tr2.attr('custom_style', st)
-                if (tr1.hasClass('TsUi-selected')) {
+                if (tr1.hasClass('tsg-selected')) {
                     st = st.replace('background-color', 'none')
                 }
                 tr1[0].style.cssText = 'height: '+ this.recordHeight + 'px;' + st
@@ -6089,7 +6089,7 @@ class TsGrid extends TsBase {
                 }
                 if (search.length > 0) {
                     search.forEach((item) => {
-                        const el = query(this.box).find('td[col="'+ item.col +'"]:not(.TsUi-head)')
+                        const el = query(this.box).find('td[col="'+ item.col +'"]:not(.tsg-head)')
                         TsUtils.marker(el, item.search)
                     })
                 }
@@ -6115,14 +6115,14 @@ class TsGrid extends TsBase {
 
     refreshSearch() {
         if (this.multiSearch && this.searchData.length > 0) {
-            if (query(this.box).find('.TsUi-grid-searches').length == 0) {
-                query(this.box).find('.TsUi-grid-toolbar')
+            if (query(this.box).find('.tsg-grid-searches').length == 0) {
+                query(this.box).find('.tsg-grid-toolbar')
                     .css('height', (this.last.toolbar_height + 35) + 'px')
-                    .append(`<div id="grid_${this.name}_searches" class="TsUi-grid-searches"></div>`)
+                    .append(`<div id="grid_${this.name}_searches" class="tsg-grid-searches"></div>`)
 
             }
             let searches = `
-                <span id="grid_${this.name}_search_logic" class="TsUi-grid-search-logic"></span>
+                <span id="grid_${this.name}_search_logic" class="tsg-grid-search-logic"></span>
                 <div class="grid-search-line"></div>`
             this.searchData.forEach((sd, sd_ind) => {
                 const ind = this.getSearch(sd.field, true)
@@ -6162,7 +6162,7 @@ class TsGrid extends TsBase {
                         display = `: ${oper} ${dsp}`
                     }
                 }
-                searches += `<span class="TsUi-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
+                searches += `<span class="tsg-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
                     ${sf ? (sf.label ?? sf.field) : sd.field}
                     ${display}
                     <span class="icon-chevron-down"></span>
@@ -6172,19 +6172,19 @@ class TsGrid extends TsBase {
             searches += `
                 ${this.show.searchSave
                     ? `<div class="grid-search-line"></div>
-                       <button class="TsUi-btn grid-search-btn" data-click="searchSave" type="button">${TsUtils.lang('Save')}</button>
+                       <button class="tsg-btn grid-search-btn" data-click="searchSave" type="button">${TsUtils.lang('Save')}</button>
                       `
                     : ''
                 }
-                <button class="TsUi-btn grid-search-btn btn-remove" type="button"
+                <button class="tsg-btn grid-search-btn btn-remove" type="button"
                     data-click="searchReset">X</button>
             `
             query(this.box).find(`#grid_${this.name}_searches`).html(searches)
             query(this.box).find(`#grid_${this.name}_search_logic`).html(TsUtils.lang(this.last.logic == 'AND' ? 'All' : 'Any'))
         } else {
-            query(this.box).find('.TsUi-grid-toolbar')
+            query(this.box).find('.tsg-grid-toolbar')
                 .css('height', this.last.toolbar_height + 'px')
-                .find('.TsUi-grid-searches')
+                .find('.tsg-grid-searches')
                 .remove()
         }
         if (this['searchSelected']) {
@@ -6194,7 +6194,7 @@ class TsGrid extends TsBase {
             query(this.box).find(`#grid_${this.name}_search_all`).prop('readOnly', false)
             query(this.box).find(`#grid_${this.name}_search_name`).hide().find('.name-text').html('')
         }
-        TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .TsUi-action, #grid_${this.name}_searches button`), this)
+        TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .tsg-action, #grid_${this.name}_searches button`), this)
     }
 
     refreshBody() {
@@ -6203,21 +6203,21 @@ class TsGrid extends TsBase {
         const recHTML  = this.getRecordsHTML()
         const colHTML  = this.getColumnsHTML()
         const bodyHTML =
-            '<div id="grid_'+ this.name +'_frecords" class="TsUi-grid-frecords" style="margin-bottom: '+ ((TsUtils.scrollBarSize() as number) - 1) +'px;">'+
+            '<div id="grid_'+ this.name +'_frecords" class="tsg-grid-frecords" style="margin-bottom: '+ ((TsUtils.scrollBarSize() as number) - 1) +'px;">'+
                 recHTML[0] +
             '</div>'+
-            '<div id="grid_'+ this.name +'_records" class="TsUi-grid-records">' +
+            '<div id="grid_'+ this.name +'_records" class="tsg-grid-records">' +
                 recHTML[1] +
             '</div>'+
-            '<div id="grid_'+ this.name +'_scroll1" class="TsUi-grid-scroll1" style="height: '+ TsUtils.scrollBarSize() +'px"></div>'+
+            '<div id="grid_'+ this.name +'_scroll1" class="tsg-grid-scroll1" style="height: '+ TsUtils.scrollBarSize() +'px"></div>'+
             // Columns need to be after to be able to overlap
-            '<div id="grid_'+ this.name +'_fcolumns" class="TsUi-grid-fcolumns">'+
+            '<div id="grid_'+ this.name +'_fcolumns" class="tsg-grid-fcolumns">'+
             '    <table><tbody>'+ colHTML[0] +'</tbody></table>'+
             '</div>'+
-            '<div id="grid_'+ this.name +'_columns" class="TsUi-grid-columns">'+
+            '<div id="grid_'+ this.name +'_columns" class="tsg-grid-columns">'+
             '    <table><tbody>'+ colHTML[1] +'</tbody></table>'+
             '</div>'+
-            `<div class="TsUi-intersection-marker" style="display: none; height: ${this.recordHeight - 5}px">
+            `<div class="tsg-intersection-marker" style="display: none; height: ${this.recordHeight - 5}px">
                <div class="top-marker"></div>
                <div class="bottom-marker"></div>
             </div>`
@@ -6231,14 +6231,14 @@ class TsGrid extends TsBase {
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
                 query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)}`)
-                    .toggleClass('TsUi-record-hover', event.type == 'mouseover')
+                    .toggleClass('tsg-record-hover', event.type == 'mouseover')
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             frecords.on('mouseover mouseout', { delegate: 'tr' }, (event: any) => { // any: event.delegate is a Query extension
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
                 query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)}`)
-                    .toggleClass('TsUi-record-hover', event.type == 'mouseover')
+                    .toggleClass('tsg-record-hover', event.type == 'mouseover')
             })
         }
         if (TsUtils.isMobile) {
@@ -6339,13 +6339,13 @@ class TsGrid extends TsBase {
         // enable scrolling on frozen records,
         gridBody
             .data('scroll', { lastDelta: 0, lastTime: 0 })
-            .find('.TsUi-grid-frecords')
+            .find('.tsg-grid-frecords')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mousewheel DOMMouseScroll ', (event: any) => { // any: WheelEvent or MouseEvent, browser-specific
                 event.preventDefault()
                 // TODO: improve, scroll is not smooth, if scrolled to the end, it takes a while to return
                 const scroll = gridBody.data('scroll')
-                const container = gridBody.find('.TsUi-grid-records')
+                const container = gridBody.find('.tsg-grid-records')
                 let amount = typeof event.wheelDelta != 'undefined' ? -event.wheelDelta : (event.detail || event.deltaY)
                 const newScrollTop = container.prop('scrollTop')
 
@@ -6360,15 +6360,15 @@ class TsGrid extends TsBase {
         // scroll on records (and frozen records)
         records.off('.body-global')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('scroll.body-global', { delegate: '.TsUi-grid-records' }, (event: any) => { // any: event.delegate Query extension
+            .on('scroll.body-global', { delegate: '.tsg-grid-records' }, (event: any) => { // any: event.delegate Query extension
                 this.scroll(event)
             })
 
-        query(this.box).find('.TsUi-grid-body') // gridBody
+        query(this.box).find('.tsg-grid-body') // gridBody
             .off('.body-global')
             // header column click
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global dblclick.body-global contextmenu.body-global', { delegate: 'td.TsUi-head' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global dblclick.body-global contextmenu.body-global', { delegate: 'td.tsg-head' }, (event: any) => { // any: event.delegate Query extension
                 const col_ind = parseInt(query(event.delegate).attr('col'))
                 const col = this.columns[col_ind] ?? { field: String(col_ind) } // it could be line number
                 switch (event.type) {
@@ -6389,7 +6389,7 @@ class TsGrid extends TsBase {
                 }
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('mouseover.body-global', { delegate: '.TsUi-col-header' }, (event: any) => { // any: event.delegate Query extension
+            .on('mouseover.body-global', { delegate: '.tsg-col-header' }, (event: any) => { // any: event.delegate Query extension
                 const col = query(event.delegate).parent().attr('col')
                 this.columnTooltipShow(col, event)
                 query(event.delegate)
@@ -6400,25 +6400,25 @@ class TsGrid extends TsBase {
             })
             // select all
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: 'input.TsUi-select-all' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: 'input.tsg-select-all' }, (event: any) => { // any: event.delegate Query extension
                 if (event.delegate.checked) { this.selectAll() } else { this.selectNone() }
                 event.stopPropagation()
                 clearTimeout(this.last.kbd_timer ?? undefined) // keep grid in focus
             })
             // tree-like grid (or expandable column) expand/collapse
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: '.TsUi-show-children, .TsUi-col-expand' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: '.tsg-show-children, .tsg-col-expand' }, (event: any) => { // any: event.delegate Query extension
                 event.stopPropagation()
                 const ind = query(event.target).parents('tr').attr('index')
                 this.toggle(this.records[ind]!.recid)
             })
             // info bubbles
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global mouseover.body-global', { delegate: '.TsUi-info' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global mouseover.body-global', { delegate: '.tsg-info' }, (event: any) => { // any: event.delegate Query extension
                 const td = query(event.delegate).closest('td')
                 const tr = td.parent()
                 const col = this.columns[td.attr('col')]
-                const isSummary = tr.parents('.TsUi-grid-body').hasClass('TsUi-grid-summary')
+                const isSummary = tr.parents('.tsg-grid-body').hasClass('tsg-grid-summary')
                 if (['mouseenter', 'mouseover'].includes(col?.['info']?.showOn?.toLowerCase()) && event.type == 'mouseover') {
                     this.showBubble(parseInt(tr.attr('index')), parseInt(td.attr('col')), isSummary)
                         .then(() => {
@@ -6433,12 +6433,12 @@ class TsGrid extends TsBase {
             })
             // clipborad copy icon
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('mouseover.body-global', { delegate: '.TsUi-clipboard-copy' }, (event: any) => { // any: event.delegate Query extension
+            .on('mouseover.body-global', { delegate: '.tsg-clipboard-copy' }, (event: any) => { // any: event.delegate Query extension
                 if (event.delegate._tooltipShow) return
                 const td = query(event.delegate).parent()
                 const tr = td.parent()
                 const col = this.columns[td.attr('col')]
-                const isSummary = tr.parents('.TsUi-grid-body').hasClass('TsUi-grid-summary')
+                const isSummary = tr.parents('.tsg-grid-body').hasClass('tsg-grid-summary')
 
                 TsTooltip.show({
                     name: this.name + '-bubble',
@@ -6466,7 +6466,7 @@ class TsGrid extends TsBase {
                 event.delegate._tooltipShow = true
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: '.TsUi-editable-checkbox' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: '.tsg-editable-checkbox' }, (event: any) => { // any: event.delegate Query extension
                 const dt = query(event.delegate).data()
                 this.editChange.call(this, event.delegate, dt.changeind, dt.colind, event)
                 this.updateToolbar()
@@ -6475,7 +6475,7 @@ class TsGrid extends TsBase {
         // show empty message
         if (this.records.length === 0 && this.msgEmpty) {
             query(this.box).find(`#grid_${this.name}_body`)
-                .append(`<div id="grid_${this.name}_empty_msg" class="TsUi-grid-empty-msg"><div>${TsUtils.lang(this.msgEmpty)}</div></div>`)
+                .append(`<div id="grid_${this.name}_empty_msg" class="tsg-grid-empty-msg"><div>${TsUtils.lang(this.msgEmpty)}</div></div>`)
         } else if (query(this.box).find(`#grid_${this.name}_empty_msg`).length > 0) {
             query(this.box).find(`#grid_${this.name}_empty_msg`).remove()
         }
@@ -6510,19 +6510,19 @@ class TsGrid extends TsBase {
         // insert elements
         query(this.box)
             .attr('name', this.name)
-            .addClass('TsUi-reset TsUi-grid TsUi-inactive')
-            .html('<div class="TsUi-grid-box">'+
-                  '    <div id="grid_'+ this.name +'_header" class="TsUi-grid-header"></div>'+
-                  '    <div id="grid_'+ this.name +'_toolbar" class="TsUi-grid-toolbar"></div>'+
-                  '    <div id="grid_'+ this.name +'_body" class="TsUi-grid-body"></div>'+
-                  '    <div id="grid_'+ this.name +'_fsummary" class="TsUi-grid-body TsUi-grid-summary"></div>'+
-                  '    <div id="grid_'+ this.name +'_summary" class="TsUi-grid-body TsUi-grid-summary"></div>'+
-                  '    <div id="grid_'+ this.name +'_footer" class="TsUi-grid-footer"></div>'+
-                  '    <textarea id="grid_'+ this.name +'_focus" class="TsUi-grid-focus-input" '+
+            .addClass('tsg-reset tsg-grid tsg-inactive')
+            .html('<div class="tsg-grid-box">'+
+                  '    <div id="grid_'+ this.name +'_header" class="tsg-grid-header"></div>'+
+                  '    <div id="grid_'+ this.name +'_toolbar" class="tsg-grid-toolbar"></div>'+
+                  '    <div id="grid_'+ this.name +'_body" class="tsg-grid-body"></div>'+
+                  '    <div id="grid_'+ this.name +'_fsummary" class="tsg-grid-body tsg-grid-summary"></div>'+
+                  '    <div id="grid_'+ this.name +'_summary" class="tsg-grid-body tsg-grid-summary"></div>'+
+                  '    <div id="grid_'+ this.name +'_footer" class="tsg-grid-footer"></div>'+
+                  '    <textarea id="grid_'+ this.name +'_focus" class="tsg-grid-focus-input" '+
                             (this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : '')+
                             (TsUtils.isMobile ? 'readonly' : '') +'></textarea>'+ // readonly needed on android not to open keyboard
                   '</div>')
-        if (this.selectType != 'row') query(this.box).addClass('TsUi-ss')
+        if (this.selectType != 'row') query(this.box).addClass('tsg-ss')
         if (query(this.box).length > 0) query(this.box)[0].style.cssText += this.style
         // render toolbar
         const tb_box = query(this.box).find(`#grid_${this.name}_toolbar`)
@@ -6628,14 +6628,14 @@ class TsGrid extends TsBase {
             // restore css user-select
             if (obj.last.userSelect == 'text') {
                 obj.last.userSelect = ''
-                query(obj.box).find('.TsUi-grid-body').css('user-select', 'none')
+                query(obj.box).find('.tsg-grid-body').css('user-select', 'none')
             }
             // regular record select
-            if (obj.selectType == 'row' && (query(event.target).parents().hasClass('TsUi-head') || query(event.target).hasClass('TsUi-head'))) return
+            if (obj.selectType == 'row' && (query(event.target).parents().hasClass('tsg-head') || query(event.target).hasClass('tsg-head'))) return
             if (obj.last.move && obj.last.move.type == 'expand') return
             // if altKey - alow text selection
             if (event.altKey) {
-                query(obj.box).find('.TsUi-grid-body').css('user-select', 'text')
+                query(obj.box).find('.tsg-grid-body').css('user-select', 'text')
                 obj.selectNone()
                 obj.last.move = { type: 'text-select' }
                 obj.last.userSelect = 'text'
@@ -6647,7 +6647,7 @@ class TsGrid extends TsBase {
                 }
                 let tmps = false
                 while (tmp) {
-                    if (tmp.classList && tmp.classList.contains('TsUi-grid')) break
+                    if (tmp.classList && tmp.classList.contains('tsg-grid')) break
                     if (tmp.tagName && tmp.tagName.toUpperCase() == 'TD') tmps = true
                     if (tmp.tagName && tmp.tagName.toUpperCase() != 'TR' && tmps == true) {
                         pos.x += tmp.offsetLeft
@@ -6669,7 +6669,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid, column: column1 }, { recid, column: column2 }],
-                        class: 'TsUi-selection-preview'
+                        class: 'tsg-selection-preview'
                     })
                 }
 
@@ -6694,7 +6694,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid: start, column }, { recid: end, column }],
-                        class: 'TsUi-selection-preview'
+                        class: 'tsg-selection-preview'
                     })
                 }
                 // set focus to grid
@@ -6705,17 +6705,17 @@ class TsGrid extends TsBase {
                     let sLeft  = obj.last.move.focusX
                     let sTop   = obj.last.move.focusY
                     const $owner = query(target).parents('table').parent()
-                    if ($owner.hasClass('TsUi-grid-records') || $owner.hasClass('TsUi-grid-frecords')
-                            || $owner.hasClass('TsUi-grid-columns') || $owner.hasClass('TsUi-grid-fcolumns')
-                            || $owner.hasClass('TsUi-grid-summary')) {
+                    if ($owner.hasClass('tsg-grid-records') || $owner.hasClass('tsg-grid-frecords')
+                            || $owner.hasClass('tsg-grid-columns') || $owner.hasClass('tsg-grid-fcolumns')
+                            || $owner.hasClass('tsg-grid-summary')) {
                         sLeft = obj.last.move.focusX - query(obj.box).find('#grid_'+ obj.name +'_records').prop('scrollLeft')
                         sTop  = obj.last.move.focusY - query(obj.box).find('#grid_'+ obj.name +'_records').prop('scrollTop')
                     }
-                    if (query(target).hasClass('TsUi-grid-footer') || query(target).parents('div.TsUi-grid-footer').length > 0) {
+                    if (query(target).hasClass('tsg-grid-footer') || query(target).parents('div.tsg-grid-footer').length > 0) {
                         sTop = query(obj.box).find('#grid_'+ obj.name +'_footer').get(0).offsetTop
                     }
                     // if clicked on toolbar
-                    if ($owner.hasClass('TsUi-scroll-wrapper') && $owner.parent().hasClass('TsUi-toolbar')) {
+                    if ($owner.hasClass('tsg-scroll-wrapper') && $owner.parent().hasClass('tsg-toolbar')) {
                         sLeft = obj.last.move.focusX - $owner.prop('scrollLeft')
                     }
                     $input.css({
@@ -6741,7 +6741,7 @@ class TsGrid extends TsBase {
             if (obj.reorderRows == true) {
                 let el = event.target
                 if (el.tagName.toUpperCase() != 'TD') el = query(el).parents('td')[0]
-                if (query(el).hasClass('TsUi-col-number') || query(el).hasClass('TsUi-col-order')) {
+                if (query(el).hasClass('tsg-col-number') || query(el).hasClass('tsg-col-order')) {
                     //multiple rows reordering
                     //obj.selectNone()
                     let sel: Array<RecId | number | string> = obj.getSelection() as Array<RecId | number | string>
@@ -6776,13 +6776,13 @@ class TsGrid extends TsBase {
                     sel = [...sel, ...new_sel]
                     obj.last.move.reorder = true
                     // suppress hover
-                    const eColor = query(obj.box).find('.TsUi-even.TsUi-empty-record').css('background-color')
-                    const oColor = query(obj.box).find('.TsUi-odd.TsUi-empty-record').css('background-color')
-                    query(obj.box).find('.TsUi-even td').filter(':not(.TsUi-col-number)').css('background-color', eColor)
-                    query(obj.box).find('.TsUi-odd td').filter(':not(.TsUi-col-number)').css('background-color', oColor)
+                    const eColor = query(obj.box).find('.tsg-even.tsg-empty-record').css('background-color')
+                    const oColor = query(obj.box).find('.tsg-odd.tsg-empty-record').css('background-color')
+                    query(obj.box).find('.tsg-even td').filter(':not(.tsg-col-number)').css('background-color', eColor)
+                    query(obj.box).find('.tsg-odd td').filter(':not(.tsg-col-number)').css('background-color', oColor)
                     // display empty record and ghost record
                     const mv = obj.last.move
-                    const recs = query(obj.box).find('.TsUi-grid-records')
+                    const recs = query(obj.box).find('.tsg-grid-records')
                     if (!mv['ghost']) {
                         //multiple rows reordering
                         //let row = query(obj.box).find(`#grid_${obj.name}_rec_${mv.recid}`)
@@ -6803,7 +6803,7 @@ class TsGrid extends TsBase {
                         })
                         rows.forEach(row => {
                             row.find('td').remove()
-                            row.append(`<td colspan="1000"><div class="TsUi-reorder-empty" style="height: ${(obj.recordHeight - 2)}px"></div></td>`)
+                            row.append(`<td colspan="1000"><div class="tsg-reorder-empty" style="height: ${(obj.recordHeight - 2)}px"></div></td>`)
                         })
                         recs.append('<div id="grid_'+ obj.name + '_ghost_line" style="position: absolute; z-index: 999999; pointer-events: none; width: 100%;"></div>')
                         recs.append('<table id="grid_'+ obj.name + '_ghost" style="position: absolute; z-index: 999998; opacity: 0.9; pointer-events: none;"></table>')
@@ -6819,8 +6819,8 @@ class TsGrid extends TsBase {
                 }
             }
             query(document)
-                .on('mousemove.TsUi-' + obj.name, mouseMove)
-                .on('mouseup.TsUi-' + obj.name, mouseStop)
+                .on('mousemove.tsg-' + obj.name, mouseMove)
+                .on('mouseup.tsg-' + obj.name, mouseStop)
             // needed when grid grids are nested, see issue #1275
             event.stopPropagation()
         }
@@ -6889,8 +6889,8 @@ class TsGrid extends TsBase {
                 const col = parseInt(query(event.target).parents('td').attr('col'))
                 if (isNaN(col)) {
                     obj.removeRange('column-selection')
-                    query(obj.box).find('.TsUi-grid-columns .TsUi-col-header, .TsUi-grid-fcolumns .TsUi-col-header').removeClass('TsUi-col-selected')
-                    query(obj.box).find('.TsUi-col-number').removeClass('TsUi-row-selected')
+                    query(obj.box).find('.tsg-grid-columns .tsg-col-header, .tsg-grid-fcolumns .tsg-col-header').removeClass('tsg-col-selected')
+                    query(obj.box).find('.tsg-col-number').removeClass('tsg-row-selected')
                     delete mv.colRange
                 } else {
                     // add all columns in between
@@ -6913,7 +6913,7 @@ class TsGrid extends TsBase {
                             obj.addRange({
                                 name: 'selection-preview',
                                 range: [{ recid: start, column: tmp[0] }, { recid: end, column: tmp[1] }],
-                                class: 'TsUi-selection-preview'
+                                class: 'tsg-selection-preview'
                             })
                         }
                     }
@@ -6958,7 +6958,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid: start?.recid, column: start?.column }, { recid: end?.recid, column: end?.column }],
-                        class: 'TsUi-selection-preview'
+                        class: 'tsg-selection-preview'
                     })
                     mv.newRange = newSel
                 } else {
@@ -6984,7 +6984,7 @@ class TsGrid extends TsBase {
             setTimeout(() => {
                 obj.last.cancelClick = null
             }, 1)
-            if (query(event.target).parents().hasClass('.TsUi-head') || query(event.target).hasClass('.TsUi-head')) return
+            if (query(event.target).parents().hasClass('.tsg-head') || query(event.target).hasClass('.tsg-head')) return
             obj.removeRange('selection-preview')
             if (mv && ['select', 'select-column'].includes(mv.type)) {
                 if (mv.colRange != null && edataCol.isCancelled !== true) {
@@ -7033,8 +7033,8 @@ class TsGrid extends TsBase {
                         // clear sortData
                         obj.sortData = []
                         query(obj.box)
-                            .find(`#grid_${obj.name}_columns .TsUi-col-header`)
-                            .removeClass('TsUi-col-sorted')
+                            .find(`#grid_${obj.name}_columns .tsg-col-header`)
+                            .removeClass('tsg-col-sorted')
                         resetRowReorder()
                         obj.selectNone(true)
                         obj.select(mv.from)
@@ -7046,7 +7046,7 @@ class TsGrid extends TsBase {
                 }
             }
             delete obj.last.move
-            query(document).off('.TsUi-' + obj.name)
+            query(document).off('.tsg-' + obj.name)
         }
 
         function resetRowReorder() {
@@ -7102,15 +7102,15 @@ class TsGrid extends TsBase {
         // skip records
         if (this.show.skipRecords) {
             const skip = TsUtils.lang('Skip') +
-                `<input id="${this.name}_skip" type="text" class="TsUi-input TsUi-grid-skip" value="${this.offset}">` +
+                `<input id="${this.name}_skip" type="text" class="tsg-input tsg-grid-skip" value="${this.offset}">` +
                 TsUtils.lang('records')
-            items.push({ id: 'TsUi-skip', text: skip, group: false, icon: 'TsUi-icon-empty' })
+            items.push({ id: 'tsg-skip', text: skip, group: false, icon: 'tsg-icon-empty' })
         }
         // save/restore state
         if (this.show.saveRestoreState) {
             items.push(
-                { id: 'TsUi-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'TsUi-icon-empty', group: false },
-                { id: 'TsUi-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'TsUi-icon-empty', group: false }
+                { id: 'tsg-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'tsg-icon-empty', group: false },
+                { id: 'tsg-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'tsg-icon-empty', group: false }
             )
         }
         // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
@@ -7122,7 +7122,7 @@ class TsGrid extends TsBase {
             item.text = TsUtils.lang(item.text) // translate
             if (item.checked) selected.push(item.id)
         })
-        this.toolbar.set('TsUi-column-on-off', { selected, items })
+        this.toolbar.set('tsg-column-on-off', { selected, items })
         return items
     }
 
@@ -7147,10 +7147,10 @@ class TsGrid extends TsBase {
         // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const hasInvalidClass = (target: any, lastColumn?: any) => {
-            const iClass = ['TsUi-col-number', 'TsUi-col-expand', 'TsUi-col-select']
-            if (lastColumn !== true) iClass.push('TsUi-head-last')
+            const iClass = ['tsg-col-number', 'tsg-col-expand', 'tsg-col-select']
+            if (lastColumn !== true) iClass.push('tsg-head-last')
             for (let i = 0; i < iClass.length; i++) {
-                if (query(target).closest('.TsUi-head').hasClass(iClass[i])) {
+                if (query(target).closest('.tsg-head').hasClass(iClass[i])) {
                     return true
                 }
             }
@@ -7166,10 +7166,10 @@ class TsGrid extends TsBase {
         function dragColStart(event: any) { // any: DragEvent at runtime
             if (dragData.pressed || dragData['numberPreColumnsPresent'] === 0 || event.button !== 0) return
 
-            const preColHeadersSelector = '.TsUi-head.TsUi-col-number, .TsUi-head.TsUi-col-expand, .TsUi-head.TsUi-col-select'
+            const preColHeadersSelector = '.tsg-head.tsg-col-number, .tsg-head.tsg-col-expand, .tsg-head.tsg-col-select'
 
             // do nothing if it is not a header
-            if (!query(event.target).parents().hasClass('TsUi-head') || hasInvalidClass(event.target)) return
+            if (!query(event.target).parents().hasClass('tsg-head') || hasInvalidClass(event.target)) return
 
             dragData.pressed = true
             dragData['initialX'] = event.pageX
@@ -7177,12 +7177,12 @@ class TsGrid extends TsBase {
             dragData['numberPreColumnsPresent'] = query(self.box).find(preColHeadersSelector).length
 
             // start event for drag start
-            const origColumn = dragData.columnHead = query(event.target).closest('.TsUi-head')
+            const origColumn = dragData.columnHead = query(event.target).closest('.tsg-head')
             const origColumnNumber = dragData['originalPos'] = parseInt(origColumn.attr('col'), 10)
             const edata = self.trigger('columnDragStart', { originalEvent: event, origColumnNumber, target: origColumn[0] })
             if (edata.isCancelled === true) return false
 
-            const columns = dragData['columns'] = query(self.box).find('.TsUi-head:not(.TsUi-head-last)')
+            const columns = dragData['columns'] = query(self.box).find('.tsg-head:not(.tsg-head-last)')
 
             // add events
             query(document).on('mouseup.colDrag', dragColEnd)
@@ -7205,7 +7205,7 @@ class TsGrid extends TsBase {
                     position: 'fixed',
                     'z-index': 999999,
                 })
-                .addClass('.TsUi-grid-ghost')
+                .addClass('.tsg-grid-ghost')
 
 
             // establish current offsets
@@ -7236,8 +7236,8 @@ class TsGrid extends TsBase {
 
             let target
             const finish = () => {
-                const ghosts = query(self.box).find('.TsUi-grid-ghost')
-                query(self.box).find('.TsUi-intersection-marker').hide()
+                const ghosts = query(self.box).find('.tsg-grid-ghost')
+                query(self.box).find('.tsg-intersection-marker').hide()
                 query(dragData['ghost']).remove()
                 ghosts.remove()
 
@@ -7279,12 +7279,12 @@ class TsGrid extends TsBase {
                 return
             }
             const td = query(event.target).closest('td')
-            const newPos = td.hasClass('TsUi-head-last') ? self.columns.length : parseInt(td.attr('col'))
+            const newPos = td.hasClass('tsg-head-last') ? self.columns.length : parseInt(td.attr('col'))
             if (dragData.targetPos != newPos) {
                 // if mouse over invalid column
-                const rect1 = query(self.box).find('.TsUi-grid-body').get(0).getBoundingClientRect()
+                const rect1 = query(self.box).find('.tsg-grid-body').get(0).getBoundingClientRect()
                 const rect2 = query(event.target).closest('td').get(0).getBoundingClientRect()
-                query(self.box).find('.TsUi-intersection-marker')
+                query(self.box).find('.tsg-intersection-marker')
                     .show()
                     .css({
                         left: (rect2.left - rect1.left) + 'px',
@@ -7361,25 +7361,25 @@ class TsGrid extends TsBase {
         }
         if (this.show.toolbarSearch) {
             const html =`
-                <div class="TsUi-grid-search-input">
+                <div class="tsg-grid-search-input">
                     ${this.buttons['search'].html}
-                    <div id="grid_${this.name}_search_name" class="TsUi-grid-search-name">
-                        <span class="name-icon TsUi-icon-search"></span>
+                    <div id="grid_${this.name}_search_name" class="tsg-grid-search-name">
+                        <span class="name-icon tsg-icon-search"></span>
                         <span class="name-text"></span>
-                        <span class="name-cross TsUi-action" data-click="searchReset">x</span>
+                        <span class="name-cross tsg-action" data-click="searchReset">x</span>
                     </div>
-                    <input type="text" id="grid_${this.name}_search_all" class="TsUi-search-all" tabindex="-1"
+                    <input type="text" id="grid_${this.name}_search_all" class="tsg-search-all" tabindex="-1"
                         autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                         placeholder="${TsUtils.lang(this.last.label, true)}" value="${this.last.search}"
                         data-focus="searchSuggest" data-click="stop"
                     >
-                    <div class="TsUi-search-drop TsUi-action" data-click="searchOpen"
+                    <div class="tsg-search-drop tsg-action" data-click="searchOpen"
                             style="${this.multiSearch ? '' : 'display: none'}">
-                        <span class="TsUi-icon-drop"></span>
+                        <span class="tsg-icon-drop"></span>
                     </div>
                 </div>`
             this.toolbar.items.push({
-                id: 'TsUi-search',
+                id: 'tsg-search',
                 type: 'html',
                 html,
                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -7387,7 +7387,7 @@ class TsGrid extends TsBase {
                 onRefresh: async (event: any) => {
                     await event.complete
                     const input = query(this.box).find(`#grid_${this.name}_search_all`)
-                    TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .TsUi-action`), this)
+                    TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .tsg-action`), this)
                     // slow down live search calls
                     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7443,12 +7443,12 @@ class TsGrid extends TsBase {
             }
             if (this.show.toolbarSave && !ids.includes(this.buttons['save'].id)) {
                 if (this.show.toolbarAdd || this.show.toolbarDelete || this.show.toolbarEdit) {
-                    this.toolbar.items.push({ type: 'break', id: 'TsUi-break2' })
+                    this.toolbar.items.push({ type: 'break', id: 'tsg-break2' })
                 }
                 this.toolbar.items.push(TsUtils.extend({}, this.buttons['save']))
             }
             // fill in overwritten items with default buttons
-            // ids are TsUi-* but in this.buttons the map is just [add, edit, delete]
+            // ids are tsg-* but in this.buttons the map is just [add, edit, delete]
             // must specify at least {id, name} in this.toolbar.items if you want to keep order
             tb_items = tb_items.map(item => this.buttons[item.name]
                                             ? TsUtils.extend({}, this.buttons[item.name], item) : item)
@@ -7466,19 +7466,19 @@ class TsGrid extends TsBase {
             if (edata.isCancelled === true) return
             let edata2
             switch (event.detail.item.id) {
-                case 'TsUi-reload':
+                case 'tsg-reload':
                     edata2 = this.trigger('reload', { target: this.name })
                     if (edata2.isCancelled === true) return false
                     this.reload()
                     edata2.finish()
                     break
-                case 'TsUi-column-on-off':
+                case 'tsg-column-on-off':
                     // TODO: tap on columns will hide menu before opening, only in grid not in toolbar
                     if (event.detail.subItem) {
                         const id = event.detail.subItem.id
-                        if (['TsUi-stateSave', 'TsUi-stateReset'].includes(id)) {
+                        if (['tsg-stateSave', 'tsg-stateReset'].includes(id)) {
                             this[id.substring(5)]()
-                        } else if (id == 'TsUi-skip') {
+                        } else if (id == 'tsg-skip') {
                             // empty
                         } else {
                             this.columnOnOff(event, event.detail.subItem.id)
@@ -7487,11 +7487,11 @@ class TsGrid extends TsBase {
                         this.initColumnOnOff()
                         // init input control with records to skip
                         setTimeout(() => {
-                            query(`#w2overlay-${this.name}_toolbar-drop .TsUi-grid-skip`)
-                                .off('.TsUi-grid')
+                            query(`#w2overlay-${this.name}_toolbar-drop .tsg-grid-skip`)
+                                .off('.tsg-grid')
                                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                .on('click.TsUi-grid', (evt: any) => {
+                                .on('click.tsg-grid', (evt: any) => {
                                     evt.stopPropagation()
                                 })
                                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -7499,19 +7499,19 @@ class TsGrid extends TsBase {
                                 .on('keypress', (evt: any) => {
                                     if (evt.keyCode == 13) {
                                         this.skip(evt.target.value)
-                                        this.toolbar.click('TsUi-column-on-off') // close menu
+                                        this.toolbar.click('tsg-column-on-off') // close menu
                                     }
                                 })
                         }, 100)
                     }
                     break
-                case 'TsUi-add':
+                case 'tsg-add':
                     // events
                     edata2 = this.trigger('add', { target: this.name, recid: null })
                     if (edata2.isCancelled === true) return false
                     edata2.finish()
                     break
-                case 'TsUi-edit': {
+                case 'tsg-edit': {
                     const sel   = this.getSelection()
                     let recid = null
                     if (sel.length == 1) recid = sel[0]
@@ -7521,10 +7521,10 @@ class TsGrid extends TsBase {
                     edata2.finish()
                     break
                 }
-                case 'TsUi-delete':
+                case 'tsg-delete':
                     this.delete()
                     break
-                case 'TsUi-save':
+                case 'tsg-save':
                     this.save()
                     break
             }
@@ -7534,7 +7534,7 @@ class TsGrid extends TsBase {
         // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('refresh', (event: any) => {
-            if (event.target == 'TsUi-search') {
+            if (event.target == 'tsg-search') {
                 const sd = this.searchData
                 setTimeout(() => {
                     this.searchInitInput(this.last.field, (sd.length == 1 ? sd[0]!.value : null))
@@ -7546,7 +7546,7 @@ class TsGrid extends TsBase {
     initResize() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
-        query(this.box).find('.TsUi-resizer')
+        query(this.box).find('.tsg-resizer')
             .off('.grid-col-resize')
             .on('click.grid-col-resize', function(event: Event) {
                 event.stopPropagation()
@@ -7694,10 +7694,10 @@ class TsGrid extends TsBase {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
         // remove empty records
-        query(this.box).find('.TsUi-empty-record').remove()
+        query(this.box).find('.tsg-empty-record').remove()
         // -- Calculate Column size in PX
         const box             = query(this.box)
-        const grid            = query(this.box).find(':scope > div.TsUi-grid-box')
+        const grid            = query(this.box).find(':scope > div.tsg-grid-box')
         const header          = query(this.box).find(`#grid_${this.name}_header`)
         const toolbar         = query(this.box).find(`#grid_${this.name}_toolbar`)
         const summary         = query(this.box).find(`#grid_${this.name}_summary`)
@@ -7757,7 +7757,7 @@ class TsGrid extends TsBase {
         // apply overflow
         if (!this.fixedBody) { bodyOverflowY = false }
         if (bodyOverflowX || bodyOverflowY) {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last')
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.tsg-head-last')
                 .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
             records.css({
@@ -7767,7 +7767,7 @@ class TsGrid extends TsBase {
                 'overflow-y': (bodyOverflowY ? 'auto' : 'hidden')
             })
         } else {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last').hide()
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.tsg-head-last').hide()
             records.css({
                 top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (TsUtils.getSize(columns, 'height') as number)) +'px',
                 overflow: 'hidden'
@@ -7804,21 +7804,21 @@ class TsGrid extends TsBase {
             let html1 = ''
             let html2 = ''
             let htmlp = ''
-            html1    += '<tr class="'+ (row % 2 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-empty-record" recid="-none-" style="height: '+ height +'px">'
-            html2    += '<tr class="'+ (row % 2 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-empty-record" recid="-none-" style="height: '+ height +'px">'
-            if (grid.show.lineNumbers) html1 += '<td class="TsUi-col-number"></td>'
-            if (grid.show.selectColumn) html1 += '<td class="TsUi-grid-data TsUi-col-select"></td>'
-            if (grid.show.expandColumn) html1 += '<td class="TsUi-grid-data TsUi-col-expand"></td>'
-            html2 += '<td class="TsUi-grid-data-spacer" col="start" style="border-right: 0"></td>'
-            if (grid.reorderRows) html2 += '<td class="TsUi-grid-data TsUi-col-order" col="order"></td>'
+            html1    += '<tr class="'+ (row % 2 ? 'tsg-even' : 'tsg-odd') + ' tsg-empty-record" recid="-none-" style="height: '+ height +'px">'
+            html2    += '<tr class="'+ (row % 2 ? 'tsg-even' : 'tsg-odd') + ' tsg-empty-record" recid="-none-" style="height: '+ height +'px">'
+            if (grid.show.lineNumbers) html1 += '<td class="tsg-col-number"></td>'
+            if (grid.show.selectColumn) html1 += '<td class="tsg-grid-data tsg-col-select"></td>'
+            if (grid.show.expandColumn) html1 += '<td class="tsg-grid-data tsg-col-expand"></td>'
+            html2 += '<td class="tsg-grid-data-spacer" col="start" style="border-right: 0"></td>'
+            if (grid.reorderRows) html2 += '<td class="tsg-grid-data tsg-col-order" col="order"></td>'
             for (let j = 0; j < grid.columns.length; j++) {
                 const col = grid.columns[j]
                 if ((col.hidden || j < grid.last.vscroll.colIndStart || j > grid.last.vscroll.colIndEnd) && !col.frozen) continue
-                htmlp = '<td class="TsUi-grid-data" '+ (col.attr != null ? col.attr : '') +' col="'+ j +'"></td>'
+                htmlp = '<td class="tsg-grid-data" '+ (col.attr != null ? col.attr : '') +' col="'+ j +'"></td>'
                 if (col.frozen) html1 += htmlp; else html2 += htmlp
             }
-            html1 += '<td class="TsUi-grid-data-last"></td> </tr>'
-            html2 += '<td class="TsUi-grid-data-last" col="end"></td> </tr>'
+            html1 += '<td class="tsg-grid-data-last"></td> </tr>'
+            html2 += '<td class="tsg-grid-data-last" col="end"></td> </tr>'
             query(grid.box).find('#grid_'+ grid.name +'_frecords > table').append(html1)
             query(grid.box).find('#grid_'+ grid.name +'_records > table').append(html2)
         }
@@ -7917,7 +7917,7 @@ class TsGrid extends TsBase {
                 i++
             }
         } else if (width_diff > 0) {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last')
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.tsg-head-last')
                 .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
         }
@@ -7951,7 +7951,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('TsUi-col-number')) {
+                if (query(el).hasClass('tsg-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -7968,7 +7968,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '') // already has px
                 }
                 // last column
-                if (query(el).hasClass('TsUi-head-last')) {
+                if (query(el).hasClass('tsg-head-last')) {
                     if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
                         let width = 0
                         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
@@ -7999,7 +7999,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('TsUi-col-number')) {
+                if (query(el).hasClass('tsg-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -8016,7 +8016,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '')
                 }
                 // last column
-                if (query(el).hasClass('TsUi-grid-data-last') && query(el).parents('.TsUi-grid-frecords').length === 0) { // not in frecords
+                if (query(el).hasClass('tsg-grid-data-last') && query(el).parents('.tsg-grid-frecords').length === 0) { // not in frecords
                     if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
                         let width = 0
                         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
@@ -8036,7 +8036,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('TsUi-col-number')) {
+                if (query(el).hasClass('tsg-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -8053,7 +8053,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '')
                 }
                 // last column
-                if (query(el).hasClass('TsUi-grid-data-last') && query(el).parents('.TsUi-grid-frecords').length === 0) { // not in frecords
+                if (query(el).hasClass('tsg-grid-data-last') && query(el).parents('.tsg-grid-frecords').length === 0) { // not in frecords
                     query(el).css('width', (TsUtils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
                 }
             })
@@ -8074,11 +8074,11 @@ class TsGrid extends TsBase {
             <div class="search-title">
                 ${TsUtils.lang('Advanced Search')}
                 ${this.savedSearches?.length > 0
-                    ? `<button class="TsUi-btn TsUi-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
+                    ? `<button class="tsg-btn tsg-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
                     : ''
                 }
                 <span class="search-logic" style="${this.show.searchLogic ? '' : 'display: none'}">
-                    <select id="grid_${this.name}_logic" class="TsUi-input">
+                    <select id="grid_${this.name}_logic" class="tsg-input">
                         <option value="AND" ${this.last.logic == 'AND' ? 'selected' : ''}>${TsUtils.lang('All')}</option>
                         <option value="OR" ${this.last.logic == 'OR' ? 'selected' : ''}>${TsUtils.lang('Any')}</option>
                     </select>
@@ -8110,7 +8110,7 @@ class TsGrid extends TsBase {
                 s.label = s['caption']
             }
             const operator =`
-                <select id="grid_${this.name}_operator_${i}" class="TsUi-input" data-change="initOperator|${i}">
+                <select id="grid_${this.name}_operator_${i}" class="tsg-input" data-change="initOperator|${i}">
                     ${this.getOperators(s.type, s.operators)}
                 </select>
             `
@@ -8131,7 +8131,7 @@ class TsGrid extends TsBase {
                     tmpStyle = 'width: 250px;'
                     if (['hex', 'color'].indexOf(s.type) != -1) tmpStyle = 'width: 90px;'
                     columns[col_ind] += `<input rel="search" type="text" id="grid_${this.name}_field_${i}" name="${s.field}"
-                               class="TsUi-input" style="${tmpStyle + s.style}" ${s.attr}>`
+                               class="tsg-input" style="${tmpStyle + s.style}" ${s.attr}>`
                     break
 
                 case 'int':
@@ -8145,14 +8145,14 @@ class TsGrid extends TsBase {
                     tmpStyle = 'width: 90px;'
                     if (s.type == 'datetime') tmpStyle = 'width: 140px;'
                     columns[col_ind] += `<input id="grid_${this.name}_field_${i}" name="${s.field}" ${s.attr} rel="search" type="text"
-                                class="TsUi-input" style="${tmpStyle + s.style}">
+                                class="tsg-input" style="${tmpStyle + s.style}">
                             <span id="grid_${this.name}_range_${i}" style="display: none">&#160;-&#160;&#160;
-                                <input rel="search" type="text" class="TsUi-input" style="${tmpStyle + s.style}" id="grid_${this.name}_field2_${i}" name="${s.field}" ${s.attr}>
+                                <input rel="search" type="text" class="tsg-input" style="${tmpStyle + s.style}" id="grid_${this.name}_field2_${i}" name="${s.field}" ${s.attr}>
                             </span>`
                     break
 
                 case 'select':
-                    columns[col_ind] += `<select rel="search" class="TsUi-input" style="${s.style}" id="grid_${this.name}_field_${i}"
+                    columns[col_ind] += `<select rel="search" class="tsg-input" style="${s.style}" id="grid_${this.name}_field_${i}"
                                 name="${s.field}" ${s.attr}></select>`
                     break
 
@@ -8168,10 +8168,10 @@ class TsGrid extends TsBase {
                 ${columns.join('')}
             </div>
             <div class="search-bottom actions">
-                <button type="button" class="TsUi-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
+                <button type="button" class="tsg-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
                 <div style="float: right; display: inline">
-                    <button type="button" class="TsUi-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
-                    <button type="button" class="TsUi-btn TsUi-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
+                    <button type="button" class="tsg-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
+                    <button type="button" class="tsg-btn tsg-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
                 </div>
             </div>
         `
@@ -8425,7 +8425,7 @@ class TsGrid extends TsBase {
             }
         }
         // add on change event
-        overlay.find('.TsUi-grid-search-advanced *[rel=search]')
+        overlay.find('.tsg-grid-search-advanced *[rel=search]')
             // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('keypress', (evnt: any) => {
@@ -8469,24 +8469,24 @@ class TsGrid extends TsBase {
             if (self.columnGroups[self.columnGroups.length-1].text != '') self.columnGroups.push({ text: '' })
 
             if (self.show.lineNumbers) {
-                html1 += '<td class="TsUi-head TsUi-col-number" col="line-number">' +
+                html1 += '<td class="tsg-head tsg-col-number" col="line-number">' +
                          '    <div>&#160;</div>' +
                          '</td>'
             }
             if (self.show.selectColumn) {
-                html1 += '<td class="TsUi-head TsUi-col-select" col="select">' +
+                html1 += '<td class="tsg-head tsg-col-select" col="select">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
             if (self.show.expandColumn) {
-                html1 += '<td class="TsUi-head TsUi-col-expand" col="expand">' +
+                html1 += '<td class="tsg-head tsg-col-expand" col="expand">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
             let ii = 0
-            html2 += `<td id="grid_${self.name}_column_start" class="TsUi-head" col="start" style="border-right: 0"></td>`
+            html2 += `<td id="grid_${self.name}_column_start" class="tsg-head" col="start" style="border-right: 0"></td>`
             if (self.reorderRows) {
-                html2 += '<td class="TsUi-head TsUi-col-order" col="order">' +
+                html2 += '<td class="tsg-head tsg-col-order" col="order">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
@@ -8514,33 +8514,33 @@ class TsGrid extends TsBase {
                     let sortStyle = ''
                     for (let si = 0; si < self.sortData.length; si++) {
                         if (self.sortData[si]!.field == col.field) {
-                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'TsUi-sort-up'
-                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'TsUi-sort-down'
+                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'tsg-sort-up'
+                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'tsg-sort-down'
                         }
                     }
                     let resizer = ''
                     if (col.resizable !== false) {
-                        resizer = `<div class="TsUi-resizer" name="${ii}"></div>`
+                        resizer = `<div class="tsg-resizer" name="${ii}"></div>`
                     }
                     const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
-                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="TsUi-head ${sortStyle}" col="${ii}" `+
+                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="tsg-head ${sortStyle}" col="${ii}" `+
                            `    rowspan="2" colspan="${colspan}">`+ resizer +
-                           `    <div class="TsUi-col-group TsUi-col-header ${sortStyle ? 'TsUi-col-sorted' : ''}">` +
+                           `    <div class="tsg-col-group tsg-col-header ${sortStyle ? 'tsg-col-sorted' : ''}">` +
                            `        <div class="${sortStyle}"></div>` + (!text ? '&#160;' : text) +
                            '    </div>'+
                            '</td>'
                     if (col && col.frozen) html1 += tmpf; else html2 += tmpf
                 } else {
                     const gText = TsUtils.lang(typeof colg.text == 'function' ? colg.text(colg) : colg.text)
-                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="TsUi-head" col="${ii}" colspan="${colspan}">` +
-                           `    <div class="TsUi-col-group" style="${colg.style ?? ''}">${!gText ? '&#160;' : gText}</div>` +
+                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="tsg-head" col="${ii}" colspan="${colspan}">` +
+                           `    <div class="tsg-col-group" style="${colg.style ?? ''}">${!gText ? '&#160;' : gText}</div>` +
                            '</td>'
                     if (col && col.frozen) html1 += tmpf; else html2 += tmpf
                 }
                 ii += colg.span
             }
             html1 += '<td></td></tr>' // need empty column for border-right
-            html2 += `<td id="grid_${self.name}_column_end" class="TsUi-head" col="end"></td></tr>`
+            html2 += `<td id="grid_${self.name}_column_end" class="tsg-head" col="end"></td></tr>`
             return [html1, html2]
         }
 
@@ -8550,30 +8550,30 @@ class TsGrid extends TsBase {
             let html1 = '<tr>'
             let html2 = '<tr>'
             if (self.show.lineNumbers) {
-                html1 += '<td class="TsUi-head TsUi-col-number" col="line-number">' +
+                html1 += '<td class="tsg-head tsg-col-number" col="line-number">' +
                         '    <div>#</div>' +
                         '</td>'
             }
             if (self.show.selectColumn) {
-                html1 += '<td class="TsUi-head TsUi-col-select" col="select">' +
+                html1 += '<td class="tsg-head tsg-col-select" col="select">' +
                         '    <div>' +
-                        `        <input type="checkbox" id="grid_${self.name}_check_all" class="TsUi-select-all" tabindex="-1"` +
+                        `        <input type="checkbox" id="grid_${self.name}_check_all" class="tsg-select-all" tabindex="-1"` +
                         `            style="${self.multiSelect == false ? 'display: none;' : ''}"` +
                         '        >' +
                         '    </div>' +
                         '</td>'
             }
             if (self.show.expandColumn) {
-                html1 += '<td class="TsUi-head TsUi-col-expand" col="expand">' +
+                html1 += '<td class="tsg-head tsg-col-expand" col="expand">' +
                         '    <div>&#160;</div>' +
                         '</td>'
             }
             let ii = 0
             let id = 0
             let colg
-            html2 += `<td id="grid_${self.name}_column_start" class="TsUi-head" col="start" style="border-right: 0"></td>`
+            html2 += `<td id="grid_${self.name}_column_start" class="tsg-head" col="start" style="border-right: 0"></td>`
             if (self.reorderRows) {
-                html2 += '<td class="TsUi-head TsUi-col-order" col="order">'+
+                html2 += '<td class="tsg-head tsg-col-order" col="order">'+
                         '    <div>&#160;</div>'+
                         '</td>'
             }
@@ -8597,8 +8597,8 @@ class TsGrid extends TsBase {
                     if (col && col.frozen) html1 += colCellHTML; else html2 += colCellHTML
                 }
             }
-            html1 += '<td class="TsUi-head TsUi-head-last"><div>&#160;</div></td>'
-            html2 += '<td class="TsUi-head TsUi-head-last" col="end"><div>&#160;</div></td>'
+            html1 += '<td class="tsg-head tsg-head-last"><div>&#160;</div></td>'
+            html2 += '<td class="tsg-head tsg-head-last" col="end"><div>&#160;</div></td>'
             html1 += '</tr>'
             html2 += '</tr>'
             return [html1, html2]
@@ -8611,13 +8611,13 @@ class TsGrid extends TsBase {
         const col = this.columns[i]!
         if (col == null) return ''
         // reorder style
-        const reorderCols = (this.reorderColumns && (!this.columnGroups || !this.columnGroups.length)) ? ' TsUi-col-reorderable ' : ''
+        const reorderCols = (this.reorderColumns && (!this.columnGroups || !this.columnGroups.length)) ? ' tsg-col-reorderable ' : ''
         // sort style
         let sortStyle = ''
         for (let si = 0; si < this.sortData.length; si++) {
             if (this.sortData[si]!.field == col.field) {
-                if ((this.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'TsUi-sort-up'
-                if ((this.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'TsUi-sort-down'
+                if ((this.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'tsg-sort-up'
+                if ((this.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'tsg-sort-down'
             }
         }
         // col selected
@@ -8629,9 +8629,9 @@ class TsGrid extends TsBase {
             }
         }
         const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
-        const html = '<td id="grid_'+ this.name + '_column_' + i +'" col="'+ i +'" class="TsUi-head '+ sortStyle + reorderCols + '">' +
-                         (col.resizable !== false ? '<div class="TsUi-resizer" name="'+ i +'"></div>' : '') +
-                    '    <div class="TsUi-col-header '+ (sortStyle ? 'TsUi-col-sorted' : '') +' '+ (selected ? 'TsUi-col-selected' : '') +'">'+
+        const html = '<td id="grid_'+ this.name + '_column_' + i +'" col="'+ i +'" class="tsg-head '+ sortStyle + reorderCols + '">' +
+                         (col.resizable !== false ? '<div class="tsg-resizer" name="'+ i +'"></div>' : '') +
+                    '    <div class="tsg-col-header '+ (sortStyle ? 'tsg-col-sorted' : '') +' '+ (selected ? 'tsg-col-selected' : '') +'">'+
                     '        <div class="'+ sortStyle +'"></div>'+
                             (!text ? '&#160;' : text) +
                     '    </div>'+
@@ -8693,14 +8693,14 @@ class TsGrid extends TsBase {
                 '    <td colspan="2000" style="border: 0"></td>'+
                 '</tr>'+
                 '<tr id="grid_'+ this.name +'_frec_more" style="display: none; ">'+
-                '    <td colspan="2000" class="TsUi-load-more"></td>'+
+                '    <td colspan="2000" class="tsg-load-more"></td>'+
                 '</tr>'+
                 '</tbody></table>'
         html2 += '<tr id="grid_' + this.name + '_rec_bottom" rec="bottom" line="bottom" style="height: ' + h2 + 'px; vertical-align: top">' +
                 '    <td colspan="2000" style="border: 0"></td>'+
                 '</tr>'+
                 '<tr id="grid_'+ this.name +'_rec_more" style="display: none">'+
-                '    <td colspan="2000" class="TsUi-load-more"></td>'+
+                '    <td colspan="2000" class="tsg-load-more"></td>'+
                 '</tr>'+
                 '</tbody></table>'
         this.last.vscroll.recIndStart = 0
@@ -8781,12 +8781,12 @@ class TsGrid extends TsBase {
                 const deltaEnd   = Math.abs(colEnd - this.last.vscroll.colIndEnd)
                 // add/remove columns for small jumps
                 if (deltaStart < 5 && deltaEnd < 5) {
-                    const $cfirst = $box.find(`.TsUi-grid-columns #grid_${this.name}_column_start`)
-                    const $clast  = $box.find('.TsUi-grid-columns .TsUi-head-last')
-                    const $rfirst = $box.find(`#grid_${this.name}_records .TsUi-grid-data-spacer`)
-                    const $rlast  = $box.find(`#grid_${this.name}_records .TsUi-grid-data-last`)
-                    const $sfirst = $box.find(`#grid_${this.name}_summary .TsUi-grid-data-spacer`)
-                    const $slast  = $box.find(`#grid_${this.name}_summary .TsUi-grid-data-last`)
+                    const $cfirst = $box.find(`.tsg-grid-columns #grid_${this.name}_column_start`)
+                    const $clast  = $box.find('.tsg-grid-columns .tsg-head-last')
+                    const $rfirst = $box.find(`#grid_${this.name}_records .tsg-grid-data-spacer`)
+                    const $rlast  = $box.find(`#grid_${this.name}_records .tsg-grid-data-last`)
+                    const $sfirst = $box.find(`#grid_${this.name}_summary .tsg-grid-data-spacer`)
+                    const $slast  = $box.find(`#grid_${this.name}_summary .tsg-grid-data-last`)
                     // remove on left
                     if (colStart > this.last.vscroll.colIndStart) {
                         for (let i = this.last.vscroll.colIndStart; i < colStart; i++) {
@@ -8813,7 +8813,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="tsg-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, false)
                                 query(el).after(td)
                             })
@@ -8822,7 +8822,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $sfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="tsg-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, true)
                                 query(el).after(td)
                             })
@@ -8838,7 +8838,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rlast.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="tsg-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, false)
                                 query(el).before(td)
                             })
@@ -8890,13 +8890,13 @@ class TsGrid extends TsBase {
         let t2 = t1 + (Math.round(records.prop('clientHeight') / this.recordHeight) - 1)
         if (t1 > buffered) t1 = buffered
         if (t2 >= buffered - 1) t2 = buffered
-        query(this.box).find('#grid_'+ this.name + '_footer .TsUi-footer-right').html(
+        query(this.box).find('#grid_'+ this.name + '_footer .tsg-footer-right').html(
             (this.show.statusRange
                 ? TsUtils.formatNumber(this.offset + t1) + '-' + TsUtils.formatNumber(this.offset + t2) +
-                    (this.total != -1 ? ' ' + TsUtils.lang('of') + ' <span class="TsUi-total">' + TsUtils.formatNumber(this.total) + '</span>' : '')
+                    (this.total != -1 ? ' ' + TsUtils.lang('of') + ' <span class="tsg-total">' + TsUtils.formatNumber(this.total) + '</span>' : '')
                     : '') +
-            (url && this.show.statusBuffered ? ' ('+ TsUtils.lang('buffered') + ' <span class="TsUi-buffered">'+ TsUtils.formatNumber(buffered) + '</span>' +
-                    (this.offset > 0 ? ', skip <span class="TsUi-skip">' + TsUtils.formatNumber(this.offset) : '') + '</span>)' : '')
+            (url && this.show.statusBuffered ? ' ('+ TsUtils.lang('buffered') + ' <span class="tsg-buffered">'+ TsUtils.formatNumber(buffered) + '</span>' +
+                    (this.offset > 0 ? ', skip <span class="tsg-skip">' + TsUtils.formatNumber(this.offset) : '') + '</span>)' : '')
         )
         // only for local data source, else no extra records loaded
         if (!url && (!this.fixedBody || (this.total != -1 && this.total <= this.vs_start))) return
@@ -9010,7 +9010,7 @@ class TsGrid extends TsBase {
                 .off('.load-more')
                 .on('click.load-more', function(this: Element) {
                     // show spinner
-                    query(this).find('td').html('<div><div style="width: 20px; height: 20px;" class="TsUi-spinner"></div></div>')
+                    query(this).find('td').html('<div><div style="width: 20px; height: 20px;" class="tsg-spinner"></div></div>')
                     // load more
                     obj.last.vscroll.pull_more   = true
                     obj.last.fetch.offset = (obj.last.fetch.offset ?? 0) + obj.limit
@@ -9018,7 +9018,7 @@ class TsGrid extends TsBase {
                 })
                 .find('td')
                 .html(obj.autoLoad
-                    ? '<div><div style="width: 20px; height: 20px;" class="TsUi-spinner"></div></div>'
+                    ? '<div><div style="width: 20px; height: 20px;" class="tsg-spinner"></div></div>'
                     : '<div style="padding-top: 15px">'+ TsUtils.lang('Load ${count} more...', { count: obj.limit }) + '</div>'
                 )
         }
@@ -9039,7 +9039,7 @@ class TsGrid extends TsBase {
                 }
                 if (search.length > 0) {
                     search.forEach((item) => {
-                        const el = query(obj.box).find('td[col="'+ item.col +'"]:not(.TsUi-head)')
+                        const el = query(obj.box).find('td[col="'+ item.col +'"]:not(.tsg-head)')
                         TsUtils.marker(el, item.search)
                     })
                 }
@@ -9057,14 +9057,14 @@ class TsGrid extends TsBase {
         if (ind == -1) {
             rec_html1 += '<tr line="0">'
             rec_html2 += '<tr line="0">'
-            if (this.show.lineNumbers) rec_html1 += '<td class="TsUi-col-number" style="height: 0px"></td>'
-            if (this.show.selectColumn) rec_html1 += '<td class="TsUi-col-select" style="height: 0px"></td>'
-            if (this.show.expandColumn) rec_html1 += '<td class="TsUi-col-expand" style="height: 0px"></td>'
-            rec_html2 += '<td class="TsUi-grid-data TsUi-grid-data-spacer" col="start" style="height: 0px; width: 0px"></td>'
-            if (this.reorderRows) rec_html2 += '<td class="TsUi-col-order" style="height: 0px"></td>'
+            if (this.show.lineNumbers) rec_html1 += '<td class="tsg-col-number" style="height: 0px"></td>'
+            if (this.show.selectColumn) rec_html1 += '<td class="tsg-col-select" style="height: 0px"></td>'
+            if (this.show.expandColumn) rec_html1 += '<td class="tsg-col-expand" style="height: 0px"></td>'
+            rec_html2 += '<td class="tsg-grid-data tsg-grid-data-spacer" col="start" style="height: 0px; width: 0px"></td>'
+            if (this.reorderRows) rec_html2 += '<td class="tsg-col-order" style="height: 0px"></td>'
             for (let i = 0; i < this.columns.length; i++) {
                 const col = this.columns[i]!
-                tmph    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px;"></td>'
+                tmph    = '<td class="tsg-grid-data" col="'+ i +'" style="height: 0px;"></td>'
                 if (col.frozen && !col.hidden) {
                     rec_html1 += tmph
                 } else {
@@ -9072,8 +9072,8 @@ class TsGrid extends TsBase {
                     rec_html2 += tmph
                 }
             }
-            rec_html1 += '<td class="TsUi-grid-data-last" style="height: 0px"></td>'
-            rec_html2 += '<td class="TsUi-grid-data-last" col="end" style="height: 0px"></td>'
+            rec_html1 += '<td class="tsg-grid-data-last" style="height: 0px"></td>'
+            rec_html2 += '<td class="tsg-grid-data-last" col="end" style="height: 0px"></td>'
             rec_html1 += '</tr>'
             rec_html2 += '</tr>'
             return [rec_html1, rec_html2]
@@ -9106,34 +9106,34 @@ class TsGrid extends TsBase {
         if (rec_class == null || typeof rec_class != 'string') rec_class = ''
         // render TR
         rec_html1 += '<tr id="grid_'+ this.name +'_frec_'+ record.recid +'" recid="'+ record.recid +'" line="'+ lineNum +'" index="'+ ind +'" '+
-            ' class="'+ (lineNum % 2 === 0 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-record ' + rec_class +
-                (isRowSelected && this.selectType == 'row' ? ' TsUi-selected' : '') +
-                (record.TsUi && record.TsUi['editable'] === false ? ' TsUi-no-edit' : '') +
-                (record.TsUi && record.TsUi.expanded === true ? ' TsUi-expanded' : '') + '" ' +
+            ' class="'+ (lineNum % 2 === 0 ? 'tsg-even' : 'tsg-odd') + ' tsg-record ' + rec_class +
+                (isRowSelected && this.selectType == 'row' ? ' tsg-selected' : '') +
+                (record.TsUi && record.TsUi['editable'] === false ? ' tsg-no-edit' : '') +
+                (record.TsUi && record.TsUi.expanded === true ? ' tsg-expanded' : '') + '" ' +
             ' style="height: '+ this.recordHeight +'px; '+ (!isRowSelected && rec_style != '' ? rec_style : rec_style.replace('background-color', 'none')) +'" '+
                 (rec_style != '' ? 'custom_style="'+ rec_style +'"' : '') +
             '>'
         rec_html2 += '<tr id="grid_'+ this.name +'_rec_'+ record.recid +'" recid="'+ record.recid +'" line="'+ lineNum +'" index="'+ ind +'" '+
-            ' class="'+ (lineNum % 2 === 0 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-record ' + rec_class +
-                (isRowSelected && this.selectType == 'row' ? ' TsUi-selected' : '') +
-                (record.TsUi && record.TsUi['editable'] === false ? ' TsUi-no-edit' : '') +
-                (record.TsUi && record.TsUi.expanded === true ? ' TsUi-expanded' : '') + '" ' +
+            ' class="'+ (lineNum % 2 === 0 ? 'tsg-even' : 'tsg-odd') + ' tsg-record ' + rec_class +
+                (isRowSelected && this.selectType == 'row' ? ' tsg-selected' : '') +
+                (record.TsUi && record.TsUi['editable'] === false ? ' tsg-no-edit' : '') +
+                (record.TsUi && record.TsUi.expanded === true ? ' tsg-expanded' : '') + '" ' +
             ' style="height: '+ this.recordHeight +'px; '+ (!isRowSelected && rec_style != '' ? rec_style : rec_style.replace('background-color', 'none')) +'" '+
                 (rec_style != '' ? 'custom_style="'+ rec_style +'"' : '') +
             '>'
         if (this.show.lineNumbers) {
             rec_html1 += '<td id="grid_'+ this.name +'_cell_'+ ind +'_number' + (summary ? '_s' : '') + '" '+
-                        '   class="TsUi-col-number '+ (isRowSelected ? ' TsUi-row-selected' : '') +'"'+
+                        '   class="tsg-col-number '+ (isRowSelected ? ' tsg-row-selected' : '') +'"'+
                             (this.reorderRows ? ' style="cursor: move"' : '') + '>'+
                             (summary !== true ? this.getLineHTML(lineNum) : '') +
                         '</td>'
         }
         if (this.show.selectColumn) {
             rec_html1 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_select' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-select">'+
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_select' + (summary ? '_s' : '') + '" class="tsg-grid-data tsg-col-select">'+
                         (summary !== true && !(record.TsUi && record.TsUi['hideCheckBox'] === true) ?
                         '    <div>'+
-                        '        <input class="TsUi-grid-select-check" type="checkbox" tabindex="-1" '+
+                        '        <input class="tsg-grid-select-check" type="checkbox" tabindex="-1" '+
                                     (isRowSelected ? 'checked="checked"' : '') + ' style="pointer-events: none"/>'+
                         '    </div>'
                         :
@@ -9146,17 +9146,17 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (((record.TsUi?.expanded as any) == 'none' || !Array.isArray(record.TsUi?.children) || !record.TsUi?.children.length)) tmp_img = '+' // any: expanded is bool but runtime uses string
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((record.TsUi?.expanded as any) == 'spinner') tmp_img = '<div class="TsUi-spinner" style="width: 16px; margin: -2px 2px;"></div>' // any: same
+            if ((record.TsUi?.expanded as any) == 'spinner') tmp_img = '<div class="tsg-spinner" style="width: 16px; margin: -2px 2px;"></div>' // any: same
             rec_html1 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_expand' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-expand">'+
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_expand' + (summary ? '_s' : '') + '" class="tsg-grid-data tsg-col-expand">'+
                         (summary !== true ? `<div>${tmp_img}</div>` : '' ) +
                     '</td>'
         }
         // insert empty first column
-        rec_html2 += '<td class="TsUi-grid-data-spacer" col="start" style="border-right: 0"></td>'
+        rec_html2 += '<td class="tsg-grid-data-spacer" col="start" style="border-right: 0"></td>'
         if (this.reorderRows) {
             rec_html2 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_order' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-order" col="order">'+
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_order' + (summary ? '_s' : '') + '" class="tsg-grid-data tsg-col-order" col="order">'+
                         (summary !== true ? '<div title="Drag to reorder">&nbsp;</div>' : '' ) +
                     '</td>'
         }
@@ -9208,8 +9208,8 @@ class TsGrid extends TsBase {
             if (col.frozen) rec_html1 += rec_cell; else rec_html2 += rec_cell
             col_ind++
         }
-        rec_html1 += '<td class="TsUi-grid-data-last"></td>'
-        rec_html2 += '<td class="TsUi-grid-data-last" col="end"></td>'
+        rec_html1 += '<td class="tsg-grid-data-last"></td>'
+        rec_html2 += '<td class="tsg-grid-data-last" col="end"></td>'
         rec_html1 += '</tr>'
         rec_html2 += '</tr>'
         return [rec_html1, rec_html2]
@@ -9261,20 +9261,20 @@ class TsGrid extends TsBase {
             }
             if (record.TsUi.parent_recid) {
                 for (let i = 0; i < level; i++) {
-                    infoBubble += '<span class="TsUi-show-children TsUi-icon-empty"></span>'
+                    infoBubble += '<span class="tsg-show-children tsg-icon-empty"></span>'
                 }
             }
             const className = record.TsUi?.children?.length > 0
-                ? (record.TsUi.expanded ? 'TsUi-icon-collapse' : 'TsUi-icon-expand')
-                : 'TsUi-icon-empty'
+                ? (record.TsUi.expanded ? 'tsg-icon-collapse' : 'tsg-icon-expand')
+                : 'tsg-icon-empty'
             if (record.TsUi?.children?.length > 0) {
-                infoBubble += `<span class="TsUi-show-children ${className}"></span>`
+                infoBubble += `<span class="tsg-show-children ${className}"></span>`
             }
         }
         // info bubble
         if (col['info'] === true) col['info'] = {}
         if (col['info'] != null) {
-            let infoIcon = 'TsUi-icon-info'
+            let infoIcon = 'tsg-icon-info'
             if (typeof col['info'].icon == 'function') {
                 infoIcon = col['info'].icon(record, { self: this, index: ind, colIndex: col_ind, summary: !!summary })
             } else if (typeof col['info'].icon == 'object') {
@@ -9290,14 +9290,14 @@ class TsGrid extends TsBase {
             } else if (typeof col['info'].style == 'string') {
                 infoStyle = col['info'].style
             }
-            infoBubble += `<span class="TsUi-info ${infoIcon}" style="${infoStyle}"></span>`
+            infoBubble += `<span class="tsg-info ${infoIcon}" style="${infoStyle}"></span>`
         }
         let data = value
         // if editable checkbox
         if (edit && ['checkbox', 'check'].indexOf(edit.type) != -1) {
             const changeInd = summary ? -(ind + 1) : ind
             divStyle += 'text-align: center;'
-            data  = `<input tabindex="-1" type="checkbox" class="TsUi-editable-checkbox"
+            data  = `<input tabindex="-1" type="checkbox" class="tsg-editable-checkbox"
                             data-changeInd="${changeInd}" data-colInd="${col_ind}" ${data ? 'checked="checked"' : ''}>`
             infoBubble    = ''
         }
@@ -9329,11 +9329,11 @@ class TsGrid extends TsBase {
         // clipboardCopy
         let clipboardIcon
         if (col.clipboardCopy){
-            clipboardIcon = '<span class="TsUi-clipboard-copy TsUi-icon-paste"></span>'
+            clipboardIcon = '<span class="tsg-clipboard-copy tsg-icon-paste"></span>'
         }
         // data
-        data = '<td class="TsUi-grid-data'+ (isCellSelected ? ' TsUi-selected' : '') + ' ' + className +
-                    (isChanged ? ' TsUi-changed' : '') + '" '+
+        data = '<td class="tsg-grid-data'+ (isCellSelected ? ' tsg-selected' : '') + ' ' + className +
+                    (isChanged ? ' tsg-changed' : '') + '" '+
                 '   id="grid_'+ this.name +'_data_'+ ind +'_'+ col_ind +'" col="'+ col_ind +'" '+
                 '   style="'+ style + (col.style != null ? col.style : '') +'" '+
                     (col.attr != null ? col.attr : '') + attr +
@@ -9341,7 +9341,7 @@ class TsGrid extends TsBase {
                 '>' + data + (clipboardIcon && TsUtils.stripTags(data) ? clipboardIcon : '') +'</td>'
         // summary top row
         if (ind === -1 && summary === true) {
-            data = '<td class="TsUi-grid-data" col="'+ col_ind +'" style="height: 0px; '+ style + '" '+
+            data = '<td class="tsg-grid-data" col="'+ col_ind +'" style="height: 0px; '+ style + '" '+
                         ((col_span ?? 0) > 1 ? 'colspan="'+ col_span + '"' : '') +
                     '></td>'
         }
@@ -9385,7 +9385,7 @@ class TsGrid extends TsBase {
         if (!info) return
         let html = ''
         const rec  = this.records[ind]
-        const el   = query(this.box).find(`${summary ? '.TsUi-grid-summary' : ''} #grid_${this.name}_data_${ind}_${col_ind} .TsUi-info`)
+        const el   = query(this.box).find(`${summary ? '.tsg-grid-summary' : ''} #grid_${this.name}_data_${ind}_${col_ind} .tsg-info`)
         if (this.last.bubbleEl) {
             TsTooltip.hide(this.name + '-bubble')
         }
@@ -9492,7 +9492,7 @@ class TsGrid extends TsBase {
             html,
             anchor: el.get(0),
             position: 'top|bottom',
-            class: 'TsUi-info-bubble',
+            class: 'tsg-info-bubble',
             style: '',
             hideOn: ['doc-click']
         }, info.options ?? {}))
@@ -9603,15 +9603,15 @@ class TsGrid extends TsBase {
 
     getFooterHTML() {
         return '<div>'+
-            '    <div class="TsUi-footer-left"></div>'+
-            '    <div class="TsUi-footer-right"></div>'+
-            '    <div class="TsUi-footer-center"></div>'+
+            '    <div class="tsg-footer-left"></div>'+
+            '    <div class="tsg-footer-right"></div>'+
+            '    <div class="tsg-footer-center"></div>'+
             '</div>'
     }
 
     status(msg?: string) {
         if (msg != null) {
-            query(this.box).find(`#grid_${this.name}_footer`).find('.TsUi-footer-left').html(msg)
+            query(this.box).find(`#grid_${this.name}_footer`).find('.tsg-footer-left').html(msg)
         } else {
             // show number of selected
             let msgLeft = ''
@@ -9628,7 +9628,7 @@ class TsGrid extends TsBase {
                     msgLeft = TsUtils.lang('Record ID') + ': '+ tmp + ' '
                 }
             }
-            query(this.box).find('#grid_'+ this.name +'_footer .TsUi-footer-left').html(msgLeft)
+            query(this.box).find('#grid_'+ this.name +'_footer .tsg-footer-left').html(msgLeft)
         }
     }
 
@@ -9647,7 +9647,7 @@ class TsGrid extends TsBase {
     unlock(speed?: number) {
         setTimeout(() => {
             // do not unlock if there is a message
-            if (query(this.box).find('.TsUi-message').hasClass('TsUi-closing')) return
+            if (query(this.box).find('.tsg-message').hasClass('tsg-closing')) return
             TsUtils.unlock(this.box, speed)
         }, 25) // needed timer so if server fast, it will not flash
     }
@@ -9977,7 +9977,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
-            after: '.TsUi-grid-header'
+            after: '.tsg-grid-header'
         }, options)
     }
 
@@ -9988,7 +9988,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
-            after: '.TsUi-grid-header'
+            after: '.tsg-grid-header'
         }, options)
     }
 }

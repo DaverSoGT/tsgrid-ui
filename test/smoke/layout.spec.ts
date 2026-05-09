@@ -4,29 +4,29 @@ test.describe('Layout', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/test/smoke/layout.html')
         await page.waitForFunction(() => (window as any)._smokeReady === true)
-        await page.waitForSelector('.TsUi-layout', { state: 'attached' })
+        await page.waitForSelector('.tsg-layout', { state: 'attached' })
     })
 
     test('renders layout container', async ({ page }) => {
-        await expect(page.locator('.TsUi-layout')).toBeAttached()
+        await expect(page.locator('.tsg-layout')).toBeAttached()
     })
 
     test('renders expected panel elements', async ({ page }) => {
         // TsUi renders panel wrapper divs; expect at least the 4 configured ones
-        const panels = page.locator('.TsUi-panel')
+        const panels = page.locator('.tsg-panel')
         const count = await panels.count()
         expect(count).toBeGreaterThanOrEqual(4)
     })
 
     test('top panel contains expected text', async ({ page }) => {
         // panels are rendered inside the layout; check text presence
-        const layoutEl = page.locator('.TsUi-layout')
+        const layoutEl = page.locator('.tsg-layout')
         const text = await layoutEl.innerText()
         expect(text).toContain('Top Panel')
     })
 
     test('main panel contains expected text', async ({ page }) => {
-        const layoutEl = page.locator('.TsUi-layout')
+        const layoutEl = page.locator('.tsg-layout')
         const text = await layoutEl.innerText()
         expect(text).toContain('Main Panel')
     })

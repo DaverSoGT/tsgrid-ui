@@ -241,7 +241,7 @@ class TsLayout extends TsBase {
         }
         // clean up previous content
         if (typeof (p.html as { unmount?: unknown }).unmount == 'function') (p.html as { unmount: () => void }).unmount()
-        current.addClass('TsUi-panel-content')
+        current.addClass('tsg-panel-content')
         current.removeAttr('style') // styles could have added manually, but all necessary will be added by resizeBoxes
         this.resizeBoxes(panel)
 
@@ -256,7 +256,7 @@ class TsLayout extends TsBase {
                     query(this.box).addClass('animating')
                     const div1 = query(this.box).find(pname + '> [data-role="panel-content"]')
                     // any: query()[0] returns Node; panel content div is HTMLElement
-                    div1.after('<div class="TsUi-panel-content new-panel" data-role="panel-content" style="'+ (div1[0] as HTMLElement).style.cssText +'"></div>')
+                    div1.after('<div class="tsg-panel-content new-panel" data-role="panel-content" style="'+ (div1[0] as HTMLElement).style.cssText +'"></div>')
                     const div2 = query(this.box).find(pname + '> [data-role="panel-content"].new-panel')
                     div1.css('top', panelTop)
                     div2.css('top', panelTop)
@@ -345,7 +345,7 @@ class TsLayout extends TsBase {
             owner: this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box  : box.get(0) as HTMLElement,
-            after: '.TsUi-panel-title',
+            after: '.tsg-panel-title',
             param: panel
         // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -368,7 +368,7 @@ class TsLayout extends TsBase {
             owner : this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box   : box.get(0) as HTMLElement,
-            after : '.TsUi-panel-title',
+            after : '.tsg-panel-title',
             param : panel
         // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -400,12 +400,12 @@ class TsLayout extends TsBase {
         const pan = this.get(panel)
         if (pan == null) return false
         // resize
-        query(this.box).find(':scope > div > .TsUi-panel')
+        query(this.box).find(':scope > div > .tsg-panel')
             .css('transition', (instant !== true ? '.2s' : '0s'))
         setTimeout(() => { this.set(panel, { size: size }) }, 1)
         // clean
         setTimeout(() => {
-            query(this.box).find(':scope > div > .TsUi-panel').css('transition', '0s')
+            query(this.box).find(':scope > div > .tsg-panel').css('transition', '0s')
             this.resize()
         }, 300)
         return true
@@ -429,7 +429,7 @@ class TsLayout extends TsBase {
             query(this.box).addClass('animating')
             query(this.box).find('#layout_'+ this.name +'_panel_'+panel)
                 .css({ 'opacity': '0' })
-            query(this.box).find(':scope > div > .TsUi-panel')
+            query(this.box).find(':scope > div > .tsg-panel')
                 .css('transition', '.2s')
             setTimeout(() => { this.resize() }, 1)
             // show
@@ -438,7 +438,7 @@ class TsLayout extends TsBase {
             }, 250)
             // clean
             setTimeout(() => {
-                query(this.box).find(':scope > div > .TsUi-panel')
+                query(this.box).find(':scope > div > .tsg-panel')
                     .css('transition', '0s')
                 query(this.box).removeClass('animating')
                 edata.finish()
@@ -464,14 +464,14 @@ class TsLayout extends TsBase {
         } else {
             // hide
             query(this.box).addClass('animating')
-            query(this.box).find(':scope > div > .TsUi-panel')
+            query(this.box).find(':scope > div > .tsg-panel')
                 .css('transition', '.2s')
             query(this.box).find('#layout_'+ this.name +'_panel_'+panel)
                 .css({ 'opacity': '0' })
             setTimeout(() => { this.resize() }, 1)
             // clean
             setTimeout(() => {
-                query(this.box).find(':scope > div > .TsUi-panel')
+                query(this.box).find(':scope > div > .tsg-panel')
                     .css('transition', '0s')
                 query(this.box).removeClass('animating')
                 edata.finish()
@@ -624,7 +624,7 @@ class TsLayout extends TsBase {
         // any: .attr(name,val) overload returns string|Query; cast to Query for chaining
         ;(query(this.box)
             .attr('name', this.name) as unknown as Query)
-            .addClass('TsUi-layout')
+            .addClass('tsg-layout')
             .html('<div></div>')
         if (query(this.box).length > 0) {
             // any: query()[0] returns Node; layout box is HTMLElement
@@ -632,13 +632,13 @@ class TsLayout extends TsBase {
         }
         // create all panels
         for (let p1 = 0; p1 < w2panels.length; p1++) {
-            const html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="TsUi-panel">'+
-                        '    <div class="TsUi-panel-title"></div>'+
-                        '    <div class="TsUi-panel-tabs" data-role="panel-tabs"></div>'+
-                        '    <div class="TsUi-panel-toolbar" data-role="panel-toolbar"></div>'+
-                        '    <div class="TsUi-panel-content" data-role="panel-content"></div>'+
+            const html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="tsg-panel">'+
+                        '    <div class="tsg-panel-title"></div>'+
+                        '    <div class="tsg-panel-tabs" data-role="panel-tabs"></div>'+
+                        '    <div class="tsg-panel-toolbar" data-role="panel-toolbar"></div>'+
+                        '    <div class="tsg-panel-content" data-role="panel-content"></div>'+
                         '</div>'+
-                        '<div id="layout_'+ this.name + '_resizer_'+ w2panels[p1] +'" class="TsUi-resizer"></div>'
+                        '<div id="layout_'+ this.name + '_resizer_'+ w2panels[p1] +'" class="tsg-resizer"></div>'
             query(this.box).find(':scope > div').append(html)
         }
         query(this.box).find(':scope > div')
@@ -675,7 +675,7 @@ class TsLayout extends TsBase {
             }
             // lock all panels
             w2panels.forEach(panel => {
-                const $tmp = query(self.el(panel)).find('.TsUi-lock')
+                const $tmp = query(self.el(panel)).find('.tsg-lock')
                 if ($tmp.length > 0) {
                     $tmp.data('locked', 'yes')
                 } else {
@@ -700,7 +700,7 @@ class TsLayout extends TsBase {
             if (self.last['resize'] == null) return
             // unlock all panels
             w2panels.forEach(panel => {
-                const $tmp = query(self.el(panel)).find('.TsUi-lock')
+                const $tmp = query(self.el(panel)).find('.tsg-lock')
                 if ($tmp.data('locked') == 'yes') {
                     $tmp.removeData('locked')
                 } else {
@@ -931,7 +931,7 @@ class TsLayout extends TsBase {
                         const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
                             .removeClass(null)
                             .removeAttr('name')
-                            .addClass('TsUi-panel-content')
+                            .addClass('tsg-panel-content')
                         ;(($content.css('overflow', p.overflow) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                     }
                     if (p.html && typeof (p.html as { render?: unknown }).render == 'function') {
@@ -945,7 +945,7 @@ class TsLayout extends TsBase {
                     const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
                         .removeClass(null)
                         .removeAttr('name')
-                        .addClass('TsUi-panel-content')
+                        .addClass('tsg-panel-content')
                     ;(((($content.html(p.html as string) as unknown as Query)
                         .css('overflow', p.overflow)) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                 }
@@ -958,7 +958,7 @@ class TsLayout extends TsBase {
                 } else {
                     ;(p.tabs as TsTabs).refresh()
                 }
-                tmp.addClass('TsUi-panel-tabs')
+                tmp.addClass('tsg-panel-tabs')
             } else {
                 // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
                 ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
@@ -972,7 +972,7 @@ class TsLayout extends TsBase {
                 } else {
                     ;(p.toolbar as TsToolbar).refresh()
                 }
-                tmp.addClass('TsUi-panel-toolbar')
+                tmp.addClass('tsg-panel-toolbar')
             } else {
                 // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
                 ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
@@ -980,7 +980,7 @@ class TsLayout extends TsBase {
                 ;(tmp.css('display', 'none') as unknown as Query).hide()
             }
             // show title
-            tmp = query(self.box).find(pname +'> .TsUi-panel-title')
+            tmp = query(self.box).find(pname +'> .tsg-panel-title')
             if (p.title) {
                 // any: html(val) return type is string|Query; cast needed to chain show/hide
                 ;(tmp.html(p.title) as unknown as Query).show()
@@ -1345,7 +1345,7 @@ class TsLayout extends TsBase {
             let topHeight = 0
             if (pan) {
                 if (pan.title) {
-                    const el = query(this.box).find(tmp2 + '.TsUi-panel-title').css({ top: topHeight + 'px', display: 'block' })
+                    const el = query(this.box).find(tmp2 + '.tsg-panel-title').css({ top: topHeight + 'px', display: 'block' })
                     topHeight += TsUtils.getSize(el, 'height')
                 }
                 if (pan.show.tabs) {

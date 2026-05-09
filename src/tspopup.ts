@@ -127,7 +127,7 @@ class TsDialog extends TsBase {
     open(options?: any, extraOptions?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
-        if (this.status == 'closing' || query('#TsUi-popup').hasClass('animating')) {
+        if (this.status == 'closing' || query('#tsg-popup').hasClass('animating')) {
             // if called when previous is closing
             this.close(true)
         }
@@ -136,16 +136,16 @@ class TsDialog extends TsBase {
         if (['string', 'number'].includes(typeof options)) {
             options = TsUtils.extend({
                 title: 'Notification',
-                body: `<div class="TsUi-centered">${options}</div>`,
+                body: `<div class="tsg-centered">${options}</div>`,
                 actions: { Ok() { self.close() }},
                 cancelAction: 'ok'
             }, extraOptions ?? {})
         }
-        if (options.text != null) options.body = `<div class="TsUi-centered TsUi-msg-text">${options.text}</div>`
+        if (options.text != null) options.body = `<div class="tsg-centered tsg-msg-text">${options.text}</div>`
         options = Object.assign({}, this.defaults, old_options, { title: '', body : '' }, options, { maximized: false })
         this.options = options
         // if new - reset event handlers
-        if (query('#TsUi-popup').length === 0) {
+        if (query('#tsg-popup').length === 0) {
             this.off('*')
             Object.keys(this).forEach(key => {
                 if (key.startsWith('on') && key != 'on') this[key] = null
@@ -200,10 +200,10 @@ class TsDialog extends TsBase {
                 const handler = options.actions[action]
                 let btnAction = action
                 if (typeof handler == 'function') {
-                    options.buttons += `<button class="TsUi-btn TsUi-eaction" name="${action}" data-click='["action","${action}","event"]'>${action}</button>`
+                    options.buttons += `<button class="tsg-btn tsg-eaction" name="${action}" data-click='["action","${action}","event"]'>${action}</button>`
                 }
                 if (typeof handler == 'object') {
-                    options.buttons += `<button class="TsUi-btn TsUi-eaction ${handler.class || ''}" name="${action}" data-click='["action","${action}","event"]'
+                    options.buttons += `<button class="tsg-btn tsg-eaction ${handler.class || ''}" name="${action}" data-click='["action","${action}","event"]'
                         style="${handler.style}" ${handler.attrs}>${handler.text || action}</button>`
                     btnAction = Array.isArray(options.actions) ? handler.text : action
                 }
@@ -214,7 +214,7 @@ class TsDialog extends TsBase {
 
                     } else {
                         btnAction = (handler[0] ?? '').toLowerCase() + handler.substr(1).replace(/\s+/g, '')
-                        options.buttons += `<button class="TsUi-btn TsUi-eaction" name="${action}" data-click='["action","${btnAction}","event"]'>${handler}</button>`
+                        options.buttons += `<button class="tsg-btn tsg-eaction" name="${action}" data-click='["action","${btnAction}","event"]'>${handler}</button>`
                     }
                 }
                 if (typeof btnAction == 'string') {
@@ -234,17 +234,17 @@ class TsDialog extends TsBase {
         // check if message is already displayed
         let titleBtns = ''
         if (options.showClose) {
-            titleBtns += `<div class="TsUi-popup-button TsUi-popup-close">
-                        <span class="TsUi-icon TsUi-icon-cross TsUi-eaction" data-mousedown="stop" data-click="close"></span>
+            titleBtns += `<div class="tsg-popup-button tsg-popup-close">
+                        <span class="tsg-icon tsg-icon-cross tsg-eaction" data-mousedown="stop" data-click="close"></span>
                     </div>`
         }
         if (options.showMax) {
-            titleBtns += `<div class="TsUi-popup-button TsUi-popup-max">
-                        <span class="TsUi-icon TsUi-icon-box TsUi-eaction" data-mousedown="stop" data-click="toggle"></span>
+            titleBtns += `<div class="tsg-popup-button tsg-popup-max">
+                        <span class="tsg-icon tsg-icon-box tsg-eaction" data-mousedown="stop" data-click="toggle"></span>
                     </div>`
         }
 
-        if (query('#TsUi-popup').length === 0) {
+        if (query('#tsg-popup').length === 0) {
             // trigger event
             edata = this.trigger('open', { target: 'popup', present: false })
             if (edata.isCancelled === true) return
@@ -264,11 +264,11 @@ class TsDialog extends TsBase {
                 height: ${parseInt(options.height)}px;
                 transition: ${options.speed}s
             `
-            msg = `<div id="TsUi-popup" class="TsUi-popup TsUi-anim-open animating ${!options.blockPage ? 'TsUi-non-blocking' : ''}" style="${TsUtils.stripSpaces(styles)}"></div>`
+            msg = `<div id="tsg-popup" class="tsg-popup tsg-anim-open animating ${!options.blockPage ? 'tsg-non-blocking' : ''}" style="${TsUtils.stripSpaces(styles)}"></div>`
             query('body').append(msg)
             // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(query('#TsUi-popup')[0] as any)._w2popup = {
+            ;(query('#tsg-popup')[0] as any)._w2popup = {
                 self: this,
                 created: new Promise((resolve) => { this._promCreated = resolve }),
                 opened: new Promise((resolve) => { this._promOpened = resolve }),
@@ -279,30 +279,30 @@ class TsDialog extends TsBase {
             styles = `${!options.title ? 'top: 0px !important;' : ''} ${!options.buttons ? 'bottom: 0px !important;' : ''}`
             msg = `
                 <span name="hidden-first" tabindex="0" style="position: absolute; top: -100px"></span>
-                <div class="TsUi-popup-title-btns">${titleBtns}</div>
-                <div class="TsUi-popup-title" style="${!options.title ? 'display: none' : ''}"></div>
-                <div class="TsUi-box" style="${styles}">
-                    <div class="TsUi-popup-body ${!options.title || ' TsUi-popup-no-title'}
-                        ${!options.buttons || ' TsUi-popup-no-buttons'}" style="${options.style}">
+                <div class="tsg-popup-title-btns">${titleBtns}</div>
+                <div class="tsg-popup-title" style="${!options.title ? 'display: none' : ''}"></div>
+                <div class="tsg-box" style="${styles}">
+                    <div class="tsg-popup-body ${!options.title || ' tsg-popup-no-title'}
+                        ${!options.buttons || ' tsg-popup-no-buttons'}" style="${options.style}">
                     </div>
                 </div>
-                <div class="TsUi-popup-buttons" style="${!options.buttons ? 'display: none' : ''}"></div>
-                <div class="TsUi-popup-resizer resize-point resize-icon"></div>
+                <div class="tsg-popup-buttons" style="${!options.buttons ? 'display: none' : ''}"></div>
+                <div class="tsg-popup-resizer resize-point resize-icon"></div>
                 <span name="hidden-last" tabindex="0" style="position: absolute; top: -100px"></span>
             `
-            query('#TsUi-popup').html(msg)
+            query('#tsg-popup').html(msg)
 
-            if (options.title) query('#TsUi-popup .TsUi-popup-title').append(TsUtils.lang(options.title))
-            if (options.buttons) query('#TsUi-popup .TsUi-popup-buttons').append(options.buttons)
-            if (options.body) query('#TsUi-popup .TsUi-popup-body').append(options.body)
+            if (options.title) query('#tsg-popup .tsg-popup-title').append(TsUtils.lang(options.title))
+            if (options.buttons) query('#tsg-popup .tsg-popup-buttons').append(options.buttons)
+            if (options.body) query('#tsg-popup .tsg-popup-body').append(options.body)
 
             // allow element to render
             setTimeout(() => {
-                ;(query('#TsUi-popup')
+                ;(query('#tsg-popup')
                     .css('transition', options.speed + 's') as unknown as Query)
-                    .removeClass('TsUi-anim-open')
-                TsUtils.bindEvents('#TsUi-popup .TsUi-eaction', this)
-                query('#TsUi-popup').find('.TsUi-popup-body').show()
+                    .removeClass('tsg-anim-open')
+                TsUtils.bindEvents('#tsg-popup .tsg-eaction', this)
+                query('#tsg-popup').find('.tsg-popup-body').show()
                 this._promCreated()
             }, 1)
             // clean transform
@@ -313,7 +313,7 @@ class TsDialog extends TsBase {
                 // event after
                 edata.finish()
                 this._promOpened()
-                query('#TsUi-popup').removeClass('animating')
+                query('#tsg-popup').removeClass('animating')
             }, options.speed * 1000)
 
         } else {
@@ -330,60 +330,60 @@ class TsDialog extends TsBase {
                 options.maximized = old_options.maximized
             }
             // show new items
-            const cloned = (query('#TsUi-popup .TsUi-box').get(0) as Node).cloneNode(true)
-            query(cloned as HTMLElement).removeClass('TsUi-box').addClass('TsUi-box-temp').find('.TsUi-popup-body').empty().append(options.body as string)
-            query('#TsUi-popup .TsUi-box').after(cloned)
+            const cloned = (query('#tsg-popup .tsg-box').get(0) as Node).cloneNode(true)
+            query(cloned as HTMLElement).removeClass('tsg-box').addClass('tsg-box-temp').find('.tsg-popup-body').empty().append(options.body as string)
+            query('#tsg-popup .tsg-box').after(cloned)
 
             if (options.buttons) {
-                ;(query('#TsUi-popup .TsUi-popup-buttons').show().html('') as unknown as Query).append(options.buttons as string)
-                query('#TsUi-popup .TsUi-popup-body').removeClass('TsUi-popup-no-buttons')
-                query('#TsUi-popup .TsUi-box, #TsUi-popup .TsUi-box-temp').css('bottom', '')
+                ;(query('#tsg-popup .tsg-popup-buttons').show().html('') as unknown as Query).append(options.buttons as string)
+                query('#tsg-popup .tsg-popup-body').removeClass('tsg-popup-no-buttons')
+                query('#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp').css('bottom', '')
             } else {
-                query('#TsUi-popup .TsUi-popup-buttons').hide().html('')
-                query('#TsUi-popup .TsUi-popup-body').addClass('TsUi-popup-no-buttons')
-                query('#TsUi-popup .TsUi-box, #TsUi-popup .TsUi-box-temp').css('bottom', '0px')
+                query('#tsg-popup .tsg-popup-buttons').hide().html('')
+                query('#tsg-popup .tsg-popup-body').addClass('tsg-popup-no-buttons')
+                query('#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp').css('bottom', '0px')
             }
             if (options.title) {
-                query('#TsUi-popup .TsUi-popup-title')
+                query('#tsg-popup .tsg-popup-title')
                     .show()
                     .html(TsUtils.lang(options.title))
-                query('#TsUi-popup .TsUi-popup-body').removeClass('TsUi-popup-no-title')
-                query('#TsUi-popup .TsUi-box, #TsUi-popup .TsUi-box-temp').css('top', '')
+                query('#tsg-popup .tsg-popup-body').removeClass('tsg-popup-no-title')
+                query('#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp').css('top', '')
             } else {
-                query('#TsUi-popup .TsUi-popup-title').hide().html('')
-                query('#TsUi-popup .TsUi-popup-body').addClass('TsUi-popup-no-title')
-                query('#TsUi-popup .TsUi-box, #TsUi-popup .TsUi-box-temp').css('top', '0px')
+                query('#tsg-popup .tsg-popup-title').hide().html('')
+                query('#tsg-popup .tsg-popup-body').addClass('tsg-popup-no-title')
+                query('#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp').css('top', '0px')
             }
             if (titleBtns) {
-                query('#TsUi-popup .TsUi-popup-title-btns')
+                query('#tsg-popup .tsg-popup-title-btns')
                     .show()
                     .html(titleBtns)
             } else {
-                query('#TsUi-popup .TsUi-popup-title-btns')
+                query('#tsg-popup .tsg-popup-title-btns')
                     .hide()
             }
             // transition
-            const div_old = query('#TsUi-popup .TsUi-box')[0] as HTMLElement
-            const div_new = query('#TsUi-popup .TsUi-box-temp')[0] as HTMLElement
-            query('#TsUi-popup').addClass('animating')
+            const div_old = query('#tsg-popup .tsg-box')[0] as HTMLElement
+            const div_new = query('#tsg-popup .tsg-box-temp')[0] as HTMLElement
+            query('#tsg-popup').addClass('animating')
             TsUtils.transition(div_old, div_new, options.transition as string, () => {
                 // clean up
                 query(div_old).remove()
-                query(div_new).removeClass('TsUi-box-temp').addClass('TsUi-box')
-                const $body = query(div_new).find('.TsUi-popup-body')
+                query(div_new).removeClass('tsg-box-temp').addClass('tsg-box')
+                const $body = query(div_new).find('.tsg-popup-body')
                 if ($body.length == 1) {
                     ($body[0] as HTMLElement).style.cssText = options.style as string
                     $body.show()
                 }
                 // focus on first button
                 self.setFocus(options.focus)
-                query('#TsUi-popup').removeClass('animating')
+                query('#tsg-popup').removeClass('animating')
             })
             // call event onOpen
             this.status = 'open'
             edata.finish()
-            TsUtils.bindEvents('#TsUi-popup .TsUi-eaction', this)
-            query('#TsUi-popup').find('.TsUi-popup-body').show()
+            TsUtils.bindEvents('#tsg-popup .tsg-eaction', this)
+            query('#tsg-popup').find('.tsg-popup-body').show()
         }
 
         if (options.openMaximized) {
@@ -408,21 +408,21 @@ class TsDialog extends TsBase {
             mvMove   : mvMove,
             mvStop   : mvStop
         }
-        query('#TsUi-popup .TsUi-popup-title')
+        query('#tsg-popup .tsg-popup-title')
             .off('mousedown')
             .on('mousedown', function(event) {
                 if (!self.options.maximized) mvStart(event)
             })
 
         if (options.resizable) {
-            query('#TsUi-popup .TsUi-popup-resizer').show()
-            query('#TsUi-popup .TsUi-popup-resizer')
+            query('#tsg-popup .tsg-popup-resizer').show()
+            query('#tsg-popup .tsg-popup-resizer')
                 .off('mousedown')
                 .on('mousedown', event => {
                     mvStart(event, true)
                 })
         } else {
-            query('#TsUi-popup .TsUi-popup-resizer').hide()
+            query('#tsg-popup .tsg-popup-resizer').hide()
         }
 
         return prom
@@ -433,10 +433,10 @@ class TsDialog extends TsBase {
         function mvStart(evt: any, resizer?: any) {
             if (!evt) evt = window.event
             self.status = resizer ? 'resizing' : 'moving'
-            const rect = (query('#TsUi-popup').get(0) as HTMLElement).getBoundingClientRect()
+            const rect = (query('#tsg-popup').get(0) as HTMLElement).getBoundingClientRect()
             Object.assign(tmp, {
                 changing: true,
-                isLocked: query('#TsUi-popup > .TsUi-lock').length == 1 ? true : false,
+                isLocked: query('#tsg-popup > .tsg-lock').length == 1 ? true : false,
                 x       : evt.screenX,
                 y       : evt.screenY,
                 pos_x   : rect.x,
@@ -446,8 +446,8 @@ class TsDialog extends TsBase {
             })
             if (!tmp.isLocked) self.lock({ opacity: 0 })
             query(document.body)
-                .on('mousemove.TsUi-popup', tmp.mvMove)
-                .on('mouseup.TsUi-popup', tmp.mvStop)
+                .on('mousemove.tsg-popup', tmp.mvMove)
+                .on('mouseup.tsg-popup', tmp.mvStop)
             if (evt.stopPropagation) evt.stopPropagation(); else evt.cancelBubble = true
             if (evt.preventDefault) evt.preventDefault(); else return false
         }
@@ -463,13 +463,13 @@ class TsDialog extends TsBase {
             if (edata.isCancelled === true) return
             // default behavior
             if (self.status == 'moving') {
-                query('#TsUi-popup').css({
+                query('#tsg-popup').css({
                     'transition': 'none',
                     'transform' : 'translate3d('+ tmp.div_x +'px, '+ tmp.div_y +'px, 0px)'
                 })
                 self.options.moved = true
             } else {
-                query('#TsUi-popup').css({
+                query('#tsg-popup').css({
                     transition: 'none',
                     width: (tmp.width + tmp.div_x) + 'px',
                     height: (tmp.height + tmp.div_y) + 'px'
@@ -486,7 +486,7 @@ class TsDialog extends TsBase {
             tmp.div_x = (evt.screenX - tmp.x)
             tmp.div_y = (evt.screenY - tmp.y)
             if (self.status == 'moving') {
-                ;(query('#TsUi-popup')
+                ;(query('#tsg-popup')
                     .css({
                         'left': (tmp.pos_x + tmp.div_x) + 'px',
                         'top' : (tmp.pos_y + tmp.div_y) + 'px'
@@ -496,7 +496,7 @@ class TsDialog extends TsBase {
                         'transform' : 'translate3d(0px, 0px, 0px)'
                     })
             } else {
-                query('#TsUi-popup').css({
+                query('#tsg-popup').css({
                     transition: 'none',
                     width: (tmp.width + tmp.div_x) + 'px',
                     height: (tmp.height + tmp.div_y) + 'px'
@@ -505,7 +505,7 @@ class TsDialog extends TsBase {
             }
             tmp.changing = false
             self.status = 'open'
-            query(document.body).off('.TsUi-popup')
+            query(document.body).off('.tsg-popup')
             if (!tmp.isLocked) self.unlock()
         }
     }
@@ -587,7 +587,7 @@ class TsDialog extends TsBase {
         switch (event.keyCode) {
             case 27:
                 event.preventDefault()
-                if (query('#TsUi-popup .TsUi-message').length == 0) {
+                if (query('#tsg-popup .tsg-message').length == 0) {
                     if (this.options.cancelAction) {
                         this.action(this.options.cancelAction)
                     } else {
@@ -608,7 +608,7 @@ class TsDialog extends TsBase {
         if (edata.isCancelled === true) return
         const cleanUp = () => {
             // return template
-            query('#TsUi-popup').remove()
+            query('#tsg-popup').remove()
             // restore active
             if (this.options._last_focus) this.options._last_focus.focus()
             this.status = 'closed'
@@ -617,7 +617,7 @@ class TsDialog extends TsBase {
             edata.finish()
             this._promClosed()
         }
-        if (query('#TsUi-popup').length === 0 || this.status == 'closed') { // already closed
+        if (query('#tsg-popup').length === 0 || this.status == 'closed') { // already closed
             return
         }
         if (this.status == 'opening') { // if it is opening
@@ -631,9 +631,9 @@ class TsDialog extends TsBase {
         }
         // default behavior
         this.status = 'closing'
-        ;(query('#TsUi-popup')
+        ;(query('#tsg-popup')
             .css('transition', this.options.speed + 's') as unknown as Query)
-            .addClass('TsUi-anim-close animating')
+            .addClass('tsg-anim-close animating')
         TsUtils.unlock(document.body, 300)
         this._promClosing()
 
@@ -667,7 +667,7 @@ class TsDialog extends TsBase {
         if (edata.isCancelled === true) return
         // default behavior
         this.status = 'resizing'
-        const rect = (query('#TsUi-popup').get(0) as HTMLElement).getBoundingClientRect()
+        const rect = (query('#tsg-popup').get(0) as HTMLElement).getBoundingClientRect()
         this.options.prevSize = rect.width + ':' + rect.height
         // do resize
         this.resize(10000, 10000, () => {
@@ -695,9 +695,9 @@ class TsDialog extends TsBase {
     }
 
     clear() {
-        query('#TsUi-popup .TsUi-popup-title').html('')
-        query('#TsUi-popup .TsUi-popup-body').html('')
-        query('#TsUi-popup .TsUi-popup-buttons').html('')
+        query('#tsg-popup .tsg-popup-title').html('')
+        query('#tsg-popup .tsg-popup-body').html('')
+        query('#tsg-popup .tsg-popup-buttons').html('')
     }
 
     reset() {
@@ -709,8 +709,8 @@ class TsDialog extends TsBase {
     message(options: any) {
         return TsUtils.message({
             owner: this,
-            box  : query('#TsUi-popup').get(0) as HTMLElement,
-            after: '.TsUi-popup-title'
+            box  : query('#tsg-popup').get(0) as HTMLElement,
+            after: '.tsg-popup-title'
         }, options)
     }
 
@@ -719,16 +719,16 @@ class TsDialog extends TsBase {
     confirm(options: any) {
         return TsUtils.confirm({
             owner: this,
-            box  : query('#TsUi-popup').get(0) as HTMLElement,
-            after: '.TsUi-popup-title'
+            box  : query('#tsg-popup').get(0) as HTMLElement,
+            after: '.tsg-popup-title'
         }, options)
     }
 
     // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFocus(focus?: any) {
-        const box = query('#TsUi-popup')
-        const sel = 'input, button, select, textarea, [contentEditable], [tabindex], .TsUi-input'
+        const box = query('#tsg-popup')
+        const sel = 'input, button, select, textarea, [contentEditable], [tabindex], .tsg-input'
         if (focus != null) {
             const el = isNaN(focus)
                 ? box.find(sel).filter(focus).filter(':not([name=hidden-first])').get(0) as HTMLElement
@@ -768,13 +768,13 @@ class TsDialog extends TsBase {
     // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
-        TsUtils.lock(query('#TsUi-popup'), msg, showSpinner)
+        TsUtils.lock(query('#tsg-popup'), msg, showSpinner)
     }
 
     // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unlock(speed?: any) {
-        TsUtils.unlock(query('#TsUi-popup'), speed)
+        TsUtils.unlock(query('#tsg-popup'), speed)
     }
 
     // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
@@ -799,7 +799,7 @@ class TsDialog extends TsBase {
         const top  = (maxH - height) / 3 // it is my oppinion that it is more estatic to show closer to top then in exact middle
         const left = (maxW - width) / 2
         if (force) {
-            query('#TsUi-popup').css({
+            query('#tsg-popup').css({
                 'transition': 'none',
                 'top'   : top + 'px',
                 'left'  : left + 'px',
@@ -821,7 +821,7 @@ class TsDialog extends TsBase {
             // calculate new position
             const { top, left, width, height } = this.center(newWidth, newHeight)
             const speed = this.options.speed
-            query('#TsUi-popup').css({
+            query('#tsg-popup').css({
                 'transition': `${speed}s width, ${speed}s height, ${speed}s left, ${speed}s top`,
                 'top'   : top + 'px',
                 'left'  : left + 'px',
@@ -841,16 +841,16 @@ class TsDialog extends TsBase {
     // internal function
     resizeMessages() {
         // see if there are messages and resize them
-        query('#TsUi-popup .TsUi-message').each((node: Node) => {
+        query('#tsg-popup .tsg-message').each((node: Node) => {
             const msg = node as HTMLElement
             // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mopt = (msg as any)._msg_options
-            const popup = query('#TsUi-popup')
+            const popup = query('#tsg-popup')
             if (parseInt(mopt.width) < 10) mopt.width = 10
             if (parseInt(mopt.height) < 10) mopt.height = 10
             const rect = (popup[0] as HTMLElement).getBoundingClientRect()
-            const titleHeight = (popup.find('.TsUi-popup-title')[0] as HTMLElement).clientHeight
+            const titleHeight = (popup.find('.tsg-popup-title')[0] as HTMLElement).clientHeight
             const pWidth      = Math.floor(rect.width)
             const pHeight     = Math.floor(rect.height)
             // re-calc width
@@ -880,12 +880,12 @@ function TsAlert(msg: any, title?: any, callBack?: any): any { // any: msg/title
     let prom: any // any: return from open() or message() differs; unified at call site
     const options = {
         title: TsUtils.lang(title ?? 'Notification'),
-        body: `<div class="TsUi-centered TsUi-msg-text">${msg}</div>`,
+        body: `<div class="tsg-centered tsg-msg-text">${msg}</div>`,
         showClose: false,
         actions: { ok: TsUtils.lang('Ok') },
         cancelAction: 'ok'
     }
-    if (query('#TsUi-popup').length > 0 && TsPopup.status != 'closing') {
+    if (query('#tsg-popup').length > 0 && TsPopup.status != 'closing') {
         prom = TsPopup.message(options)
     } else {
         prom = TsPopup.open(options)
@@ -909,7 +909,7 @@ function TsConfirm(msg: any, title?: any, callBack?: any): any { // any: msg/tit
         options = { msg: options }
     }
     if (options.msg) {
-        options.body = `<div class="TsUi-centered TsUi-msg-text">${options.msg}</div>`,
+        options.body = `<div class="tsg-centered tsg-msg-text">${options.msg}</div>`,
         delete options.msg
     }
     if (typeof title == 'function' && callBack == null) {
@@ -926,7 +926,7 @@ function TsConfirm(msg: any, title?: any, callBack?: any): any { // any: msg/tit
         callBack = options.callBack
     }
     TsUtils.normButtons(options, { yes: TsUtils.lang('Yes'), no: TsUtils.lang('No') })
-    if (query('#TsUi-popup').length > 0 && TsPopup.status != 'closing') {
+    if (query('#tsg-popup').length > 0 && TsPopup.status != 'closing') {
         prom = TsPopup.message(options)
     } else {
         prom = TsPopup.open(options)
@@ -954,14 +954,14 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
     if (options.label) {
         options.focus = 0 // the input should be in focus, which is first in the popup
         options.body = (options.textarea
-            ? `<div class="TsUi-prompt textarea">
+            ? `<div class="tsg-prompt textarea">
                  <div>${options.label}</div>
-                 <textarea id="TsPrompt" class="TsUi-input" ${options.attrs ?? ''}
+                 <textarea id="TsPrompt" class="tsg-input" ${options.attrs ?? ''}
                     data-keydown="keydown|event" data-keyup="change|event"></textarea>
                </div>`
-            : `<div class="TsUi-prompt TsUi-centered">
+            : `<div class="tsg-prompt tsg-centered">
                  <label>${options.label}</label>
-                 <input id="TsPrompt" class="TsUi-input" ${options.attrs ?? ''}
+                 <input id="TsPrompt" class="tsg-input" ${options.attrs ?? ''}
                     data-keydown="keydown|event" data-keyup="change|event">
                </div>`
         )
@@ -973,7 +973,7 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
         cancelAction: 'cancel'
     })
     TsUtils.normButtons(options, { ok: TsUtils.lang('Ok'), cancel: TsUtils.lang('Cancel') })
-    if (query('#TsUi-popup').length > 0 && TsPopup.status != 'closing') {
+    if (query('#tsg-popup').length > 0 && TsPopup.status != 'closing') {
         prom = TsPopup.message(options)
     } else {
         prom = TsPopup.open(options)
@@ -981,7 +981,7 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
     if (prom.self.box) {
         prom.self['input'] = query(prom.self.box).find('#TsPrompt').get(0)
     } else {
-        prom.self['input'] = query('#TsUi-popup .TsUi-popup-body #TsPrompt').get(0)
+        prom.self['input'] = query('#tsg-popup .tsg-popup-body #TsPrompt').get(0)
     }
     if (options.value != null) {
         prom.self['input'].value = options.value
@@ -996,7 +996,7 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
         .off('.prompt')
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .on('open:after.prompt', (event: any) => { // any: open event detail is dynamic
-            const box = event.detail.box ? event.detail.box : query('#TsUi-popup .TsUi-popup-body').get(0)
+            const box = event.detail.box ? event.detail.box : query('#tsg-popup .tsg-popup-body').get(0)
             TsUtils.bindEvents(query(box).find('#TsPrompt'), {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 keydown(evt: any) { // any: KeyboardEvent
@@ -1015,7 +1015,7 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
                     edata.finish()
                 }
             })
-            query(box).find('.TsUi-eaction').trigger('keyup')
+            query(box).find('.tsg-eaction').trigger('keyup')
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .on('action:after.prompt', (event: any) => { // any: action event detail is dynamic

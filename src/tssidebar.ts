@@ -395,11 +395,11 @@ class TsSidebar extends TsBase {
             className: options.className ?? '',
             style: options.style ?? ''
         }
-        const btn = query(this.box).find(`#node_${TsUtils.escapeId(id)} .TsUi-node-badge`)
+        const btn = query(this.box).find(`#node_${TsUtils.escapeId(id)} .tsg-node-badge`)
         if (btn.length > 0) {
             // any: query().text(val) returns unknown|Query; setter always returns Query here
             const $cnt = (btn.removeClass(null)
-                .addClass(`TsUi-node-badge ${options.className ?? 'TsUi-node-count'}`)
+                .addClass(`tsg-node-badge ${options.className ?? 'tsg-node-count'}`)
                 .text(count) as unknown as Query)
             // any: query().get(0) returns Node|Node[]; badge button is always HTMLElement
             ;($cnt.get(0) as HTMLElement).style.cssText = options.style || ''
@@ -617,9 +617,9 @@ class TsSidebar extends TsBase {
             this.find({ selected: true }).forEach((nd: any) => nd.selected = false) // any: node objects have dynamic shape
         }
         const $el = query(this.box).find('#node_'+ TsUtils.escapeId(id))
-        $el.addClass('TsUi-selected')
-            .find('.TsUi-icon')
-            .addClass('TsUi-icon-selected')
+        $el.addClass('tsg-selected')
+            .find('.tsg-icon')
+            .addClass('tsg-icon-selected')
         if ($el.length > 0) {
             if (!this.inView(id)) this.scrollIntoView(id)
         }
@@ -655,8 +655,8 @@ class TsSidebar extends TsBase {
         }
         current.selected = false
         query(this.box).find('#node_'+ TsUtils.escapeId(id))
-            .removeClass('TsUi-selected')
-            .find('.TsUi-icon').removeClass('TsUi-icon-selected')
+            .removeClass('tsg-selected')
+            .find('.tsg-icon').removeClass('tsg-icon-selected')
         if (typeof this.selected == 'string' && this.selected == id) {
             this.selected = null
         }
@@ -692,9 +692,9 @@ class TsSidebar extends TsBase {
         if (edata.isCancelled === true) return
         // default action
         query(this.box).find('#node_'+ TsUtils.escapeId(id) +'_sub').hide()
-        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .TsUi-expanded')
-            .removeClass('TsUi-expanded')
-            .addClass('TsUi-collapsed')
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .tsg-expanded')
+            .removeClass('tsg-expanded')
+            .addClass('tsg-collapsed')
         nd.expanded = false
         // event after
         edata.finish()
@@ -711,9 +711,9 @@ class TsSidebar extends TsBase {
         // default action
         query(this.box).find('#node_'+ TsUtils.escapeId(id) +'_sub')
             .show()
-        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .TsUi-collapsed')
-            .removeClass('TsUi-collapsed')
-            .addClass('TsUi-expanded')
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .tsg-collapsed')
+            .removeClass('tsg-collapsed')
+            .addClass('tsg-expanded')
         nd.expanded = true
         // event after
         edata.finish()
@@ -776,14 +776,14 @@ class TsSidebar extends TsBase {
         }
         // select new one
         const newNode = query(this.box).find('#node_'+ TsUtils.escapeId(id))
-        newNode.addClass('TsUi-selected').find('.TsUi-icon').addClass('TsUi-icon-selected')
+        newNode.addClass('tsg-selected').find('.tsg-icon').addClass('tsg-icon-selected')
         // need timeout to allow rendering
         setTimeout(() => {
             // event before
             const edata = this.trigger('click', { target: id, originalEvent: event, node: nd, object: nd })
             if (edata.isCancelled === true) {
                 // restore selection
-                newNode.removeClass('TsUi-selected').find('.TsUi-icon').removeClass('TsUi-icon-selected')
+                newNode.removeClass('tsg-selected').find('.tsg-icon').removeClass('tsg-icon-selected')
                 return
             }
             // default action
@@ -876,13 +876,13 @@ class TsSidebar extends TsBase {
     flatMenu(el: any, items: any) { // any: el is query-wrapped element; items is dynamic node menu array
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
-        const $el = query(el).find('.TsUi-node-data')
+        const $el = query(el).find('.tsg-node-data')
         TsMenu.show({
             // any: query().get(0) returns Node|Node[]; anchor is always HTMLElement in flat menu context
             anchor: $el.get(0) as HTMLElement,
             name: this.name + '_flat-menu',
             items,
-            // class: 'TsUi-dark',
+            // class: 'tsg-dark',
             position: 'right|left',
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             onSelect(event: any) { // any: TsMenu select event detail has dynamic shape
@@ -903,7 +903,7 @@ class TsSidebar extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = true
-        query(this.box).find('.TsUi-sidebar-body').addClass('TsUi-focus')
+        query(this.box).find('.tsg-sidebar-body').addClass('tsg-focus')
         setTimeout(() => {
             const input = query(this.box).find('#sidebar_'+ this.name + '_focus').get(0) as HTMLElement
             if (document.activeElement != input) input.focus()
@@ -919,7 +919,7 @@ class TsSidebar extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = false
-        query(this.box).find('.TsUi-sidebar-body').removeClass('TsUi-focus')
+        query(this.box).find('.tsg-sidebar-body').removeClass('tsg-focus')
         // event after
         edata.finish()
     }
@@ -1074,7 +1074,7 @@ class TsSidebar extends TsBase {
         if (!item) {
             return false
         }
-        const div = query(this.box).find('.TsUi-sidebar-body').get(0) as HTMLElement | undefined
+        const div = query(this.box).find('.tsg-sidebar-body').get(0) as HTMLElement | undefined
         if (!div) return false
         if (item.offsetTop < div.scrollTop || (item.offsetTop + item.clientHeight > div.clientHeight + div.scrollTop)) {
             return false
@@ -1129,7 +1129,7 @@ class TsSidebar extends TsBase {
             }
             // display empty record and ghost record
             const mv = this.last.move
-            const body = query(this.box).find('.TsUi-sidebar-body')
+            const body = query(this.box).find('.tsg-sidebar-body')
             if (!mv.ghost) {
                 const node = query(this.box).find(`#node_${TsUtils.escapeId(id)}`)
                 mv.offsetY = event.offsetY
@@ -1139,10 +1139,10 @@ class TsSidebar extends TsBase {
                 mv.pos = { top: nodeEl.offsetTop - 1, left: nodeEl.offsetLeft }
                 // ghost content
                 // any: query().get(0) returns Node; it has cloneNode as all Nodes do
-                const clone = query((node.find('.TsUi-node-data').get(0) as Node).cloneNode(true))
+                const clone = query((node.find('.tsg-node-data').get(0) as Node).cloneNode(true))
                 mv.node = node
                 mv.nodeSub = node.next()
-                body.append('<div id="sidebar_'+ this.name + '_ghost" class="TsUi-node TsUi-ghost"></div>')
+                body.append('<div id="sidebar_'+ this.name + '_ghost" class="tsg-node tsg-ghost"></div>')
                 query(this.box).find('#sidebar_'+ this.name + '_ghost').append(clone)
                 mv.ghost = query(this.box).find('#sidebar_'+ this.name + '_ghost')
                 mv.ghost.css({ display: 'none' })
@@ -1153,13 +1153,13 @@ class TsSidebar extends TsBase {
                 mv.resetReorder = () => {
                     this.last.move = null
                     query(this.box).find(`#sidebar_${this.name}_ghost`).remove()
-                    query(document).off(`.TsUi-${this.name}-reorder`)
+                    query(document).off(`.tsg-${this.name}-reorder`)
                 }
             }
             // add mouse move and stop events
             query(document)
-                .on(`mousemove.TsUi-${this.name}-reorder`, _mouseMove)
-                .on(`mouseup.TsUi-${this.name}-reorder`, _mouseStop)
+                .on(`mousemove.tsg-${this.name}-reorder`, _mouseMove)
+                .on(`mouseup.tsg-${this.name}-reorder`, _mouseStop)
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1185,13 +1185,13 @@ class TsSidebar extends TsBase {
                 mv.moved = true
                 mv.node.html('')
                     .removeAttr('id', 'data-id')
-                    .addClass('TsUi-reorder-empty')
+                    .addClass('tsg-reorder-empty')
                     .css({ height: rect.height + 'px' })
                 // if there are children
                 if (mv.node.next().css('display') !== 'none') {
                     const rect = mv.node.next().get(0).getBoundingClientRect()
                     mv.node.next()
-                        .html('<div class="TsUi-reorder-empty-sub"></div>')
+                        .html('<div class="tsg-reorder-empty-sub"></div>')
                         .css({ height: rect.height + 'px' })
                 }
                 mv.ghost.css({ display: 'block' })
@@ -1203,10 +1203,10 @@ class TsSidebar extends TsBase {
                 top: (mv.pos.top + mv.divY) + 'px',
                 left: 0
             })
-            const over = query(event.target).closest('.TsUi-node, .TsUi-node-group')
+            const over = query(event.target).closest('.tsg-node, .tsg-node-group')
             const id = over.attr('data-id')
             // append to the end
-            if (query(event.target).hasClass('TsUi-sidebar-body') && event.layerY > 5 && !mv.append) {
+            if (query(event.target).hasClass('tsg-sidebar-body') && event.layerY > 5 && !mv.append) {
                 const edata = self.trigger('dragOver', { target: mv.target, append: true, mv, originalEvent: event })
                 if (edata.isCancelled === true) {
                     return
@@ -1276,16 +1276,16 @@ class TsSidebar extends TsBase {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         const node = query(this.box).find('#node_'+ TsUtils.escapeId(id))
-        const text = node.find('.TsUi-node-text')
+        const text = node.find('.tsg-node-text')
         // event before
         const edata = this.trigger('edit', { target: id, el: node, textEl: text })
         if (edata.isCancelled === true) {
             return
         }
         this.last.renaming = true
-        node.addClass('TsUi-editing')
+        node.addClass('tsg-editing')
         // any: css(key,val) and attr(name,val) overloads return string|Query; cast for chaining
-        ;((text.addClass('TsUi-focus')
+        ;((text.addClass('tsg-focus')
             .css('pointer-events', 'all') as unknown as Query)
             .attr('contenteditable', TsUtils.isFirefox ? 'true' : 'plaintext-only') as unknown as Query)
             .on('blur.node-editing', (_event) => {
@@ -1311,9 +1311,9 @@ class TsSidebar extends TsBase {
         function _rename(event?: KeyboardEvent | Event, cancel?: boolean) {
             // any: text() returns unknown; rename text is always a string at runtime
             const renameTo = text.text() as string
-            node.removeClass('TsUi-editing')
+            node.removeClass('tsg-editing')
             // any: css(key, value) overload returns string|Record|Query; cast to Query for chaining
-            ;(text.removeClass('TsUi-focus')
+            ;(text.removeClass('tsg-focus')
                 .css('pointer-events', 'none') as unknown as Query)
                 .removeAttr('contenteditable')
                 .off('.node-editing')
@@ -1429,14 +1429,14 @@ class TsSidebar extends TsBase {
         if (!this.box) return
         query(this.box)
             .attr('name', this.name)
-            .addClass('TsUi-reset TsUi-sidebar')
+            .addClass('tsg-reset tsg-sidebar')
             .html(`<div>
-                <div class="TsUi-sidebar-top"></div>
+                <div class="tsg-sidebar-top"></div>
                 <input id="sidebar_${this.name}_focus" ${(this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : '')}
                     style="position: absolute; top: 0; right: 1px; width: 1px; z-index: -1; opacity: 0"
                     ${(TsUtils.isMobile ? 'readonly' : '')}/>
-                <div class="TsUi-sidebar-body"></div>
-                <div class="TsUi-sidebar-bottom"></div>
+                <div class="tsg-sidebar-body"></div>
+                <div class="tsg-sidebar-bottom"></div>
             </div>`)
         // any: query().get(0) returns Node|Node[]; box is always HTMLElement when rendering
         const boxEl3 = query(this.box).get(0) as HTMLElement
@@ -1484,21 +1484,21 @@ class TsSidebar extends TsBase {
          * FlatHTML is always present and in .refresh() it is just refreshed. However topHTML and buttomHTML should be here
          * because it should never be refreshed, as it could create recursive refresh loop
          */
-        const flatHTML = `<div class="TsUi-flat TsUi-flat-${(this.flat ? 'right' : 'left')}" ${this.flatButton == false ? 'style="display: none"' : ''}></div>`
+        const flatHTML = `<div class="tsg-flat tsg-flat-${(this.flat ? 'right' : 'left')}" ${this.flatButton == false ? 'style="display: none"' : ''}></div>`
         if (this['topHTML'] !== '' || flatHTML !== '') {
-            query(this.box).find('.TsUi-sidebar-top').html(this['topHTML'] + flatHTML)
-            query(this.box).find('.TsUi-sidebar-body')
+            query(this.box).find('.tsg-sidebar-top').html(this['topHTML'] + flatHTML)
+            query(this.box).find('.tsg-sidebar-body')
                 // any: query().get(0) returns Node|Node[]; sidebar-top element is always HTMLElement
-                .css('top', (query(this.box).find('.TsUi-sidebar-top').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
-            query(this.box).find('.TsUi-flat')
+                .css('top', (query(this.box).find('.tsg-sidebar-top').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
+            query(this.box).find('.tsg-flat')
                 .off('click')
                 .on('click', _event => { this.goFlat() })
         }
         if (this['bottomHTML'] !== '') {
-            query(this.box).find('.TsUi-sidebar-bottom').html(this['bottomHTML'])
-            query(this.box).find('.TsUi-sidebar-body')
+            query(this.box).find('.tsg-sidebar-bottom').html(this['bottomHTML'])
+            query(this.box).find('.tsg-sidebar-body')
                 // any: query().get(0) returns Node|Node[]; sidebar-bottom element is always HTMLElement
-                .css('bottom', (query(this.box).find('.TsUi-sidebar-bottom').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
+                .css('bottom', (query(this.box).find('.tsg-sidebar-bottom').get(0) as HTMLElement | undefined)?.clientHeight + 'px')
         }
 
         // observe div resize
@@ -1522,16 +1522,16 @@ class TsSidebar extends TsBase {
             if (nd.group) {
                 if (options.text) {
                     nd.text = options.text
-                    $el.find('.TsUi-group-text').replace(typeof nd.text == 'function'
+                    $el.find('.tsg-group-text').replace(typeof nd.text == 'function'
                         ? nd.text.call(this, nd)
-                        : '<span class="TsUi-group-text">'+ nd.text +'</span>')
+                        : '<span class="tsg-group-text">'+ nd.text +'</span>')
                     delete options.text
                 }
                 if (options.class) {
                     nd.class = options.class
                     level = $el.data('level')
                     // any: query().get(0) returns Node|Node[]; sidebar node element is always HTMLElement
-                    ;($el.get(0) as HTMLElement).className = 'TsUi-node-group TsUi-level-'+ level +(nd.class ? ' ' + nd.class : '')
+                    ;($el.get(0) as HTMLElement).className = 'tsg-node-group tsg-level-'+ level +(nd.class ? ' ' + nd.class : '')
                     delete options.class
                 }
                 if (options.style) {
@@ -1543,7 +1543,7 @@ class TsSidebar extends TsBase {
                 }
             } else {
                 if (options.icon) {
-                    const $icon = $el.find('.TsUi-node-image > span')
+                    const $icon = $el.find('.tsg-node-image > span')
                     if ($icon.length > 0) {
                         nd.icon = options.icon
                         // any: query()[0] returns Node; sidebar icon span is always HTMLElement
@@ -1559,25 +1559,25 @@ class TsSidebar extends TsBase {
                     const last = this.last.badge[nd.id]
                     if (typeof txt == 'function') txt = txt.call(this, nd, level)
                     // any: .html(val) returns Query|string; cast to Query for chaining .attr()
-                    ;($el.find('.TsUi-node-badge')
+                    ;($el.find('.tsg-node-badge')
                         .html(txt) as unknown as Query)
                         .attr('style', `${style}; ${last?.style ?? ''}`)
-                    if ($el.find('.TsUi-node-badge').length > 0) delete options.count
+                    if ($el.find('.tsg-node-badge').length > 0) delete options.count
                 }
                 if (options.class && $el.length > 0) {
                     nd.class = options.class
                     level = $el.data('level')
                     // any: query()[0] returns Node; sidebar node element is always HTMLElement
-                    ;($el[0] as HTMLElement).className = 'TsUi-node TsUi-level-'+ level + (nd.selected ? ' TsUi-selected' : '') + (nd.disabled ? ' TsUi-disabled' : '') + (nd.class ? ' ' + nd.class : '')
+                    ;($el[0] as HTMLElement).className = 'tsg-node tsg-level-'+ level + (nd.selected ? ' tsg-selected' : '') + (nd.disabled ? ' tsg-disabled' : '') + (nd.class ? ' ' + nd.class : '')
                     delete options.class
                 }
                 if (options.text != null) {
                     nd.text = options.text
-                    $el.find('.TsUi-node-text').html(typeof nd.text == 'function' ? nd.text.call(this, nd) : nd.text)
+                    $el.find('.tsg-node-text').html(typeof nd.text == 'function' ? nd.text.call(this, nd) : nd.text)
                     delete options.text
                 }
                 if (options.style && $el.length > 0) {
-                    const $txt = $el.find('.TsUi-node-text')
+                    const $txt = $el.find('.tsg-node-text')
                     nd.style = options.style
                     // any: query()[0] returns Node; sidebar node text element is always HTMLElement
                     ;($txt[0] as HTMLElement).setAttribute('style', nd.style)
@@ -1593,7 +1593,7 @@ class TsSidebar extends TsBase {
     refresh(id?: any, options: TsSidebarRefreshOptions = {}) { // any: node id is string|number at runtime
         if (this.box == null) return
         // any: query().get(0) returns Node|Node[]; sidebar body is always HTMLElement
-        const body = query(this.box).find(':scope > div > .TsUi-sidebar-body').get(0) as HTMLElement | undefined
+        const body = query(this.box).find(':scope > div > .tsg-sidebar-body').get(0) as HTMLElement | undefined
         const { scrollTop, scrollLeft } = body ?? {}
         const time = Date.now()
         // event before
@@ -1604,17 +1604,17 @@ class TsSidebar extends TsBase {
         })
         if (edata.isCancelled === true) return
         if (this.flatButton == true) {
-            query(this.box).find('.TsUi-sidebar-top .TsUi-flat').show()
-                .removeClass('TsUi-flat-left TsUi-flat-right')
-                .addClass(` TsUi-flat-${(this.flat ? 'right' : 'left')}`)
+            query(this.box).find('.tsg-sidebar-top .tsg-flat').show()
+                .removeClass('tsg-flat-left tsg-flat-right')
+                .addClass(` tsg-flat-${(this.flat ? 'right' : 'left')}`)
 
         } else {
-            query(this.box).find('.TsUi-sidebar-top .TsUi-flat').hide()
+            query(this.box).find('.tsg-sidebar-top .tsg-flat').hide()
         }
         // default action
         // any: query().get(0) returns Node|Node[]; box is always HTMLElement at this point
         const boxEl2 = query(this.box).get(0) as HTMLElement | undefined
-        query(this.box).find(':scope > div').removeClass('TsUi-sidebar-flat').addClass(this.flat ? 'TsUi-sidebar-flat' : '').css({
+        query(this.box).find(':scope > div').removeClass('tsg-sidebar-flat').addClass(this.flat ? 'tsg-sidebar-flat' : '').css({
             width : (boxEl2?.clientWidth ?? 0) + 'px',
             height: (boxEl2?.clientHeight ?? 0) + 'px'
         })
@@ -1631,7 +1631,7 @@ class TsSidebar extends TsBase {
         if (id == null) {
             // eslint-disable-next-line @typescript-eslint/no-this-alias
             node = this
-            nodeSubId = '.TsUi-sidebar-body'
+            nodeSubId = '.tsg-sidebar-body'
         } else {
             node = this.get(id)
             if (node == null) return
@@ -1656,7 +1656,7 @@ class TsSidebar extends TsBase {
         }
         // refresh sub nodes
         const cnt = node == this
-            ? query(this.box).find(':scope > div > .TsUi-sidebar-body')
+            ? query(this.box).find(':scope > div > .tsg-sidebar-body')
             : query(body).find(nodeSubId)
         cnt.html('')
         for (let i = 0; i < node.nodes.length; i++) {
@@ -1681,7 +1681,7 @@ class TsSidebar extends TsBase {
         }
         // bind events
         if (!options.recursive) {
-            const els = query(this.box).find(`${nodeId}, ${nodeId} .TsUi-eaction, ${nodeSubId} .TsUi-eaction`)
+            const els = query(this.box).find(`${nodeId}, ${nodeId} .tsg-eaction, ${nodeSubId} .tsg-eaction`)
             TsUtils.bindEvents(els, this)
             // restore scroll position
             query(body).prop({ scrollLeft, scrollTop })
@@ -1712,11 +1712,11 @@ class TsSidebar extends TsBase {
             if (nd.group) {
                 let text = TsUtils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
                 if (String(text).substr(0, 5) != '<span') {
-                    text = `<span class="TsUi-group-text">${text}</span>`
+                    text = `<span class="tsg-group-text">${text}</span>`
                 }
                 html = `
                     <div id="node_${nd.id}" data-id="${nd.id}" data-level="${level}" style="${nd.hidden ? 'display: none' : ''}"
-                        class="TsUi-node-group TsUi-level-${level} ${nd.class ? nd.class : ''} TsUi-eaction"
+                        class="tsg-node-group tsg-level-${level} ${nd.class ? nd.class : ''} tsg-eaction"
                         data-click="toggle|${nd.id}"
                         data-contextmenu="contextMenu|${nd.id}|event"
                         data-mouseenter="showPlus|this|inherit"
@@ -1726,11 +1726,11 @@ class TsSidebar extends TsBase {
                             : '<span></span>'
                         } ${text}
                     </div>
-                    <div class="TsUi-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}">
+                    <div class="tsg-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}">
                 </div>`
                 if (obj.flat) {
                     html = `
-                        <div class="TsUi-node-group" id="node_${nd.id}" data-id="${nd.id}"><span>&#160;</span></div>
+                        <div class="tsg-node-group" id="node_${nd.id}" data-id="${nd.id}"><span>&#160;</span></div>
                         <div id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}"></div>`
                 }
             } else {
@@ -1750,7 +1750,7 @@ class TsSidebar extends TsBase {
                     if (icon instanceof Object) {
                         const text = (typeof icon.text == 'function' ? (icon.text.call(obj, nd, level) ?? '') : icon.text)
                         image = `
-                            <div class="TsUi-node-image TsUi-eaction" style="${obj.icon.style ?? ''}; pointer-events: all"
+                            <div class="tsg-node-image tsg-eaction" style="${obj.icon.style ?? ''}; pointer-events: all"
                                 data-mouseEnter="mouseAction|Enter|this|${nd.id}|event|icon"
                                 data-mouseLeave="mouseAction|Leave|this|${nd.id}|event|icon"
                                 data-click="mouseAction|click|this|${nd.id}|event|icon">
@@ -1759,7 +1759,7 @@ class TsSidebar extends TsBase {
                         `
                     } else {
                         image = `
-                            <div class="TsUi-node-image">
+                            <div class="tsg-node-image">
                                 <span class="${typeof icon == 'function' ? icon.call(obj, nd, level) : icon}"></span>
                             </div>`
                     }
@@ -1773,7 +1773,7 @@ class TsSidebar extends TsBase {
                     if (typeof txt == 'function') txt = txt.call(obj, nd, level)
                     if (txt || txt === 0) { // can be number 0
                         counts = `
-                            <div class="TsUi-node-badge TsUi-eaction ${nd.count != null ? 'TsUi-node-count' : ''} ${last?.className ?? ''}"
+                            <div class="tsg-node-badge tsg-eaction ${nd.count != null ? 'tsg-node-count' : ''} ${last?.className ?? ''}"
                                 style="${style ?? ''};${last?.style ?? ''}"
                                 data-mouseEnter="mouseAction|Enter|this|${nd.id}|event|badge"
                                 data-mouseLeave="mouseAction|Leave|this|${nd.id}|event|badge"
@@ -1784,16 +1784,16 @@ class TsSidebar extends TsBase {
                     }
                 }
                 // array with classes
-                const classes = ['TsUi-node', `TsUi-level-${level}`, 'TsUi-eaction']
-                if (nd.selected) classes.push('TsUi-selected')
-                if (nd.disabled) classes.push('TsUi-disabled')
+                const classes = ['tsg-node', `tsg-level-${level}`, 'tsg-eaction']
+                if (nd.selected) classes.push('tsg-selected')
+                if (nd.disabled) classes.push('tsg-disabled')
                 if (nd.class) classes.push(nd.class)
                 // collapsible
                 if (nd.collapsible === true) {
-                    const toggleClasses = ['TsUi-sb-toggle', 'TsUi-eaction', (nd.expanded ? 'TsUi-expanded' : 'TsUi-collapsed')]
-                    if (obj['toggleAlign'] == 'left') toggleClasses.push('TsUi-left-toggle')
+                    const toggleClasses = ['tsg-sb-toggle', 'tsg-eaction', (nd.expanded ? 'tsg-expanded' : 'tsg-collapsed')]
+                    if (obj['toggleAlign'] == 'left') toggleClasses.push('tsg-left-toggle')
                     expand = `<div class="${toggleClasses.join(' ')}" data-click="toggle|${nd.id}"><span></span></div>`
-                    classes.push('TsUi-has-children')
+                    classes.push('tsg-has-children')
                 }
                 const text = TsUtils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
                 let nodeOffset = nd.parent?.childOffset ?? 0
@@ -1811,7 +1811,7 @@ class TsSidebar extends TsBase {
                         data-mouseLeave="mouseAction|Leave|this|${nd.id}|event"
                     >
                         ${obj['handle'].text
-                            ? `<div class="TsUi-node-handle TsUi-eaction" style="width: ${obj['handle'].width}px; ${obj['handle'].style}"
+                            ? `<div class="tsg-node-handle tsg-eaction" style="width: ${obj['handle'].width}px; ${obj['handle'].style}"
                                     data-mouseEnter="mouseAction|Enter|this|${nd.id}|event|handle"
                                     data-mouseLeave="mouseAction|Leave|this|${nd.id}|event|handle"
                                     data-click="mouseAction|click|this|${nd.id}|event|handle"
@@ -1820,24 +1820,24 @@ class TsSidebar extends TsBase {
                               </div>`
                             : ''
                         }
-                      <div class="TsUi-node-data" style="margin-left: ${(level * obj['levelPadding']) + nodeOffset + obj['handle'].width}px">
+                      <div class="tsg-node-data" style="margin-left: ${(level * obj['levelPadding']) + nodeOffset + obj['handle'].width}px">
                             ${expand} ${image} ${counts}
-                            <div class="TsUi-node-text ${!image ? 'no-icon' : ''}" style="${nd.style || ''}">${text}</div>
+                            <div class="tsg-node-text ${!image ? 'no-icon' : ''}" style="${nd.style || ''}">${text}</div>
                        </div>
                     </div>
-                    <div class="TsUi-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}"></div>`
+                    <div class="tsg-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}"></div>`
                 if (obj.flat) {
                     html = `
-                        <div id="node_${nd.id}" class="${classes.join(' ')} TsUi-node-flat" data-id="${nd.id}" style="${nd.hidden ? 'display: none;' : ''}"
+                        <div id="node_${nd.id}" class="${classes.join(' ')} tsg-node-flat" data-id="${nd.id}" style="${nd.hidden ? 'display: none;' : ''}"
                             data-click="click|${nd.id}|event"
                             data-dblclick="dblClick|${nd.id}|event"
                             data-contextmenu="contextMenu|${nd.id}|event"
                             data-mouseEnter="mouseAction|Enter|this|${nd.id}|event|tooltip"
                             data-mouseLeave="mouseAction|Leave|this|${nd.id}|event|tooltip"
                         >
-                            <div class="TsUi-node-data">${image}</div>
+                            <div class="tsg-node-data">${image}</div>
                         </div>
-                        <div class="TsUi-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}"></div>`
+                        <div class="tsg-node-sub" id="node_${nd.id}_sub" style="${nd.style}; ${!nd.hidden && nd.expanded ? '' : 'display: none;'}"></div>`
                 }
             }
             return html
@@ -1855,7 +1855,7 @@ class TsSidebar extends TsBase {
             // this tooltip shows for flat sidebars
             const text = TsUtils.lang(typeof node.text == 'function' ? node.text.call(this, node) : node.text)
             let tooltip = text + (node.count != null
-                ? ' - <span class="TsUi-node-badge TsUi-node-count">'+ node.count +'</span>'
+                ? ' - <span class="tsg-node-badge tsg-node-count">'+ node.count +'</span>'
                 : '')
             if (action == 'Leave' || this.selected == node.id) tooltip = ''
             this.tooltip(anchor, tooltip)
@@ -1910,7 +1910,7 @@ class TsSidebar extends TsBase {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tooltip(el: any, text: any) { // any: el is query-wrapped element; text is string|number at runtime
-        const $el = query(el).find('.TsUi-node-data')
+        const $el = query(el).find('.tsg-node-data')
         if (text !== '') {
             TsTooltip.show({
                 // any: query().get(0) returns Node|Node[]; sidebar node-data element is always HTMLElement
@@ -1969,7 +1969,7 @@ class TsSidebar extends TsBase {
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
         // clean up
-        if (query(this.box).find('.TsUi-sidebar-body').length > 0) {
+        if (query(this.box).find('.tsg-sidebar-body').length > 0) {
             this.unmount()
         }
         delete TsUi[this.name]

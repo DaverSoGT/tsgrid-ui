@@ -290,7 +290,7 @@ class TsToolbar extends TsBase {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setCount(id: any, count: any, className?: any, style?: any): void { // any: toolbar item badge params are heterogeneous
-        const btn = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .TsUi-tb-count > span`)
+        const btn = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`)
         if (btn.length > 0) {
             btn.removeClass(null)
                 .addClass(className ?? '')
@@ -525,7 +525,7 @@ class TsToolbar extends TsBase {
                         if (it.type == 'drop') {
                             ;(TsTooltip.show(TsUtils.extend({
                                 html: it.html,
-                                class: 'TsUi-white',
+                                class: 'tsg-white',
                                 hideOn: ['doc-click']
                             }, it.overlay, {
                                 anchor: el[0],
@@ -635,10 +635,10 @@ class TsToolbar extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, line?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
-            const scrollBox    = query(this.box).find(`.TsUi-tb-line:nth-child(${line}) .TsUi-scroll-wrapper`)
+            const scrollBox    = query(this.box).find(`.tsg-tb-line:nth-child(${line}) .tsg-scroll-wrapper`)
             const scrollBoxEl  = scrollBox.get(0) as HTMLElement
             const scrollLeft   = scrollBoxEl.scrollLeft
-            const right        = scrollBox.find('.TsUi-tb-right').get(0) as HTMLElement
+            const right        = scrollBox.find('.tsg-tb-right').get(0) as HTMLElement
             const width1       = (scrollBox.parent().get(0) as HTMLElement).getBoundingClientRect().width
             const width2       = scrollLeft + right.offsetLeft + right.clientWidth
 
@@ -697,12 +697,12 @@ class TsToolbar extends TsBase {
             if (i === 0 || it.type == 'new-line') {
                 line++
                 html += `
-                    <div class="TsUi-tb-line">
-                        <div class="TsUi-scroll-wrapper TsUi-eaction" data-mousedown="resize">
-                            <div class="TsUi-tb-right">${this.right[line-1] ?? ''}</div>
+                    <div class="tsg-tb-line">
+                        <div class="tsg-scroll-wrapper tsg-eaction" data-mousedown="resize">
+                            <div class="tsg-tb-right">${this.right[line-1] ?? ''}</div>
                         </div>
-                        <div class="TsUi-scroll-left TsUi-eaction" data-click='["scroll", "left", "${line}"]'></div>
-                        <div class="TsUi-scroll-right TsUi-eaction" data-click='["scroll", "right", "${line}"]'></div>
+                        <div class="tsg-scroll-left tsg-eaction" data-click='["scroll", "left", "${line}"]'></div>
+                        <div class="tsg-scroll-right tsg-eaction" data-click='["scroll", "right", "${line}"]'></div>
                     </div>
                 `
             }
@@ -710,13 +710,13 @@ class TsToolbar extends TsBase {
         }
         query(this.box)
             .attr('name', this.name)
-            .addClass('TsUi-reset TsUi-toolbar')
+            .addClass('tsg-reset tsg-toolbar')
             .html(html)
         if (query(this.box).length > 0) {
             (query(this.box)[0] as HTMLElement).style.cssText += this['style']
         }
         // overflow buttons
-        TsUtils.bindEvents(query(this.box).find('.TsUi-tb-line .TsUi-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.tsg-tb-line .tsg-eaction'), this)
         // observe div resize
         this.last.observeResize = new ResizeObserver(() => { this.resize() })
         this.last.observeResize.observe(this.box)
@@ -761,18 +761,18 @@ class TsToolbar extends TsBase {
 
         // if there is a spacer, then right HTML is not 100%
         if (it.type == 'spacer') {
-            query(this.box).find(`.TsUi-tb-line:nth-child(${it.line ?? 1})`).find('.TsUi-tb-right').css('width', 'auto')
+            query(this.box).find(`.tsg-tb-line:nth-child(${it.line ?? 1})`).find('.tsg-tb-right').css('width', 'auto')
         }
 
         if (btn.length === 0) {
             const next = parseInt(this.get(id, true)) + 1
             let $next = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : '--')}`) // "--" is needed or it will insert wrong
             if ($next.length == 0) {
-                $next = query(this.box).find(`.TsUi-tb-line:nth-child(${it.line}`).find('.TsUi-tb-right').before(html)
+                $next = query(this.box).find(`.tsg-tb-line:nth-child(${it.line}`).find('.tsg-tb-right').before(html)
             } else {
                 $next.after(html)
             }
-            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .TsUi-eaction`), this)
+            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .tsg-eaction`), this)
         } else {
             // refresh
             // any: cast-to-any for dynamic dispatch; TsToolbar item shape varies by `type` at runtime
@@ -780,7 +780,7 @@ class TsToolbar extends TsBase {
             query(this.box).find(selector).replace((_queryRaw as any).html(html))
             const newBtn = query(this.box).find(selector)
             TsUtils.bindEvents(newBtn, this)
-            TsUtils.bindEvents(newBtn.find('.TsUi-eaction'), this)
+            TsUtils.bindEvents(newBtn.find('.tsg-eaction'), this)
             // update overlay's anchor if changed
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const overlays = TsTooltip.get(true) as Record<string, any> | undefined // any: TooltipOverlay shape is dynamic
@@ -814,22 +814,22 @@ class TsToolbar extends TsBase {
         const edata = this.trigger('resize', { target: this.name })
         if (edata.isCancelled === true) return
 
-        query(this.box).find('.TsUi-tb-line').each(el => {
+        query(this.box).find('.tsg-tb-line').each(el => {
             // show hide overflow buttons
             const box = query(el)
-            box.find('.TsUi-scroll-left, .TsUi-scroll-right').hide()
-            const scrollBox  = box.find('.TsUi-scroll-wrapper').get(0) as HTMLElement
-            const $right     = box.find('.TsUi-tb-right')
+            box.find('.tsg-scroll-left, .tsg-scroll-right').hide()
+            const scrollBox  = box.find('.tsg-scroll-wrapper').get(0) as HTMLElement
+            const $right     = box.find('.tsg-tb-right')
             const boxWidth   = (box.get(0) as HTMLElement).getBoundingClientRect().width
             // Do not use $right[0].getBoundingClientRect(). right box is the most left div
             const itemsWidth = ($right.length > 0 ? ($right[0] as HTMLElement).offsetLeft + ($right[0] as HTMLElement).clientWidth : 0)
             if (boxWidth < itemsWidth) {
                 // we have overflown content
                 if (scrollBox.scrollLeft > 0) {
-                    box.find('.TsUi-scroll-left').show()
+                    box.find('.tsg-scroll-left').show()
                 }
                 if (boxWidth < itemsWidth - scrollBox.scrollLeft) {
-                    box.find('.TsUi-scroll-right').show()
+                    box.find('.tsg-scroll-right').show()
                 }
             }
         })
@@ -843,7 +843,7 @@ class TsToolbar extends TsBase {
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
         // clean up
-        if (query(this.box).find('.TsUi-scroll-wrapper').length > 0) {
+        if (query(this.box).find('.tsg-scroll-wrapper').length > 0) {
             this.unmount()
         }
         delete TsUi[this.name]
@@ -885,9 +885,9 @@ class TsToolbar extends TsBase {
             if (String(icon).slice(0, 1) !== '<') {
                 icon = `<span class="${icon}" ${item.icon_style ? `style="${item.icon_style}"` : ''}></span>`
             }
-            icon = `<div class="TsUi-tb-icon">${icon}</div>`
+            icon = `<div class="tsg-tb-icon">${icon}</div>`
         }
-        const classes = ['TsUi-tb-button', 'TsUi-eaction']
+        const classes = ['tsg-tb-button', 'tsg-eaction']
         if (item.checked) classes.push('checked')
         if (item.disabled) classes.push('disabled')
         if (item.hidden) classes.push('hidden')
@@ -901,7 +901,7 @@ class TsToolbar extends TsBase {
                     if ([3, 6, 8].includes(item.color.length)) item.color = '#' + item.color
                 }
                 if (item.type == 'color') {
-                    text = `<span class="TsUi-tb-color-box" style="background-color: ${(item.color != null ? item.color : '#fff')}"></span>
+                    text = `<span class="tsg-tb-color-box" style="background-color: ${(item.color != null ? item.color : '#fff')}"></span>
                            ${(item.text ? `<div style="margin-left: 17px;">${TsUtils.lang(item.text)}</div>` : '')}`
                 }
                 if (item.type == 'text-color') {
@@ -944,18 +944,18 @@ class TsToolbar extends TsBase {
                     >
                         ${ icon }
                         ${ (text != '' && text != null) || item.count != null || arrow
-                            ? `<div class="TsUi-tb-text" style="${item.type != 'label' ? (item.style ?? '') : ''}; ${!text ? 'padding-left: 0; margin-left: 23px;' : ''}">
+                            ? `<div class="tsg-tb-text" style="${item.type != 'label' ? (item.style ?? '') : ''}; ${!text ? 'padding-left: 0; margin-left: 23px;' : ''}">
                                     ${ TsUtils.lang(text) }
                                     ${ item.count != null
                                         ? TsUtils.stripSpaces(`
-                                            <span class="TsUi-tb-count">
+                                            <span class="tsg-tb-count">
                                                 <span class="${this.last.badge[item.id] ? this.last.badge[item.id].className ?? '' : ''}"
                                                         style="${this.last.badge[item.id] ? this.last.badge[item.id].style ?? '' : ''}">${item.count}</span>
                                             </span>`)
                                         : ''
                                     }
                                     ${ arrow
-                                        ? `<span class="TsUi-tb-down" ${!text && !item.count ? 'style="margin-left: -3px"' : ''}><span></span></span>`
+                                        ? `<span class="tsg-tb-down" ${!text && !item.count ? 'style="margin-left: -3px"' : ''}><span></span></span>`
                                         : ''
                                     }
                                 </div>`
@@ -966,20 +966,20 @@ class TsToolbar extends TsBase {
                 break
             }
             case 'break': {
-                html = `<div id="tb_${this.name}_item_${item.id}" class="TsUi-tb-break"
+                html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-break"
                             style="${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">
                             &#160;
                         </div>`
                 break
             }
             case 'spacer': {
-                html = `<div id="tb_${this.name}_item_${item.id}" class="TsUi-tb-spacer"
+                html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-spacer"
                             style="${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">
                         </div>`
                 break
             }
             case 'html': {
-                html = `<div id="tb_${this.name}_item_${item.id}" class="TsUi-tb-html ${classes.join(' ')}"
+                html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-html ${classes.join(' ')}"
                             style="${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">
                             ${(typeof item.html == 'function' ? item.html.call(this, item) : item.html)}
                         </div>`
@@ -999,14 +999,14 @@ class TsToolbar extends TsBase {
                     const prec = item.input?.precision ?? String(step).split('.')[1]?.length ?? 0
                     val = isNaN(val) ? val : Number(val).toFixed(prec)
                 }
-                html = `<div id="tb_${this.name}_item_${item.id}" class="TsUi-tb-input TsUi-eaction ${classes.join(' ')}"
+                html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-input tsg-eaction ${classes.join(' ')}"
                             style="${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}"
                         >
-                            <span class="TsUi-input-label">${item.text ?? ''}</span>
+                            <span class="tsg-input-label">${item.text ?? ''}</span>
                             ${item.input?.spinner
-                                ? `<span class="TsUi-spinner-dec TsUi-eaction" data-click='["spinner", "${item.id}", "dec", "event"]'> – </span>`
+                                ? `<span class="tsg-spinner-dec tsg-eaction" data-click='["spinner", "${item.id}", "dec", "event"]'> – </span>`
                                 : ''}
-                            <input class="TsUi-toolbar-input TsUi-eaction ${item.input?.spinner ? 'TsUi-has-spinner' : ''}"
+                            <input class="tsg-toolbar-input tsg-eaction ${item.input?.spinner ? 'tsg-has-spinner' : ''}"
                                 ${ph ? `placeholder="${ph}"` : ''} style="${item.input?.style ?? ''}"
                                 value="${val ?? ''}${item.input?.suffix ?? ''}" ${item.input?.attrs ?? ''}
                                 data-input='["change", "${item.id}", "this", true]'
@@ -1016,13 +1016,13 @@ class TsToolbar extends TsBase {
                                 data-mouseleave='["mouseAction", "event", "this", "Leave", "${item.id}"]'
                             >
                             ${item.input?.spinner
-                                ? `<span class="TsUi-spinner-inc TsUi-eaction" data-click='["spinner", "${item.id}", "inc", "event"]'> + </span>`
+                                ? `<span class="tsg-spinner-inc tsg-eaction" data-click='["spinner", "${item.id}", "inc", "event"]'> + </span>`
                                 : ''}
                         </div>`
                 break
             }
             case 'group': {
-                html = `<div id="tb_${this.name}_item_${item.id}" class="TsUi-tb-group"
+                html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-group"
                     style="display: flex; ${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">`
                 if (Array.isArray(item.items)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1083,7 +1083,7 @@ class TsToolbar extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     change(id?: any, value?: any, dynamic?: any) {
         const it = this.get(id)
-        const input = query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(id)).find('input.TsUi-toolbar-input')
+        const input = query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(id)).find('input.tsg-toolbar-input')
         if (value instanceof HTMLInputElement) {
             value = value.value
         }

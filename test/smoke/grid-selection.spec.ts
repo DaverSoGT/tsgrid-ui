@@ -4,12 +4,12 @@ test.describe('Grid Selection', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/test/smoke/grid-selection.html')
         await page.waitForFunction(() => (window as any)._smokeReady === true)
-        await page.waitForSelector('.TsUi-grid', { state: 'attached' })
-        await page.waitForSelector('.TsUi-grid-records', { state: 'attached' })
+        await page.waitForSelector('.tsg-grid', { state: 'attached' })
+        await page.waitForSelector('.tsg-grid-records', { state: 'attached' })
     })
 
     test('renders grid with 5 rows', async ({ page }) => {
-        const rows = page.locator('.TsUi-grid-records tr.TsUi-record')
+        const rows = page.locator('.tsg-grid-records tr.tsg-record')
         await expect(rows).toHaveCount(5)
     })
 

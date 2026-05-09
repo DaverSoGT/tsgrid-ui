@@ -639,7 +639,7 @@ class TsField extends TsBase {
                 options.items = TsUtils.normMenu.call(this, options.items, options)
                 if (this.type === 'list') {
                     // defaults.search = (options.items && options.items.length >= 10 ? true : false);
-                    query(this.el).addClass('TsUi-select')
+                    query(this.el).addClass('tsg-select')
                     // if simple value - look it up
                     if (!TsUtils.isPlainObject(options.selected) && Array.isArray(options.items)) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -771,7 +771,7 @@ class TsField extends TsBase {
         // attach events
         const $elInit = query(this.el)
         $elInit.css('box-sizing', 'border-box')
-        $elInit.addClass('TsField TsUi-input')
+        $elInit.addClass('TsField tsg-input')
             .off('.TsField')
             .on('change.TsField', (event: Event) => { this.change(event) })
             .on('click.TsField', (event: Event) => { this.click(event as MouseEvent) })
@@ -871,7 +871,7 @@ class TsField extends TsBase {
             // if empty show no icon
             if (this.selected == null && options.icon) {
                 options.prefix = `
-                    <span class="TsUi-icon ${options.icon} "style="cursor: pointer; font-size: 14px;
+                    <span class="tsg-icon ${options.icon} "style="cursor: pointer; font-size: 14px;
                         display: inline-block; margin-top: -1px; color: #7F98AD; ${options.iconStyle}">
                     </span>`
                 this.addPrefix()
@@ -908,11 +908,11 @@ class TsField extends TsBase {
                     if (this.helpers.prefix) query(this.helpers.prefix).hide()
                     if (options.icon) {
                         focus.css('margin-left', '17px')
-                        query(this.helpers.search).find('.TsUi-icon-search')
+                        query(this.helpers.search).find('.tsg-icon-search')
                             .addClass('show-search')
                     } else {
                         focus.css('margin-left', '0px')
-                        query(this.helpers.search).find('.TsUi-icon-search')
+                        query(this.helpers.search).find('.tsg-icon-search')
                             .removeClass('show-search')
                     }
                 }, 1)
@@ -942,10 +942,10 @@ class TsField extends TsBase {
                         <div class="li-item" index="${ind}" style="max-width: ${parseInt(options.maxItemWidth)}px; ${it.style ? it.style : ''}">
                         ${
                             typeof options.renderItem === 'function'
-                            ? options.renderItem(it, ind, `<div class="TsUi-list-remove" index="${ind}">&#160;&#160;</div>`)
+                            ? options.renderItem(it, ind, `<div class="tsg-list-remove" index="${ind}">&#160;&#160;</div>`)
                             : `
-                               ${it.icon ? `<span class="TsUi-icon ${it.icon}"></span>` : ''}
-                               <div class="TsUi-list-remove" index="${ind}">&#160;&#160;</div>
+                               ${it.icon ? `<span class="tsg-icon ${it.icon}"></span>` : ''}
+                               <div class="tsg-list-remove" index="${ind}">&#160;&#160;</div>
                                ${(this.type === 'enum' ? it.text : it.name) ?? it.id ?? it }
                                ${it.size ? `<span class="file-size"> - ${TsUtils.formatSize(it.size)}</span>` : ''}
                             `
@@ -953,7 +953,7 @@ class TsField extends TsBase {
                         </div>`
                 })
             }
-            const ul  = div.find('.TsUi-multi-items')
+            const ul  = div.find('.tsg-multi-items')
             if (options.style) {
                 div.attr('style', div.attr('style') + ';' + options.style)
             }
@@ -961,21 +961,21 @@ class TsField extends TsBase {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) {
                 setTimeout(() => {
                     (div.get(0) as HTMLElement).scrollTop = 0 // scroll to the top
-                    div.addClass('TsUi-readonly')
+                    div.addClass('tsg-readonly')
                         .find('.li-item').css('opacity', '0.9')
                     ;(div.find('.li-item') as Query).parent().find('.li-search').hide()
                         .find('input').prop('readOnly', true)
-                        .closest('.TsUi-multi-items')
-                        .find('.TsUi-list-remove').hide()
+                        .closest('.tsg-multi-items')
+                        .find('.tsg-list-remove').hide()
                 }, 1)
             } else {
                 setTimeout(() => {
-                    div.removeClass('TsUi-readonly')
+                    div.removeClass('tsg-readonly')
                         .find('.li-item').css('opacity', '1')
                     ;(div.find('.li-item') as Query).parent().find('.li-search').show()
                         .find('input').prop('readOnly', false)
-                        .closest('.TsUi-multi-items')
-                        .find('.TsUi-list-remove').show()
+                        .closest('.tsg-multi-items')
+                        .find('.tsg-list-remove').show()
                 }, 1)
             }
 
@@ -983,7 +983,7 @@ class TsField extends TsBase {
             if (this.selected?.length > 0) {
                 query(this.el).attr('placeholder', '')
             }
-            div.find('.TsUi-enum-placeholder').remove()
+            div.find('.tsg-enum-placeholder').remove()
             ul.find('.li-item').remove()
 
             // add new list
@@ -998,7 +998,7 @@ class TsField extends TsBase {
                     font-size: ${styles['font-size']};
                     font-family: ${styles['font-family']};
                 `)
-                div.prepend(`<div class="TsUi-enum-placeholder" style="${style}">${query(this.el).attr('placeholder')}</div>`)
+                div.prepend(`<div class="tsg-enum-placeholder" style="${style}">${query(this.el).attr('placeholder')}</div>`)
             }
             // ITEMS events
             div.off('.w2item')
@@ -1023,14 +1023,14 @@ class TsField extends TsBase {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let edata: any // any: trigger() returns an event-data object with dynamic properties
                     // default behavior
-                    if (query(mouseEvent.target).hasClass('TsUi-list-remove')) {
+                    if (query(mouseEvent.target).hasClass('tsg-list-remove')) {
                         if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
                         // trigger event
                         edata = this.trigger('remove', { target: this.el, originalEvent: mouseEvent, item })
                         if (edata.isCancelled === true) return
                         // remove file from input element
                         const transfer = new DataTransfer()
-                        const input = query(mouseEvent.target).closest('.TsUi-list').find('input.file-input').get(0) as HTMLInputElement
+                        const input = query(mouseEvent.target).closest('.tsg-list').find('input.file-input').get(0) as HTMLInputElement
                         if (input) {
                             Array.from(input.files ?? [])
                                 .filter((f: File) => f.name != item.name)
@@ -1052,13 +1052,13 @@ class TsField extends TsBase {
                         if (this.type === 'file') {
                             if ((/image/i).test(item.type)) { // image
                                 preview = `
-                                    <div class="TsUi-file-preview">
+                                    <div class="tsg-file-preview">
                                         <img src="${(item.content ? 'data:'+ item.type +';base64,'+ item.content : '')}"
                                             style="max-width: 300px">
                                     </div>`
                             }
                             preview += `
-                                <div class="TsUi-file-info">
+                                <div class="tsg-file-info">
                                     <div class="file-caption">${TsUtils.lang('Name')}:</div>
                                     <div class="file-value">${item.name}</div>
                                     <div class="file-caption">${TsUtils.lang('Size')}:</div>
@@ -1166,7 +1166,7 @@ class TsField extends TsBase {
         if (['enum', 'file'].includes(this.type) && div) {
             // adjust height
             query(this.el).css('height', '')
-            let cntHeight = (query(div).find(':scope div.TsUi-multi-items').get(0) as HTMLElement).clientHeight + 5
+            let cntHeight = (query(div).find(':scope div.tsg-multi-items').get(0) as HTMLElement).clientHeight + 5
             if (cntHeight < 20) cntHeight = 20
             // max height
             if (this.tmp['max-height'] != null && cntHeight > this.tmp['max-height']) {
@@ -1204,7 +1204,7 @@ class TsField extends TsBase {
         }
         // remove events and (data)
         ;(query(this.el).val(this.clean(query(this.el).val())) as Query)
-            .removeClass('TsField TsUi-input')
+            .removeClass('TsField tsg-input')
             .removeData('selected selectedIndex')
             .off('.TsField') // remove only events added by TsField
         // remove helpers
@@ -1927,7 +1927,7 @@ class TsField extends TsBase {
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
         // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query(this.el).before(`<div class="TsUi-field-helper">${(this.options as any).prefix}</div>`)
+        query(this.el).before(`<div class="tsg-field-helper">${(this.options as any).prefix}</div>`)
         const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
         query(helper)
             .css({
@@ -1972,11 +1972,11 @@ class TsField extends TsBase {
             if (this.helpers.arrows) query(this.helpers.arrows).remove()
             // add fresh
             query(this.el).after(
-                '<div class="TsUi-field-helper" style="border: 1px solid transparent">&#160;'+
-                '    <div class="TsUi-field-up" type="up">'+
+                '<div class="tsg-field-helper" style="border: 1px solid transparent">&#160;'+
+                '    <div class="tsg-field-up" type="up">'+
                 '        <div class="arrow-up" type="up"></div>'+
                 '    </div>'+
-                '    <div class="TsUi-field-down" type="down">'+
+                '    <div class="tsg-field-down" type="down">'+
                 '        <div class="arrow-down" type="down"></div>'+
                 '    </div>'+
                 '</div>')
@@ -2015,7 +2015,7 @@ class TsField extends TsBase {
             // add fresh
             // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            query(this.el).after(`<div class="TsUi-field-helper">${(this.options as any).suffix}</div>`)
+            query(this.el).after(`<div class="tsg-field-helper">${(this.options as any).suffix}</div>`)
             const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
             query(suffixHelper)
                 .css({
@@ -2054,8 +2054,8 @@ class TsField extends TsBase {
         }
         // build helper
         const html = `
-            <div class="TsUi-field-helper">
-                <span class="TsUi-icon TsUi-icon-search"></span>
+            <div class="tsg-field-helper">
+                <span class="tsg-icon tsg-icon-search"></span>
                 <input ${searchId} type="text" tabIndex="${tabIndex}" ${query(this.el).prop('readOnly') ? 'readonly' : ''}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`
@@ -2085,27 +2085,27 @@ class TsField extends TsBase {
             })
         // INPUT events
         query(helper).find('input')
-            .off('.TsUi-helper')
-            .on('focus.TsUi-helper', (event: Event) => {
+            .off('.tsg-helper')
+            .on('focus.tsg-helper', (event: Event) => {
                 const focusEvent = event as FocusEvent
                 query(focusEvent.target).val('')
                 this.tmp.pholder = query(this.el).attr('placeholder') ?? ''
                 this.focus(focusEvent)
                 focusEvent.stopPropagation()
             })
-            .on('blur.TsUi-helper', (event: Event) => {
+            .on('blur.tsg-helper', (event: Event) => {
                 const focusEvent = event as FocusEvent
                 query(focusEvent.target).val('')
                 if (this.tmp.pholder != null) query(this.el).attr('placeholder', this.tmp.pholder)
                 this.blur(focusEvent)
                 focusEvent.stopPropagation()
             })
-            .on('keydown.TsUi-helper', (event: Event) => { this.keyDown(event as KeyboardEvent) })
-            .on('keyup.TsUi-helper', (event: Event) => { this.keyUp(event as KeyboardEvent) })
+            .on('keydown.tsg-helper', (event: Event) => { this.keyDown(event as KeyboardEvent) })
+            .on('keyup.tsg-helper', (event: Event) => { this.keyUp(event as KeyboardEvent) })
         // MAIN div
         query(helper)
-            .off('.TsUi-helper')
-            .on('click.TsUi-helper', (_event: Event) => {
+            .off('.tsg-helper')
+            .on('click.tsg-helper', (_event: Event) => {
                 (query(helper).find('input').get(0) as HTMLInputElement).focus()
             })
     }
@@ -2151,8 +2151,8 @@ class TsField extends TsBase {
 
         if (this.type === 'enum') {
             html = `
-            <div class="TsUi-field-helper TsUi-list" style="${margin}">
-                <div class="TsUi-multi-items">
+            <div class="tsg-field-helper tsg-list" style="${margin}">
+                <div class="tsg-multi-items">
                     <div class="li-search">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
@@ -2164,15 +2164,15 @@ class TsField extends TsBase {
         }
         if (this.type === 'file') {
             html = `
-            <div class="TsUi-field-helper TsUi-list" style="${margin}">
-                <div class="TsUi-multi-file">
+            <div class="tsg-field-helper tsg-list" style="${margin}">
+                <div class="tsg-multi-file">
                     <input name="attachment" class="file-input" type="file" tabindex="-1"'
                         style="width: 100%; height: 100%; opacity: 0" title=""
                         ${(this.options as { max?: number }).max !== 1 ? 'multiple' : ''}
                         ${query(this.el).prop('readOnly') || query(this.el).prop('disabled') ? 'disabled': ''}
                         ${query(this.el).attr('accept') ? ' accept="'+ query(this.el).attr('accept') +'"': ''}>
                 </div>
-                <div class="TsUi-multi-items">
+                <div class="tsg-multi-items">
                     <div class="li-search" style="display: none">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
@@ -2221,16 +2221,16 @@ class TsField extends TsBase {
                 })
                 .on('dragenter.drag', (_event: Event) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.addClass('TsUi-file-dragover')
+                    div.addClass('tsg-file-dragover')
                 })
                 .on('dragleave.drag', (_event: Event) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.removeClass('TsUi-file-dragover')
+                    div.removeClass('tsg-file-dragover')
                 })
                 .on('drop.drag', (event: Event) => {
                     const dragEvent = event as DragEvent
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.removeClass('TsUi-file-dragover')
+                    div.removeClass('tsg-file-dragover')
                     const files = Array.from(dragEvent.dataTransfer?.files ?? [])
                     files.forEach((file: File) => { this.addFile(file) })
                     this.focus(dragEvent as unknown as FocusEvent)
