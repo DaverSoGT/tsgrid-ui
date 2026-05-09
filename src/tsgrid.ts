@@ -69,6 +69,7 @@ import { TsToolbar } from './tstoolbar.js'
 import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
 import { TsField } from './tsfield.js'
 import type { RecId } from './types.js'
+import * as gridColumns from './grid-columns.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout TsGrid
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
@@ -1092,105 +1093,38 @@ class TsGrid extends TsBase {
     // any: `before` is reassigned inside the body (number | string → number); TS can't narrow post-assignment
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addColumn(before: any, columns?: any): number {
-        let added = 0
-        if (columns === undefined) {
-            columns = before
-            before  = this.columns.length
-        } else {
-            if (typeof before == 'string') before = this.getColumn(before, true)
-            if (before == null) before = this.columns.length
-        }
-        if (!Array.isArray(columns)) columns = [columns]
-        for (let i = 0; i < columns.length; i++) {
-            const col = TsUtils.extend({}, this.colTemplate, columns[i])
-            this.columns.splice(before, 0, col)
-            // if column is searchable, add search field
-            if (columns[i].searchable) {
-                let stype = columns[i].searchable
-                let attr  = ''
-                if (columns[i].searchable === true) { stype = 'text'; attr = 'size="20"' }
-                this.addSearch({ field: columns[i].field, label: columns[i].text, type: stype, attr: attr })
-            }
-            before++
-            added++
-        }
-        this.refresh()
-        return added
+        return gridColumns.addColumn(this, before, columns)
     }
 
     removeColumn(...fields: string[]) {
-        let removed = 0
-        for (let a = 0; a < fields.length; a++) {
-            const field_a = fields[a]!
-            for (let r = this.columns.length-1; r >= 0; r--) {
-                if (this.columns[r]!.field == field_a) {
-                    if (this.columns[r]!.searchable) this.removeSearch(field_a)
-                    this.columns.splice(r, 1)
-                    removed++
-                }
-            }
-        }
-        this.refresh()
-        return removed
+        return gridColumns.removeColumn(this, ...fields)
     }
 
     getColumn(): string[]
     getColumn(field: string, returnIndex: true): number | null
     getColumn(field: string, returnIndex?: false): TsGridColumn | null
     getColumn(field?: string, returnIndex?: boolean): string[] | number | TsGridColumn | null {
-        // no arguments - return fields of all columns
-        if (field === undefined) {
-            const ret = []
-            for (let i = 0; i < this.columns.length; i++) ret.push(this.columns[i]!.field)
-            return ret
-        }
-        // find column
-        for (let i = 0; i < this.columns.length; i++) {
-            if (this.columns[i]!.field == field) {
-                if (returnIndex === true) return i; else return this.columns[i]!
-            }
-        }
-        return null
+        // any: forwarding overloaded args to delegator — overload resolution happens at the public surface
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridColumns.getColumn as any)(this, field, returnIndex)
     }
 
     // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateColumn(fields: string | string[], updates: Partial<TsGridColumn> | Record<string, any>) {
-        let effected = 0
-        fields = (Array.isArray(fields) ? fields : [fields])
-        fields.forEach((colName) => {
-            this.columns.forEach((col) => {
-                if (col.field == colName) {
-                    const _updates = TsUtils.clone(updates)
-                    Object.keys(_updates).forEach((key) => {
-                        // if it is a function
-                        if (typeof _updates[key] == 'function') {
-                            _updates[key] = _updates[key](col)
-                        }
-                        if (col[key] != _updates[key]) effected++
-                    })
-                    TsUtils.extend(col, _updates)
-                }
-            })
-        })
-        if (effected > 0) {
-            this.refresh() // need full refresh due to colgroups not reassigning properly
-        }
-        return effected
+        return gridColumns.updateColumn(this, fields, updates)
     }
 
     toggleColumn(...fields: string[]) {
-        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return this.updateColumn(fields, { hidden(col: any) { return !col.hidden } })
+        return gridColumns.toggleColumn(this, ...fields)
     }
 
     showColumn(...fields: string[]) {
-        return this.updateColumn(fields, { hidden: false })
+        return gridColumns.showColumn(this, ...fields)
     }
 
     hideColumn(...fields: string[]) {
-        return this.updateColumn(fields, { hidden: true })
+        return gridColumns.hideColumn(this, ...fields)
     }
 
     /** Add one or more search fields. If `search` is omitted, `before` is treated as the search(es) to append. */

@@ -77,9 +77,9 @@ The `pnpm verify` command at the end of each phase is the substitute gate.
 
 ## Phase 1 — grid-columns.ts extraction
 
-- [ ] Task 1.1: Create `src/grid-columns.ts`. Export plain functions `addColumn(grid: TsGrid, column, before?)`, `removeColumn(grid: TsGrid, field)`, `getColumn(grid: TsGrid, field)`, `updateColumn(grid: TsGrid, field, changes)`, `toggleColumn(grid: TsGrid, field, visible?)`, `showColumn(grid: TsGrid, ...fields)`, `hideColumn(grid: TsGrid, ...fields)`. Use `import type { TsGrid } from './tsgrid'`. Move the ~235 LOC bodies verbatim from `src/tsgrid.ts`. Use `const self = grid` where the original uses `const self = this`.
-- [ ] Task 1.2: In `src/tsgrid.ts`, add `import * as gridColumns from './grid-columns'` and replace each column method body with a single delegator call, e.g., `addColumn(column, before?) { return gridColumns.addColumn(this, column, before) }`. Remove the moved LOC.
-- [ ] Task 1.3: Run `pnpm verify`. BLOCKING GATE.
+- [x] Task 1.1: Created `src/grid-columns.ts` (119 LOC) with 7 exported functions: `addColumn`, `removeColumn`, `getColumn` (overloaded), `updateColumn`, `toggleColumn`, `showColumn`, `hideColumn`. Uses `import type { TsGrid, TsGridColumn } from './tsgrid.js'` + `import { TsUtils } from './tsutils.js'`. Bodies lifted verbatim with `this.X` → `grid.X`.
+- [x] Task 1.2: Added `import * as gridColumns from './grid-columns.js'` to `src/tsgrid.ts` and replaced 7 method bodies with delegators. The `getColumn` delegator uses `(gridColumns.getColumn as any)(this, field, returnIndex)` because TS cannot narrow overloads through pass-through args. Net: -76 LOC in tsgrid.ts.
+- [x] Task 1.3: `pnpm verify` GREEN — lint 0, typecheck 0, consumer-smoke 0, 84/84 unit, 38/38 Playwright.
 
 **Spec links**: Req 2.2, 3.1, CCR-1, CCR-2
 
