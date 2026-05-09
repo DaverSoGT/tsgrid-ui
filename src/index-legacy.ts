@@ -1,8 +1,7 @@
-// w2ui 2.0 — Legacy barrel file (public API + compat side-effect)
-// This file is the entry point for dist/w2ui.js (tsup CJS build → wrap-legacy.mjs post-process)
-// 23 public names + w2compat side-effect (jQuery shim + global registration)
-
-import './w2compat.js'
+// TsGrid UI 1.0 — Legacy IIFE barrel file (public API only)
+// This file is the entry point for dist/w2ui.js (tsup CJS build → wrap-legacy.mjs post-process).
+// Renamed to dist/tsgrid-ui.js in F11.
+// jQuery shim (w2compat) was removed in F4 — no side-effect imports here.
 
 export { w2ui, w2utils, query } from './w2utils.js'
 export { w2locale } from './w2locale.js'
