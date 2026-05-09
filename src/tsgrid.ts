@@ -67,13 +67,13 @@ import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
 import { TsToolbar } from './tstoolbar.js'
 import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
-import { TsField } from './tsfield.js'
 import type { RecId } from './types.js'
 import * as gridColumns from './grid-columns.js'
 import * as gridState from './grid-state.js'
 import * as gridData from './grid-data.js'
 import * as gridSelection from './grid-selection.js'
 import * as gridEdit from './grid-edit.js'
+import * as gridSearch from './grid-search.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout TsGrid
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
@@ -956,107 +956,42 @@ class TsGrid extends TsBase {
     // any: `before` is reassigned inside the body (number | string → number); TS can't narrow post-assignment
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     addSearch(before: any, search?: any): number {
-        let added = 0
-        if (search === undefined) {
-            search = before
-            before = this.searches.length
-        } else {
-            if (typeof before == 'string') before = this.getSearch(before, true)
-            if (before == null) before = this.searches.length
-        }
-        if (!Array.isArray(search)) search = [search]
-        for (let i = 0; i < search.length; i++) {
-            this.searches.splice(before, 0, search[i])
-            before++
-            added++
-        }
-        this.searchClose()
-        return added
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.addSearch as any)(this, before, search) // any: variadic overload pass-through
     }
 
     removeSearch(...fields: string[]) {
-        let removed = 0
-        for (let a = 0; a < fields.length; a++) {
-            const field_a = fields[a]!
-            for (let r = this.searches.length-1; r >= 0; r--) {
-                if (this.searches[r]!.field == field_a) { this.searches.splice(r, 1); removed++ }
-            }
-        }
-        this.searchClose()
-        return removed
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.removeSearch as any)(this, ...fields) // any: variadic pass-through
     }
 
     getSearch(): string[]
     getSearch(field: string, returnIndex: true): number | null
     getSearch(field: string, returnIndex?: false): TsGridSearch | null
     getSearch(field?: string, returnIndex?: boolean): string[] | number | TsGridSearch | null {
-        // no arguments - return fields of all searches
-        if (field === undefined) {
-            const ret = []
-            for (let i = 0; i < this.searches.length; i++) ret.push(this.searches[i]!.field)
-            return ret
-        }
-        // find search
-        for (let i = 0; i < this.searches.length; i++) {
-            if (this.searches[i]!.field == field) {
-                if (returnIndex === true) return i; else return this.searches[i]!
-            }
-        }
-        return null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.getSearch as any)(this, field, returnIndex) // any: overload narrowing bypass
     }
 
     toggleSearch(...fields: string[]) {
-        let effected = 0
-        for (let a = 0; a < fields.length; a++) {
-            const field_a = fields[a]!
-            for (let r = this.searches.length-1; r >= 0; r--) {
-                if (this.searches[r]!.field == field_a) {
-                    this.searches[r]!.hidden = !this.searches[r]!.hidden
-                    effected++
-                }
-            }
-        }
-        this.searchClose()
-        return effected
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.toggleSearch as any)(this, ...fields) // any: variadic pass-through
     }
 
     showSearch(...fields: string[]) {
-        let shown = 0
-        for (let a = 0; a < fields.length; a++) {
-            const field_a = fields[a]!
-            for (let r = this.searches.length-1; r >= 0; r--) {
-                if (this.searches[r]!.field == field_a && this.searches[r]!.hidden !== false) {
-                    this.searches[r]!.hidden = false
-                    shown++
-                }
-            }
-        }
-        this.searchClose()
-        return shown
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.showSearch as any)(this, ...fields) // any: variadic pass-through
     }
 
     hideSearch(...fields: string[]) {
-        let hidden = 0
-        for (let a = 0; a < fields.length; a++) {
-            const field_a = fields[a]!
-            for (let r = this.searches.length-1; r >= 0; r--) {
-                if (this.searches[r]!.field == field_a && this.searches[r]!.hidden !== true) {
-                    this.searches[r]!.hidden = true
-                    hidden++
-                }
-            }
-        }
-        this.searchClose()
-        return hidden
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.hideSearch as any)(this, ...fields) // any: variadic pass-through
     }
 
     // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getSearchData(field: string): Record<string, any> | null {
-        for (let i = 0; i < this.searchData.length; i++) {
-            if (this.searchData[i]!.field == field) return this.searchData[i]!
-        }
-        return null
+        return gridSearch.getSearchData(this, field)
     }
 
     localSort(silent?: boolean, noResetRefresh?: boolean) {
@@ -1151,789 +1086,64 @@ class TsGrid extends TsBase {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     search(field?: any, value?: any) { // any: field can be string or searchData array; value varies
-        const url = this.url?.get ?? this.url
-        const searchData = []
-        let last_multi = this.last.multi
-        let last_logic = this.last.logic
-        let last_field = this.last.field
-        let last_search = this.last.search
-        let hasHiddenSearches = false
-        const overlay = query(`#w2overlay-${this.name}-search-overlay`)
-        // if emty sting, same as no search
-        if (value === '') value = null
-        // add hidden searches
-        for (let i = 0; i < this.searches.length; i++) {
-            const srch_i = this.searches[i]!
-            if (!srch_i.hidden || srch_i.value == null) continue
-            searchData.push({
-                field    : srch_i.field,
-                operator : srch_i.operator || 'is',
-                type     : srch_i.type,
-                value    : srch_i.value || ''
-            })
-            hasHiddenSearches = true
-        }
-        if (field === undefined && overlay.length === 0) {
-            if (this.multiSearch) {
-                field = this.searchData
-                value = this.last.logic
-            } else {
-                field = this.last.field
-                value = this.last.search
-            }
-        }
-        // 1: search() - advanced search (reads from popup)
-        if (field === undefined && overlay.length !== 0) {
-            this.focus() // otherwise search drop down covers searches
-            last_logic = overlay.find(`#grid_${this.name}_logic`).val()
-            last_search = ''
-            // advanced search
-            for (let i = 0; i < this.searches.length; i++) {
-                const search   = this.searches[i]!
-                const operator = overlay.find('#grid_'+ this.name + '_operator_'+ i).val()
-                const field1   = overlay.find('#grid_'+ this.name + '_field_'+ i)
-                const field2   = overlay.find('#grid_'+ this.name + '_field2_'+ i)
-                let value1   = field1.val()
-                let value2   = field2.val()
-                let svalue   = null
-                let text     = null
-
-                if (['int', 'float', 'money', 'currency', 'percent'].indexOf(search.type) != -1) {
-                    const fld1 = field1[0]._w2field
-                    const fld2 = field2[0]._w2field
-                    if (fld1) value1 = fld1.clean(value1)
-                    if (fld2) value2 = fld2.clean(value2)
-                }
-                if (['list', 'enum'].indexOf(search.type) != -1 || ['in', 'not in'].indexOf(operator) != -1) {
-                    value1 = field1[0]._w2field.selected || {}
-                    if (Array.isArray(value1)) {
-                        svalue = []
-                        for (let j = 0; j < value1.length; j++) {
-                            svalue.push(TsUtils.isFloat(value1[j].id) ? parseFloat(value1[j].id) : String(value1[j].id).toLowerCase())
-                            delete value1[j].hidden
-                        }
-                        if (Object.keys(value1).length === 0) value1 = ''
-                    } else {
-                        text   = value1.text || ''
-                        value1 = value1.id || ''
-                    }
-                }
-                if ((value1 !== '' && value1 != null) || (value2 != null && value2 !== '')) {
-                    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const tmp: any = {
-                        field    : search.field,
-                        type     : search.type,
-                        operator : operator
-                    }
-                    if (operator == 'between') {
-                        TsUtils.extend(tmp, { value: [value1, value2] })
-                    } else if (operator == 'in' && typeof value1 == 'string') {
-                        TsUtils.extend(tmp, { value: value1.split(',') })
-                    } else if (operator == 'not in' && typeof value1 == 'string') {
-                        TsUtils.extend(tmp, { value: value1.split(',') })
-                    } else {
-                        TsUtils.extend(tmp, { value: value1 })
-                    }
-                    if (svalue) TsUtils.extend(tmp, { svalue: svalue })
-                    if (text) TsUtils.extend(tmp, { text: text })
-
-                    // convert date to unix time
-                    try {
-                        if (search.type == 'date' && operator == 'between') {
-                            tmp.value[0] = value1 // TsUtils.isDate(value1, TsUtils.settings.dateFormat, true).getTime();
-                            tmp.value[1] = value2 // TsUtils.isDate(value2, TsUtils.settings.dateFormat, true).getTime();
-                        }
-                        if (search.type == 'date' && operator == 'is') {
-                            tmp.value = value1 // TsUtils.isDate(value1, TsUtils.settings.dateFormat, true).getTime();
-                        }
-                    } catch (e) {
-
-                    }
-                    searchData.push(tmp)
-                    last_multi = true // if only hidden searches, then do not set
-                }
-            }
-        }
-        // 2: search(field, value) - regular search
-        if (typeof field == 'string') {
-            // if only one argument - search all
-            if (value === undefined) {
-                value = field
-                field = 'all'
-            }
-            last_field  = field
-            last_search = value
-            last_multi  = false
-            last_logic  = (hasHiddenSearches ? 'AND' : 'OR')
-            // loop through all searches and see if it applies
-            if (value != null) {
-                if (field.toLowerCase() == 'all') {
-                    // if there are search fields loop thru them
-                    if (this.searches.length > 0) {
-                        for (let i = 0; i < this.searches.length; i++) {
-                            const search = this.searches[i]!
-                            if (search.type == 'text' || (search.type == 'alphanumeric' && TsUtils.isAlphaNumeric(value))
-                                    || (search.type == 'int' && TsUtils.isInt(value)) || (search.type == 'float' && TsUtils.isFloat(value))
-                                    || (search.type == 'percent' && TsUtils.isFloat(value)) || ((search.type == 'hex' || search.type == 'color') && TsUtils.isHex(value))
-                                    || (search.type == 'currency' && TsUtils.isMoney(value)) || (search.type == 'money' && TsUtils.isMoney(value))
-                                    || (search.type == 'date' && TsUtils.isDate(value)) || (search.type == 'time' && TsUtils.isTime(value))
-                                    || (search.type == 'datetime' && TsUtils.isDateTime(value)) || (search.type == 'datetime' && TsUtils.isDate(value))
-                                    || (search.type == 'enum' && TsUtils.isAlphaNumeric(value)) || (search.type == 'list' && TsUtils.isAlphaNumeric(value))
-                            ) {
-                                const def = this.defaultOperator[this.operatorsMap[search.type]!]
-                                const tmp = {
-                                    field    : search.field,
-                                    type     : search.type,
-                                    operator : (search.operator != null ? search.operator : def),
-                                    value    : value
-                                }
-                                if (String(value).trim() != '') searchData.push(tmp)
-                            }
-                            // range in global search box
-                            if (['int', 'float', 'money', 'currency', 'percent'].indexOf(search.type) != -1){
-                                const t = String(value).trim().split('-').map(v => v.trim()).filter(v => TsUtils.isFloat(v))
-                                if (t.length == 2) {
-                                    const tmp = {
-                                        field    : search.field,
-                                        type     : search.type,
-                                        operator : 'between',
-                                        value    : [t[0], t[1]]
-                                    }
-                                    searchData.push(tmp)
-                                }
-                            }
-                            // lists fields
-                            if (['list', 'enum'].indexOf(search.type) != -1) {
-                                const new_values = []
-                                if (search.options == null) search.options = {}
-                                if (!Array.isArray(search.options['items'])) search.options['items'] = []
-                                for (let j = 0; j < search.options['items']; j++) {
-                                    const tmp = search.options['items'][j]
-                                    try {
-                                        const re = new RegExp(value, 'i')
-                                        if (re.test(tmp)) new_values.push(j)
-                                        if (tmp.text && re.test(tmp.text)) new_values.push(tmp.id)
-                                    } catch (e) {}
-                                }
-                                if (new_values.length > 0) {
-                                    const tmp = {
-                                        field    : search.field,
-                                        type     : search.type,
-                                        operator : (search.operator != null ? search.operator : 'in'),
-                                        value    : new_values
-                                    }
-                                    searchData.push(tmp)
-                                }
-                            }
-                        }
-                    } else {
-                        // no search fields, loop thru columns
-                        for (let i = 0; i < this.columns.length; i++) {
-                            const tmp = {
-                                field    : this.columns[i]!.field,
-                                type     : 'text',
-                                operator : this.defaultOperator['text'],
-                                value    : value
-                            }
-                            searchData.push(tmp)
-                        }
-                    }
-                    /**
-                     * If user searched ALL field and there was no matching searches then add a bogus field, so that no result will be
-                     * shown. Otherwise search string is not empty, but no fields is actually applied and all fields are shown
-                     */
-                    if (searchData.length == 0) {
-                        const tmp = {
-                            field: 'All',
-                            type: 'text',
-                            operator: this.defaultOperator['text'],
-                            value: value
-                        }
-                        searchData.push(tmp)
-                    }
-                } else {
-                    const el = overlay.find('#grid_'+ this.name +'_search_all')
-                    let search = this.getSearch(field)
-                    if (search == null) search = { field: field, type: 'text' }
-                    if (search.field == field) this.last.label = search.label ?? ''
-                    if (value !== '') {
-                        let op  = this.defaultOperator[this.operatorsMap[search.type]!]
-                        let val = value
-                        if (['date', 'time', 'datetime'].indexOf(search.type) != -1) op = 'is'
-                        if (['list', 'enum'].indexOf(search.type) != -1) {
-                            op = 'is'
-                            const tmp = el._w2field?.get()
-                            if (tmp && Object.keys(tmp).length > 0) val = tmp.id; else val = ''
-                        }
-                        if (search.type == 'int' && value !== '') {
-                            op = 'is'
-                            if (String(value).indexOf('-') != -1) {
-                                const tmp = value.split('-')
-                                if (tmp.length == 2) {
-                                    op  = 'between'
-                                    val = [parseInt(tmp[0]), parseInt(tmp[1])]
-                                }
-                            }
-                            if (String(value).indexOf(',') != -1) {
-                                const tmp = value.split(',')
-                                op      = 'in'
-                                val     = []
-                                for (let i = 0; i < tmp.length; i++) val.push(tmp[i])
-                            }
-                        }
-                        if (search.operator != null) op = search.operator
-                        const tmp = {
-                            field    : search.field,
-                            type     : search.type,
-                            operator : op,
-                            value    : val
-                        }
-                        searchData.push(tmp)
-                    }
-                }
-            }
-        }
-        // 3: search([{ field, value, [operator,] [type] }, { field, value, [operator,] [type] } ], logic) - submit whole structure
-        if (Array.isArray(field)) {
-            let logic: 'AND' | 'OR' = 'AND'
-            if (typeof value == 'string') {
-                const upperLogic = value.toUpperCase()
-                if (upperLogic === 'OR' || upperLogic === 'AND') logic = upperLogic
-            }
-            last_search = ''
-            last_multi  = true
-            last_logic  = logic
-            for (let i = 0; i < field.length; i++) {
-                const data = field[i]
-                if (typeof data.value == 'number' && data.operator == null) data.operator = this.defaultOperator['number']
-                if (typeof data.value == 'string' && data.operator == null) data.operator = this.defaultOperator['text']
-                if (Array.isArray(data.value) && data.operator == null) data.operator = this.defaultOperator['enum']
-                if (TsUtils.isDate(data.value) && data.operator == null) data.operator = this.defaultOperator['date']
-
-                // merge current field and search if any
-                searchData.push(data)
-            }
-        }
-        // event before
-        const edata = this.trigger('search', {
-            target: this.name,
-            multi: (field === undefined ? true : false),
-            searchField: (field ? field : 'multi'),
-            searchValue: (field ? value : 'multi'),
-            searchData: searchData,
-            searchLogic: last_logic
-        })
-        if (edata.isCancelled === true) return
-        // default action
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.searchData             = edata.detail['searchData'] as any[] // any: detail values are unknown from TsEventData
-        this.last.field             = last_field
-        this.last.search            = last_search
-        this.last.multi             = last_multi
-        this.last.logic             = edata.detail['searchLogic'] as 'AND' | 'OR'
-        this.last.vscroll.scrollTop = 0
-        this.last.vscroll.scrollLeft = 0
-        this.last.selection.indexes = []
-        this.last.selection.columns = {}
-        // -- clear all search field
-        this.searchClose()
-        // apply search
-        if (url) {
-            this.last.fetch.offset = 0
-            this.reload()
-        } else {
-            // local search
-            this.localSearch()
-            this.refresh()
-        }
-        // event after
-        edata.finish()
+        return (gridSearch.search as any)(this, field, value) // any: variadic overload pass-through
     }
 
     // open advanced search popover
     // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchOpen(options: any = {}) {
-        if (!this.box) return
-        if (this.searches.length === 0) return
-        // event before
-        const edata = this.trigger('searchOpen', { target: this.name })
-        if (edata.isCancelled === true) {
-            return
-        }
-        const $btn = query(this.toolbar.box).find('.tsg-grid-search-input .tsg-search-drop')
-        $btn.addClass('checked')
-        // show search
-        TsTooltip.show({
-            name: this.name + '-search-overlay',
-            anchor: query(this.box).find('#grid_'+ this.name +'_search_all').get(0),
-            position: 'bottom|top',
-            html: this.getSearchesHTML(),
-            align: 'left',
-            arrowSize: 12,
-            class: 'tsg-grid-search-advanced',
-            hideOn: ['doc-click'],
-            ...(options?.overlay ?? {})
-        })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((_event: any) => { // any: TsMenu/TsTooltip event detail shape varies
-            this.initSearches()
-            this.last['search_opened'] = true
-            const overlay = query(`#w2overlay-${this.name}-search-overlay`)
-            overlay
-                .data('gridName', this.name)
-                .off('.grid-search')
-                .on('click.grid-search', (event: Event) => {
-                    // hide any tooltip opened by searches
-                    overlay.find('input, select').each((el: Node) => {
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const names: any[] = query(el).data('tooltipName') // any: tooltip name list shape varies
-                        if (names) names.forEach((name: string) => {
-                            TsTooltip.hide(name)
-                        })
-                    })
-                    console.log(event.target)
-                    if (!query(event.target).hasClass('tsg-saved-searches')) {
-                        TsTooltip.hide(this.name + '-search-suggest')
-                    }
-                })
-            TsUtils.bindEvents(overlay.find('select, input, button'), this)
-            // init first field
-            const sfields = query(`#w2overlay-${this.name}-search-overlay *[rel=search]`)
-            if (sfields.length > 0) sfields[0].focus()
-            // event after
-            edata.finish()
-        })
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .hide((_event: any) => { // any: TsTooltip event shape varies
-            const edata = this.trigger('searchClose', { target: this.name })
-            if (edata.isCancelled === true) {
-                return
-            }
-            $btn.removeClass('checked')
-            this.last['search_opened'] = false
-            edata.finish()
-        })
+        return (gridSearch.searchOpen as any)(this, options) // any: variadic overload pass-through
     }
 
     searchClose() {
-        TsTooltip.hide(this.name + '-search-overlay')
+        return gridSearch.searchClose(this)
     }
 
     // if clicked on a field in the search strip
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchFieldTooltip(ind: any, sd_ind: any, el: any) { // any: all params are loosely typed from DOM
-        const sf = this.searches[ind]
-        const sd = this.searchData[sd_ind]
-        if (sd == null || sf == null) return
-        let oper = sd.operator
-        if (oper == 'more' && sd.type == 'date') oper = 'since'
-        if (oper == 'less' && sd.type == 'date') oper = 'before'
-        let options = ''
-        let val = sd.value
-        if (Array.isArray(sd.value)) { // && Array.isArray(sf.options.items)) {
-            sd.value.forEach(opt => {
-                options += `<span class="value">${opt.text || opt}</span>`
-            })
-            if (sd.type == 'date') {
-                options = ''
-                sd.value.forEach(opt => {
-                    options += `<span class="value">${TsUtils.formatDate(opt)}</span>`
-                })
-            }
-        } else {
-            if (sd.type == 'date') {
-                val = TsUtils.formatDateTime(val)
-            }
-
-        }
-        TsTooltip.hide(this.name + '-search-props')
-        TsTooltip.show({
-            name: this.name + '-search-props',
-            anchor: el,
-            class: 'tsg-white',
-            hideOn: 'doc-click',
-            html: `
-                <div class="tsg-grid-search-single">
-                    <span class="field">${sf.label ?? ''}</span>
-                    <span class="operator">${TsUtils.lang(oper)}</span>
-                    ${Array.isArray(sd.value)
-                        ? `${options}`
-                        : `<span class="value">${val}</span>`
-                    }
-                    <div class="buttons">
-                        <button id="remove" class="tsg-btn">${TsUtils.lang('Remove This Field')}</button>
-                    </div>
-                </div>`
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).then((event: any) => { // any: TsMenu/TsTooltip event detail shape varies
-            query(event.detail.overlay.box).find('#remove').on('click', () => {
-                this.searchData.splice(sd_ind, 1)
-                this.reload()
-                this.localSearch()
-                TsTooltip.hide(this.name + '-search-props')
-            })
-        })
+        return (gridSearch.searchFieldTooltip as any)(this, ind, sd_ind, el) // any: loosely-typed DOM params pass-through
     }
 
     // drop down with save searches
     searchSuggest(imediate?: boolean, forceHide?: boolean, anchor?: HTMLElement | Element) {
-        clearTimeout(this.last.kbd_timer ?? undefined)
-        clearTimeout(this.last['overlay_timer'])
-        this.searchShowFields(true)
-        if (anchor == null) this.searchClose()
-        if (forceHide === true || (anchor != null && query(`#w2overlay-${this.name}-search-suggest`).length > 0)) {
-            TsTooltip.hide(this.name + '-search-suggest')
-            return
-        }
-        if (query(`#w2overlay-${this.name}-search-suggest`).length > 0) {
-            // already shown
-            return
-        }
-        if (!imediate) {
-            this.last['overlay_timer'] = setTimeout(() => { this.searchSuggest(true) }, 100)
-            return
-        }
-
-        const el = anchor ?? query(this.box).find(`#grid_${this.name}_search_all`).get(0)
-        const searches = [
-            ...this.defaultSearches ?? [],
-            ...this.defaultSearches?.length > 0 && this.savedSearches?.length > 0 ? ['--'] : [],
-            ...this.savedSearches ?? []
-        ]
-        if (Array.isArray(searches) && searches.length > 0) {
-            TsMenu.show({
-                name: this.name + '-search-suggest',
-                anchor: el,
-                align: anchor != null ? 'left' : 'both',
-                items: searches,
-                selected: false,
-                filter: true,
-                hideOn: ['doc-click', 'sleect', 'remove'],
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                render(item: any) { // any: TsMenu item shape varies
-                    let ret = item.text
-                    if (item.isDefault) ret = `<b>${ret}</b>`
-                    return ret
-                }
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .select((event: any) => { // any: TsMenu event shape varies
-                const edata = this.trigger('searchSelect', {
-                    target: this.name,
-                    index: event.detail.index,
-                    item: event.detail.item
-                })
-                if (edata.isCancelled === true) {
-                    event.preventDefault()
-                    return
-                }
-                event.detail.overlay.hide()
-                this.last.logic  = event.detail.item.logic || 'AND'
-                this.last.search = ''
-                this.last.label  = '[Multiple Fields]'
-                this.searchData  = TsUtils.clone(event.detail.item.data)
-                this['searchSelected'] = TsUtils.clone(event.detail.item, { exclude: ['icon', 'remove'] })
-                this.reload()
-                edata.finish()
-            })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .remove((event: any) => { // any: TsMenu event shape varies
-                const item = event.detail.item
-                const edata = this.trigger('searchRemove', { target: this.name, index: event.detail.index, item })
-                if (edata.isCancelled === true) {
-                    event.preventDefault()
-                    return
-                }
-                queueMicrotask(() => event.detail.overlay.hide())
-                TsTooltip.hide(this.name + '-search-overlay')
-
-                // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(this.confirm(TsUtils.lang('Do you want to delete search "${item}"?', { item: item.text })) as any)
-                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .yes((evt: any) => {
-                        // remove from searches
-                        const search = this.savedSearches.findIndex((s) => s.id == item.id ? true : false)
-                        if (search !== -1) {
-                            this.savedSearches.splice(search, 1)
-                        }
-                        this.cacheSave('searches', this.savedSearches.map(s => TsUtils.clone(s, { exclude: ['remove', 'icon'] })))
-                        evt.detail.self.close()
-                        // evt after
-                        edata.finish()
-                    })
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .no((evt: any) => { // any: TsConfirm evt shape
-                        evt.detail.self.close()
-                    })
-            })
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.searchSuggest as any)(this, imediate, forceHide, anchor) // any: variadic pass-through
     }
 
     searchSave() {
-        let value = ''
-        if (this['searchSelected']) {
-            value = this['searchSelected'].text
-        }
-        const ind = this.savedSearches.findIndex(s => { return s.id == this['searchSelected']?.id ? true : false })
-        // event before
-        const edata = this.trigger('searchSave', { target: this.name, saveLocalStorage: true })
-        if (edata.isCancelled === true) return
-
-        this.message({
-            width: 350,
-            height: 150,
-            body: `<div class="tsg-grid-save-search">
-                        <span>${TsUtils.lang(ind != -1 ? 'Update Search' : 'Save New Search')}</span>
-                        <input class="search-name tsg-input" placeholder="${TsUtils.lang('Search name')}">
-                   </div>`,
-            buttons: `
-                <button id="grid-search-cancel" class="tsg-btn">${TsUtils.lang('Cancel')}</button>
-                <button id="grid-search-save" class="tsg-btn tsg-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
-            `
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        })?.open(async (event: any) => { // any: TsEvent message open callback
-            query(event.detail.box).find('input, button').eq(0).val(value)
-            await event.complete
-            query(event.detail.box).find('#grid-search-cancel').on('click', () => {
-                this.message()
-            })
-            query(event.detail.box).find('#grid-search-save').on('click', () => {
-                const input = query(event.detail.box).find('.tsg-message .search-name')
-                const name = input.val()
-                // save in savedSearches
-                if (this['searchSelected'] && ind != -1) {
-                    Object.assign(this.savedSearches[ind], {
-                        id: name,
-                        text: name,
-                        logic: this.last.logic,
-                        data: TsUtils.clone(this.searchData)
-                    })
-                } else {
-                    this.savedSearches.push({
-                        id: name,
-                        text: name,
-                        icon: 'tsg-icon-search',
-                        remove: true,
-                        logic: this.last.logic,
-                        data: this.searchData
-                    })
-                }
-                // save local storage
-                this.cacheSave('searches', this.savedSearches.map(s => TsUtils.clone(s, { exclude: ['remove', 'icon'] })))
-                this.message()
-                // update on screen
-                if (this['searchSelected']) {
-                    this['searchSelected'].text = name
-                    query(this.box).find(`#grid_${this.name}_search_name .name-text`).html(name)
-                } else {
-                    this['searchSelected'] = {
-                        text: name,
-                        logic: this.last.logic,
-                        data: TsUtils.clone(this.searchData)
-                    }
-                    query(event.detail.box).find(`#grid_${this.name}_search_all`).val(' ').prop('readOnly', true)
-                    query(event.detail.box).find(`#grid_${this.name}_search_name`).show().find('.name-text').html(name)
-                }
-                edata.finish({ name })
-            })
-            await TsUtils.wait(100) // need this for dialog to be ready (sliding down) for focus to work
-            query(event.detail.box).find('input, button')
-                .off('.message')
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .on('keydown.message', (evt: any) => { // any: KeyboardEvent at runtime
-                    const val = String(query(event.detail.box).find('.tsg-message-body input').val()).trim()
-                    if (evt.keyCode == 13 && val != '') {
-                        query(event.detail.box).find('#grid-search-save').trigger('click') // enter
-                    }
-                    if (evt.keyCode == 27) { // escape
-                        this.message()
-                    }
-                })
-                .eq(0)
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .on('input.message', (_evt: any) => { // any: InputEvent at runtime
-                    const $save = query(event.detail.box).closest('.tsg-message').find('#grid-search-save')
-                    if (String(query(event.detail.box).val()).trim() === '') {
-                        $save.prop('disabled', true)
-                    } else {
-                        $save.prop('disabled', false)
-                    }
-                })
-                .get(0)
-                .focus()
-        })
+        return gridSearch.searchSave(this)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cache(type: any) { // any: cache key is always string, loosely typed
-        if (TsUtils.hasLocalStorage && this.useLocalStorage) {
-            try {
-                const data = JSON.parse(localStorage['TsUi'] || '{}')
-                data[(this.stateId || this.name)] ??= {}
-                return data[(this.stateId || this.name)][type]
-            } catch (e) {
-            }
-        }
-        return null
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.cache as any)(this, type) // any: cache key loosely typed
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cacheSave(type: any, value: any) { // any: cache key and value are dynamic
-        if (TsUtils.hasLocalStorage && this.useLocalStorage) {
-            try {
-                const data = JSON.parse(localStorage['TsUi'] || '{}')
-                data[(this.stateId || this.name)] ??= {}
-                data[(this.stateId || this.name)][type] = value
-                localStorage['TsUi'] = JSON.stringify(data)
-                return true
-            } catch (e) {
-                delete localStorage['TsUi']
-            }
-        }
-        return false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.cacheSave as any)(this, type, value) // any: cache key and value are dynamic
     }
 
     searchReset(noReload?: boolean) {
-        const searchData = []
-        let hasHiddenSearches = false
-        // add hidden searches
-        for (let i = 0; i < this.searches.length; i++) {
-            const srch_r = this.searches[i]!
-            if (!srch_r.hidden || srch_r.value == null) continue
-            searchData.push({
-                field    : srch_r.field,
-                operator : srch_r.operator || 'is',
-                type     : srch_r.type,
-                value    : srch_r.value || ''
-            })
-            hasHiddenSearches = true
-        }
-        // event before
-        const edata = this.trigger('search', { reset: true, target: this.name, searchData: searchData })
-        if (edata.isCancelled === true) return
-        // default action
-        const input = query(this.box).find('#grid_'+ this.name +'_search_all')
-        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.searchData = edata.detail['searchData'] as any[]
-        this['searchSelected'] = null
-        this.last.search = ''
-        this.last.logic = (hasHiddenSearches ? 'AND' : this.last.logic)
-        // advanced search button
-        if (this.multiSearch) {
-            input.next().show()
-        } else {
-            input.next().hide()
-        }
-        this.last.multi = false
-        this.last.fetch.offset = 0
-        // reset scrolling position
-        this.last.vscroll.scrollTop = 0
-        this.last.vscroll.scrollLeft = 0
-        this.last.selection.indexes = []
-        this.last.selection.columns = {}
-        // -- clear all search field
-        this.searchClose()
-        const all = input.val('').get(0)
-        if (all?._w2field) { all._w2field.reset() }
-        // apply search
-        if (!noReload) {
-            this.reload()
-        }
-        // event after
-        edata.finish()
+        return gridSearch.searchReset(this, noReload)
     }
 
     searchShowFields(forceHide?: boolean) {
-        if (forceHide === true) {
-            TsTooltip.hide(this.name + '-search-fields')
-            return
-        }
-        const items = []
-        for (let s = -1; s < this.searches.length; s++) {
-            let search: TsGridSearch | undefined = this.searches[s]
-            const sField   = (search ? search.field : null)
-            const column   = sField != null ? this.getColumn(sField) : null
-            let disabled = false
-            let tooltip  = null
-            if (this.show.searchHiddenMsg == true && s != -1
-                    && (column == null || (column.hidden === true && column.hideable !== false))) {
-                disabled = true
-                tooltip = TsUtils.lang(`This column ${column == null ? 'does not exist' : 'is hidden'}`)
-            }
-            if (s == -1) { // -1 is All Fields search
-                if (!this.multiSearch || !this.show.searchAll) continue
-                search = { field: 'all', label: 'All Fields', type: 'text' } as TsGridSearch
-            } else {
-                if (column != null && column.hideable === false) continue
-                if (search == null) continue
-                if (search.hidden === true) {
-                    tooltip = TsUtils.lang('This column is hidden')
-                    // don't show hidden (not simple) searches
-                    if (search['simple'] === false) continue
-                }
-            }
-            if (search == null) continue
-            if (search.label == null && search['caption'] != null) {
-                console.log('NOTICE: grid search.caption property is deprecated, please use search.label. Search ->', search)
-                search.label = search['caption']
-            }
-            items.push({
-                id: search.field,
-                text: TsUtils.lang(search.label ?? ''),
-                search,
-                tooltip,
-                disabled,
-                checked: (search.field == this.last.field)
-            })
-        }
-        TsMenu.show({
-            type: 'radio',
-            name: this.name + '-search-fields',
-            anchor: query(this.box).find('#grid_'+ this.name +'_search_name').parent().find('.tsg-search-down').get(0),
-            items,
-            align: 'none',
-            hideOn: ['doc-click', 'select']
-        })
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .select((event: any) => { // any: TsMenu event shape varies
-                this.searchInitInput(event.detail.item.search.field)
-            })
+        return gridSearch.searchShowFields(this, forceHide)
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchInitInput(field: string, _value?: any) {
-        let search
-        const el = query(this.box).find('#grid_'+ this.name +'_search_all')
-        if (field == 'all') {
-            search = { field: 'all', label: TsUtils.lang('All Fields') }
-        } else {
-            search = this.getSearch(field)
-            if (search == null) return
-        }
-        // update field
-        if (this.last.search != '') {
-            this.last.label = search.label ?? ''
-            this.search(search.field, this.last.search)
-        } else {
-            this.last.field = search.field
-            this.last.label = search.label ?? ''
-        }
-        el.attr('placeholder', TsUtils.lang('Search') + ' ' + TsUtils.lang(search.label || search['caption'] || search.field, true))
-
-        // if there is pre-selected search
-        if (this['searchSelected']) {
-            query(this.box).find(`#grid_${this.name}_search_all`).val(' ').prop('readOnly', true)
-            query(this.box).find(`#grid_${this.name}_search_name`).show().find('.name-text').html(this['searchSelected'].text)
-        } else {
-            query(this.box).find(`#grid_${this.name}_search_all`).prop('readOnly', false)
-            query(this.box).find(`#grid_${this.name}_search_name`).hide().find('.name-text').html('')
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.searchInitInput as any)(this, field, _value) // any: optional _value loosely typed
     }
 
     // clears records and related params
@@ -5965,370 +5175,32 @@ class TsGrid extends TsBase {
     }
 
     getSearchesHTML() {
-        let html = `
-            <div class="search-title">
-                ${TsUtils.lang('Advanced Search')}
-                ${this.savedSearches?.length > 0
-                    ? `<button class="tsg-btn tsg-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
-                    : ''
-                }
-                <span class="search-logic" style="${this.show.searchLogic ? '' : 'display: none'}">
-                    <select id="grid_${this.name}_logic" class="tsg-input">
-                        <option value="AND" ${this.last.logic == 'AND' ? 'selected' : ''}>${TsUtils.lang('All')}</option>
-                        <option value="OR" ${this.last.logic == 'OR' ? 'selected' : ''}>${TsUtils.lang('Any')}</option>
-                    </select>
-                </span>
-            </div>
-        `
-        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const columns: any[] = []
-        let col_ind = 0
-        columns.push('<div><table cellspacing="0"><tbody>')
-        for (let i = 0; i < this.searches.length; i++) {
-            const s  = this.searches[i]!
-            s.type = String(s.type).toLowerCase()
-            if (s.hidden) continue
-
-            if (s.type == 'new-column') {
-                columns[col_ind] += '</tbody></table></div>'
-                columns.push('<div><table cellspacing="0"><tbody>')
-                col_ind++
-                continue
-            }
-            if (s.attr == null) s.attr = ''
-            if (s.text == null) s.text = ''
-            if (s.style == null) s.style = ''
-            if (s.type == null) s.type = 'text'
-            if (s.label == null && s['caption'] != null) {
-                console.log('NOTICE: grid search.caption property is deprecated, please use search.label. Search ->', s)
-                s.label = s['caption']
-            }
-            const operator =`
-                <select id="grid_${this.name}_operator_${i}" class="tsg-input" data-change="initOperator|${i}">
-                    ${this.getOperators(s.type, s.operators)}
-                </select>
-            `
-            columns[col_ind] += `<tr>
-                        <td class="caption">${(TsUtils.lang(s.label ?? s.field) || '')}</td>
-                        <td class="operator">${operator}</td>
-                        <td class="value">`
-
-            let tmpStyle
-            switch (s.type) {
-                case 'text':
-                case 'alphanumeric':
-                case 'hex':
-                case 'color':
-                case 'list':
-                case 'combo':
-                case 'enum':
-                    tmpStyle = 'width: 250px;'
-                    if (['hex', 'color'].indexOf(s.type) != -1) tmpStyle = 'width: 90px;'
-                    columns[col_ind] += `<input rel="search" type="text" id="grid_${this.name}_field_${i}" name="${s.field}"
-                               class="tsg-input" style="${tmpStyle + s.style}" ${s.attr}>`
-                    break
-
-                case 'int':
-                case 'float':
-                case 'money':
-                case 'currency':
-                case 'percent':
-                case 'date':
-                case 'time':
-                case 'datetime':
-                    tmpStyle = 'width: 90px;'
-                    if (s.type == 'datetime') tmpStyle = 'width: 140px;'
-                    columns[col_ind] += `<input id="grid_${this.name}_field_${i}" name="${s.field}" ${s.attr} rel="search" type="text"
-                                class="tsg-input" style="${tmpStyle + s.style}">
-                            <span id="grid_${this.name}_range_${i}" style="display: none">&#160;-&#160;&#160;
-                                <input rel="search" type="text" class="tsg-input" style="${tmpStyle + s.style}" id="grid_${this.name}_field2_${i}" name="${s.field}" ${s.attr}>
-                            </span>`
-                    break
-
-                case 'select':
-                    columns[col_ind] += `<select rel="search" class="tsg-input" style="${s.style}" id="grid_${this.name}_field_${i}"
-                                name="${s.field}" ${s.attr}></select>`
-                    break
-
-            }
-            columns[col_ind] += s.text +
-                    '    </td>' +
-                    '</tr>'
-        }
-        columns[col_ind] += '</tbody></table></div>'
-
-        html += `
-            <div class="search-body">
-                ${columns.join('')}
-            </div>
-            <div class="search-bottom actions">
-                <button type="button" class="tsg-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
-                <div style="float: right; display: inline">
-                    <button type="button" class="tsg-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
-                    <button type="button" class="tsg-btn tsg-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
-                </div>
-            </div>
-        `
-        return html
+        return gridSearch.getSearchesHTML(this)
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOperators(type: any, opers: any) {
-        let operators = this.operators[this.operatorsMap[type] ?? ''] || []
-        if (opers != null && Array.isArray(opers)) {
-            operators = opers
-        }
-        let html = ''
-        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        operators.forEach((oper: any) => {
-            let displayText = oper
-            let operValue = oper
-            if (Array.isArray(oper)) {
-                displayText = oper[1]
-                operValue = oper[0]
-            } else if (TsUtils.isPlainObject(oper)) {
-                displayText = oper.text
-                operValue = oper.oper
-            }
-            if (displayText == null) displayText = oper
-            html += `<option  value="${operValue}">${TsUtils.lang(displayText)}</option>\n`
-        })
-        return html
+        return (gridSearch.getOperators as any)(this, type, opers) // any: loosely-typed operator params pass-through
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initOperator(ind: any) {
-        let options
-        const search  = this.searches[ind]!
-        const sdata   = this.getSearchData(search.field)
-        const overlay = query(`#w2overlay-${this.name}-search-overlay`)
-        const $rng    = overlay.find(`#grid_${this.name}_range_${ind}`)
-        const $fld1   = overlay.find(`#grid_${this.name}_field_${ind}`)
-        const $fld2   = overlay.find(`#grid_${this.name}_field2_${ind}`)
-        const $oper   = overlay.find(`#grid_${this.name}_operator_${ind}`)
-        const oper    = $oper.val()
-        $fld1.show()
-        $rng.hide()
-        // init based on operator value
-        switch (oper) {
-            case 'between':
-                $rng.css('display', 'inline')
-                break
-            case 'null':
-            case 'not null':
-                $fld1.hide()
-                $fld1.val(oper) // need to insert something for search to activate
-                $fld1.trigger('change')
-                break
-        }
-
-        // init based on search type
-        switch (search.type) {
-            case 'text':
-            case 'alphanumeric':
-                const fld = $fld1[0]._w2field
-                if (fld) { fld.reset() }
-                break
-
-            case 'int':
-            case 'float':
-            case 'hex':
-            case 'color':
-            case 'money':
-            case 'currency':
-            case 'percent':
-            case 'date':
-            case 'time':
-            case 'datetime':
-                if (!$fld1[0]._w2field) {
-                    // init fields
-                    new TsField(search.type, { el: $fld1[0], ...search.options })
-                    new TsField(search.type, { el: $fld2[0], ...search.options })
-                    setTimeout(() => { // convert to date if it is number
-                        $fld1.trigger('keydown')
-                        $fld2.trigger('keydown')
-                    }, 1)
-                }
-                break
-
-            case 'list':
-            case 'combo':
-            case 'enum':
-                options = search.options ?? {}
-                if (search.type == 'list') options['selected'] = {}
-                if (search.type == 'enum') options['selected'] = []
-                if (sdata) options['selected'] = sdata['value']
-                if (!$fld1[0]._w2field) {
-                    const fld = new TsField(search.type, {
-                        el: $fld1[0],
-                        ...options,
-                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onSelect: async (event: any) => {
-                            await event.complete
-                            this.initSearchLists(search.field)
-                        },
-                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onRemove: async (event: any) => {
-                            await event.complete
-                            this.initSearchLists(search.field)
-                        }
-                    })
-                    if (sdata && sdata['text'] != null) {
-                        fld.set({ id: sdata['value'], text: sdata['text'] })
-                    }
-                    search['_w2field'] = fld
-                }
-                break
-
-            case 'select':
-                // build options
-                options = '<option value="">--</option>'
-                const searchOpts = search.options ?? {}
-                for (let i = 0; i < searchOpts['items'].length; i++) {
-                    const si = searchOpts['items'][i]
-                    if (TsUtils.isPlainObject(searchOpts['items'][i])) {
-                        let val = si.id
-                        let txt = si.text
-                        if (val == null && si.value != null) val = si.value
-                        if (txt == null && si.text != null) txt = si.text
-                        if (val == null) val = ''
-                        options += '<option value="'+ val +'">'+ txt +'</option>'
-                    } else {
-                        options += '<option value="'+ si +'">'+ si +'</option>'
-                    }
-                }
-                $fld1.html(options)
-                break
-        }
-        this.initSearchLists()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (gridSearch.initOperator as any)(this, ind) // any: ind is loosely typed from DOM
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initSearchLists(changedField?: any) {
-        const fields = this.getSearch()
-        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        fields.forEach((field: any) => {
-            const search = this.getSearch(field)
-            if (search != null && search.options?.['parentList'] != null) {
-                const parent = this.getSearch(search.options['parentList'])
-                if (parent == null) return
-                let values = this.getSearch(parent.field)?.['_w2field']?.get()
-                if (Array.isArray(values)) {
-                    values = values.map(vv => vv.id)
-                } else {
-                    values = values?.id != null ? [values.id] : []
-                }
-                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                search['_w2field']?.options?.items?.forEach?.((item: any) => {
-                    const parent = TsUtils.getNested(item, search?.options?.['parentField'] ?? 'parentId')
-                    if (parent == null) {
-                        return
-                    }
-                    const possible = TsUtils.clone(Array.isArray(parent) ? parent : [parent])
-                    possible.unshift('')
-                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const includes = values.some((item: any) => possible.includes(item))
-                    if (includes && item.hidden === true) {
-                        item.hidden = false
-                    } else if (!includes && item.hidden !== true) {
-                        item.hidden = true
-                    }
-                })
-            }
-        })
-        // set all fields that refer to changed one to blank
-        if (changedField != null) {
-            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            fields.forEach((field: any) => {
-                const search = this.getSearch(field)
-                if (search != null && search.options?.['parentList'] == changedField) {
-                    const fld = search['_w2field']
-                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const items = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
-                    if (fld.type == 'list' && !items.includes(fld.get()?.id)) {
-                        fld.set(null)
-                    }
-                    if (fld.type == 'enum') {
-                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const new_sel = fld.get()?.filter((it: any) => items.includes(it.id))
-                        fld.set(new_sel || [])
-                    }
-                }
-            })
-        }
+        return (gridSearch.initSearchLists as any)(this, changedField) // any: changedField loosely typed
     }
 
     initSearches() {
-        const overlay = query(`#w2overlay-${this.name}-search-overlay`)
-        // init searches
-        for (let ind = 0; ind < this.searches.length; ind++) {
-            const search  = this.searches[ind]!
-            const sdata   = this.getSearchData(search.field)
-            search.type = String(search.type).toLowerCase()
-            if (search.type == 'new-column') {
-                continue
-            }
-            if (typeof search.options != 'object') search.options = {}
-            // operators
-            let operator  = search.operator
-            let operators = [...(this.operators[this.operatorsMap[search.type] ?? ''] ?? [])] // need a copy
-            if (search.operators) operators = [...search.operators] // need a copy as this variable will be changed
-            // normalize
-            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (TsUtils.isPlainObject(operator)) operator = (operator as any).oper
-            operators.forEach((oper, ind) => {
-                if (TsUtils.isPlainObject(oper)) operators[ind] = oper.oper
-            })
-            if (sdata && sdata['operator']) {
-                operator = sdata['operator']
-            }
-            // default operator
-            const def = this.defaultOperator[this.operatorsMap[search.type] ?? '']
-            if (operators.indexOf(operator) == -1) {
-                operator = def
-            }
-            overlay.find(`#grid_${this.name}_operator_${ind}`).val(operator)
-            this.initOperator(ind)
-            // populate field value
-            const $fld1 = overlay.find(`#grid_${this.name}_field_${ind}`)
-            const $fld2 = overlay.find(`#grid_${this.name}_field2_${ind}`)
-            if (sdata != null) {
-                if (!Array.isArray(sdata['value'])) {
-                    if (sdata['value'] != null) $fld1.val(sdata['value']).trigger('change')
-                } else {
-                    if (['in', 'not in'].includes(sdata['operator'])) {
-                        $fld1[0]._w2field.set(sdata['value'])
-                    } else {
-                        $fld1.val(sdata['value'][0]).trigger('change')
-                        $fld2.val(sdata['value'][1]).trigger('change')
-                    }
-                }
-            }
-        }
-        // add on change event
-        overlay.find('.tsg-grid-search-advanced *[rel=search]')
-            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('keypress', (evnt: any) => {
-                if (evnt.keyCode == 13) {
-                    this.search()
-                    TsTooltip.hide(this.name + '-search-overlay')
-                }
-            })
+        return gridSearch.initSearches(this)
     }
 
     getColumnsHTML() {
