@@ -35,7 +35,7 @@ That's the smallest possible diff. The rest of this guide enumerates the full re
 | `dist/w2ui.css` | `dist/tsgrid-ui.css` |
 | `dist/w2ui.min.css` | `dist/tsgrid-ui.min.css` |
 
-ESM consumers benefit from the `exports` map — `import 'tsgrid-ui'`, `import 'tsgrid-ui/css'`, `import 'tsgrid-ui/dark'` all resolve.
+ESM consumers benefit from the `exports` map — `import 'tsgrid-ui'` and `import 'tsgrid-ui/css'` both resolve. (The `/dark` subpath was advertised by upstream w2ui but never had a generated artifact; tsgrid-ui v1.0 drops it. A real dark theme can be added in a future minor.)
 
 ## 2. JavaScript globals (widget classes)
 

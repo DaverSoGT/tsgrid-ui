@@ -35,8 +35,7 @@
       "import": "./dist/tsgrid-ui.es6.js",
       "require": "./dist/tsgrid-ui.js"
     },
-    "./css": "./dist/tsgrid-ui.css",
-    "./dark": "./dist/tsgrid-ui-dark.css"
+    "./css": "./dist/tsgrid-ui.css"
   },
   "style": "dist/tsgrid-ui.css",
   "files": [

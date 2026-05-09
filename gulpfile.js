@@ -20,9 +20,7 @@ let tasks = {
             'dist/tsgrid-ui.js',
             'dist/tsgrid-ui.min.js',
             'dist/tsgrid-ui.css',
-            'dist/tsgrid-ui-dark.css',
-            'dist/tsgrid-ui.min.css',
-            'dist/tsgrid-ui-dark.min.css'
+            'dist/tsgrid-ui.min.css'
         ]
         return del(files)
     },
