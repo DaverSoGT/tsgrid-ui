@@ -2,6 +2,22 @@
 
 <!-- baseline: 943401 bytes -->
 
+## Bundle size measurement
+
+| Metric | Value |
+|--------|-------|
+| Baseline (v1.0.1, pre-v2.0) | 943,401 bytes |
+| Post-v2.0 actual | 941,597 bytes |
+| Delta | -1,804 bytes (-0.19%) |
+| Status | PASS (within ±2% gate) |
+| Build date | 2026-05-09 |
+
+v2.0 is a structural refactor with no bundle reduction goal. The -0.19% delta is
+within the ±2% measurement gate and does not constitute a meaningful change. Bundle
+improvements are explicitly deferred to v2.2 (multi-entry subpath exports + tree-shaking).
+
+---
+
 ## Overview
 
 `tsgrid-ui` v2.0 is a **code-organisation and type-system release**. No runtime behavior
@@ -149,24 +165,14 @@ Do not expect or claim bundle size reduction from upgrading to v2.0.
 
 ## Release checklist
 
-> For maintainer reference only — do NOT execute these commands automatically.
+> Reference — execute manually after PR review and approval. The SDD apply phase does NOT
+> run any of these.
 
-```sh
-# 1. Ensure pnpm verify is green
-pnpm verify
-
-# 2. Update CHANGELOG.md with v2.0.0 entry (Task 9.2)
-#    Include explicit "no bundle reduction in v2.0" disclosure per spec Req 3.3.
-
-# 3. Bump version in package.json to 2.0.0 (Task 9.5)
-# (edit manually or use: npm version 2.0.0 --no-git-tag-version)
-
-# 4. Tag the release
-git tag -a v2.0.0 -m "chore(release): v2.0.0"
-
-# 5. Push tag
+```bash
+# After PR merged to master:
+git checkout master && git pull
+git tag -a v2.0.0 -m "v2.0.0 — TsGrid decomposition + event signature fix"
 git push origin v2.0.0
-
-# 6. Publish to npm
-npm publish --access public
+pnpm publish --access public --tag latest
+gh release create v2.0.0 --title "v2.0.0 — TsGrid v2 decomposition" --notes-from-tag
 ```

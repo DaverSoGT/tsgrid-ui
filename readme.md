@@ -7,6 +7,13 @@ TypeScript-native UI component library: data grid, forms, fields, layout, sideba
 [![npm version](https://img.shields.io/npm/v/tsgrid-ui.svg)](https://www.npmjs.com/package/tsgrid-ui)
 [![license](https://img.shields.io/npm/l/tsgrid-ui.svg)](LICENSE)
 
+> **v2.0 is a breaking release.** Event handler types changed (`CustomEvent` →
+> `TsEventPayload`) and the internal `src/tsgrid.ts` has been decomposed into 8 sibling
+> modules. The public API is unchanged — barrel consumers need no updates. Consumers who
+> explicitly annotated handlers with `CustomEvent` must apply a one-line codemod. No bundle
+> reduction is claimed. See [MIGRATION_v2.md](MIGRATION_v2.md) for the codemod regex,
+> full migration guide, and release checklist.
+
 ## Install
 
 ```bash

@@ -2,6 +2,48 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.0.0 — 2026-05-09
+
+### Breaking changes
+
+**BC-1 — Event handler signatures changed (`CustomEvent` → `TsEventPayload`)**
+
+All `on*` event handler properties across `TsGrid`, `TsForm`, and `TsField` now declare
+`(event: TsEventPayload) => void` instead of `(event: CustomEvent) => void`.
+
+This is a type-level correction: the runtime has always dispatched `TsEventPayload` objects,
+never DOM `CustomEvent` instances. Consumers who explicitly annotated handlers with
+`CustomEvent` will see a TypeScript compile error. Untyped or `any`-typed handlers are
+unaffected. Mechanical migration via codemod — see [MIGRATION_v2.md § Codemod](MIGRATION_v2.md#codemod).
+
+**BC-2 — Internal restructure; deep imports are unsupported**
+
+`src/tsgrid.ts` has been decomposed from ~10,006 LOC into 8 sibling modules:
+`grid-columns`, `grid-state`, `grid-data`, `grid-selection`, `grid-edit`, `grid-search`,
+`grid-interaction`, `grid-render`. The public class `TsGrid` is now ~2,392 LOC (thin
+orchestrator of one-liner delegators).
+
+The public API surface is **UNCHANGED**: all method signatures, names, and behaviors are
+preserved (verified by 84 Vitest + 38 Playwright tests). Consumers who import from the
+public barrel (`import { TsGrid } from 'tsgrid-ui'`) require **no changes**. Subclasses
+or code that inspects `TsGrid.prototype` directly may observe method bodies as one-line
+delegators — this is expected behavior. Deep imports from internal paths
+(`tsgrid-ui/src/*`) are not supported and may break.
+
+### Bundle size disclosure
+
+v2.0 is a structural refactor with no bundle reduction goal. Bundle size delta vs v1.0.1
+baseline: **-0.19%** (actual: 941,597 bytes vs baseline: 943,401 bytes). No reduction is
+claimed. Bundle improvements are deferred to v2.2 (multi-entry subpath exports +
+tree-shaking). See [MIGRATION_v2.md § Bundle size measurement](MIGRATION_v2.md#bundle-size-measurement).
+
+### Migration
+
+See [MIGRATION_v2.md](MIGRATION_v2.md) for the codemod, full migration guide, and
+release checklist.
+
+---
+
 ## [1.0.1] — Consumer DX fixes
 
 Patch release driven by integrating tsgrid-ui v1.0.0 in a real Angular 21 standalone project. Three changes, no breaking, no API removals.
