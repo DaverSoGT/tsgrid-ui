@@ -1,14 +1,11 @@
 /**
  * scripts/wrap-legacy.mjs
- * Post-process step for tsup CJS output → TsUi legacy IIFE bundle.
+ * Post-process step for tsup CJS output → TsGrid UI legacy IIFE bundle.
  *
- * Reads dist/TsUi.js (CJS output from tsup), wraps it in the verbatim
- * legacy_code IIFE template from gulpfile.js, prepends the TsUi header
- * comment, and writes the result back to dist/TsUi.js (atomically via tmp).
- *
- * This reproduces what Gulp's pack/build tasks did with:
- *   .pipe(replace(legacy_replace, legacy_code))
- *   .pipe(header(comments.TsUi))
+ * Reads dist/tsgrid-ui.js (CJS output from tsup), wraps it in the verbatim
+ * IIFE template (UMD-style: AMD / CommonJS / global), prepends the TsGrid UI
+ * header comment with dual copyright, and writes the result back atomically
+ * via .tmp + rename.
  *
  * Usage: node scripts/wrap-legacy.mjs
  */
@@ -23,11 +20,11 @@ const ROOT = path.resolve(__dirname, '..')
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
-const DIST_JS        = path.join(ROOT, 'dist', 'TsUi.js')
-const DIST_JS_TMP    = path.join(ROOT, 'dist', 'TsUi.js.tmp')
-// Stale ESM artifact left over before T1.7 fixed outExtension().
-// tsup now emits dist/TsUi.es6.js (not .mjs). Remove idempotently on every run.
-const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'TsUi.es6.mjs')
+const DIST_JS        = path.join(ROOT, 'dist', 'tsgrid-ui.js')
+const DIST_JS_TMP    = path.join(ROOT, 'dist', 'tsgrid-ui.js.tmp')
+// Stale ESM artifact left over before tsup outExtension() was forced to .js.
+// tsup emits dist/tsgrid-ui.es6.js (not .mjs). Remove idempotently on every run.
+const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'tsgrid-ui.es6.mjs')
 
 // ---------------------------------------------------------------------------
 // IIFE wrapper — verbatim from gulpfile.js lines 24–46
@@ -60,11 +57,11 @@ if (global) {
 });`
 
 // ---------------------------------------------------------------------------
-// Header comment — same format as gulpfile.js comments.TsUi
+// Header comment — matches the gulpfile.js comments.tsgrid template
 // ---------------------------------------------------------------------------
 function buildHeader() {
     const ts = new Date().toLocaleString('en-us')
-    return `/* TsUi 2.0.x (nightly) (${ts}) (c) http://TsUi.com, vitmalina@gmail.com */\n`
+    return `/* tsgrid-ui 1.0.x (nightly) (${ts}) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n`
 }
 
 // ---------------------------------------------------------------------------
@@ -91,14 +88,10 @@ async function wrapFile(src, tmp) {
 
     const header  = buildHeader()
 
-    // tsup CJS output: the bundle is a self-contained module. We strip the
-    // trailing CommonJS exports assignment that tsup injects
-    // ("Object.defineProperty(exports, '__esModule', ...)") because the IIFE
-    // wrapper owns the export surface.
-    // We do NOT do a byte-for-byte regex strip of Gulp's
-    // replace(/^(import.*'|export.*}|module\.exports.*})$\n/gm, '') because
-    // tsup already resolved all imports. We only need to neutralise the CJS
-    // module header that esbuild adds.
+    // tsup CJS output is a self-contained module. We strip the trailing
+    // CommonJS exports assignment that tsup injects (Object.defineProperty
+    // and module.exports = __toCommonJS(...)) because the IIFE wrapper owns
+    // the export surface.
     const strippedBody = stripCjsArtifacts(cjsBody)
 
     const output = header + strippedBody + '\n' + IIFE_WRAPPER + '\n'
@@ -119,7 +112,7 @@ async function wrapFile(src, tmp) {
  * In a browser context `module` is not defined → immediate ReferenceError →
  * the entire script dies before any widget var-assignment can execute.
  * (Function declarations are fully hoisted and survive; var assignments are
- * not — this is why only the function-declared globals like TsAlert pass.)
+ * not — this is why only function-declared globals like TsAlert pass.)
  *
  * The IIFE wrapper that wrap-legacy.mjs appends owns the UMD/global export
  * surface (AMD, CJS, and browser-global paths), so the esbuild line is
@@ -149,7 +142,7 @@ function stripCjsArtifacts(code) {
         process.stderr.write(
             '[wrap-legacy] WARNING: expected `module.exports = __toCommonJS(...)` ' +
             'line not found — esbuild output shape may have changed. ' +
-            'Verify dist/TsUi.js loads correctly in browser.\n'
+            'Verify dist/tsgrid-ui.js loads correctly in browser.\n'
         )
     }
 
@@ -178,11 +171,11 @@ async function main() {
     // no-op on clean builds (idempotent).
     await rm(STALE_ES6_MJS, { force: true })
 
-    console.log('[wrap-legacy] Wrapping dist/TsUi.js with legacy IIFE...')
+    console.log('[wrap-legacy] Wrapping dist/tsgrid-ui.js with legacy IIFE...')
 
     try {
         await wrapFile(DIST_JS, DIST_JS_TMP)
-        console.log('[wrap-legacy] Done: dist/TsUi.js')
+        console.log('[wrap-legacy] Done: dist/tsgrid-ui.js')
     } catch (err) {
         console.error('[wrap-legacy] ERROR:', err.message)
         process.exit(1)

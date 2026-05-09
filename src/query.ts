@@ -1,4 +1,4 @@
-/* mQuery 0.7 (nightly) (8/15/2023, 11:44:12 AM), vitmalina@gmail.com */
+/* tsgrid-ui query 1.0.0 — DOM helper based on mQuery 0.7 by vitmalina@gmail.com (2014, MIT). */
 
 type QuerySelector = string | Node | Window | Query | Array<Node | Element> | Iterable<Node | Element> | null | undefined
 type QueryContext = Document | Element | ShadowRoot | DocumentFragment

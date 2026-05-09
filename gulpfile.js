@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* w2ui 2.1 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). */
+/* tsgrid-ui 1.0 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). */
 const gulp     = require('gulp')
 const header   = require('gulp-header')
 const iconfont = require('gulp-iconfont')
@@ -10,7 +10,7 @@ const rename   = require('gulp-rename')
 const replace  = require('gulp-replace')
 const del      = require('del')
 const comments = {
-    w2ui : '/* w2ui 2.0.x (nightly) ('+ (new Date()).toLocaleString('en-us') +') (c) http://w2ui.com, vitmalina@gmail.com */\n'
+    tsgrid : '/* tsgrid-ui 1.0.x (nightly) ('+ (new Date()).toLocaleString('en-us') +') (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n'
 }
 
 let tasks = {
@@ -35,11 +35,11 @@ let tasks = {
                 this.emit('end')
             })
             .pipe(less())
-            .pipe(header(comments.w2ui))
+            .pipe(header(comments.tsgrid))
             .pipe(gulp.dest('dist/'))
             .pipe(cleanCSS())
             .pipe(rename({ suffix: '.min' }))
-            .pipe(header(comments.w2ui))
+            .pipe(header(comments.tsgrid))
             .pipe(gulp.dest('dist/'))
     },
 
