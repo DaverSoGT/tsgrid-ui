@@ -12,6 +12,7 @@
 - **Consumer smoke typecheck** (`test/consumer-smoke.ts`): independent compile-time validation that all 11 public class imports work as a library consumer.
 - **Strict mode** active across the entire codebase: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`, `allowJs: false`.
 - **`w2grid.getSelectionRows()` and `w2grid.getSelectionCells()`**: discriminated typed methods that replace the `any[]` return of the legacy `getSelection()`. Exported `W2GridCellSelection` interface (`{ recid, index, column }`). The legacy `getSelection(returnIndex?)` is preserved as a back-compat wrapper that returns `RecId[] | number[] | W2GridCellSelection[]` (no longer `any[]`). Prefer the split methods when the caller knows the selection mode statically.
+- **Vitest unit test suite** (`test/unit/`): 84 tests across `w2utils` helpers, `w2base` event system, and `types` branded primitives. Run via `pnpm test:unit` (or `pnpm test:unit:watch` for watch mode); chained into `pnpm verify` between consumer-smoke and Playwright smoke. Includes a regression test for the `'fuction'` typo fix in `prepareParams()` so that custom-function `dataType` values are guaranteed to be invoked.
 
 ### Changed
 
