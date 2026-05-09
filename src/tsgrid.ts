@@ -62,7 +62,7 @@
  *  - added grid.groupBy = {} and grid.last.groupBy_links = {}
  */
 
-import { TsBase } from './tsbase.js'
+import { TsBase, TsEventPayload } from './tsbase.js'
 import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
 import { TsToolbar } from './tstoolbar.js'
@@ -392,57 +392,57 @@ class TsGrid extends TsBase {
     defaultOperator: Record<string, string>
     operatorsMap: Record<string, string>
     // event handlers
-    onAdd: ((event: CustomEvent) => void) | null
-    onEdit: ((event: CustomEvent) => void) | null
-    onRequest: ((event: CustomEvent) => void) | null
-    onLoad: ((event: CustomEvent) => void) | null
-    onDelete: ((event: CustomEvent) => void) | null
-    onSave: ((event: CustomEvent) => void) | null
-    onSelect: ((event: CustomEvent) => void) | null
-    onClick: ((event: CustomEvent) => void) | null
-    onDblClick: ((event: CustomEvent) => void) | null
-    onContextMenu: ((event: CustomEvent) => void) | null
-    onContextMenuClick: ((event: CustomEvent) => void) | null
-    onColumnClick: ((event: CustomEvent) => void) | null
-    onColumnDblClick: ((event: CustomEvent) => void) | null
-    onColumnContextMenu: ((event: CustomEvent) => void) | null
-    onColumnResize: ((event: CustomEvent) => void) | null
-    onColumnAutoResize: ((event: CustomEvent) => void) | null
-    onSort: ((event: CustomEvent) => void) | null
-    onSearch: ((event: CustomEvent) => void) | null
-    onSearchOpen: ((event: CustomEvent) => void) | null
-    onSearchClose: ((event: CustomEvent) => void) | null
-    onChange: ((event: CustomEvent) => void) | null
-    onRestore: ((event: CustomEvent) => void) | null
-    onExpand: ((event: CustomEvent) => void) | null
-    onCollapse: ((event: CustomEvent) => void) | null
-    onError: ((event: CustomEvent) => void) | null
-    onKeydown: ((event: CustomEvent) => void) | null
-    onToolbar: ((event: CustomEvent) => void) | null
-    onColumnOnOff: ((event: CustomEvent) => void) | null
-    onCopy: ((event: CustomEvent) => void) | null
-    onPaste: ((event: CustomEvent) => void) | null
-    onSelectionExtend: ((event: CustomEvent) => void) | null
-    onEditField: ((event: CustomEvent) => void) | null
-    onRender: ((event: CustomEvent) => void) | null
-    onRefresh: ((event: CustomEvent) => void) | null
-    onReload: ((event: CustomEvent) => void) | null
-    onResize: ((event: CustomEvent) => void) | null
-    onDestroy: ((event: CustomEvent) => void) | null
-    onStateSave: ((event: CustomEvent) => void) | null
-    onStateRestore: ((event: CustomEvent) => void) | null
-    onFocus: ((event: CustomEvent) => void) | null
-    onBlur: ((event: CustomEvent) => void) | null
-    onReorderRow: ((event: CustomEvent) => void) | null
-    onSearchSave: ((event: CustomEvent) => void) | null
-    onSearchRemove: ((event: CustomEvent) => void) | null
-    onSearchSelect: ((event: CustomEvent) => void) | null
-    onColumnSelect: ((event: CustomEvent) => void) | null
-    onColumnDragStart: ((event: CustomEvent) => void) | null
-    onColumnDragEnd: ((event: CustomEvent) => void) | null
-    onResizerDblClick: ((event: CustomEvent) => void) | null
-    onMouseEnter: ((event: CustomEvent) => void) | null
-    onMouseLeave: ((event: CustomEvent) => void) | null
+    onAdd: ((event: TsEventPayload) => void) | null
+    onEdit: ((event: TsEventPayload) => void) | null
+    onRequest: ((event: TsEventPayload) => void) | null
+    onLoad: ((event: TsEventPayload) => void) | null
+    onDelete: ((event: TsEventPayload) => void) | null
+    onSave: ((event: TsEventPayload) => void) | null
+    onSelect: ((event: TsEventPayload) => void) | null
+    onClick: ((event: TsEventPayload) => void) | null
+    onDblClick: ((event: TsEventPayload) => void) | null
+    onContextMenu: ((event: TsEventPayload) => void) | null
+    onContextMenuClick: ((event: TsEventPayload) => void) | null
+    onColumnClick: ((event: TsEventPayload) => void) | null
+    onColumnDblClick: ((event: TsEventPayload) => void) | null
+    onColumnContextMenu: ((event: TsEventPayload) => void) | null
+    onColumnResize: ((event: TsEventPayload) => void) | null
+    onColumnAutoResize: ((event: TsEventPayload) => void) | null
+    onSort: ((event: TsEventPayload) => void) | null
+    onSearch: ((event: TsEventPayload) => void) | null
+    onSearchOpen: ((event: TsEventPayload) => void) | null
+    onSearchClose: ((event: TsEventPayload) => void) | null
+    onChange: ((event: TsEventPayload) => void) | null
+    onRestore: ((event: TsEventPayload) => void) | null
+    onExpand: ((event: TsEventPayload) => void) | null
+    onCollapse: ((event: TsEventPayload) => void) | null
+    onError: ((event: TsEventPayload) => void) | null
+    onKeydown: ((event: TsEventPayload) => void) | null
+    onToolbar: ((event: TsEventPayload) => void) | null
+    onColumnOnOff: ((event: TsEventPayload) => void) | null
+    onCopy: ((event: TsEventPayload) => void) | null
+    onPaste: ((event: TsEventPayload) => void) | null
+    onSelectionExtend: ((event: TsEventPayload) => void) | null
+    onEditField: ((event: TsEventPayload) => void) | null
+    onRender: ((event: TsEventPayload) => void) | null
+    onRefresh: ((event: TsEventPayload) => void) | null
+    onReload: ((event: TsEventPayload) => void) | null
+    onResize: ((event: TsEventPayload) => void) | null
+    onDestroy: ((event: TsEventPayload) => void) | null
+    onStateSave: ((event: TsEventPayload) => void) | null
+    onStateRestore: ((event: TsEventPayload) => void) | null
+    onFocus: ((event: TsEventPayload) => void) | null
+    onBlur: ((event: TsEventPayload) => void) | null
+    onReorderRow: ((event: TsEventPayload) => void) | null
+    onSearchSave: ((event: TsEventPayload) => void) | null
+    onSearchRemove: ((event: TsEventPayload) => void) | null
+    onSearchSelect: ((event: TsEventPayload) => void) | null
+    onColumnSelect: ((event: TsEventPayload) => void) | null
+    onColumnDragStart: ((event: TsEventPayload) => void) | null
+    onColumnDragEnd: ((event: TsEventPayload) => void) | null
+    onResizerDblClick: ((event: TsEventPayload) => void) | null
+    onMouseEnter: ((event: TsEventPayload) => void) | null
+    onMouseLeave: ((event: TsEventPayload) => void) | null
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(options: Record<string, any>) { // any: options bag is user-supplied
