@@ -39,7 +39,7 @@
  *  - getAction/actionHide/actionShow/actionDisable/actionEnable - new methods
  */
 
-import { TsBase } from './tsbase.js'
+import { TsBase, TsEventPayload } from './tsbase.js'
 import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { TsTabs } from './tstabs.js'
@@ -102,21 +102,21 @@ class TsForm extends TsBase {
         errorsShown?: boolean
         observeResize?: ResizeObserver
     }
-    onRequest: ((event: CustomEvent) => void) | null
-    onLoad: ((event: CustomEvent) => void) | null
-    onValidate: ((event: CustomEvent) => void) | null
-    onSubmit: ((event: CustomEvent) => void) | null
-    onProgress: ((event: CustomEvent) => void) | null
-    onSave: ((event: CustomEvent) => void) | null
-    onChange: ((event: CustomEvent) => void) | null
-    onInput: ((event: CustomEvent) => void) | null
-    onRender: ((event: CustomEvent) => void) | null
-    onRefresh: ((event: CustomEvent) => void) | null
-    onResize: ((event: CustomEvent) => void) | null
-    onDestroy: ((event: CustomEvent) => void) | null
-    onAction: ((event: CustomEvent) => void) | null
-    onToolbar: ((event: CustomEvent) => void) | null
-    onError: ((event: CustomEvent) => void) | null
+    onRequest: ((event: TsEventPayload) => void) | null
+    onLoad: ((event: TsEventPayload) => void) | null
+    onValidate: ((event: TsEventPayload) => void) | null
+    onSubmit: ((event: TsEventPayload) => void) | null
+    onProgress: ((event: TsEventPayload) => void) | null
+    onSave: ((event: TsEventPayload) => void) | null
+    onChange: ((event: TsEventPayload) => void) | null
+    onInput: ((event: TsEventPayload) => void) | null
+    onRender: ((event: TsEventPayload) => void) | null
+    onRefresh: ((event: TsEventPayload) => void) | null
+    onResize: ((event: TsEventPayload) => void) | null
+    onDestroy: ((event: TsEventPayload) => void) | null
+    onAction: ((event: TsEventPayload) => void) | null
+    onToolbar: ((event: TsEventPayload) => void) | null
+    onError: ((event: TsEventPayload) => void) | null
     msgRefresh: string
     msgSaving: string
     msgServerError: string

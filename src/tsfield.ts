@@ -32,7 +32,7 @@
  *  - options.msgNoItems
  */
 
-import { TsBase } from './tsbase.js'
+import { TsBase, TsEventPayload } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { TsTooltip as _w2tooltip, TsColor as _w2color, TsMenu as _w2menu, TsDate as _w2date } from './tstooltip.js'
 import { query as _queryRaw, Query } from './query.js'
@@ -1763,12 +1763,12 @@ class TsField extends TsBase {
                 color: this.el!.value,
                 liveUpdate: true
             }, this.options))
-            .select((event: CustomEvent) => {
-                const color = event.detail.color
+            .select((event: TsEventPayload) => {
+                const color = event.detail['color'] as string // any: detail shape determined by TsColor overlay
                 ;(query(this.el).val(color) as Query).trigger('input').trigger('change')
             })
-            .liveUpdate((event: CustomEvent) => {
-                const color = event.detail.color
+            .liveUpdate((event: TsEventPayload) => {
+                const color = event.detail['color'] as string // any: detail shape determined by TsColor overlay
                 query(this.helpers.suffix).find(':scope > div').css('background-color', '#' + color)
             })
         }
@@ -1805,15 +1805,17 @@ class TsField extends TsBase {
                     minWidth: options.minDropWidth   // TODO: check
                 })
                 this.tmp.overlay = TsMenu.show(params)
-                    .select((event: CustomEvent) => {
+                    .select((event: TsEventPayload) => {
                         if (['list', 'combo'].includes(this.type)) {
-                            this.selected = event.detail.item
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            this.selected = event.detail['item'] as any // any: detail shape determined by TsMenu overlay
                             query(input).val('')
                             ;(query(this.el).val(this.selected.text) as Query).trigger('input').trigger('change')
                             this.focus({ showMenu: false } as FocusEvent & { showMenu?: boolean })
                         } else {
                             const selected = this.selected
-                            const newItem = event.detail?.item
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const newItem = event.detail?.['item'] as any // any: detail shape determined by TsMenu overlay
                             if (newItem) {
                                 // trigger event
                                 const edata = this.trigger('add', { target: this.el, item: newItem, originalEvent: event })
@@ -1842,8 +1844,8 @@ class TsField extends TsBase {
                 anchor: this.el,
                 value: this.el!.value,
             }, this.options))
-            .select((event: CustomEvent) => {
-                const date = event.detail.date
+            .select((event: TsEventPayload) => {
+                const date = event.detail['date'] as string | null | undefined // any: detail shape determined by TsDate overlay
                 if (date != null) {
                     ;(query(this.el).val(date) as Query).trigger('input').trigger('change')
                 }

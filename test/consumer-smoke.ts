@@ -29,6 +29,7 @@ import {
     TsForm,
     TsField,
 } from '../src/index.js'
+import type { TsEventPayload } from '../src/index.js'
 
 // Import branded types from src/types.ts
 import type { Brand, RecId, LayoutPanelId, FieldName } from '../src/types.js'
@@ -139,6 +140,30 @@ void _gridInst
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const _formInst: InstanceType<typeof TsForm> = new TsForm({ name: 'test-form', fields: [] as any[] })
 void _formInst
+
+// ---------------------------------------------------------------------------
+// BC-1 event handler type assertions (v2.0.0)
+// on* properties on TsGrid and TsForm MUST accept TsEventPayload, not CustomEvent.
+// This section serves as the canonical migration example for MIGRATION_v2.md.
+// ---------------------------------------------------------------------------
+
+// BC-1 — before (v1.x, causes TS error on v2.0.0):
+//   _gridInst.onSelect = (event: CustomEvent) => { console.log(event.detail) }
+//
+// BC-1 — after (v2.0.0):
+const _gridHandler: (event: TsEventPayload) => void = (event) => { void event.detail }
+_gridInst.onSelect = _gridHandler
+_gridInst.onClick = _gridHandler
+_gridInst.onLoad = _gridHandler
+void _gridHandler
+
+const _formHandler: (event: TsEventPayload) => void = (event) => { void event.detail }
+_formInst.onChange = _formHandler
+_formInst.onSave = _formHandler
+void _formHandler
+
+// Untyped handler: no annotation required — inference continues to work (Req 4.4)
+_gridInst.onSearch = (event) => { void event }
 
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only
