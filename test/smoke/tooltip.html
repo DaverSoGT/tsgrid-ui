@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Smoke: Tooltip</title>
-    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <link rel="stylesheet" href="../../dist/tsgrid-ui.css">
     <style>
         body { margin: 60px; }
         #hover-target {
@@ -17,14 +17,13 @@
 </head>
 <body>
     <div id="hover-target">Hover me for tooltip</div>
-    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
-    <script src="../../dist/w2ui.js"></script>
+    <script src="../../dist/tsgrid-ui.js"></script>
     <script>
-        window._smokeTooltip = w2tooltip
+        window._smokeTooltip = TsTooltip
         window._smokeReady = true
 
         // Attach tooltip with autoShow so it shows on mouseover
-        w2tooltip.attach('#hover-target', {
+        TsTooltip.attach('#hover-target', {
             name: 'smoke-tip',
             text: 'Smoke tooltip content',
             position: 'top|bottom',

@@ -15,16 +15,20 @@
  */
 
 import { TsBase } from './tsbase.js'
-import { TsUi as _w2ui, TsUtils } from './tsutils.js'
+import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { TsTabs } from './tstabs.js'
 import { TsToolbar } from './tstoolbar.js'
 
 // any: query() returns Query|void; cast once for clean selector usage
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
-// any: TsUi is a dynamic runtime registry; typed narrow for this file
+
+// IMPORTANT: do NOT rebind TsUi to a module-top const. esbuild's CJS bundle
+// inlines tslayout BEFORE tsutils, so any module-init binding captures TsUi
+// while it's still hoisted-undefined. Read TsUi at call time via this getter
+// inside class methods (post-init).
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const TsUi = _w2ui as Record<string, any> // any: values are w2 widget instances with dynamic methods
+const _TsUiRegistry = (): Record<string, any> => TsUi as Record<string, any>
 
 // ---------------------------------------------------------------------------
 // Type definitions
@@ -173,7 +177,7 @@ class TsLayout extends TsBase {
             // instantiate tabs
             if (Array.isArray(tabs)) tabs = { tabs: tabs }
             const name = object.name + '_' + (panel ?? '') + '_tabs'
-            if (TsUi[name]) TsUi[name].destroy() // destroy if existed
+            if (_TsUiRegistry()[name]) _TsUiRegistry()[name].destroy() // destroy if existed
             pan.tabs      = new TsTabs(TsUtils.extend({}, tabs, { owner: object, name: object.name + '_' + (panel ?? '') + '_tabs' }))
             pan.show.tabs = true
             return true
@@ -187,7 +191,7 @@ class TsLayout extends TsBase {
             // instantiate toolbar
             if (Array.isArray(toolbar)) toolbar = { items: toolbar }
             const name = object.name + '_' + (panel ?? '') + '_toolbar'
-            if (TsUi[name]) TsUi[name].destroy() // destroy if existed
+            if (_TsUiRegistry()[name]) _TsUiRegistry()[name].destroy() // destroy if existed
             pan.toolbar      = new TsToolbar(TsUtils.extend({}, toolbar, { owner: object, name: object.name + '_' + (panel ?? '') + '_toolbar' }))
             pan.show.toolbar = true
             return true
@@ -541,7 +545,7 @@ class TsLayout extends TsBase {
     }
 
     assignToolbar(panel: string, toolbar: TsToolbar | string | null) {
-        if (typeof toolbar == 'string' && TsUi[toolbar] != null) toolbar = TsUi[toolbar]
+        if (typeof toolbar == 'string' && _TsUiRegistry()[toolbar] != null) toolbar = _TsUiRegistry()[toolbar]
         const pan = this.get(panel)
         pan.toolbar = toolbar
         // any: query().attr(name) returns string|undefined; used as selector fallback
@@ -585,7 +589,7 @@ class TsLayout extends TsBase {
     }
 
     assignTabs(panel: string, tabs: TsTabs | string | null) {
-        if (typeof tabs == 'string' && TsUi[tabs] != null) tabs = TsUi[tabs]
+        if (typeof tabs == 'string' && _TsUiRegistry()[tabs] != null) tabs = _TsUiRegistry()[tabs]
         const pan = this.get(panel)
         pan.tabs = tabs
         const tmp = query(this.box).find(panel +'> [data-role="panel-tabs"]')
@@ -876,7 +880,7 @@ class TsLayout extends TsBase {
         // event before
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
-        if (TsUi[this.name] == null) return false
+        if (_TsUiRegistry()[this.name] == null) return false
         // clean up
         this.panels.forEach(panel => {
             // any: tabs/toolbar may be TsTabs/TsToolbar or plain config object
@@ -889,7 +893,7 @@ class TsLayout extends TsBase {
         if (query(this.box).find('#layout_'+ this.name +'_panel_main').length > 0) {
             this.unmount()
         }
-        delete TsUi[this.name]
+        delete _TsUiRegistry()[this.name]
         // event after
         edata.finish()
         if (this.last['events'] && this.last['events'].resize) {
@@ -1106,7 +1110,7 @@ class TsLayout extends TsBase {
                         if (edata.isCancelled === true) return
                         // default action
                         // any: TsUi registry value is dynamic; resize events dict accessed at runtime
-                        TsUi[self.name].last.events.resizeStart('top', event)
+                        _TsUiRegistry()[self.name].last.events.resizeStart('top', event)
                         // event after
                         edata.finish()
                         return false
@@ -1154,7 +1158,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'left', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        TsUi[self.name].last.events.resizeStart('left', event)
+                        _TsUiRegistry()[self.name].last.events.resizeStart('left', event)
                         // event after
                         edata.finish()
                         return false
@@ -1202,7 +1206,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'right', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        TsUi[self.name].last.events.resizeStart('right', event)
+                        _TsUiRegistry()[self.name].last.events.resizeStart('right', event)
                         // event after
                         edata.finish()
                         return false
@@ -1249,7 +1253,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'bottom', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        TsUi[self.name].last.events.resizeStart('bottom', event)
+                        _TsUiRegistry()[self.name].last.events.resizeStart('bottom', event)
                         // event after
                         edata.finish()
                         return false
@@ -1317,7 +1321,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'preview', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        TsUi[self.name].last.events.resizeStart('preview', event)
+                        _TsUiRegistry()[self.name].last.events.resizeStart('preview', event)
                         // event after
                         edata.finish()
                         return false

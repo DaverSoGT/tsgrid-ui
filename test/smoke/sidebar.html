@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Smoke: Sidebar</title>
-    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <link rel="stylesheet" href="../../dist/tsgrid-ui.css">
     <style>
         body { margin: 0; padding: 0; }
         #sidebar { width: 250px; height: 500px; }
@@ -11,26 +11,25 @@
 </head>
 <body>
     <div id="sidebar"></div>
-    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
-    <script src="../../dist/w2ui.js"></script>
+    <script src="../../dist/tsgrid-ui.js"></script>
     <script>
-        var sidebar = new w2sidebar({
+        var sidebar = new TsSidebar({
             name: 'smoke-sidebar',
             nodes: [
-                { id: 'root1', text: 'Item One',   icon: 'w2ui-icon-info' },
-                { id: 'root2', text: 'Item Two',   icon: 'w2ui-icon-info' },
+                { id: 'root1', text: 'Item One',   icon: 'TsUi-icon-info' },
+                { id: 'root2', text: 'Item Two',   icon: 'TsUi-icon-info' },
                 {
                     id: 'parent1',
                     text: 'Parent Node',
-                    icon: 'w2ui-icon-info',
+                    icon: 'TsUi-icon-info',
                     expanded: false,
                     nodes: [
-                        { id: 'child1', text: 'Child One', icon: 'w2ui-icon-info' },
-                        { id: 'child2', text: 'Child Two', icon: 'w2ui-icon-info' }
+                        { id: 'child1', text: 'Child One', icon: 'TsUi-icon-info' },
+                        { id: 'child2', text: 'Child Two', icon: 'TsUi-icon-info' }
                     ]
                 },
-                { id: 'root3', text: 'Item Three', icon: 'w2ui-icon-info' },
-                { id: 'root4', text: 'Item Four',  icon: 'w2ui-icon-info' }
+                { id: 'root3', text: 'Item Three', icon: 'TsUi-icon-info' },
+                { id: 'root4', text: 'Item Four',  icon: 'TsUi-icon-info' }
             ]
         })
         sidebar.render(document.getElementById('sidebar'))

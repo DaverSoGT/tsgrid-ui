@@ -9,10 +9,12 @@
  *
  */
 
-import { TsUtils, query } from './tsutils.js'
-// TsUi is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
-import { TsUi as _w2uiRegistry } from './tsutils.js'
-const TsUi = _w2uiRegistry as Record<string, unknown>
+import { TsUtils, query, TsUi } from './tsutils.js'
+// IMPORTANT: do NOT rebind TsUi to a local const at module-top scope here.
+// esbuild's CJS bundle inlines tsbase BEFORE tsutils, so any module-init
+// binding (e.g. `const _registry = TsUi`) captures TsUi while it's still
+// hoisted-undefined, and widget registration silently writes to undefined.
+// Always read TsUi at call time inside class methods (post-init).
 
 interface TsEventData {
     type?: string | null
@@ -118,7 +120,7 @@ class TsBase {
         // register globally
         if (typeof name !== 'undefined') {
             if (!TsUtils.checkName(name)) return
-            TsUi[name] = this
+            ;(TsUi as Record<string, unknown>)[name] = this
         }
         this.debug = false // if true, will trigger all events
     }

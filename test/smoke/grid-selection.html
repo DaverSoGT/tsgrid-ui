@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Smoke: Grid Selection</title>
-    <link rel="stylesheet" href="../../dist/w2ui.css">
+    <link rel="stylesheet" href="../../dist/tsgrid-ui.css">
     <style>
         body { margin: 0; padding: 0; }
         #grid { width: 800px; height: 400px; }
@@ -11,10 +11,9 @@
 </head>
 <body>
     <div id="grid"></div>
-    <script src="../../libs/jquery/jquery-3.5.1.min.js"></script>
-    <script src="../../dist/w2ui.js"></script>
+    <script src="../../dist/tsgrid-ui.js"></script>
     <script>
-        var grid = new w2grid({
+        var grid = new TsGrid({
             name: 'grid-selection',
             multiSelect: true,
             columns: [
