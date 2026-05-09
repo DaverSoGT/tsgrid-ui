@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: w2utils
+ *  - Dependencies: TsUtils
  *  - on/off/trigger methods id not showing in help
  *  - refactored with event object
  *
@@ -9,12 +9,12 @@
  *
  */
 
-import { w2utils, query } from './tsutils.js'
+import { TsUtils, query } from './tsutils.js'
 // w2ui is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
 import { w2ui as _w2uiRegistry } from './tsutils.js'
 const w2ui = _w2uiRegistry as Record<string, unknown>
 
-interface W2EventData {
+interface TsEventData {
     type?: string | null
     target?: unknown
     phase?: string
@@ -22,7 +22,7 @@ interface W2EventData {
     [key: string]: unknown
 }
 
-interface W2EventListener {
+interface TsEventListener {
     name: string
     edata: {
         type: string | null
@@ -35,23 +35,23 @@ interface W2EventListener {
     handler: Function // eslint-disable-line @typescript-eslint/ban-types
 }
 
-class w2event {
+class TsEvent {
     type!: string | null        // assigned via Object.assign in constructor
-    detail!: W2EventData        // assigned via Object.assign in constructor
-    owner!: w2base              // assigned via Object.assign in constructor
+    detail!: TsEventData        // assigned via Object.assign in constructor
+    owner!: TsBase              // assigned via Object.assign in constructor
     target: unknown
     phase!: string              // assigned via Object.assign in constructor
     object: unknown
     execute!: null              // assigned via Object.assign in constructor
     isStopped!: boolean         // assigned via Object.assign in constructor
     isCancelled!: boolean       // assigned via Object.assign in constructor
-    onComplete!: ((edata: w2event) => void) | null  // assigned via Object.assign in constructor
-    listeners!: Array<(edata: w2event) => void>     // assigned via Object.assign in constructor
-    complete: Promise<w2event>
-    _resolve!: (value: w2event) => void
+    onComplete!: ((edata: TsEvent) => void) | null  // assigned via Object.assign in constructor
+    listeners!: Array<(edata: TsEvent) => void>     // assigned via Object.assign in constructor
+    complete: Promise<TsEvent>
+    _resolve!: (value: TsEvent) => void
     _reject!: (reason?: unknown) => void
 
-    constructor(owner: w2base, edata: W2EventData) {
+    constructor(owner: TsBase, edata: TsEventData) {
         Object.assign(this, {
             type: edata.type ?? null,
             detail: edata,
@@ -76,15 +76,15 @@ class w2event {
         this.complete.catch(() => {})
     }
 
-    finish(detail?: Partial<W2EventData>): void {
+    finish(detail?: Partial<TsEventData>): void {
         if (detail) {
-            w2utils.extend(this.detail, detail)
+            TsUtils.extend(this.detail, detail)
         }
         this.phase = 'after'
         this.owner.trigger.call(this.owner, this)
     }
 
-    done(func: (edata: w2event) => void): void {
+    done(func: (edata: TsEvent) => void): void {
         this.listeners.push(func)
     }
 
@@ -98,9 +98,9 @@ class w2event {
     }
 }
 
-class w2base {
-    activeEvents: w2event[] = []
-    listeners: W2EventListener[] = []
+class TsBase {
+    activeEvents: TsEvent[] = []
+    listeners: TsEventListener[] = []
     debug: boolean = false
     name?: string
     box?: HTMLElement | null
@@ -117,7 +117,7 @@ class w2base {
         this.listeners = [] // event listeners
         // register globally
         if (typeof name !== 'undefined') {
-            if (!w2utils.checkName(name)) return
+            if (!TsUtils.checkName(name)) return
             w2ui[name] = this
         }
         this.debug = false // if true, will trigger all events
@@ -131,13 +131,13 @@ class w2base {
      * @returns itself
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    on(events: string | W2EventData | Array<string | W2EventData>, handler: Function): this {
+    on(events: string | TsEventData | Array<string | TsEventData>, handler: Function): this {
         if (typeof events == 'string') {
             events = events.split(/[,\s]+/) // separate by comma or space
         } else {
-            events = [events as string | W2EventData]
+            events = [events as string | TsEventData]
         }
-        // any: callback parameter — caller signature varies; w2base event payload is widget-defined at runtime
+        // any: callback parameter — caller signature varies; TsBase event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (events as Array<any>).forEach((edata: any) => {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
@@ -146,14 +146,14 @@ class w2base {
                 const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type, execute: execute ?? 'before', scope }
             }
-            edata = w2utils.extend({ type: null, execute: 'before', onComplete: null }, edata)
+            edata = TsUtils.extend({ type: null, execute: 'before', onComplete: null }, edata)
             // errors
             if (!edata.type) { console.log('ERROR: You must specify event type when calling .on() method of '+ this.name); return }
             if (!handler) { console.log('ERROR: You must specify event handler function when calling .on() method of '+ this.name); return }
             if (!Array.isArray(this.listeners)) this.listeners = []
-            this.listeners.push({ name, edata, handler } as W2EventListener)
+            this.listeners.push({ name, edata, handler } as TsEventListener)
             if (this.debug) {
-                console.log('w2base: add event', { name, edata, handler })
+                console.log('TsBase: add event', { name, edata, handler })
             }
         })
         return this
@@ -167,13 +167,13 @@ class w2base {
      * @returns itself
      */
     // eslint-disable-next-line @typescript-eslint/ban-types
-    off(events: string | W2EventData | Array<string | W2EventData>, handler?: Function): this {
+    off(events: string | TsEventData | Array<string | TsEventData>, handler?: Function): this {
         if (typeof events == 'string') {
             events = events.split(/[,\s]+/) // separate by comma or space
         } else {
-            events = [events as string | W2EventData]
+            events = [events as string | TsEventData]
         }
-        // any: callback parameter — caller signature varies; w2base event payload is widget-defined at runtime
+        // any: callback parameter — caller signature varies; TsBase event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (events as Array<any>).forEach((edata: any) => {
             const name = typeof edata == 'string' ? edata : (edata.type + ':' + edata.execute + '.' + edata.scope)
@@ -182,7 +182,7 @@ class w2base {
                 const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type: type || '*', execute: execute || '', scope: scope || '' }
             }
-            edata = w2utils.extend({ type: null, execute: null, onComplete: null }, edata)
+            edata = TsUtils.extend({ type: null, execute: null, onComplete: null }, edata)
             // errors
             if (!edata.type && !edata.scope) { console.log('ERROR: You must specify event type when calling .off() method of '+ this.name); return }
             if (!handler) { handler = undefined }
@@ -201,7 +201,7 @@ class w2base {
                 }
             })
             if (this.debug) {
-                console.log(`w2base: remove event (${count})`, { name, edata, handler })
+                console.log(`TsBase: remove event (${count})`, { name, edata, handler })
             }
         })
         return this // needed for chaining
@@ -214,13 +214,13 @@ class w2base {
      * @returns modified edata
      *
      * NOTE: `edata` is typed as `any` here intentionally. The method mutates the argument
-     * from W2EventData into a w2event mid-execution. Runtime type mutation is inherent
+     * from TsEventData into a TsEvent mid-execution. Runtime type mutation is inherent
      * to the event dispatch pattern. Phase 6 strict tighten will revisit this.
      */
-    // any: targeted-any per typing_policy; w2base event payload is widget-defined at runtime
+    // any: targeted-any per typing_policy; TsBase event payload is widget-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    trigger(eventName: string | W2EventData | w2event, edataIn?: W2EventData): w2event {
-        // any: targeted-any per typing_policy; w2base event payload is widget-defined at runtime
+    trigger(eventName: string | TsEventData | TsEvent, edataIn?: TsEventData): TsEvent {
+        // any: targeted-any per typing_policy; TsBase event payload is widget-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
         if (arguments.length == 1) {
@@ -234,9 +234,9 @@ class w2base {
             edata.type = eventName
             edata.target = edata.target ?? this
         }
-        if (w2utils.isPlainObject(edata) && edata.phase == 'after') {
+        if (TsUtils.isPlainObject(edata) && edata.phase == 'after') {
             // find event
-            edata = this.activeEvents.find((event: w2event) => {
+            edata = this.activeEvents.find((event: TsEvent) => {
                 if (event.type == edata.type && event.target == edata.target) {
                     return true
                 }
@@ -247,15 +247,15 @@ class w2base {
                 return edata
             }
             console.log('NOTICE: This syntax "edata.trigger({ phase: \'after\' })" is outdated. Use edata.finish() instead.')
-        } else if (!(edata instanceof w2event)) {
-            edata = new w2event(this, edata)
+        } else if (!(edata instanceof TsEvent)) {
+            edata = new TsEvent(this, edata)
             this.activeEvents.push(edata)
         }
         // eslint-disable-next-line @typescript-eslint/ban-types
         let args: string[], fun: Function | undefined, tmp: RegExpExecArray | null
         if (!Array.isArray(this.listeners)) this.listeners = []
         if (this.debug) {
-            console.log(`w2base: trigger "${edata.type}:${edata.phase}"`, edata)
+            console.log(`TsBase: trigger "${edata.type}:${edata.phase}"`, edata)
         }
         // process events in REVERSE order
         for (let h = this.listeners.length-1; h >= 0; h--) {
@@ -328,7 +328,7 @@ class w2base {
             }
             edata._resolve(edata)
             if (this.debug) {
-                console.log(`w2base: trigger "${edata.type}:${edata.phase}"`, edata)
+                console.log(`TsBase: trigger "${edata.type}:${edata.phase}"`, edata)
             }
             // clean up activeEvents
             const ind = this.activeEvents.indexOf(edata)
@@ -371,5 +371,5 @@ class w2base {
         edata.finish()
     }
 }
-export { w2event, w2base }
-export type { W2EventData, W2EventListener }
+export { TsEvent, TsBase }
+export type { TsEventData, TsEventListener }

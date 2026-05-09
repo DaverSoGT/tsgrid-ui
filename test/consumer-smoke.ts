@@ -14,20 +14,20 @@
 // Import all 23 public names from the source barrel
 import {
     w2ui,
-    w2utils,
+    TsUtils,
     query,
-    w2locale,
-    w2event,
-    w2base,
-    w2popup, w2alert, w2confirm, w2prompt, Dialog,
-    w2tooltip, w2menu, w2color, w2date, Tooltip,
-    w2toolbar,
-    w2sidebar,
-    w2tabs,
-    w2layout,
-    w2grid,
-    w2form,
-    w2field,
+    TsLocale,
+    TsEvent,
+    TsBase,
+    TsPopup, w2alert, w2confirm, w2prompt, Dialog,
+    TsTooltip, w2menu, w2color, w2date, Tooltip,
+    TsToolbar,
+    TsSidebar,
+    TsTabs,
+    TsLayout,
+    TsGrid,
+    TsForm,
+    TsField,
 } from '../src/index.js'
 
 // Import branded types from src/types.ts
@@ -45,8 +45,8 @@ type IsAny<T> = (T extends never ? true : false) extends (false extends true ? t
 const _w2ui: typeof w2ui = w2ui
 void _w2ui
 
-// w2utils namespace
-const _w2utils: typeof w2utils = w2utils
+// TsUtils namespace
+const _w2utils: typeof TsUtils = TsUtils
 void _w2utils
 
 // query (jQuery-like selector)
@@ -54,17 +54,17 @@ const _query: typeof query = query
 void _query
 
 // locale object
-const _locale: typeof w2locale = w2locale
+const _locale: typeof TsLocale = TsLocale
 void _locale
 
 // Base event / base class
-const _event: typeof w2event = w2event
+const _event: typeof TsEvent = TsEvent
 void _event
-const _base: typeof w2base = w2base
+const _base: typeof TsBase = TsBase
 void _base
 
 // Popup family
-const _popup: typeof w2popup = w2popup
+const _popup: typeof TsPopup = TsPopup
 void _popup
 const _alert: typeof w2alert = w2alert
 void _alert
@@ -76,7 +76,7 @@ const _Dialog: typeof Dialog = Dialog
 void _Dialog
 
 // Tooltip family
-const _tooltip: typeof w2tooltip = w2tooltip
+const _tooltip: typeof TsTooltip = TsTooltip
 void _tooltip
 const _menu: typeof w2menu = w2menu
 void _menu
@@ -88,19 +88,19 @@ const _Tooltip: typeof Tooltip = Tooltip
 void _Tooltip
 
 // Remaining widgets
-const _toolbar: typeof w2toolbar = w2toolbar
+const _toolbar: typeof TsToolbar = TsToolbar
 void _toolbar
-const _sidebar: typeof w2sidebar = w2sidebar
+const _sidebar: typeof TsSidebar = TsSidebar
 void _sidebar
-const _tabs: typeof w2tabs = w2tabs
+const _tabs: typeof TsTabs = TsTabs
 void _tabs
-const _layout: typeof w2layout = w2layout
+const _layout: typeof TsLayout = TsLayout
 void _layout
-const _grid: typeof w2grid = w2grid
+const _grid: typeof TsGrid = TsGrid
 void _grid
-const _form: typeof w2form = w2form
+const _form: typeof TsForm = TsForm
 void _form
-const _field: typeof w2field = w2field
+const _field: typeof TsField = TsField
 void _field
 
 // ---------------------------------------------------------------------------
@@ -131,13 +131,13 @@ void _fieldName
 // (guards against signature regression)
 // ---------------------------------------------------------------------------
 
-// Constructor signatures: w2grid / w2form / w2field are classes — `new` must work
+// Constructor signatures: TsGrid / TsForm / TsField are classes — `new` must work
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _gridInst: InstanceType<typeof w2grid> = new w2grid({ name: 'test-grid', columns: [], records: [] as any[] })
+const _gridInst: InstanceType<typeof TsGrid> = new TsGrid({ name: 'test-grid', columns: [], records: [] as any[] })
 void _gridInst
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const _formInst: InstanceType<typeof w2form> = new w2form({ name: 'test-form', fields: [] as any[] })
+const _formInst: InstanceType<typeof TsForm> = new TsForm({ name: 'test-form', fields: [] as any[] })
 void _formInst
 
 // ---------------------------------------------------------------------------

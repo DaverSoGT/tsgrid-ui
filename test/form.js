@@ -1,4 +1,4 @@
-import { w2form } from '../src/tsform.js'
+import { TsForm } from '../src/tsform.js'
 import { w2menu } from '../src/tstooltip.js'
 import { w2ui } from '../src/tsutils.js'
 
@@ -6,7 +6,7 @@ import { w2ui } from '../src/tsutils.js'
 window.w2ui = w2ui
 window.w2menu = w2menu
 
-let form = new w2form({
+let form = new TsForm({
     name      : 'form',
     routeData : { id: 4 },
     postData: { some: "data" },

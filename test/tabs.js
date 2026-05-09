@@ -1,7 +1,7 @@
 import query from '../src/query.js'
-import { w2tabs } from '../src/tstabs.js'
+import { TsTabs } from '../src/tstabs.js'
 
-let tabs = new w2tabs({
+let tabs = new TsTabs({
     name     : 'tabs',
     active   : 'tab1',
     right    : '12',

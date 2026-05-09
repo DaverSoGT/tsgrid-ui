@@ -53,10 +53,10 @@ if (global) {
     })
 }
 })(self, {
-    w2ui, w2utils, query, w2locale, w2event, w2base,
-    w2popup, w2alert, w2confirm, w2prompt, Dialog,
-    w2tooltip, w2menu, w2color, w2date, Tooltip,
-    w2toolbar, w2sidebar, w2tabs, w2layout, w2grid, w2form, w2field
+    w2ui, TsUtils, query, TsLocale, TsEvent, TsBase,
+    TsPopup, w2alert, w2confirm, w2prompt, Dialog,
+    TsTooltip, w2menu, w2color, w2date, Tooltip,
+    TsToolbar, TsSidebar, TsTabs, TsLayout, TsGrid, TsForm, TsField
 });`
 
 // ---------------------------------------------------------------------------

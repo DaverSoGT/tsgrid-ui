@@ -1,14 +1,14 @@
 // import { w2overlay } from '../src/w2overlay.js'
-import { w2utils } from '../src/tsutils.js'
-import { w2tooltip, w2color, w2menu } from '../src/tstooltip.js'
+import { TsUtils } from '../src/tsutils.js'
+import { TsTooltip, w2color, w2menu } from '../src/tstooltip.js'
 import { $, query } from '../src/query.js'
 
 window.query = query
-window.w2tooltip = w2tooltip
-window.w2utils = w2utils
+window.TsTooltip = TsTooltip
+window.TsUtils = TsUtils
 
 $('.corners input').each(el => {
-    w2tooltip.attach(el, {
+    TsTooltip.attach(el, {
         html: 'Corner tooltip',
         autoShow: true,
         // showOn: 'focus',
@@ -25,14 +25,14 @@ $('button').on('click', event => {
     let anchor = $('#inp0')
     anchor.css('height', '120px')
     if (!isHide) {
-        // w2tooltip.show({
+        // TsTooltip.show({
         //     name: 'tpA',
         //     anchor: anchor[0],
         //     html: 'small',
         //     position: 'left',
         //     hideOn: ['click']
         // })
-        // w2tooltip.show({
+        // TsTooltip.show({
         //     name: 'tpB',
         //     anchor: anchor[0],
         //     class: 'w2ui-light',
@@ -40,7 +40,7 @@ $('button').on('click', event => {
         //     position: 'bottom',
         //     hideOn: ['click']
         // })
-        w2tooltip.attach({
+        TsTooltip.attach({
             name: 'tp1',
             anchor: anchor[0],
             // position: $('#position').val(),
@@ -94,7 +94,7 @@ $('button').on('click', event => {
         //     console.log('move 1', event)
         // })
     } else {
-        w2tooltip.hide(anchor[0])
+        TsTooltip.hide(anchor[0])
     }
 })
 
@@ -105,13 +105,13 @@ $('button').on('click', event => {
 // query('.input')
 //     .off('.tooltip')
 //     .on('mouseenter.tooltip', function(event) {
-//         w2tooltip.show(this, 'some input')
+//         TsTooltip.show(this, 'some input')
 //     })
 //     .on('mouseleave.tooltip', function(event) {
-//         w2tooltip.hide(this)
+//         TsTooltip.hide(this)
 //     })
 
-// w2tooltip.show({
+// TsTooltip.show({
 //     anchor: query('#inp0')[0],
 //     position: 'top',
 //     html: 'Auto show',

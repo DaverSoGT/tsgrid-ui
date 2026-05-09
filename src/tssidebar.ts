@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tooltip, w2menu
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip, w2menu
  *
  * == TODO ==
  *  - dbl click should be like it is in grid (with timer not HTML dbl click event)
@@ -24,10 +24,10 @@
  *  - prev(), next(), getChain()
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tooltip, w2menu } from './tstooltip.js'
+import { TsTooltip, w2menu } from './tstooltip.js'
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
@@ -36,12 +36,12 @@ const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 // ---------------------------------------------------------------------------
 
 /** Options accepted by refresh() */
-interface W2SidebarRefreshOptions {
+interface TsSidebarRefreshOptions {
     recursive?: boolean
 }
 
 /** Options accepted by update() — mirrors node property names that can be updated in-place */
-interface W2SidebarUpdateOptions {
+interface TsSidebarUpdateOptions {
     icon?: string | ((nd: unknown, level: number) => string) | null
     class?: string | null
     style?: string | null
@@ -51,39 +51,39 @@ interface W2SidebarUpdateOptions {
 }
 
 /** Options accepted by setCount() */
-interface W2SidebarSetCountOptions {
+interface TsSidebarSetCountOptions {
     className?: string
     style?: string
     noRepeat?: boolean
 }
 
 /** Options for find() */
-interface W2SidebarFindOptions {
+interface TsSidebarFindOptions {
     returnDisabled?: boolean
     returnGroups?: boolean
     [key: string]: unknown
 }
 
 /** Options for sort() */
-interface W2SidebarSortOptions {
+interface TsSidebarSortOptions {
     foldersFirst?: boolean
     caseSensitive?: boolean
     reverse?: boolean
     [key: string]: unknown
 }
 
-class w2sidebar extends w2base {
+class TsSidebar extends TsBase {
     declare box: HTMLElement | null
     declare name: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     nodes: any[] // any: sidebar node tree has dynamic shape
-    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected: any
-    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     img: any
-    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     icon: any
     style: string
@@ -100,7 +100,7 @@ class w2sidebar extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates move, renaming, observeResize
     node_template: Record<string, unknown>
-    // any: targeted-any per typing_policy; w2sidebar node tree shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -203,7 +203,7 @@ class w2sidebar extends w2base {
         if (this.box) this.render(this.box)
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     add(parent?: any, nodes?: any) {
         if (nodes === undefined) {
@@ -218,7 +218,7 @@ class w2sidebar extends w2base {
         return this.insert(parent, null, nodes)
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     insert(parent?: any, before?: any, nodes?: any) {
         let txt, ind, tmp, node, nd
@@ -286,7 +286,7 @@ class w2sidebar extends w2base {
         return tmp
     }
 
-    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) { // multiple arguments
         let effected = 0
@@ -316,7 +316,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(parent?: any, id?: any, node?: any) {
         if (node === undefined) {
@@ -336,7 +336,7 @@ class w2sidebar extends w2base {
                 if (Object.keys(res).length != 0) {
                     // make sure nodes inserted correctly
                     const nodes = node.nodes
-                    w2utils.extend(parent.nodes[i], node, (nodes != null ? { nodes: [] } : {}))
+                    TsUtils.extend(parent.nodes[i], node, (nodes != null ? { nodes: [] } : {}))
                     if (nodes != null) {
                         this.add(parent.nodes[i], nodes)
                     }
@@ -351,7 +351,7 @@ class w2sidebar extends w2base {
         return false
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(parent?: any, id?: any, returnIndex?: any): any { // can be just called get(id) or get(id, true)
         if (arguments.length === 0) {
@@ -385,7 +385,7 @@ class w2sidebar extends w2base {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setCount(id: any, count: any, options: W2SidebarSetCountOptions = {}) { // any: node id + count are runtime-typed
+    setCount(id: any, count: any, options: TsSidebarSetCountOptions = {}) { // any: node id + count are runtime-typed
         const node = this.get(id)
         if (node.group) {
             console.log(`Node "${id}" is a group and groups cannot have counts or badges.`)
@@ -395,7 +395,7 @@ class w2sidebar extends w2base {
             className: options.className ?? '',
             style: options.style ?? ''
         }
-        const btn = query(this.box).find(`#node_${w2utils.escapeId(id)} .w2ui-node-badge`)
+        const btn = query(this.box).find(`#node_${TsUtils.escapeId(id)} .w2ui-node-badge`)
         if (btn.length > 0) {
             // any: query().text(val) returns unknown|Query; setter always returns Query here
             const $cnt = (btn.removeClass(null)
@@ -412,7 +412,7 @@ class w2sidebar extends w2base {
         }
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     find(parent?: any, params?: any, results?: any): any { // can be just called find({ selected: true })
         // TODO: rewrite with this.each()
@@ -438,7 +438,7 @@ class w2sidebar extends w2base {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sort(options: W2SidebarSortOptions | null | undefined, nodes?: any) { // any: recursive call passes node subtree of unknown shape
+    sort(options: TsSidebarSortOptions | null | undefined, nodes?: any) { // any: recursive call passes node subtree of unknown shape
         // default options
         if (!options || typeof options != 'object') options = {}
         if (options.foldersFirst == null) options.foldersFirst = true
@@ -463,7 +463,7 @@ class w2sidebar extends w2base {
                     aText = aText.toLowerCase()
                     bText = bText.toLowerCase()
                 }
-                const cmp = w2utils.naturalCompare(aText, bText)
+                const cmp = TsUtils.naturalCompare(aText, bText)
                 // any: bitwise-AND on boolean mirrors original JS behavior (truthy = reversed)
                 return ((cmp === 1 || cmp === -1) as unknown as number) & (options.reverse ? 1 : 0) ? -cmp : cmp
             }
@@ -526,7 +526,7 @@ class w2sidebar extends w2base {
         }
     }
 
-    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -543,7 +543,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -560,7 +560,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -577,7 +577,7 @@ class w2sidebar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2sidebar node tree shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) { // multiple arguments
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -616,7 +616,7 @@ class w2sidebar extends w2base {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.find({ selected: true }).forEach((nd: any) => nd.selected = false) // any: node objects have dynamic shape
         }
-        const $el = query(this.box).find('#node_'+ w2utils.escapeId(id))
+        const $el = query(this.box).find('#node_'+ TsUtils.escapeId(id))
         $el.addClass('w2ui-selected')
             .find('.w2ui-icon')
             .addClass('w2ui-icon-selected')
@@ -654,7 +654,7 @@ class w2sidebar extends w2base {
             return true
         }
         current.selected = false
-        query(this.box).find('#node_'+ w2utils.escapeId(id))
+        query(this.box).find('#node_'+ TsUtils.escapeId(id))
             .removeClass('w2ui-selected')
             .find('.w2ui-icon').removeClass('w2ui-icon-selected')
         if (typeof this.selected == 'string' && this.selected == id) {
@@ -691,8 +691,8 @@ class w2sidebar extends w2base {
         const edata = this.trigger('collapse', { target: id, object: nd, node: nd })
         if (edata.isCancelled === true) return
         // default action
-        query(this.box).find('#node_'+ w2utils.escapeId(id) +'_sub').hide()
-        query(this.box).find('#node_'+ w2utils.escapeId(id) +' .w2ui-expanded')
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +'_sub').hide()
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .w2ui-expanded')
             .removeClass('w2ui-expanded')
             .addClass('w2ui-collapsed')
         nd.expanded = false
@@ -709,9 +709,9 @@ class w2sidebar extends w2base {
         const edata = this.trigger('expand', { target: id, object: nd, node: nd })
         if (edata.isCancelled === true) return
         // default action
-        query(this.box).find('#node_'+ w2utils.escapeId(id) +'_sub')
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +'_sub')
             .show()
-        query(this.box).find('#node_'+ w2utils.escapeId(id) +' .w2ui-collapsed')
+        query(this.box).find('#node_'+ TsUtils.escapeId(id) +' .w2ui-collapsed')
             .removeClass('w2ui-collapsed')
             .addClass('w2ui-expanded')
         nd.expanded = true
@@ -721,7 +721,7 @@ class w2sidebar extends w2base {
         return true
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     collapseAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -736,7 +736,7 @@ class w2sidebar extends w2base {
         return true
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expandAll(parent?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -775,7 +775,7 @@ class w2sidebar extends w2base {
             return
         }
         // select new one
-        const newNode = query(this.box).find('#node_'+ w2utils.escapeId(id))
+        const newNode = query(this.box).find('#node_'+ TsUtils.escapeId(id))
         newNode.addClass('w2ui-selected').find('.w2ui-icon').addClass('w2ui-icon-selected')
         // need timeout to allow rendering
         setTimeout(() => {
@@ -837,7 +837,7 @@ class w2sidebar extends w2base {
                 // route processing
                 if (typeof nd.route == 'string') {
                     let route = nd.route !== '' ? String('/'+ nd.route).replace(/\/{2,}/g, '/') : ''
-                    const info  = w2utils.parseRoute(route)
+                    const info  = TsUtils.parseRoute(route)
                     if (info.keys.length > 0) {
                         for (let k = 0; k < info.keys.length; k++) {
                             const routeKey = info.keys[k]
@@ -893,7 +893,7 @@ class w2sidebar extends w2base {
                 self.unselect()
             }
         })
-        w2tooltip.hide(this.name + '_tooltip')
+        TsTooltip.hide(this.name + '_tooltip')
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -968,7 +968,7 @@ class w2sidebar extends w2base {
 
     // returns ids of expanded elements as a flat array
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getChain(nodes?: any, options: W2SidebarFindOptions = {}): any[] { // any: nodes is dynamic node array; returns id array
+    getChain(nodes?: any, options: TsSidebarFindOptions = {}): any[] { // any: nodes is dynamic node array; returns id array
         options.returnDisabled ??= false
         options.returnGroups ??= false
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1070,7 +1070,7 @@ class w2sidebar extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     inView(id: any) { // any: node id is string|number at runtime
         // any: query().get(0) returns Node|Node[]; sidebar nodes are always HTMLElement
-        const item = query(this.box).find('#node_'+ w2utils.escapeId(id)).get(0) as HTMLElement | undefined
+        const item = query(this.box).find('#node_'+ TsUtils.escapeId(id)).get(0) as HTMLElement | undefined
         if (!item) {
             return false
         }
@@ -1089,7 +1089,7 @@ class w2sidebar extends w2base {
             const nd = this.get(id)
             if (nd == null) return
             // any: query().get(0) returns Node|Node[]; sidebar node is always HTMLElement
-            const item = query(this.box).find('#node_'+ w2utils.escapeId(id)).get(0) as HTMLElement | undefined
+            const item = query(this.box).find('#node_'+ TsUtils.escapeId(id)).get(0) as HTMLElement | undefined
             if (item) item.scrollIntoView({ block: 'center', inline: 'center', behavior: instant ? 'auto' : 'smooth' })
             setTimeout(() => { this.resize(); resolve() }, instant ? 0 : 500)
         })
@@ -1131,7 +1131,7 @@ class w2sidebar extends w2base {
             const mv = this.last.move
             const body = query(this.box).find('.w2ui-sidebar-body')
             if (!mv.ghost) {
-                const node = query(this.box).find(`#node_${w2utils.escapeId(id)}`)
+                const node = query(this.box).find(`#node_${TsUtils.escapeId(id)}`)
                 mv.offsetY = event.offsetY
                 mv.target = id
                 // any: query().get(0) returns Node|Node[]; sidebar node is always HTMLElement
@@ -1225,7 +1225,7 @@ class w2sidebar extends w2base {
                 if (edata.isCancelled === true) {
                     return
                 }
-                const el = query(self.box).find(`#node_${w2utils.escapeId(id)}`)
+                const el = query(self.box).find(`#node_${TsUtils.escapeId(id)}`)
                 el.before(mv.node)
                 el.before(mv.nodeSub)
                 // event after
@@ -1275,7 +1275,7 @@ class w2sidebar extends w2base {
     edit(id: any) { // any: node id is string|number at runtime
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
-        const node = query(this.box).find('#node_'+ w2utils.escapeId(id))
+        const node = query(this.box).find('#node_'+ TsUtils.escapeId(id))
         const text = node.find('.w2ui-node-text')
         // event before
         const edata = this.trigger('edit', { target: id, el: node, textEl: text })
@@ -1287,7 +1287,7 @@ class w2sidebar extends w2base {
         // any: css(key,val) and attr(name,val) overloads return string|Query; cast for chaining
         ;((text.addClass('w2ui-focus')
             .css('pointer-events', 'all') as unknown as Query)
-            .attr('contenteditable', w2utils.isFirefox ? 'true' : 'plaintext-only') as unknown as Query)
+            .attr('contenteditable', TsUtils.isFirefox ? 'true' : 'plaintext-only') as unknown as Query)
             .on('blur.node-editing', (_event) => {
                 // timeout is needed to add to the end of the event loop
                 setTimeout(_rename, 0)
@@ -1302,7 +1302,7 @@ class w2sidebar extends w2base {
 
         const original = text.text() as string
         // any: query()[0] returns Node; text node is HTMLElement; text.text() returns unknown at runtime
-        w2utils.setCursorPosition(text[0] as HTMLElement, 0, (text.text() as string).length)
+        TsUtils.setCursorPosition(text[0] as HTMLElement, 0, (text.text() as string).length)
         // event after
         edata.finish()
 
@@ -1349,7 +1349,7 @@ class w2sidebar extends w2base {
         const edata = this.trigger('contextMenu', { target: id, originalEvent: event, object: nd, allowOnDisabled: false })
         if (edata.isCancelled === true) return
         // default action
-        // any: allowOnDisabled is a custom event field stored in detail (W2EventData allows [key: string]: unknown)
+        // any: allowOnDisabled is a custom event field stored in detail (TsEventData allows [key: string]: unknown)
         if (nd.disabled && !edata.detail['allowOnDisabled']) return
         if (this['menu'].length > 0) {
             w2menu.hide(this.name + '_menu') // hide previous if any needed when other item's menu is shown
@@ -1361,7 +1361,7 @@ class w2sidebar extends w2base {
                 items: this['menu'],
                 originalEvent: event
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            }) as any // any: AttachReturn not exported from w2tooltip; select is optional on it
+            }) as any // any: AttachReturn not exported from TsTooltip; select is optional on it
             menuAttach?.select?.((evt: unknown) => {
                 this.menuClick(id, (evt as { detail: unknown }).detail)
             })
@@ -1434,7 +1434,7 @@ class w2sidebar extends w2base {
                 <div class="w2ui-sidebar-top"></div>
                 <input id="sidebar_${this.name}_focus" ${(this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : '')}
                     style="position: absolute; top: 0; right: 1px; width: 1px; z-index: -1; opacity: 0"
-                    ${(w2utils.isMobile ? 'readonly' : '')}/>
+                    ${(TsUtils.isMobile ? 'readonly' : '')}/>
                 <div class="w2ui-sidebar-body"></div>
                 <div class="w2ui-sidebar-bottom"></div>
             </div>`)
@@ -1512,13 +1512,13 @@ class w2sidebar extends w2base {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    update(id: any, options: W2SidebarUpdateOptions = {}) { // any: node id is string|number at runtime
+    update(id: any, options: TsSidebarUpdateOptions = {}) { // any: node id is string|number at runtime
         // quick function to refresh just this item (not sub nodes)
         //  - icon, class, style, text, count
         const nd = this.get(id)
         let level
         if (nd) {
-            const $el = query(this.box).find('#node_'+ w2utils.escapeId(nd.id))
+            const $el = query(this.box).find('#node_'+ TsUtils.escapeId(nd.id))
             if (nd.group) {
                 if (options.text) {
                     nd.text = options.text
@@ -1590,7 +1590,7 @@ class w2sidebar extends w2base {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    refresh(id?: any, options: W2SidebarRefreshOptions = {}) { // any: node id is string|number at runtime
+    refresh(id?: any, options: TsSidebarRefreshOptions = {}) { // any: node id is string|number at runtime
         if (this.box == null) return
         // any: query().get(0) returns Node|Node[]; sidebar body is always HTMLElement
         const body = query(this.box).find(':scope > div > .w2ui-sidebar-body').get(0) as HTMLElement | undefined
@@ -1635,9 +1635,9 @@ class w2sidebar extends w2base {
         } else {
             node = this.get(id)
             if (node == null) return
-            nodeSubId = '#node_'+ w2utils.escapeId(node.id) + '_sub'
+            nodeSubId = '#node_'+ TsUtils.escapeId(node.id) + '_sub'
         }
-        const nodeId = '#node_'+ w2utils.escapeId(node.id)
+        const nodeId = '#node_'+ TsUtils.escapeId(node.id)
         let nodeHTML
         if (node !== this) {
             nodeHTML = getNodeHTML(node)
@@ -1682,7 +1682,7 @@ class w2sidebar extends w2base {
         // bind events
         if (!options.recursive) {
             const els = query(this.box).find(`${nodeId}, ${nodeId} .w2ui-eaction, ${nodeSubId} .w2ui-eaction`)
-            w2utils.bindEvents(els, this)
+            TsUtils.bindEvents(els, this)
             // restore scroll position
             query(body).prop({ scrollLeft, scrollTop })
         }
@@ -1710,7 +1710,7 @@ class w2sidebar extends w2base {
             }
             if (Array.isArray(nd.nodes) && nd.nodes.length > 0) nd.collapsible = true
             if (nd.group) {
-                let text = w2utils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
+                let text = TsUtils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
                 if (String(text).substr(0, 5) != '<span') {
                     text = `<span class="w2ui-group-text">${text}</span>`
                 }
@@ -1722,7 +1722,7 @@ class w2sidebar extends w2base {
                         data-mouseenter="showPlus|this|inherit"
                         data-mouseleave="showPlus|this|transparent">
                         ${nd.groupShowHide && nd.collapsible
-                            ? `<span>${!nd.hidden && nd.expanded ? w2utils.lang('Hide') : w2utils.lang('Show')}</span>`
+                            ? `<span>${!nd.hidden && nd.expanded ? TsUtils.lang('Hide') : TsUtils.lang('Show')}</span>`
                             : '<span></span>'
                         } ${text}
                     </div>
@@ -1795,7 +1795,7 @@ class w2sidebar extends w2base {
                     expand = `<div class="${toggleClasses.join(' ')}" data-click="toggle|${nd.id}"><span></span></div>`
                     classes.push('w2ui-has-children')
                 }
-                const text = w2utils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
+                const text = TsUtils.lang(typeof nd.text == 'function' ? nd.text.call(obj, nd, level) : nd.text)
                 let nodeOffset = nd.parent?.childOffset ?? 0
                 if (level === 0 && nd.collapsible === true && obj['toggleAlign'] == 'left') {
                     nodeOffset += 12
@@ -1853,7 +1853,7 @@ class w2sidebar extends w2base {
         }
         if (type == 'tooltip') {
             // this tooltip shows for flat sidebars
-            const text = w2utils.lang(typeof node.text == 'function' ? node.text.call(this, node) : node.text)
+            const text = TsUtils.lang(typeof node.text == 'function' ? node.text.call(this, node) : node.text)
             let tooltip = text + (node.count != null
                 ? ' - <span class="w2ui-node-badge w2ui-node-count">'+ node.count +'</span>'
                 : '')
@@ -1912,7 +1912,7 @@ class w2sidebar extends w2base {
     tooltip(el: any, text: any) { // any: el is query-wrapped element; text is string|number at runtime
         const $el = query(el).find('.w2ui-node-data')
         if (text !== '') {
-            w2tooltip.show({
+            TsTooltip.show({
                 // any: query().get(0) returns Node|Node[]; sidebar node-data element is always HTMLElement
                 anchor: $el.get(0) as HTMLElement,
                 name: this.name + '_tooltip',
@@ -1920,21 +1920,21 @@ class w2sidebar extends w2base {
                 position: 'right|left'
             })
         } else {
-            w2tooltip.hide(this.name + '_tooltip')
+            TsTooltip.hide(this.name + '_tooltip')
         }
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     otherTooltip(el: any, text: any) { // any: el is query-wrapped element; text is string|number at runtime
         if (text !== '') {
-            w2tooltip.show({
+            TsTooltip.show({
                 anchor: el,
                 name: this.name + '_tooltip',
                 html: text,
                 position: 'top|bottom'
             })
         } else {
-            w2tooltip.hide(this.name + '_tooltip')
+            TsTooltip.hide(this.name + '_tooltip')
         }
     }
 
@@ -1982,15 +1982,15 @@ class w2sidebar extends w2base {
         this.last.observeResize?.disconnect()
     }
 
-    // any: callback parameter — caller signature varies; w2sidebar node tree shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
-        w2utils.lock(this.box, msg, showSpinner)
+        TsUtils.lock(this.box, msg, showSpinner)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unlock(speed: any) { // any: speed is numeric ms at runtime
-        w2utils.unlock(this.box, speed)
+        TsUtils.unlock(this.box, speed)
     }
 }
-export { w2sidebar }
+export { TsSidebar }

@@ -1,5 +1,5 @@
 jQuery(function () {
-    jQuery('#toolbar').w2toolbar({
+    jQuery('#toolbar').TsToolbar({
         name: 'toolbar',
         right: [null, null, '<div style="padding: 9px 5px">RIGHT HTML</div>'],
         tooltip: 'top',

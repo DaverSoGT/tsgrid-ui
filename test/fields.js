@@ -1,5 +1,5 @@
 jQuery(function () {
-    w2utils.settings.dataType = 'HTTP';
+    TsUtils.settings.dataType = 'HTTP';
     var fname = ['Vitali', 'Katsia', 'John', 'Peter', 'Sue', 'Olivia', 'Thomas', 'Sergei', 'Snehal', 'Avinash', 'Divia'];
     var lname = ['Peterson', 'Rene', 'Johnson', 'Cuban', 'Twist', 'Sidorov', 'Vasiliev', 'Yadav', 'Vaishnav'];
     var items = [];
@@ -16,19 +16,19 @@ jQuery(function () {
         item.text = item.fname + ' ' + item.lname;
         items.push(item);
     }
-    jQuery('.date').w2field('date', { silent: false, format: 'dd/mm/yyyy' });
-    jQuery('.date-with-blocked-weekends').w2field('date', { silent: false, format: 'yyyy-m-d', blockWeekDays: [0,6] })
-    jQuery('.datetime').w2field('datetime', {});
-    jQuery('.time').w2field('time', { start: '8:15am', end: '4:30pm' });
-    jQuery('.time_without_minutes').w2field('time', { noMinutes: true });
-    jQuery('.color').w2field('color');
-    jQuery('.int').w2field({ type: 'int', min: -36, max: 1234, autoCorrect: true });
-    jQuery('.float').w2field('float');
-    jQuery('.percent').w2field('percent', { precision: 0, min: 0, max: 100 });
-    jQuery('.money').w2field('currency');
-    jQuery('.hex').w2field('hex');
-    jQuery('.alphanumeric').w2field('alphanumeric');
-    jQuery('.combo').w2field('combo', {
+    jQuery('.date').TsField('date', { silent: false, format: 'dd/mm/yyyy' });
+    jQuery('.date-with-blocked-weekends').TsField('date', { silent: false, format: 'yyyy-m-d', blockWeekDays: [0,6] })
+    jQuery('.datetime').TsField('datetime', {});
+    jQuery('.time').TsField('time', { start: '8:15am', end: '4:30pm' });
+    jQuery('.time_without_minutes').TsField('time', { noMinutes: true });
+    jQuery('.color').TsField('color');
+    jQuery('.int').TsField({ type: 'int', min: -36, max: 1234, autoCorrect: true });
+    jQuery('.float').TsField('float');
+    jQuery('.percent').TsField('percent', { precision: 0, min: 0, max: 100 });
+    jQuery('.money').TsField('currency');
+    jQuery('.hex').TsField('hex');
+    jQuery('.alphanumeric').TsField('alphanumeric');
+    jQuery('.combo').TsField('combo', {
         openOnFocus: true,
         match: 'contains',
         filter: false,
@@ -56,7 +56,7 @@ jQuery(function () {
             // console.log('load', event);
         }
     });
-    jQuery('.list').w2field('list', {
+    jQuery('.list').TsField('list', {
         icon: 'fa fa-star',
         onIconClick(event) {
             jQuery(event.el).w2overlay('<div style="padding: 10px">Message for the icon</div>');
@@ -108,7 +108,7 @@ jQuery(function () {
         // console.log('FOCUS: user', jQuery(this).data());
 
     });
-    jQuery('.enum').w2field('enum', {
+    jQuery('.enum').TsField('enum', {
         // url: 'http://w2ui.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"search":"122",limit":100,"offset":0}',
         recId: 'recid',
         spinner: true,
@@ -185,10 +185,10 @@ jQuery(function () {
         },
         onNew: function (event) {
             // console.log('enum new', event);
-            jQuery().w2popup({'title':'test'})
+            jQuery().TsPopup({'title':'test'})
         }
     });
-    jQuery('.file').w2field('file', {
+    jQuery('.file').TsField('file', {
         onAdd: function (event) {
             // console.log('add', event);
         },
@@ -198,17 +198,17 @@ jQuery(function () {
     });
 
     // date range
-    jQuery('#date1').w2field('date', { end: jQuery('#date2'), blocked: ['12/12/2013'] });
-    jQuery('#date2').w2field('date', { start: jQuery('#date1'), blocked: ['12/12/2013'] });
+    jQuery('#date1').TsField('date', { end: jQuery('#date2'), blocked: ['12/12/2013'] });
+    jQuery('#date2').TsField('date', { start: jQuery('#date1'), blocked: ['12/12/2013'] });
 
     // resiabled elements
-    jQuery('#resize_list').w2field('list', { icon: 'fa fa-star', items: items, selected: jQuery.parseJSON('{"id":4,"fname":"Thomas","lname":"Cuban","email":"vm@gmail.com","manager":"--","snumber":2651849,"sdate":1566800000000,"text":"Thomas Cuban","hidden":false}') });
-    jQuery('#resize_enum').w2field('enum', { icon: 'fa fa-star', items: items });
-    jQuery('#resize_file').w2field('file', { icon: 'fa fa-star', items: items });
+    jQuery('#resize_list').TsField('list', { icon: 'fa fa-star', items: items, selected: jQuery.parseJSON('{"id":4,"fname":"Thomas","lname":"Cuban","email":"vm@gmail.com","manager":"--","snumber":2651849,"sdate":1566800000000,"text":"Thomas Cuban","hidden":false}') });
+    jQuery('#resize_enum').TsField('enum', { icon: 'fa fa-star', items: items });
+    jQuery('#resize_file').TsField('file', { icon: 'fa fa-star', items: items });
 
     // off screen
-    jQuery('.screen').w2field('date');
-    jQuery('.screenc').w2field('color');
+    jQuery('.screen').TsField('date');
+    jQuery('.screenc').TsField('color');
 
     function click(ind) {
         switch(ind) {
@@ -225,7 +225,7 @@ jQuery(function () {
                 jQuery('input, textarea, select').not('[type=button]').prop('disabled', false).change()
                 break
             case 5:
-                jQuery('input').each(function () { if (jQuery(this).w2field()) jQuery(this).w2field().clear() }).length
+                jQuery('input').each(function () { if (jQuery(this).TsField()) jQuery(this).TsField().clear() }).length
                 break
             case 6:
                 jQuery('#extra').show()

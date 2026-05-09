@@ -35,7 +35,7 @@ test.describe('Layout', () => {
         const panelCount = await page.evaluate(() => {
             return (window as any)._smokeLayout.panels.length
         })
-        // w2layout always has at least the configured panels (4); may include internal ones
+        // TsLayout always has at least the configured panels (4); may include internal ones
         expect(panelCount).toBeGreaterThanOrEqual(4)
     })
 })

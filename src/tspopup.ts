@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base
+ *  - Dependencies: mQuery, TsUtils, TsBase
  *
  * == 2.0 changes
  *  - CSP - fixed inline events
@@ -10,8 +10,8 @@
  *  - popup.message - refactored
  *  - removed popup.options.mutliple
  *  - refactores w2alert, w2confirm, w2prompt
- *  - add w2popup.open().on('')
- *  - removed w2popup.restoreTemplate
+ *  - add TsPopup.open().on('')
+ *  - removed TsPopup.restoreTemplate
  *  - deprecated onMsgOpen and onMsgClose
  *  - deprecated options.bgColor
  *  - rename focus -> setFocus
@@ -22,8 +22,8 @@
  *  - resize - returns promise
  */
 
-import { w2base } from './tsbase.js'
-import { w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 // any: query() returns Query|void but is always used in chain; cast once here
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
@@ -56,13 +56,13 @@ interface DialogOptions {
     [key: string]: unknown
 }
 
-class Dialog extends w2base {
+class Dialog extends TsBase {
     defaults: DialogOptions
     options!: DialogOptions // definite assignment: set in open() before any property access
     declare name: string
     status: string
     tmp: Record<string, unknown>
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     handleResize: (event?: any) => void
     _promCreated!: (value?: unknown) => void
@@ -117,12 +117,12 @@ class Dialog extends w2base {
 
     /**
      * Sample calls
-     * - w2popup.open('ddd').ok(() => { w2popup.close() })
-     * - w2popup.open('ddd', { height: 120 }).ok(() => { w2popup.close() })
-     * - w2popup.open({ body: 'text', title: 'caption', actions: ["Close"] }).close(() => { w2popup.close() })
-     * - w2popup.open({ body: 'text', title: 'caption', actions: { Close() { w2popup.close() }} })
+     * - TsPopup.open('ddd').ok(() => { TsPopup.close() })
+     * - TsPopup.open('ddd', { height: 120 }).ok(() => { TsPopup.close() })
+     * - TsPopup.open({ body: 'text', title: 'caption', actions: ["Close"] }).close(() => { TsPopup.close() })
+     * - TsPopup.open({ body: 'text', title: 'caption', actions: { Close() { TsPopup.close() }} })
      */
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     open(options?: any, extraOptions?: any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -134,7 +134,7 @@ class Dialog extends w2base {
         // get old options and merge them
         const old_options = this.options
         if (['string', 'number'].includes(typeof options)) {
-            options = w2utils.extend({
+            options = TsUtils.extend({
                 title: 'Notification',
                 body: `<div class="w2ui-centered">${options}</div>`,
                 actions: { Ok() { self.close() }},
@@ -161,7 +161,7 @@ class Dialog extends w2base {
         options.height = parseInt(options.height)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let edata: any, msg: any // any: w2event + dynamic message state
+        let edata: any, msg: any // any: TsEvent + dynamic message state
         const { top, left, width, height } = this.center()
         // make sure popup is not bigger then available screen
         if (options.width > width) options.width = width
@@ -251,7 +251,7 @@ class Dialog extends w2base {
             this.status = 'opening'
             // output message
             if (options.blockPage) {
-                w2utils.lock(document.body, {
+                TsUtils.lock(document.body, {
                     opacity: 0.3,
                     ...(options.modal ? {} : { onClick: () => { this.close() } })
                 })
@@ -264,9 +264,9 @@ class Dialog extends w2base {
                 height: ${parseInt(options.height)}px;
                 transition: ${options.speed}s
             `
-            msg = `<div id="w2ui-popup" class="w2ui-popup w2ui-anim-open animating ${!options.blockPage ? 'w2ui-non-blocking' : ''}" style="${w2utils.stripSpaces(styles)}"></div>`
+            msg = `<div id="w2ui-popup" class="w2ui-popup w2ui-anim-open animating ${!options.blockPage ? 'w2ui-non-blocking' : ''}" style="${TsUtils.stripSpaces(styles)}"></div>`
             query('body').append(msg)
-            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+            // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(query('#w2ui-popup')[0] as any)._w2popup = {
                 self: this,
@@ -292,7 +292,7 @@ class Dialog extends w2base {
             `
             query('#w2ui-popup').html(msg)
 
-            if (options.title) query('#w2ui-popup .w2ui-popup-title').append(w2utils.lang(options.title))
+            if (options.title) query('#w2ui-popup .w2ui-popup-title').append(TsUtils.lang(options.title))
             if (options.buttons) query('#w2ui-popup .w2ui-popup-buttons').append(options.buttons)
             if (options.body) query('#w2ui-popup .w2ui-popup-body').append(options.body)
 
@@ -301,7 +301,7 @@ class Dialog extends w2base {
                 ;(query('#w2ui-popup')
                     .css('transition', options.speed + 's') as unknown as Query)
                     .removeClass('w2ui-anim-open')
-                w2utils.bindEvents('#w2ui-popup .w2ui-eaction', this)
+                TsUtils.bindEvents('#w2ui-popup .w2ui-eaction', this)
                 query('#w2ui-popup').find('.w2ui-popup-body').show()
                 this._promCreated()
             }, 1)
@@ -346,7 +346,7 @@ class Dialog extends w2base {
             if (options.title) {
                 query('#w2ui-popup .w2ui-popup-title')
                     .show()
-                    .html(w2utils.lang(options.title))
+                    .html(TsUtils.lang(options.title))
                 query('#w2ui-popup .w2ui-popup-body').removeClass('w2ui-popup-no-title')
                 query('#w2ui-popup .w2ui-box, #w2ui-popup .w2ui-box-temp').css('top', '')
             } else {
@@ -366,7 +366,7 @@ class Dialog extends w2base {
             const div_old = query('#w2ui-popup .w2ui-box')[0] as HTMLElement
             const div_new = query('#w2ui-popup .w2ui-box-temp')[0] as HTMLElement
             query('#w2ui-popup').addClass('animating')
-            w2utils.transition(div_old, div_new, options.transition as string, () => {
+            TsUtils.transition(div_old, div_new, options.transition as string, () => {
                 // clean up
                 query(div_old).remove()
                 query(div_new).removeClass('w2ui-box-temp').addClass('w2ui-box')
@@ -382,7 +382,7 @@ class Dialog extends w2base {
             // call event onOpen
             this.status = 'open'
             edata.finish()
-            w2utils.bindEvents('#w2ui-popup .w2ui-eaction', this)
+            TsUtils.bindEvents('#w2ui-popup .w2ui-eaction', this)
             query('#w2ui-popup').find('.w2ui-popup-body').show()
         }
 
@@ -394,14 +394,14 @@ class Dialog extends w2base {
         // keyboard events
         if (options.keyboard) {
             query(document.body)
-                .off('.w2popup')
-                .on('keydown.w2popup', (event) => {
+                .off('.TsPopup')
+                .on('keydown.TsPopup', (event) => {
                     this.keydown(event)
                 })
         }
         query(window).on('resize', this.handleResize)
         // initialize move; any: drag-state bag mutated dynamically in mvStart/mvMove/mvStop
-        // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsPopup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const tmp: any = {
             changing : false,
@@ -428,7 +428,7 @@ class Dialog extends w2base {
         return prom
 
         // handlers
-        // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+        // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mvStart(evt: any, resizer?: any) {
             if (!evt) evt = window.event
@@ -510,7 +510,7 @@ class Dialog extends w2base {
         }
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     load(options: any) {
         return new Promise((resolve, reject) => {
@@ -532,14 +532,14 @@ class Dialog extends w2base {
         })
     }
 
-    // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     template(data: any, id: any, options: any = {}) {
         let html
         try {
             html = query(data)
         } catch (e) {
-            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+            // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             html = (_queryRaw as any).html(data)
         }
@@ -555,18 +555,18 @@ class Dialog extends w2base {
         return this.open(options)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     action(action: any, event?: any) {
-        // any: parameter typed any — runtime dispatch by call site; w2popup options accept untyped user payloads at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsPopup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let click: any = this.options.actions?.[action]
-        // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+        // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (click instanceof Object && (click as any).onClick) click = (click as any).onClick
         // event before
         const edata = this.trigger('action', { action, target: 'popup', self: this,
-            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+            // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             originalEvent: event, value: this['input'] ? (this['input'] as any).value : null })
         if (edata.isCancelled === true) return
@@ -576,7 +576,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keydown(event: any) {
         if (this.options && !this.options.keyboard) return
@@ -600,7 +600,7 @@ class Dialog extends w2base {
         edata.finish()
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     close(immediate?: any) {
         // trigger event
@@ -626,7 +626,7 @@ class Dialog extends w2base {
         if (this.status == 'closing' && immediate === true) {
             cleanUp()
             clearTimeout(this.tmp['closingTimer'] as ReturnType<typeof setTimeout>)
-            w2utils.unlock(document.body, 0)
+            TsUtils.unlock(document.body, 0)
             return
         }
         // default behavior
@@ -634,7 +634,7 @@ class Dialog extends w2base {
         ;(query('#w2ui-popup')
             .css('transition', this.options.speed + 's') as unknown as Query)
             .addClass('w2ui-anim-close animating')
-        w2utils.unlock(document.body, 300)
+        TsUtils.unlock(document.body, 300)
         this._promClosing()
 
         if (immediate) {
@@ -704,27 +704,27 @@ class Dialog extends w2base {
         this.open(this.defaults)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options: any) {
-        return w2utils.message({
+        return TsUtils.message({
             owner: this,
             box  : query('#w2ui-popup').get(0) as HTMLElement,
             after: '.w2ui-popup-title'
         }, options)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
-        return w2utils.confirm({
+        return TsUtils.confirm({
             owner: this,
             box  : query('#w2ui-popup').get(0) as HTMLElement,
             after: '.w2ui-popup-title'
         }, options)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setFocus(focus?: any) {
         const box = query('#w2ui-popup')
@@ -741,15 +741,15 @@ class Dialog extends w2base {
         // keep focus/blur inside popup
         query(box).find(sel)
             .off('.keep-focus')
-            // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+            // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('blur.keep-focus', function (_event: any) {
                 setTimeout(() => {
                     const focus = document.activeElement
-                    // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+                    // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const inside = query(box).find(sel).filter(focus as any).length > 0
-                    // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+                    // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const name = query(focus as any).attr('name')
                     if (!inside && focus && focus !== document.body) {
@@ -765,19 +765,19 @@ class Dialog extends w2base {
             })
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     lock(msg?: any, showSpinner?: any) {
-        w2utils.lock(query('#w2ui-popup'), msg, showSpinner)
+        TsUtils.lock(query('#w2ui-popup'), msg, showSpinner)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     unlock(speed?: any) {
-        w2utils.unlock(query('#w2ui-popup'), speed)
+        TsUtils.unlock(query('#w2ui-popup'), speed)
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     center(width?: any, height?: any, force?: any) {
         let maxW, maxH
@@ -811,7 +811,7 @@ class Dialog extends w2base {
         return { top, left, width, height }
     }
 
-    // any: callback parameter — caller signature varies; w2popup options accept untyped user payloads at runtime
+    // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     resize(newWidth: any, newHeight: any, callBack?: any) {
         return new Promise(resolve => {
@@ -843,7 +843,7 @@ class Dialog extends w2base {
         // see if there are messages and resize them
         query('#w2ui-popup .w2ui-message').each((node: Node) => {
             const msg = node as HTMLElement
-            // any: cast-to-any for dynamic dispatch; w2popup options accept untyped user payloads at runtime
+            // any: cast-to-any for dynamic dispatch; TsPopup options accept untyped user payloads at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const mopt = (msg as any)._msg_options
             const popup = query('#w2ui-popup')
@@ -879,16 +879,16 @@ function w2alert(msg: any, title?: any, callBack?: any): any { // any: msg/title
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let prom: any // any: return from open() or message() differs; unified at call site
     const options = {
-        title: w2utils.lang(title ?? 'Notification'),
+        title: TsUtils.lang(title ?? 'Notification'),
         body: `<div class="w2ui-centered w2ui-msg-text">${msg}</div>`,
         showClose: false,
-        actions: { ok: w2utils.lang('Ok') },
+        actions: { ok: TsUtils.lang('Ok') },
         cancelAction: 'ok'
     }
-    if (query('#w2ui-popup').length > 0 && w2popup.status != 'closing') {
-        prom = w2popup.message(options)
+    if (query('#w2ui-popup').length > 0 && TsPopup.status != 'closing') {
+        prom = TsPopup.message(options)
     } else {
-        prom = w2popup.open(options)
+        prom = TsPopup.open(options)
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     prom['ok']((event: any) => { // any: ok callback event is dynamic
@@ -916,8 +916,8 @@ function w2confirm(msg: any, title?: any, callBack?: any): any { // any: msg/tit
         callBack = title
         title = undefined
     }
-    w2utils.extend(options, {
-        title: w2utils.lang(title ?? options.title ?? 'Confirmation'),
+    TsUtils.extend(options, {
+        title: TsUtils.lang(title ?? options.title ?? 'Confirmation'),
         showClose: false,
         modal: true,
         cancelAction: 'no'
@@ -925,11 +925,11 @@ function w2confirm(msg: any, title?: any, callBack?: any): any { // any: msg/tit
     if (callBack == null && options.callBack != null) {
         callBack = options.callBack
     }
-    w2utils.normButtons(options, { yes: w2utils.lang('Yes'), no: w2utils.lang('No') })
-    if (query('#w2ui-popup').length > 0 && w2popup.status != 'closing') {
-        prom = w2popup.message(options)
+    TsUtils.normButtons(options, { yes: TsUtils.lang('Yes'), no: TsUtils.lang('No') })
+    if (query('#w2ui-popup').length > 0 && TsPopup.status != 'closing') {
+        prom = TsPopup.message(options)
     } else {
-        prom = w2popup.open(options)
+        prom = TsPopup.open(options)
     }
     prom.self
         .off('.confirm')
@@ -966,17 +966,17 @@ function w2prompt(label: any, title?: any, callBack?: any): any { // any: label/
                </div>`
         )
     }
-    w2utils.extend(options, {
-        title: w2utils.lang(title ?? options.title ?? 'Notification'),
+    TsUtils.extend(options, {
+        title: TsUtils.lang(title ?? options.title ?? 'Notification'),
         showClose: false,
         modal: true,
         cancelAction: 'cancel'
     })
-    w2utils.normButtons(options, { ok: w2utils.lang('Ok'), cancel: w2utils.lang('Cancel') })
-    if (query('#w2ui-popup').length > 0 && w2popup.status != 'closing') {
-        prom = w2popup.message(options)
+    TsUtils.normButtons(options, { ok: TsUtils.lang('Ok'), cancel: TsUtils.lang('Cancel') })
+    if (query('#w2ui-popup').length > 0 && TsPopup.status != 'closing') {
+        prom = TsPopup.message(options)
     } else {
-        prom = w2popup.open(options)
+        prom = TsPopup.open(options)
     }
     if (prom.self.box) {
         prom.self['input'] = query(prom.self.box).find('#w2prompt').get(0)
@@ -997,7 +997,7 @@ function w2prompt(label: any, title?: any, callBack?: any): any { // any: label/
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .on('open:after.prompt', (event: any) => { // any: open event detail is dynamic
             const box = event.detail.box ? event.detail.box : query('#w2ui-popup .w2ui-popup-body').get(0)
-            w2utils.bindEvents(query(box).find('#w2prompt'), {
+            TsUtils.bindEvents(query(box).find('#w2prompt'), {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 keydown(evt: any) { // any: KeyboardEvent
                     if (evt.keyCode == 27) evt.stopPropagation()
@@ -1027,5 +1027,5 @@ function w2prompt(label: any, title?: any, callBack?: any): any { // any: label/
     return prom
 }
 
-const w2popup = new Dialog()
-export { w2popup, w2alert, w2confirm, w2prompt, Dialog }
+const TsPopup = new Dialog()
+export { TsPopup, w2alert, w2confirm, w2prompt, Dialog }

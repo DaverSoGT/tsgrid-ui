@@ -6,9 +6,9 @@ test.describe('Popup', () => {
         await page.waitForFunction(() => (window as any)._smokeReady === true)
     })
 
-    test('w2popup global is available', async ({ page }) => {
+    test('TsPopup global is available', async ({ page }) => {
         const hasPopup = await page.evaluate(() => {
-            return typeof (window as any).w2popup === 'object' && (window as any).w2popup !== null
+            return typeof (window as any).TsPopup === 'object' && (window as any).TsPopup !== null
         })
         expect(hasPopup).toBe(true)
     })

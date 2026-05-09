@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tabs, w2toolbar, w2tooltip, w2field
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTabs, TsToolbar, TsTooltip, TsField
  *
  * T4.2: Ported to TypeScript with aggressive typing per typing_policy.
  * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
@@ -39,23 +39,23 @@
  *  - getAction/actionHide/actionShow/actionDisable/actionEnable - new methods
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tabs } from './tstabs.js'
-import { w2toolbar } from './tstoolbar.js'
-import { w2tooltip as _w2tooltip } from './tstooltip.js'
-import { w2field } from './tsfield.js'
+import { TsTabs } from './tstabs.js'
+import { TsToolbar } from './tstoolbar.js'
+import { TsTooltip as _w2tooltip } from './tstooltip.js'
+import { TsField } from './tsfield.js'
 
-// any: w2tooltip has complex show/hide overloads; cast once for clean call sites
+// any: TsTooltip has complex show/hide overloads; cast once for clean call sites
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2tooltip = _w2tooltip as any
+const TsTooltip = _w2tooltip as any
 // query() always returns Query at runtime; cast to remove void from union
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
-class w2form extends w2base {
+class TsForm extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any // any: dynamic properties added via w2utils.extend and field access
+    [key: string]: any // any: dynamic properties added via TsUtils.extend and field access
 
     declare name: string
     header: string
@@ -76,7 +76,7 @@ class w2form extends w2base {
     actions: Record<string, any> // any: action can be function or object
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     record: Record<string, any> // any: record values depend on field definitions
-    // any: Record<string, any> — dynamic property bag; w2form field schema is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsForm field schema is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     original: Record<string, any> | null
     dataType: string | null
@@ -85,9 +85,9 @@ class w2form extends w2base {
     postData: Record<string, any> // any: user-defined post data
     httpHeaders: Record<string, string>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toolbar: any // any: w2toolbar instance or config object
+    toolbar: any // any: TsToolbar instance or config object
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    tabs: any // any: w2tabs instance or config object
+    tabs: any // any: TsTabs instance or config object
     style: string
     focus: number | string
     autosize: boolean
@@ -122,7 +122,7 @@ class w2form extends w2base {
     msgServerError: string
     ALL_TYPES: string[]
     LIST_TYPES: string[]
-    W2FIELD_TYPES: string[]
+    TsFIELD_TYPES: string[]
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(options: Record<string, any>) { // any: options bag is user-supplied
@@ -142,7 +142,7 @@ class w2form extends w2base {
         this.actions      = {}
         this.record       = {}
         this.original     = null
-        this.dataType     = null // only used when not null, otherwise from w2utils.settings.dataType
+        this.dataType     = null // only used when not null, otherwise from TsUtils.settings.dataType
         this.saveCleanRecord = true // if true, it will submit clean record when saving
         this.postData     = {}
         this.httpHeaders  = {}
@@ -182,10 +182,10 @@ class w2form extends w2base {
             'check', 'checks', 'list', 'combo', 'enum', 'file', 'select', 'switch', 'map', 'array', 'div', 'custom', 'html',
             'empty', 'columns']
         this.LIST_TYPES = ['select', 'radio', 'check', 'checks', 'list', 'combo', 'enum', 'switch']
-        this.W2FIELD_TYPES = ['int', 'float', 'money', 'currency', 'percent', 'hex', 'alphanumeric', 'color',
+        this.TsFIELD_TYPES = ['int', 'float', 'money', 'currency', 'percent', 'hex', 'alphanumeric', 'color',
             'date', 'time', 'datetime', 'list', 'combo', 'enum', 'file']
         // mix in options
-        w2utils.extend(this, options)
+        TsUtils.extend(this, options)
 
         // remember items
         const record   = options['record']
@@ -205,7 +205,7 @@ class w2form extends w2base {
         }
         // prepare tabs
         if (Array.isArray(tabs)) {
-            w2utils.extend(this.tabs, { tabs: [] })
+            TsUtils.extend(this.tabs, { tabs: [] })
             for (let t = 0; t < tabs.length; t++) {
                 const tmp = tabs[t]
                 if (typeof tmp === 'object') {
@@ -218,20 +218,20 @@ class w2form extends w2base {
                 }
             }
         } else {
-            w2utils.extend(this.tabs, tabs)
+            TsUtils.extend(this.tabs, tabs)
         }
-        w2utils.extend(this.toolbar, toolbar)
+        TsUtils.extend(this.toolbar, toolbar)
         for (const p in record) { // it is an object
-            if (w2utils.isPlainObject(record[p])) {
-                this.record[p] = w2utils.clone(record[p])
+            if (TsUtils.isPlainObject(record[p])) {
+                this.record[p] = TsUtils.clone(record[p])
             } else {
                 this.record[p] = record[p]
             }
         }
         for (const p in original) { // it is an object
             if (this.original == null) this.original = {}
-            if (w2utils.isPlainObject(original[p])) {
-                this.original[p] = w2utils.clone(original[p])
+            if (TsUtils.isPlainObject(original[p])) {
+                this.original[p] = TsUtils.clone(original[p])
             } else {
                 this.original[p] = original[p]
             }
@@ -258,21 +258,21 @@ class w2form extends w2base {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function _processFields(fields: any): { fields: any[]; tabs: any[] } { // any: field definitions vary widely
-            // any: array of heterogeneous runtime values; w2form field schema is user-defined at runtime
+            // any: array of heterogeneous runtime values; TsForm field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const newFields: any[] = []
-            // any: array of heterogeneous runtime values; w2form field schema is user-defined at runtime
+            // any: array of heterogeneous runtime values; TsForm field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const tabs: any[] = []
             // if it is an object
-            if (w2utils.isPlainObject(fields)) {
+            if (TsUtils.isPlainObject(fields)) {
                 const tmp = fields
                 fields = []
                 Object.keys(tmp).forEach((key) => {
                     const fld = tmp[key]
                     if (fld.type == 'group') {
                         fld.text = key
-                        if (w2utils.isPlainObject(fld.fields)) {
+                        if (TsUtils.isPlainObject(fld.fields)) {
                             const tmp2 = fld.fields
                             fld.fields = []
                             Object.keys(tmp2).forEach((key2) => {
@@ -293,7 +293,7 @@ class w2form extends w2base {
                         tabs.push(tab)
                         // add page to fields
                         const sub = _processFields(fld.fields).fields
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         sub.forEach((fld2: any) => {
                             fld2.html = fld2.html || {}
@@ -336,7 +336,7 @@ class w2form extends w2base {
                 }
             }
             // process groups
-            // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields.forEach((field: any) => {
                 if (field.type == 'group') {
@@ -349,13 +349,13 @@ class w2form extends w2base {
                     }
                     // loop through fields
                     if (Array.isArray(field.fields)) {
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.fields.forEach((gfield: any) => {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const fld = w2utils.clone(gfield) as any // any: clone returns unknown; field defs are dynamic
+                            const fld = TsUtils.clone(gfield) as any // any: clone returns unknown; field defs are dynamic
                             if (fld.html == null) fld.html = {}
-                            w2utils.extend(fld.html, group)
+                            TsUtils.extend(fld.html, group)
                             ;['span', 'column', 'attr', 'label', 'page'].forEach((key: string) => {
                                 if (fld.html[key] == null && field[key] != null) {
                                     fld.html[key] = field[key]
@@ -370,7 +370,7 @@ class w2form extends w2base {
                     }
                 } else {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const fld = w2utils.clone(field) as any // any: clone returns unknown; field defs are dynamic
+                    const fld = TsUtils.clone(field) as any // any: clone returns unknown; field defs are dynamic
                     if (fld.field == null && fld.name != null) {
                         console.log('NOTICE: form field.name property is deprecated, please use field.field. Field ->', field)
                         fld.field = fld.name
@@ -404,8 +404,8 @@ class w2form extends w2base {
     set(field: string, obj: Record<string, any>): boolean { // any: obj extends field definition
         for (let f = 0; f < this.fields.length; f++) {
             if (this.fields[f].field == field) {
-                w2utils.extend(this.fields[f] , obj)
-                delete this.fields[f].w2field // otherwise options are not updates
+                TsUtils.extend(this.fields[f] , obj)
+                delete this.fields[f].TsField // otherwise options are not updates
                 this.refresh(field)
                 return true
             }
@@ -419,7 +419,7 @@ class w2form extends w2base {
             let val = undefined
             try { // need this to make sure no error in fields
                 const rec = original === true ? this.original : this.record
-                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
+                // any: parameter typed any — runtime dispatch by call site; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = String(field).split('.').reduce((rec: any, i: string) => { return rec[i] }, rec)
             } catch (_event) {
@@ -435,7 +435,7 @@ class w2form extends w2base {
         // will not refresh the form!
         if (value === '' || value == null
                 || (Array.isArray(value) && value.length === 0)
-                || (w2utils.isPlainObject(value) && Object.keys(value).length == 0)) {
+                || (TsUtils.isPlainObject(value) && Object.keys(value).length == 0)) {
             value = null
         }
         if (this.nestedFields) {
@@ -464,7 +464,7 @@ class w2form extends w2base {
         // remember original
         if (this.original == null) {
             if (Object.keys(this.record).length > 0) {
-                this.original = w2utils.clone(this.record)
+                this.original = TsUtils.clone(this.record)
             } else {
                 this.original = {}
             }
@@ -486,7 +486,7 @@ class w2form extends w2base {
 
         // clean extra chars
         if (['int', 'float', 'percent', 'money', 'currency'].includes(field.type)) {
-            current = field.w2field.clean(current)
+            current = field.TsField.clean(current)
         }
         // radio list
         if (['radio'].includes(field.type)) {
@@ -516,23 +516,23 @@ class w2form extends w2base {
             if (!Array.isArray(previous)) previous = []
         }
         // lists
-        const selected = field.w2field?.selected // drop downs and other w2field objects
+        const selected = field.TsField?.selected // drop downs and other TsField objects
         if (['list', 'enum', 'file'].includes(field.type) && selected) {
             const nv = selected
             const cv = previous
             if (Array.isArray(nv)) {
                 current = []
-                for (let i = 0; i < nv.length; i++) current[i] = w2utils.clone(nv[i]) // clone array
+                for (let i = 0; i < nv.length; i++) current[i] = TsUtils.clone(nv[i]) // clone array
             }
             if (Array.isArray(cv)) {
                 previous = []
-                for (let i = 0; i < cv.length; i++) previous[i] = w2utils.clone(cv[i]) // clone array
+                for (let i = 0; i < cv.length; i++) previous[i] = TsUtils.clone(cv[i]) // clone array
             }
-            if (w2utils.isPlainObject(nv)) {
-                current = w2utils.clone(nv) // clone object
+            if (TsUtils.isPlainObject(nv)) {
+                current = TsUtils.clone(nv) // clone object
             }
-            if (w2utils.isPlainObject(cv)) {
-                previous = w2utils.clone(cv) // clone object
+            if (TsUtils.isPlainObject(cv)) {
+                previous = TsUtils.clone(cv) // clone object
             }
         }
         // map, array
@@ -632,10 +632,10 @@ class w2form extends w2base {
                  * if it is a "simple" value, then find item in options.items
                  */
                 if (item?.id == null && Array.isArray(field.options?.items)) {
-                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
-                        const val = w2utils.getNested(it, map?.id ?? 'id')
+                        const val = TsUtils.getNested(it, map?.id ?? 'id')
                         if (val === value) item = it
                     })
                 }
@@ -643,12 +643,12 @@ class w2form extends w2base {
                  * If item.id is there, but item.text is not there, then look up item.text in options.items
                  */
                 if (item?.id != null && item?.text == null && Array.isArray(field.options?.items)) {
-                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.options.items.forEach((it: any) => {
-                        const id = w2utils.getNested(it, map?.id ?? 'id')
+                        const id = TsUtils.getNested(it, map?.id ?? 'id')
                         if (id === item.id) {
-                            item.text = w2utils.getNested(it, map.text ?? 'text')
+                            item.text = TsUtils.getNested(it, map.text ?? 'text')
                         }
                     })
                 }
@@ -657,8 +657,8 @@ class w2form extends w2base {
                     this.setValue(field.name, item, true)
                 }
                 if (field.type == 'list') {
-                    field.w2field.selected = item
-                    field.w2field.refresh()
+                    field.TsField.selected = item
+                    field.TsField.refresh()
                 } else {
                     el.value = item?.text ?? value
                 }
@@ -681,7 +681,7 @@ class w2form extends w2base {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any, ind: number) => { // any: item can be primitive or object
                     if (item?.id == null && Array.isArray(field.options.items)) {
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         field.options.items.forEach((it: any) => {
                             if (it.id == item) {
@@ -694,14 +694,14 @@ class w2form extends w2base {
                 if (updated) {
                     this.setValue(field.name, items, true)
                 }
-                field.w2field.selected = items
-                field.w2field.refresh()
+                field.TsField.selected = items
+                field.TsField.refresh()
                 break
             }
             case 'map':
             case 'array': {
                 // init map
-                if (field.type == 'map' && (value == null || !w2utils.isPlainObject(value))) {
+                if (field.type == 'map' && (value == null || !TsUtils.isPlainObject(value))) {
                     this.setValue(field.field, {}, true)
                     value = this.getValue(field.field)
                 }
@@ -720,7 +720,7 @@ class w2form extends w2base {
             }
             case 'color': {
                 el.value = value ?? ''
-                field.w2field.refresh()
+                field.TsField.refresh()
                 break
             }
             case 'html':
@@ -742,7 +742,7 @@ class w2form extends w2base {
                 let updated: boolean | undefined
                 let values = this.getValue(fld.options.parentList)
                 if (Array.isArray(values)) {
-                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     values = values.map((vv: any) => vv.id)
                 } else {
@@ -750,14 +750,14 @@ class w2form extends w2base {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 fld.options?.items?.forEach?.((item: any) => { // any: item shape varies
-                    const parent = w2utils.getNested(item, fld.options.parentField ?? 'parentId')
+                    const parent = TsUtils.getNested(item, fld.options.parentField ?? 'parentId')
                     if (parent == null) {
                         return
                     }
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const possible = w2utils.clone(Array.isArray(parent) ? parent : [parent]) as any[] // any: clone returns unknown; items are dynamic
+                    const possible = TsUtils.clone(Array.isArray(parent) ? parent : [parent]) as any[] // any: clone returns unknown; items are dynamic
                     possible.unshift('')
-                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const includes = values.some((item: any) => possible.includes(item))
                     if (includes && item.hidden === true) {
@@ -773,28 +773,28 @@ class w2form extends w2base {
                     if (value?.id != null) value = value.id
                     // if item is not visible, then clear its field
                     if (fld.type == 'enum') {
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const valid = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
                         let values = this.getValue(fld.field)
                         if (!Array.isArray(values)) values = [values]
                         // make sure they are objects
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         values = values.map((it: any) => {
                             if (typeof it == 'string' || typeof it == 'number') {
-                                // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                                // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 it = fld.options.items.find((ii: any) => ii.id == it)
                             }
                             return it
                         })
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const new_values = values.filter((it: any) => valid.includes(it.id))
                         this.setValue(fld.field, new_values, true)
                     } else {
-                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         fld.options.items.forEach((it: any) => {
                             if (it.id == value && it.hidden) {
@@ -920,7 +920,7 @@ class w2form extends w2base {
      * When user clicks on group title, it will toggle the group (collapse or expand it).
      */
     toggleGroup(groupName: string, show?: boolean): void {
-        const el = query(this.box).find('.w2ui-group-title[data-group="' + w2utils.base64encode(groupName) + '"]')
+        const el = query(this.box).find('.w2ui-group-title[data-group="' + TsUtils.base64encode(groupName) + '"]')
         if (el.length === 0) return
         const el_next = query(el.prop('nextElementSibling'))
         if (typeof show === 'undefined') {
@@ -947,7 +947,7 @@ class w2form extends w2base {
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
             // this.clear();
-            // any: generic any — runtime polymorphic; w2form field schema is user-defined at runtime
+            // any: generic any — runtime polymorphic; TsForm field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             return this.request(callBack) as Promise<any> // request() is void | Promise; url+recid guarantee it returns Promise
         } else {
@@ -992,18 +992,18 @@ class w2form extends w2base {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    message(options: any): any { // any: options is a w2utils.message config object
-        return w2utils.message({
+    message(options: any): any { // any: options is a TsUtils.message config object
+        return TsUtils.message({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            owner: this as any, // any: w2form has [key:string]:any but TS can't verify lock/unlock signature match
+            owner: this as any, // any: TsForm has [key:string]:any but TS can't verify lock/unlock signature match
             box  : this.box,
             after: '.w2ui-form-header'
         }, options)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    confirm(options: any): any { // any: options is a w2utils.confirm config object
-        return w2utils.confirm({
+    confirm(options: any): any { // any: options is a TsUtils.confirm config object
+        return TsUtils.confirm({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: same as message() above
             box  : this.box,
@@ -1028,44 +1028,44 @@ class w2form extends w2base {
                 const min = field.options.min
                 const max = field.options.max
                 if (min != null && val != null && val < min) {
-                    errors.push({ field: field, error: w2utils.lang('Should be more than ${min}', { min }) })
+                    errors.push({ field: field, error: TsUtils.lang('Should be more than ${min}', { min }) })
                 }
                 if (max != null && val != null && val > max) {
-                    errors.push({ field: field, error: w2utils.lang('Should be less than ${max}', { max }) })
+                    errors.push({ field: field, error: TsUtils.lang('Should be less than ${max}', { max }) })
                 }
             }
             switch (field.type) {
                 case 'alphanumeric':
-                    if (this.getValue(field.field) && !w2utils.isAlphaNumeric(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not alpha-numeric') })
+                    if (this.getValue(field.field) && !TsUtils.isAlphaNumeric(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not alpha-numeric') })
                     }
                     break
                 case 'int':
-                    if (this.getValue(field.field) && !w2utils.isInt(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not an integer') })
+                    if (this.getValue(field.field) && !TsUtils.isInt(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not an integer') })
                     }
                     break
                 case 'percent':
                 case 'float':
-                    if (this.getValue(field.field) && !w2utils.isFloat(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not a float') })
+                    if (this.getValue(field.field) && !TsUtils.isFloat(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not a float') })
                     }
                     break
                 case 'currency':
                 case 'money':
-                    if (this.getValue(field.field) && !w2utils.isMoney(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not in money format') })
+                    if (this.getValue(field.field) && !TsUtils.isMoney(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not in money format') })
                     }
                     break
                 case 'color':
                 case 'hex':
-                    if (this.getValue(field.field) && !w2utils.isHex(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not a hex number') })
+                    if (this.getValue(field.field) && !TsUtils.isHex(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not a hex number') })
                     }
                     break
                 case 'email':
-                    if (this.getValue(field.field) && !w2utils.isEmail(this.getValue(field.field))) {
-                        errors.push({ field: field, error: w2utils.lang('Not a valid email') })
+                    if (this.getValue(field.field) && !TsUtils.isEmail(this.getValue(field.field))) {
+                        errors.push({ field: field, error: TsUtils.lang('Not a valid email') })
                     }
                     break
                 case 'checkbox':
@@ -1078,9 +1078,9 @@ class w2form extends w2base {
                     break
                 case 'date':
                     // format date before submit
-                    if (!field.options.format) field.options.format = w2utils.settings.dateFormat
-                    if (this.getValue(field.field) && !w2utils.isDate(this.getValue(field.field), field.options.format)) {
-                        errors.push({ field: field, error: w2utils.lang('Not a valid date') + ': ' + field.options.format })
+                    if (!field.options.format) field.options.format = TsUtils.settings.dateFormat
+                    if (this.getValue(field.field) && !TsUtils.isDate(this.getValue(field.field), field.options.format)) {
+                        errors.push({ field: field, error: TsUtils.lang('Not a valid date') + ': ' + field.options.format })
                     }
                     break
                 case 'list':
@@ -1095,13 +1095,13 @@ class w2form extends w2base {
             if (field.hidden !== true && field.required
                     && !['div', 'custom', 'html', 'empty'].includes(field.type)
                     && (val == null || val === '' || (Array.isArray(val) && val.length === 0)
-                        || (w2utils.isPlainObject(val) && Object.keys(val).length == 0))) {
-                errors.push({ field: field, error: w2utils.lang('Required field') })
+                        || (TsUtils.isPlainObject(val) && Object.keys(val).length == 0))) {
+                errors.push({ field: field, error: TsUtils.lang('Required field') })
             }
             if (field.hidden !== true && field.options?.minLength > 0
                     && !['enum', 'list', 'combo'].includes(field.type) // since minLength is used there for other purpose
                     && (val == null || val.length < field.options.minLength)) {
-                errors.push({ field: field, error: w2utils.lang('Field should be at least ${count} characters.',
+                errors.push({ field: field, error: TsUtils.lang('Field should be at least ${count} characters.',
                     { count: field.options.minLength })})
             }
         }
@@ -1129,7 +1129,7 @@ class w2form extends w2base {
         // show only for visible controls
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         errors.forEach((error: any) => { // any: error shape varies
-            const opt = w2utils.extend({
+            const opt = TsUtils.extend({
                 anchorClass: 'w2ui-error',
                 class: 'w2ui-light',
                 position: 'right|left',
@@ -1141,10 +1141,10 @@ class w2form extends w2base {
                 anchor = query(error.field.el).closest('div').get(0)
             } else if (['enum', 'file'].includes(error.field.type)) {
                 // TODO: check
-                // anchor = (error.field.el).data('w2field').helpers.multi
+                // anchor = (error.field.el).data('TsField').helpers.multi
                 // $(fld).addClass('w2ui-error')
             }
-            w2tooltip.show(w2utils.extend({
+            TsTooltip.show(TsUtils.extend({
                 anchor,
                 name: `${this.name}-${error.field.field}-error`,
                 html: error.error
@@ -1165,14 +1165,14 @@ class w2form extends w2base {
         this.last.errorsShown = false
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((field: any) => { // any: field definition
-            w2tooltip.hide(`${this.name}-${field.field}-error`)
+            TsTooltip.hide(`${this.name}-${field.field}-error`)
         })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getChanges(): Record<string, any> | null { // any: diff values vary by field type
         // TODO: not working on nested structures
-        // any: Record<string, any> — dynamic property bag; w2form field schema is user-defined at runtime
+        // any: Record<string, any> — dynamic property bag; TsForm field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let diff: Record<string, any> = {}
         if (this.original != null && typeof this.original == 'object' && Object.keys(this.record).length !== 0) {
@@ -1201,7 +1201,7 @@ class w2form extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCleanRecord(strict?: boolean): Record<string, any> { // any: record values vary by field type
-        const data = w2utils.clone(this.record)
+        const data = TsUtils.clone(this.record)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.fields.forEach((fld: any) => { // any: field definition
             if (fld.type == 'columns' || fld.field == null) {
@@ -1210,13 +1210,13 @@ class w2form extends w2base {
             if (['list', 'combo', 'enum'].includes(fld.type)) {
                 const tmp = { nestedFields: true, record: data }
                 const val = this.getValue.call(tmp, fld.field)
-                if (w2utils.isPlainObject(val) && val.id != null) { // should be true if val.id === ''
+                if (TsUtils.isPlainObject(val) && val.id != null) { // should be true if val.id === ''
                     this.setValue.call(tmp, fld.field, val.id)
                 }
                 if (Array.isArray(val)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     val.forEach((item: any, ind: number) => { // any: item shape varies
-                        if (w2utils.isPlainObject(item) && item.id) {
+                        if (TsUtils.isPlainObject(item) && item.id) {
                             val[ind] = item.id
                         }
                     })
@@ -1251,7 +1251,7 @@ class w2form extends w2base {
     request(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary by server API
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
-        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const responseProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -1270,8 +1270,8 @@ class w2form extends w2base {
         params.recid = this.recid
         params.name  = this.name
         // append other params
-        w2utils.extend(params, this.postData)
-        w2utils.extend(params, postData)
+        TsUtils.extend(params, this.postData)
+        TsUtils.extend(params, postData)
         // event before
         const edata = this.trigger('request', { target: this.name, url: this.url, httpMethod: 'GET',
             postData: params, httpHeaders: this.httpHeaders })
@@ -1280,14 +1280,14 @@ class w2form extends w2base {
         this.record = {}
         this.original = null
         // call server to get data
-        this.lock(w2utils.lang(this.msgRefresh))
+        this.lock(TsUtils.lang(this.msgRefresh))
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let url: any = edata.detail['url'] // any: url can be string or object with .get/.save
         if (typeof url === 'object' && url.get) url = url.get
         if (this.last.fetchCtrl) try { this.last.fetchCtrl.abort() } catch (_e) {}
         // process url with routeData
         if (Object.keys(this.routeData).length != 0) {
-            const info = w2utils.parseRoute(url)
+            const info = TsUtils.parseRoute(url)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
                     const routeKey = info.keys[k]
@@ -1297,7 +1297,7 @@ class w2form extends w2base {
             }
         }
         url = new URL(url, location.href)
-        const fetchOptions = w2utils.prepareParams(url, {
+        const fetchOptions = TsUtils.prepareParams(url, {
             method: edata.detail['httpMethod'],
             headers: edata.detail['httpHeaders'],
             body: edata.detail['postData']
@@ -1332,13 +1332,13 @@ class w2form extends w2base {
                         }
                         // if data.record is not present, then assume that entire response is the record
                         if (!data.record) {
-                            Object.assign(data, { record: w2utils.clone(data) })
+                            Object.assign(data, { record: TsUtils.clone(data) })
                         }
                         // server response error, not due to network issues
                         if (data.error === true) {
-                            self.error(w2utils.lang(data.message ?? self.msgServerError))
+                            self.error(TsUtils.lang(data.message ?? self.msgServerError))
                         } else {
-                            self.record = w2utils.clone(data.record)
+                            self.record = TsUtils.clone(data.record)
                         }
                         // event after
                         self.unlock()
@@ -1388,7 +1388,7 @@ class w2form extends w2base {
     save(postData?: any, callBack?: (data: any) => void): Promise<any> | void { // any: postData/data shapes vary
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this // no-this-alias: used in nested function processError() which is a regular function declaration (rebinds `this`)
-        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: (value: any) => void, reject: (reason?: any) => void
         const saveProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -1406,7 +1406,7 @@ class w2form extends w2base {
             console.log('ERROR: Form cannot be saved because no url is defined.')
             return
         }
-        self.lock(w2utils.lang(self.msgSaving) + ' <span id="'+ self.name +'_progress"></span>')
+        self.lock(TsUtils.lang(self.msgSaving) + ' <span id="'+ self.name +'_progress"></span>')
         // build parameters list
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {} // any: params bag built dynamically
@@ -1415,9 +1415,9 @@ class w2form extends w2base {
         params.recid = self.recid
         params.name = self.name
         // append other params
-        w2utils.extend(params, self.postData)
-        w2utils.extend(params, postData)
-        params.record = w2utils.clone(self.saveCleanRecord ? self.getCleanRecord() : self.record)
+        TsUtils.extend(params, self.postData)
+        TsUtils.extend(params, postData)
+        params.record = TsUtils.clone(self.saveCleanRecord ? self.getCleanRecord() : self.record)
         // event before
         const edata = self.trigger('submit', { target: self.name, url: self.url, httpMethod: this.method ?? 'POST',
             postData: params, httpHeaders: self.httpHeaders })
@@ -1429,7 +1429,7 @@ class w2form extends w2base {
         if (self.last.fetchCtrl) self.last.fetchCtrl.abort()
         // process url with routeData
         if (Object.keys(self.routeData).length > 0) {
-            const info = w2utils.parseRoute(url)
+            const info = TsUtils.parseRoute(url)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
                     const routeKey = info.keys[k]
@@ -1439,7 +1439,7 @@ class w2form extends w2base {
             }
         }
         url = new URL(url, location.href)
-        const fetchOptions = w2utils.prepareParams(url, {
+        const fetchOptions = TsUtils.prepareParams(url, {
             method: edata.detail['httpMethod'],
             headers: edata.detail['httpHeaders'],
             body: edata.detail['postData']
@@ -1471,7 +1471,7 @@ class w2form extends w2base {
                         if (edata.isCancelled === true) return
                         // server error, not due to network issues
                         if (data.error === true) {
-                            self.error(w2utils.lang(data.message ?? self.msgServerError))
+                            self.error(TsUtils.lang(data.message ?? self.msgServerError))
                         } else {
                             self.original = null
                         }
@@ -1522,19 +1522,19 @@ class w2form extends w2base {
     }
 
     lock(msg: string, showSpinner?: boolean): void {
-        w2utils.lock(this.box, msg, showSpinner)
+        TsUtils.lock(this.box, msg, showSpinner)
     }
 
     unlock(speed?: number): void {
         const box = this.box
-        w2utils.unlock(box, speed)
+        TsUtils.unlock(box, speed)
     }
 
     lockPage(page: number, msg?: string, spinner?: boolean): boolean {
         const $page = query(this.box).find('.page-' + page)
         if ($page.length){
             // page found
-            w2utils.lock($page, msg, spinner)
+            TsUtils.lock($page, msg, spinner)
             return true
         }
         // page with this id not found!
@@ -1545,7 +1545,7 @@ class w2form extends w2base {
         const $page = query(this.box).find('.page-' + page)
         if ($page.length) {
             // page found
-            w2utils.unlock($page, speed)
+            TsUtils.unlock($page, speed)
             return true
         }
         // page with this id not found!
@@ -1594,7 +1594,7 @@ class w2form extends w2base {
             if (field.html.anchor != null && field.html.span == null) {
                 field.html.span = ''
             }
-            field.html = w2utils.extend({ label: '', span: 6, attr: '', text: '', style: '', page: 0, column: 0 }, field.html)
+            field.html = TsUtils.extend({ label: '', span: 6, attr: '', text: '', style: '', page: 0, column: 0 }, field.html)
             if (page == null) page = field.html.page
             if (column == null) column = field.html.column
             // input control
@@ -1620,7 +1620,7 @@ class w2form extends w2base {
                     // normalized options
                     if (!Array.isArray(items)) items = []
                     if (items.length > 0) {
-                        items = w2utils.normMenu.call(this, items, field.options)
+                        items = TsUtils.normMenu.call(this, items, field.options)
                     }
                     // generate
                     for (let i = 0; i < items.length; i++) {
@@ -1643,7 +1643,7 @@ class w2form extends w2base {
                     let items = field.options.items
                     if (!Array.isArray(items)) items = []
                     if (items.length > 0) {
-                        items = w2utils.normMenu.call(this, items, field.options)
+                        items = TsUtils.normMenu.call(this, items, field.options)
                     }
                     // generate
                     for (let i = 0; i < items.length; i++) {
@@ -1667,7 +1667,7 @@ class w2form extends w2base {
                     let items = field.options.items
                     if (!Array.isArray(items)) items = []
                     if (items.length > 0) {
-                        items = w2utils.normMenu.call(this, items, field.options)
+                        items = TsUtils.normMenu.call(this, items, field.options)
                     }
                     // generate
                     for (let i = 0; i < items.length; i++) {
@@ -1732,12 +1732,12 @@ class w2form extends w2base {
                 html += '\n <div class="w2ui-group">'
                     + '\n   <div class="w2ui-group-title w2ui-eaction" style="'+ (field.html.groupTitleStyle || '') + '; '
                                     + (collapsible != '' ? 'cursor: pointer; user-select: none' : '') + '"'
-                    + (collapsible != '' ? 'data-group="' + w2utils.base64encode(field.html.group) + '"' : '')
+                    + (collapsible != '' ? 'data-group="' + TsUtils.base64encode(field.html.group) + '"' : '')
                     + (collapsible != ''
                         ? 'data-click="toggleGroup|' + field.html.group + '"'
                         : '')
                     + '>'
-                    + collapsible + w2utils.lang(field.html.group) + '</div>\n'
+                    + collapsible + TsUtils.lang(field.html.group) + '</div>\n'
                     + '   <div class="w2ui-group-fields" style="'+ (field.html.groupStyle || '') +'">'
                 group = field.html.group
             }
@@ -1753,10 +1753,10 @@ class w2form extends w2base {
                 if (field.html.span == -1) span = 'w2ui-span-none'
                 let label = `
                     <label ${span == 'none' ? ' style="display: none"' : ''}>
-                        ${w2utils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
+                        ${TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
                     </label>`
                 if (!field.html.label) label = ''
-                const text = (field.type != 'array' && field.type != 'map' ? w2utils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
+                const text = (field.type != 'array' && field.type != 'map' ? TsUtils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
                 pages[field.html.page].anchors ??= {}
                 pages[field.html.page].anchors[field.html.col_anchor] =`
                     <div class="w2ui-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
@@ -1769,8 +1769,8 @@ class w2form extends w2base {
             } else if (field.html.anchor != null) {
                 const span = (field.html.span != null ? 'w2ui-span'+ field.html.span : 'w2ui-span0')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let label = w2utils.lang(field.type != 'checkbox' ? field.html.label : field.html.text, true as any) // any: second arg is suppress-warning flag in runtime JS but typed as Record
-                const text = w2utils.lang(field.type != 'checkbox' ? field.html.text : '')
+                let label = TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text, true as any) // any: second arg is suppress-warning flag in runtime JS but typed as Record
+                const text = TsUtils.lang(field.type != 'checkbox' ? field.html.text : '')
                 if (field.html.span == -1) {
                     label = `<span style="position: absolute"> <span class="w2ui-anchor-span-none w2ui-inline-label"> ${label} </span> </span>`
                 } else {
@@ -1791,10 +1791,10 @@ class w2form extends w2base {
                 if (field.html.span == -1) span = 'w2ui-span-none'
                 let label = `
                     <label ${span == 'none' ? ' style="display: none"' : ''}>
-                        ${w2utils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
+                        ${TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
                     </label>`
                 if (!field.html.label) label = ''
-                const text = (field.type != 'array' && field.type != 'map' ? w2utils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
+                const text = (field.type != 'array' && field.type != 'map' ? TsUtils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
                 html += `
                     <div class="w2ui-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
                         ${label}
@@ -1823,7 +1823,7 @@ class w2form extends w2base {
             for (const a in this.actions) { // it is an object
                 const act  = this.actions[a]
                 const info: { text: string; style: string; class: string } = { text: '', style: '', 'class': '' }
-                if (w2utils.isPlainObject(act)) {
+                if (TsUtils.isPlainObject(act)) {
                     if (act.text == null && act.caption != null) {
                         console.log('NOTICE: form action.caption property is deprecated, please use action.text. Action ->', act)
                         act.text = act.caption
@@ -1836,7 +1836,7 @@ class w2form extends w2base {
                     if (['save', 'update', 'create'].includes(a.toLowerCase())) info.class = 'w2ui-btn-blue'; else info.class = ''
                 }
                 buttons += '\n    <button name="'+ a +'" class="w2ui-btn '+ info.class +'" style="'+ info.style +'" tabindex="'+ tabindex +'">'+
-                                        w2utils.lang(info.text) +'</button>'
+                                        TsUtils.lang(info.text) +'</button>'
                 tabindex++
             }
             buttons += '\n</div>'
@@ -1876,7 +1876,7 @@ class w2form extends w2base {
     action(action: string, event: Event): void {
         const act   = this.actions[action]
         let click = act
-        if (w2utils.isPlainObject(act) && act.onClick) click = act.onClick
+        if (TsUtils.isPlainObject(act) && act.onClick) click = act.onClick
         // event before
         const edata = this.trigger('action', { target: action, action: act, originalEvent: event })
         if (edata.isCancelled === true) return
@@ -1932,8 +1932,8 @@ class w2form extends w2base {
                 if (cHeight === 0 || query(this.box).data('autosize') == 'yes') {
                     query(this.box).css({
                         height: headerHeight + tbHeight + tabsHeight + 15 // 15 is extra height
-                            + (page.length > 0 ? w2utils.getSize(dpage, 'height') : 0)
-                            + (buttons.length > 0 ? w2utils.getSize(buttons, 'height') : 0)
+                            + (page.length > 0 ? TsUtils.getSize(dpage, 'height') : 0)
+                            + (buttons.length > 0 ? TsUtils.getSize(buttons, 'height') : 0)
                             + 'px'
                     })
                     query(this.box).data('autosize', 'yes')
@@ -1952,19 +1952,19 @@ class w2form extends w2base {
             })
 
             function resizeElements(): { headerHeight: number; tbHeight: number; tabsHeight: number } {
-                const headerHeight = (self.header !== '' ? w2utils.getSize(header, 'height') : 0)
+                const headerHeight = (self.header !== '' ? TsUtils.getSize(header, 'height') : 0)
                 const tbHeight = (Array.isArray(self.toolbar?.items) && self.toolbar?.items?.length > 0)
-                    ? w2utils.getSize(toolbar, 'height')
+                    ? TsUtils.getSize(toolbar, 'height')
                     : 0
                 const tabsHeight = (Array.isArray(self.tabs?.tabs) && self.tabs?.tabs?.length > 0)
-                    ? w2utils.getSize(tabs, 'height')
+                    ? TsUtils.getSize(tabs, 'height')
                     : 0
                 // resize elements
                 toolbar.css({ top: headerHeight + 'px' })
                 tabs.css({ top: headerHeight + tbHeight + 'px' })
                 page.css({
                     top: headerHeight + tbHeight + tabsHeight + 'px',
-                    bottom: (buttons.length > 0 ? w2utils.getSize(buttons, 'height') : 0) + 'px'
+                    bottom: (buttons.length > 0 ? TsUtils.getSize(buttons, 'height') : 0) + 'px'
                 })
                 // return some params
                 return { headerHeight, tbHeight, tabsHeight }
@@ -1987,13 +1987,13 @@ class w2form extends w2base {
         let fields = Array.from(this.fields.keys())
         if (args.length > 0) {
             fields = args
-                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
+                // any: parameter typed any — runtime dispatch by call site; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .map((fld: any, _ind: number) => {
                     if (typeof fld != 'string') console.log('ERROR: Arguments in refresh functions should be field names')
                     return this.get(fld, true) // get index of field
                 })
-                // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
+                // any: parameter typed any — runtime dispatch by call site; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .filter((fld: any, _ind: number) => {
                     if (fld != null) return true; else return false
@@ -2017,7 +2017,7 @@ class w2form extends w2base {
             // default action
             query(this.box).find('.w2ui-page').hide()
             query(this.box).find('.w2ui-page.page-' + this.page).show()
-            query(this.box).find('.w2ui-form-header').html(w2utils.lang(this.header))
+            query(this.box).find('.w2ui-form-header').html(TsUtils.lang(this.header))
             // refresh tabs if needed
             if (typeof this.tabs === 'object' && Array.isArray(this.tabs.tabs) && this.tabs.tabs.length > 0) {
                 query(this.box).find('#form_'+ this.name +'_tabs').show()
@@ -2045,19 +2045,19 @@ class w2form extends w2base {
             field.$el = query(this.box).find(`[name='${String(field.name).replace(/\\/g, '\\\\')}']`)
             field.el  = field.$el.get(0)
             if (field.el) field.el.id = field.name
-            if (field.w2field) {
-                field.w2field.reset()
+            if (field.TsField) {
+                field.TsField.reset()
             }
             field.$el
-                .off('.w2form')
-                // any: targeted-any per typing_policy; w2form field schema is user-defined at runtime
+                .off('.TsForm')
+                // any: targeted-any per typing_policy; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .on('change.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
+                .on('change.TsForm', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     const value = self.getFieldValue(field.field)
                     if (value == null) return
                     // clear error class
                     if (['enum', 'file'].includes(field.type)) {
-                        const helper = field.w2field?.helpers?.multi
+                        const helper = field.TsField?.helpers?.multi
                         query(helper).removeClass('w2ui-error')
                     }
                     if (this._previous != null) {
@@ -2072,9 +2072,9 @@ class w2form extends w2base {
                     // event after
                     edata2.finish()
                 })
-                // any: targeted-any per typing_policy; w2form field schema is user-defined at runtime
+                // any: targeted-any per typing_policy; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .on('input.w2form', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
+                .on('input.TsForm', function(this: HTMLInputElement & { _previous?: any }, event: Event) {
                     self.rememberOriginal()
                     const value = self.getFieldValue(field.field)
                     if (value == null) return
@@ -2157,7 +2157,7 @@ class w2form extends w2base {
                             : item
                     })
                 } else {
-                    field.options.items = w2utils.normMenu.call(this, items ?? [], field.options)
+                    field.options.items = TsUtils.normMenu.call(this, items ?? [], field.options)
                 }
             }
             // switch
@@ -2166,14 +2166,14 @@ class w2form extends w2base {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ;(w2ui[this.name + '_' + field.name + '_tb'] as any).destroy() // any: w2ui registry returns unknown
                 }
-                // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 field.options?.items?.forEach?.((it: any) => it.text == null ? it.text = '' : '')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const items: any[] = w2utils.normMenu.call(this, field.options.items, field.options) ?? [] // any: toolbar item shape varies
+                const items: any[] = TsUtils.normMenu.call(this, field.options.items, field.options) ?? [] // any: toolbar item shape varies
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((item: any) => item.type ??= 'radio') // any: toolbar item shape
-                field.toolbar = new w2toolbar({
+                field.toolbar = new TsToolbar({
                     box: field.$el.prev().get(0),
                     name: this.name + '_' + field.name + '_tb',
                     items,
@@ -2232,7 +2232,7 @@ class w2form extends w2base {
                             self.rememberOriginal()
                             const value = self.getFieldValue(field.name)
                             if (value == null) return
-                            // any: cast-then-index for dynamic property access; w2form field schema is user-defined at runtime
+                            // any: cast-then-index for dynamic property access; TsForm field schema is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             const tbItem = (field.toolbar.items as any[])[ind]
                             value.current = tbItem?.id
@@ -2264,16 +2264,16 @@ class w2form extends w2base {
                 field.$el.html(options)
             }
             // w2fields
-            if (this.W2FIELD_TYPES.includes(field.type)) {
-                field.w2field = field.w2field
-                    ?? new w2field(w2utils.extend({}, field.options, { type: field.type }))
-                field.w2field.render(field.el)
+            if (this.TsFIELD_TYPES.includes(field.type)) {
+                field.TsField = field.TsField
+                    ?? new TsField(TsUtils.extend({}, field.options, { type: field.type }))
+                field.TsField.render(field.el)
             }
             // map and arrays
             if (['map', 'array'].includes(field.type)) {
                 // need closure
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (function (obj: w2form, field: any) { // any: field definition
+                (function (obj: TsForm, field: any) { // any: field definition
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.el.mapAdd = function(field: any, div: any, cnt: number, empty?: boolean) { // any: field/div shapes
                         const attr = (field.disabled ? ' readOnly ' : '') + (field.html.tabindex_str || '')
@@ -2284,7 +2284,7 @@ class w2form extends w2base {
                             html = field.html.render.call(self, { empty: empty === true, ind: cnt, field, div })
                             // make sure all inputs have names as it is important for array objects
                             if (!field.el._errorDisplayed) {
-                                // any: cast-to-any for dynamic dispatch; w2form field schema is user-defined at runtime
+                                // any: cast-to-any for dynamic dispatch; TsForm field schema is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 (_queryRaw as any).html(html).filter('input, textarea').each((node: Node) => {
                                     const inp = node as HTMLInputElement
@@ -2322,13 +2322,13 @@ class w2form extends w2base {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         let keys: any[] = [], $k: any, $v: any // any: query objects for key/value inputs
                         if (field.type == 'map') {
-                            if (!w2utils.isPlainObject(map)) map = {}
+                            if (!TsUtils.isPlainObject(map)) map = {}
                             if (map._order == null) map._order = Object.keys(map)
                             keys = map._order
                         }
                         if (field.type == 'array') {
                             if (!Array.isArray(map)) map = []
-                            // any: parameter typed any — runtime dispatch by call site; w2form field schema is user-defined at runtime
+                            // any: parameter typed any — runtime dispatch by call site; TsForm field schema is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             keys = map.map((item: any, ind: number) => { return ind })
                         }
@@ -2361,7 +2361,7 @@ class w2form extends w2base {
                                 $v = fld.find('.w2ui-map.value')
                                 let val = map[key]
                                 if (field.type == 'array') {
-                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     const tmp = map.filter((it: any) => { return it?.key == key ? true : false})
                                     if (tmp.length > 0) val = tmp[0].value
@@ -2470,10 +2470,10 @@ class w2form extends w2base {
                                 const $cnt = query(event.target).closest('.w2ui-map-container')
                                 // delete empty
                                 if (typeof field.html?.render == 'function') {
-                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((kk: any) => {
-                                        // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                                        // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                         const val = [...(new Set(Object.values(kk).filter((vv: any) => typeof vv != 'boolean')))]
                                         return !(val.length == 0 || (val.length == 1 && val[0] === ''))
@@ -2484,7 +2484,7 @@ class w2form extends w2base {
                                     current._order = current._order.filter((k: string) => k !== '')
                                     delete current['']
                                 } else if (field.type == 'array') {
-                                    // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+                                    // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                     current = current.filter((k: any) => k !== '')
                                 }
@@ -2565,7 +2565,7 @@ class w2form extends w2base {
         if (!this.box) return
         // render form
         const html = '<div class="w2ui-form-box">' +
-                    (this.header !== '' ? '<div class="w2ui-form-header">' + w2utils.lang(this.header) + '</div>' : '') +
+                    (this.header !== '' ? '<div class="w2ui-form-header">' + TsUtils.lang(this.header) + '</div>' : '') +
                     '    <div id="form_'+ this.name +'_toolbar" class="w2ui-form-toolbar" style="display: none"></div>' +
                     '    <div id="form_'+ this.name +'_tabs" class="w2ui-form-tabs" style="display: none"></div>' +
                         this.formHTML +
@@ -2574,11 +2574,11 @@ class w2form extends w2base {
             .addClass('w2ui-reset w2ui-form')
             .html(html)
         if (query(this.box).length > 0) (query(this.box).get(0) as HTMLElement).style.cssText += this.style
-        w2utils.bindEvents(query(this.box).find('.w2ui-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.w2ui-eaction'), this)
 
         // init toolbar regardless it is defined or not
         if (typeof this.toolbar.render !== 'function') {
-            this.toolbar = new w2toolbar(w2utils.extend({}, this.toolbar, { name: this.name +'_toolbar', owner: this }))
+            this.toolbar = new TsToolbar(TsUtils.extend({}, this.toolbar, { name: this.name +'_toolbar', owner: this }))
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.toolbar.on('click', function(this: any, event: CustomEvent) { // any: toolbar context
                 const edata = self.trigger('toolbar', { target: event.target, originalEvent: event })
@@ -2592,7 +2592,7 @@ class w2form extends w2base {
         }
         // init tabs regardless it is defined or not
         if (typeof this.tabs.render !== 'function') {
-            this.tabs = new w2tabs(w2utils.extend({}, this.tabs, { name: this.name +'_tabs', owner: this, active: this.tabs.active }))
+            this.tabs = new TsTabs(TsUtils.extend({}, this.tabs, { name: this.name +'_tabs', owner: this, active: this.tabs.active }))
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             this.tabs.on('click', function(this: any, event: CustomEvent) { // any: tabs context
                 self.goto(this.get(event.target, true))
@@ -2608,7 +2608,7 @@ class w2form extends w2base {
         this.resize()
         const url = (typeof this.url !== 'object' ? this.url : this.url.get)
         if (url && this.recid != null) {
-            // any: callback parameter — caller signature varies; w2form field schema is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(this.request() as Promise<any>).catch((_error: any) => this.refresh()) // request() is void|Promise; url+recid guarantee it returns Promise
         } else {
@@ -2665,7 +2665,7 @@ class w2form extends w2base {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let $input: any // any: Query object or undefined
         // focus field by index
-        if (w2utils.isInt(focus)){
+        if (TsUtils.isInt(focus)){
             if ((focus as number) < 0) {
                 return
             }
@@ -2689,4 +2689,4 @@ class w2form extends w2base {
         return $input
     }
 }
-export { w2form }
+export { TsForm }

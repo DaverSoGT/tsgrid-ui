@@ -1,9 +1,9 @@
 // import { w2overlay } from '../src/w2overlay.js'
-import { w2tooltip } from '../src/tstooltip.js'
+import { TsTooltip } from '../src/tstooltip.js'
 import { $, query } from '../src/query.js'
 
 // window.query = query
-// window.w2tooltip = w2tooltip
+// window.TsTooltip = TsTooltip
 
 class WebComp extends HTMLElement {
     constructor() {
@@ -32,14 +32,14 @@ class WebComp extends HTMLElement {
 
     connectedCallback() {
         setTimeout(() => {
-            // w2tooltip.show(query(this.shadowRoot).find('input')[0], {
+            // TsTooltip.show(query(this.shadowRoot).find('input')[0], {
             //     html: 'some text',
             //     position: 'top',
             //     hideOnClick: true
             // })
             // query(this.shadowRoot).find('input').each(el => {
             // query('input').each(el => {
-            //     w2tooltip.show(el, {
+            //     TsTooltip.show(el, {
             //         // auto: true,
             //         html: 'some html',
             //         // html: 'some html that is quite long and can be multiline',
@@ -76,5 +76,5 @@ customElements.define('web-comp', WebComp)
 customElements.define('web-comp2', WebComp2)
 
 query('web-comp').shadow('input').each(el => {
-    w2tooltip.show(el, 'some text')
+    TsTooltip.show(el, 'some text')
 })

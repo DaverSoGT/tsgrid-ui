@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tooltip, w2color, w2menu, w2date
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip, w2color, w2menu, w2date
  *
  * T4.1: Ported to TypeScript with aggressive typing per typing_policy.
  * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
@@ -32,15 +32,15 @@
  *  - options.msgNoItems
  */
 
-import { w2base } from './tsbase.js'
-import { w2utils } from './tsutils.js'
-import { w2tooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './tstooltip.js'
+import { TsBase } from './tsbase.js'
+import { TsUtils } from './tsutils.js'
+import { TsTooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './tstooltip.js'
 import { query as _queryRaw, Query } from './query.js'
 
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
-// any: w2menu/w2color/w2date/w2tooltip have rich return types with .select()/.hide()/.show()
+// any: w2menu/w2color/w2date/TsTooltip have rich return types with .select()/.hide()/.show()
 // that are hard to match from external call sites; cast once here for clean usage
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2menu    = _w2menu as any // any: overlay manager with .show()/.hide()/.get() returning dynamic overlay objects
@@ -49,14 +49,14 @@ const w2color   = _w2color as any // any: color picker with .show() returning At
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2date    = _w2date as any // any: date picker with .show()/.inRange()/.str2min()/.min2str() etc.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2tooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide() accepting flexible option shapes
+const TsTooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide() accepting flexible option shapes
 
 // ---------------------------------------------------------------------------
 // Type definitions
 // ---------------------------------------------------------------------------
 
 /** Shared numeric-field options (int, float, money, currency, percent, alphanumeric, bin, hex, text) */
-interface W2FieldNumericOptions {
+interface TsFieldNumericOptions {
     type?: string
     min?: number | null
     max?: number | null
@@ -84,7 +84,7 @@ interface W2FieldNumericOptions {
 }
 
 /** Color-field options */
-interface W2FieldColorOptions {
+interface TsFieldColorOptions {
     type?: string
     prefix?: string
     suffix?: string
@@ -96,7 +96,7 @@ interface W2FieldColorOptions {
 }
 
 /** Date-field options */
-interface W2FieldDateOptions {
+interface TsFieldDateOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -112,7 +112,7 @@ interface W2FieldDateOptions {
 }
 
 /** Time-field options */
-interface W2FieldTimeOptions {
+interface TsFieldTimeOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -126,7 +126,7 @@ interface W2FieldTimeOptions {
 }
 
 /** DateTime-field options */
-interface W2FieldDateTimeOptions {
+interface TsFieldDateTimeOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -145,7 +145,7 @@ interface W2FieldDateTimeOptions {
 }
 
 /** List/combo-field options */
-interface W2FieldListOptions {
+interface TsFieldListOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
@@ -198,7 +198,7 @@ interface W2FieldListOptions {
 }
 
 /** Enum-field options */
-interface W2FieldEnumOptions {
+interface TsFieldEnumOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
@@ -264,7 +264,7 @@ interface W2FieldEnumOptions {
 }
 
 /** File-field options */
-interface W2FieldFileOptions {
+interface TsFieldFileOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected?: any[] // any: array of file objects
@@ -295,19 +295,19 @@ interface W2FieldFileOptions {
     [key: string]: any // any: options may be user-extended
 }
 
-/** Discriminated union: all possible options for a w2field instance */
-type W2FieldOptions =
-    | W2FieldNumericOptions
-    | W2FieldColorOptions
-    | W2FieldDateOptions
-    | W2FieldTimeOptions
-    | W2FieldDateTimeOptions
-    | W2FieldListOptions
-    | W2FieldEnumOptions
-    | W2FieldFileOptions
+/** Discriminated union: all possible options for a TsField instance */
+type TsFieldOptions =
+    | TsFieldNumericOptions
+    | TsFieldColorOptions
+    | TsFieldDateOptions
+    | TsFieldTimeOptions
+    | TsFieldDateTimeOptions
+    | TsFieldListOptions
+    | TsFieldEnumOptions
+    | TsFieldFileOptions
 
 /** Constructor input — the type discriminant lives here */
-interface W2FieldInput {
+interface TsFieldInput {
     type?: string
     el?: HTMLElement | null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -329,7 +329,7 @@ interface W2FieldInput {
 }
 
 /** Helper elements bag */
-interface W2FieldHelpers {
+interface TsFieldHelpers {
     prefix?: HTMLElement | null
     suffix?: HTMLElement | null
     arrows?: HTMLElement | null
@@ -341,7 +341,7 @@ interface W2FieldHelpers {
 }
 
 /** Temp state bag */
-interface W2FieldTmp {
+interface TsFieldTmp {
     'old-padding-left'?: string | null
     'old-padding-right'?: string | null
     'old-background-color'?: string
@@ -360,30 +360,30 @@ interface W2FieldTmp {
 }
 
 // ---------------------------------------------------------------------------
-// HTMLElement extension for w2field reference
+// HTMLElement extension for TsField reference
 // ---------------------------------------------------------------------------
 declare global {
     interface HTMLElement {
-        _w2field?: w2field
+        _w2field?: TsField
     }
     interface HTMLInputElement {
-        _w2field?: w2field
+        _w2field?: TsField
     }
     interface HTMLTextAreaElement {
-        _w2field?: w2field
+        _w2field?: TsField
     }
 }
 
-// w2field only supports INPUT and TEXTAREA elements (validated in init())
-type W2FieldElement = HTMLInputElement | HTMLTextAreaElement
+// TsField only supports INPUT and TEXTAREA elements (validated in init())
+type TsFieldElement = HTMLInputElement | HTMLTextAreaElement
 
-class w2field extends w2base {
-    el: W2FieldElement | null
+class TsField extends TsBase {
+    el: TsFieldElement | null
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected: any // any: can be null, an object (list), or an array (enum/file)
-    helpers: W2FieldHelpers
+    helpers: TsFieldHelpers
     type: string
-    options: W2FieldOptions
+    options: TsFieldOptions
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onClick: ((...args: any[]) => void) | null // any: event callback
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -398,16 +398,16 @@ class w2field extends w2base {
     onMouseLeave: ((...args: any[]) => void) | null // any: event callback
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onScroll: ((...args: any[]) => void) | null // any: event callback
-    tmp: W2FieldTmp
+    tmp: TsFieldTmp
 
-    constructor(type: string | W2FieldInput, options?: W2FieldInput) {
+    constructor(type: string | TsFieldInput, options?: TsFieldInput) {
         super()
         // sanitization
         if (typeof type == 'string' && options == null) {
             options = { type: type }
         }
         if (typeof type == 'object' && options == null) {
-            options = w2utils.clone(type)
+            options = TsUtils.clone(type)
         }
         if (typeof type == 'string' && typeof options == 'object') {
             options.type = type
@@ -415,11 +415,11 @@ class w2field extends w2base {
         // options is always defined after the three branches above
         const opts = options! // non-null: all code paths above assign options
         opts.type = String(opts.type).toLowerCase()
-        this.el          = (opts.el ?? null) as W2FieldElement | null
+        this.el          = (opts.el ?? null) as TsFieldElement | null
         this.selected    = null
         this.helpers     = {} // object or helper elements
         this.type        = opts.type ?? 'text'
-        this.options     = w2utils.clone(opts)
+        this.options     = TsUtils.clone(opts)
         this.onClick     = opts.onClick ?? null
         this.onAdd       = opts.onAdd ?? null
         this.onNew       = opts.onNew ?? null
@@ -429,19 +429,19 @@ class w2field extends w2base {
         this.onScroll    = opts.onScroll ?? null
         this.tmp         = {} // temp object
         // clean up some options
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).type
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onClick
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseEnter
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onMouseLeave
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delete (this.options as any).onScroll
 
@@ -452,11 +452,11 @@ class w2field extends w2base {
 
     override render(el: HTMLElement): void {
         if (!(el instanceof HTMLElement)) {
-            console.log('ERROR: Cannot init w2field on empty subject')
+            console.log('ERROR: Cannot init TsField on empty subject')
             return
         }
-        // after init() validates INPUT/TEXTAREA, el is safe to treat as W2FieldElement
-        const fieldEl = el as W2FieldElement
+        // after init() validates INPUT/TEXTAREA, el is safe to treat as TsFieldElement
+        const fieldEl = el as TsFieldElement
         fieldEl._w2field?.reset?.() // will remove all previous events
         fieldEl._w2field = this
         this.el = fieldEl
@@ -471,7 +471,7 @@ class w2field extends w2base {
 
         // only for INPUT or TEXTAREA
         if (this.el == null || !['INPUT', 'TEXTAREA'].includes(this.el.tagName.toUpperCase())) {
-            console.log('ERROR: w2field could only be applied to INPUT or TEXTAREA.', this.el)
+            console.log('ERROR: TsField could only be applied to INPUT or TEXTAREA.', this.el)
             return
         }
         // non-null: guarded above; use local alias so TypeScript tracks narrowing
@@ -494,19 +494,19 @@ class w2field extends w2base {
                     autoFormat: true,
                     autoCorrect: true,
                     currency: {
-                        prefix: w2utils.settings.currencyPrefix,
-                        suffix: w2utils.settings.currencySuffix,
-                        precision: w2utils.settings.currencyPrecision
+                        prefix: TsUtils.settings.currencyPrefix,
+                        suffix: TsUtils.settings.currencySuffix,
+                        precision: TsUtils.settings.currencyPrecision
                     },
-                    decimalSymbol: w2utils.settings.decimalSymbol,
-                    groupSymbol: w2utils.settings.groupSymbol,
+                    decimalSymbol: TsUtils.settings.decimalSymbol,
+                    groupSymbol: TsUtils.settings.groupSymbol,
                     arrows: false,
                     keyboard: true,
                     precision: null,
                     prefix: '',
                     suffix: ''
                 }
-                this.options = w2utils.extend({}, defaults, options)
+                this.options = TsUtils.extend({}, defaults, options)
                 options = this.options // since object is re-created, need to re-assign
                 options.numberRE  = new RegExp('['+ options.groupSymbol + ']', 'g')
                 options.moneyRE   = new RegExp('['+ options.currency.prefix + options.currency.suffix + options.groupSymbol +']', 'g')
@@ -529,13 +529,13 @@ class w2field extends w2base {
                     advanced    : null, // open advanced by default
                     transparent : true
                 }
-                this.options = w2utils.extend({}, defaults, options)
+                this.options = TsUtils.extend({}, defaults, options)
                 options = this.options // since object is re-created, need to re-assign
                 break
             }
             case 'date': {
                 defaults = {
-                    format        : w2utils.settings.dateFormat, // date format
+                    format        : TsUtils.settings.dateFormat, // date format
                     keyboard      : true,   // if true, allows to select date with format
                     autoCorrect   : true,   // correc date or shows the error
                     start         : null,   // first date allowed to select
@@ -545,7 +545,7 @@ class w2field extends w2base {
                     colored       : {},     // ex: { '3/13/2022': 'bg-color|text-color' }
                     btnNow        : true    // if true, displays Now button
                 }
-                this.options = w2utils.extend({ type: 'date' }, defaults, options)
+                this.options = TsUtils.extend({ type: 'date' }, defaults, options)
                 options = this.options // since object is re-created, need to re-assign
                 if (query(this.el).attr('placeholder') == null) {
                     query(this.el).attr('placeholder', options.format)
@@ -554,7 +554,7 @@ class w2field extends w2base {
             }
             case 'time': {
                 defaults = {
-                    format      : w2utils.settings.timeFormat,
+                    format      : TsUtils.settings.timeFormat,
                     keyboard    : true,
                     autoCorrect : true,
                     start       : null,
@@ -562,7 +562,7 @@ class w2field extends w2base {
                     btnNow      : true,
                     noMinutes   : false
                 }
-                this.options = w2utils.extend({ type: 'time' }, defaults, options)
+                this.options = TsUtils.extend({ type: 'time' }, defaults, options)
                 options = this.options // since object is re-created, need to re-assign
                 if (query(this.el).attr('placeholder') == null) {
                     query(this.el).attr('placeholder', options.format)
@@ -571,7 +571,7 @@ class w2field extends w2base {
             }
             case 'datetime': {
                 defaults = {
-                    format        : w2utils.settings.dateFormat + '|' + w2utils.settings.timeFormat,
+                    format        : TsUtils.settings.dateFormat + '|' + TsUtils.settings.timeFormat,
                     keyboard      : true,
                     autoCorrect   : true,
                     start         : null,
@@ -584,7 +584,7 @@ class w2field extends w2base {
                     btnNow        : true,
                     noMinutes     : false
                 }
-                this.options = w2utils.extend({ type: 'datetime' }, defaults, options)
+                this.options = TsUtils.extend({ type: 'datetime' }, defaults, options)
                 options = this.options // since object is re-created, need to re-assign
                 if (query(this.el).attr('placeholder') == null) {
                     query(this.el).attr('placeholder', options.placeholder || options.format)
@@ -606,7 +606,7 @@ class w2field extends w2base {
                     iconStyle       : '',       // icon style for selected item
                     // -- remote items --
                     url             : null,     // remove data source for items
-                    method          : null,     // default comes from w2utils.settings.dataType
+                    method          : null,     // default comes from TsUtils.settings.dataType
                     postData        : {},       // additional data to submit to URL
                     recId           : null,     // map retrieved data from url to id, can be string or function
                     recText         : null,     // map retrieved data from url to text, can be string or function
@@ -636,28 +636,28 @@ class w2field extends w2base {
                     options._items_fun = options.items
                 }
                 // need to be first
-                options.items = w2utils.normMenu.call(this, options.items, options)
+                options.items = TsUtils.normMenu.call(this, options.items, options)
                 if (this.type === 'list') {
                     // defaults.search = (options.items && options.items.length >= 10 ? true : false);
                     query(this.el).addClass('w2ui-select')
                     // if simple value - look it up
-                    if (!w2utils.isPlainObject(options.selected) && Array.isArray(options.items)) {
+                    if (!TsUtils.isPlainObject(options.selected) && Array.isArray(options.items)) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         options.items.forEach((item: any) => { // any: item in items array
                             if (item && item.id === options.selected) {
-                                options.selected = w2utils.clone(item)
+                                options.selected = TsUtils.clone(item)
                             }
                         })
                     }
                 }
-                options = w2utils.extend({}, defaults, options)
+                options = TsUtils.extend({}, defaults, options)
                 // validate match
                 const valid = ['is', 'begins', 'contains', 'ends']
                 if (!valid.includes(options.match)) {
                     console.log(`ERROR: invalid value "${options.match}" for option.match. It should be one of following: ${valid.join(', ')}.`)
                 }
                 this.options = options
-                if (!w2utils.isPlainObject(options.selected)) options.selected = {}
+                if (!TsUtils.isPlainObject(options.selected)) options.selected = {}
                 this.selected = options.selected
                 query(this.el)
                     .attr('autocapitalize', 'off')
@@ -715,7 +715,7 @@ class w2field extends w2base {
                     onMouseEnter    : null,  // when mouse enters item
                     onMouseLeave    : null,  // when mouse leaves item
                 }
-                options  = w2utils.extend({}, defaults, options, { suffix: '' })
+                options  = TsUtils.extend({}, defaults, options, { suffix: '' })
                 if (typeof options.items == 'function') {
                     options._items_fun = options.items
                 }
@@ -724,8 +724,8 @@ class w2field extends w2base {
                 if (!valid.includes(options.match)) {
                     console.log(`ERROR: invalid value "${options.match}" for option.match. It should be one of following: ${valid.join(', ')}.`)
                 }
-                options.items    = w2utils.normMenu.call(this, options.items, options)
-                options.selected = w2utils.normMenu.call(this, options.selected, options)
+                options.items    = TsUtils.normMenu.call(this, options.items, options)
+                options.selected = TsUtils.normMenu.call(this, options.selected, options)
                 this.options     = options
                 if (!Array.isArray(options.selected)) options.selected = []
                 this.selected = options.selected
@@ -754,12 +754,12 @@ class w2field extends w2base {
                     onMouseEnter  : null,   // when item is mouse over
                     onMouseLeave  : null    // when item is mouse out
                 }
-                options = w2utils.extend({}, defaults, options)
+                options = TsUtils.extend({}, defaults, options)
                 this.options = options
                 if (!Array.isArray(options.selected)) options.selected = []
                 this.selected = options.selected
                 if (query(this.el).attr('placeholder') == null) {
-                    query(this.el).attr('placeholder', w2utils.lang('Attach files by dragging and dropping or Click to Select'))
+                    query(this.el).attr('placeholder', TsUtils.lang('Attach files by dragging and dropping or Click to Select'))
                 }
                 break
             }
@@ -771,14 +771,14 @@ class w2field extends w2base {
         // attach events
         const $elInit = query(this.el)
         $elInit.css('box-sizing', 'border-box')
-        $elInit.addClass('w2field w2ui-input')
-            .off('.w2field')
-            .on('change.w2field', (event: Event) => { this.change(event) })
-            .on('click.w2field', (event: Event) => { this.click(event as MouseEvent) })
-            .on('focus.w2field', (event: Event) => { this.focus(event as FocusEvent) })
-            .on('blur.w2field', (event: Event) => { if (this.type !== 'list') this.blur(event as FocusEvent) })
-            .on('keydown.w2field', (event: Event) => { this.keyDown(event as KeyboardEvent) })
-            .on('keyup.w2field', (event: Event) => { this.keyUp(event as KeyboardEvent) })
+        $elInit.addClass('TsField w2ui-input')
+            .off('.TsField')
+            .on('change.TsField', (event: Event) => { this.change(event) })
+            .on('click.TsField', (event: Event) => { this.click(event as MouseEvent) })
+            .on('focus.TsField', (event: Event) => { this.focus(event as FocusEvent) })
+            .on('blur.TsField', (event: Event) => { if (this.type !== 'list') this.blur(event as FocusEvent) })
+            .on('keydown.TsField', (event: Event) => { this.keyDown(event as KeyboardEvent) })
+            .on('keyup.TsField', (event: Event) => { this.keyUp(event as KeyboardEvent) })
         // suffix and prefix need to be after styles
         this.addPrefix() // only will add if needed
         this.addSuffix() // only will add if needed
@@ -890,7 +890,7 @@ class w2field extends w2base {
                     const text = this.selected.text
                     const ind = this.findItemIndex(options.items, this.selected.id)
                     if (text != null) {
-                        ;(query(this.el).val(w2utils.lang(text)) as Query)
+                        ;(query(this.el).val(TsUtils.lang(text)) as Query)
                             .data({
                                 selected: text,
                                 selectedIndex: ind[0]
@@ -947,7 +947,7 @@ class w2field extends w2base {
                                ${it.icon ? `<span class="w2ui-icon ${it.icon}"></span>` : ''}
                                <div class="w2ui-list-remove" index="${ind}">&#160;&#160;</div>
                                ${(this.type === 'enum' ? it.text : it.name) ?? it.id ?? it }
-                               ${it.size ? `<span class="file-size"> - ${w2utils.formatSize(it.size)}</span>` : ''}
+                               ${it.size ? `<span class="file-size"> - ${TsUtils.formatSize(it.size)}</span>` : ''}
                             `
                         }
                         </div>`
@@ -990,7 +990,7 @@ class w2field extends w2base {
             if (html !== '') {
                 ul.prepend(html)
             } else if (query(this.el).attr('placeholder') != null && div.find('input').val() === '') {
-                const style = w2utils.stripSpaces(`
+                const style = TsUtils.stripSpaces(`
                     padding-top: ${styles['padding-top']};
                     padding-left: ${styles['padding-left']};
                     box-sizing: ${styles['box-sizing']};
@@ -1006,7 +1006,7 @@ class w2field extends w2base {
                     const edata = this.trigger('scroll', { target: this.el, originalEvent: event })
                     if (edata.isCancelled === true) return
                     // hide tooltip if any
-                    w2tooltip.hide(this.el!.id + '_preview')
+                    TsTooltip.hide(this.el!.id + '_preview')
                     // event after
                     edata.finish()
                 })
@@ -1043,7 +1043,7 @@ class w2field extends w2base {
                         query(mouseEvent.target).remove()
                     } else {
                         // trigger event
-                        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         edata = this.trigger('click', { target: this.el, originalEvent: (mouseEvent as any).originalEvent, item })
                         if (edata.isCancelled === true) return
@@ -1059,19 +1059,19 @@ class w2field extends w2base {
                             }
                             preview += `
                                 <div class="w2ui-file-info">
-                                    <div class="file-caption">${w2utils.lang('Name')}:</div>
+                                    <div class="file-caption">${TsUtils.lang('Name')}:</div>
                                     <div class="file-value">${item.name}</div>
-                                    <div class="file-caption">${w2utils.lang('Size')}:</div>
-                                    <div class="file-value">${w2utils.formatSize(item.size)}</div>
-                                    <div class="file-caption">${w2utils.lang('Type')}:</div>
+                                    <div class="file-caption">${TsUtils.lang('Size')}:</div>
+                                    <div class="file-value">${TsUtils.formatSize(item.size)}</div>
+                                    <div class="file-caption">${TsUtils.lang('Type')}:</div>
                                     <div class="file-value file-type">${item.type}</div>
-                                    <div class="file-caption">${w2utils.lang('Modified')}:</div>
-                                    <div class="file-value">${w2utils.date(item.modified)}</div>
+                                    <div class="file-caption">${TsUtils.lang('Modified')}:</div>
+                                    <div class="file-value">${TsUtils.date(item.modified)}</div>
                                 </div>`
                         }
                         if (preview) {
                             const name = this.el!.id + '_preview'
-                            w2tooltip.show({
+                            TsTooltip.show({
                                 name,
                                 anchor: target.get(0),
                                 html: preview,
@@ -1176,7 +1176,7 @@ class w2field extends w2base {
             if (this.tmp['min-height'] != null && cntHeight < this.tmp['min-height']) {
                 cntHeight = this.tmp['min-height'] ?? cntHeight
             }
-            const inpHeight = w2utils.getSize(this.el, 'height') - 2
+            const inpHeight = TsUtils.getSize(this.el, 'height') - 2
             if (inpHeight > cntHeight) cntHeight = inpHeight
             query(div).css({
                 'height': cntHeight + 'px',
@@ -1204,9 +1204,9 @@ class w2field extends w2base {
         }
         // remove events and (data)
         ;(query(this.el).val(this.clean(query(this.el).val())) as Query)
-            .removeClass('w2field w2ui-input')
+            .removeClass('TsField w2ui-input')
             .removeData('selected selectedIndex')
-            .off('.w2field') // remove only events added by w2field
+            .off('.TsField') // remove only events added by TsField
         // remove helpers
         Object.keys(this.helpers).forEach((key: string) => {
             query(this.helpers[key]).remove()
@@ -1245,7 +1245,7 @@ class w2field extends w2base {
                         .replace(new RegExp(esc_gsroupSymbol, 'g'), '')
                         .replace(new RegExp(esc_decimalSymbol, 'g'), '.')
             }
-            if (val !== '' && w2utils.isFloat(val)) val = Number(val); else val = ''
+            if (val !== '' && TsUtils.isFloat(val)) val = Number(val); else val = ''
         }
         return val
     }
@@ -1259,26 +1259,26 @@ class w2field extends w2base {
             switch (this.type) {
                 case 'money':
                 case 'currency':
-                    val = w2utils.formatNumber(val, options.currency.precision, true)
+                    val = TsUtils.formatNumber(val, options.currency.precision, true)
                     if (val !== '') val = options.currency.prefix + val + options.currency.suffix
                     break
                 case 'percent':
-                    val = w2utils.formatNumber(val, options.precision, true)
+                    val = TsUtils.formatNumber(val, options.precision, true)
                     if (val !== '') val += '%'
                     break
                 case 'float':
-                    val = w2utils.formatNumber(val, options.precision, true)
+                    val = TsUtils.formatNumber(val, options.precision, true)
                     break
                 case 'int':
-                    val = w2utils.formatNumber(val, 0, true)
+                    val = TsUtils.formatNumber(val, 0, true)
                     break
             }
             // if default group symbol does not match - replase it
-            const group = (1000).toLocaleString(w2utils.settings.locale, { useGrouping: true }).slice(1, 2)
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            const group = (1000).toLocaleString(TsUtils.settings.locale, { useGrouping: true }).slice(1, 2)
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (group !== (this.options as any).groupSymbol) {
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 val = val.replaceAll(group, (this.options as any).groupSymbol)
             }
@@ -1323,13 +1323,13 @@ class w2field extends w2base {
         if (['date', 'time', 'datetime'].indexOf(this.type) !== -1) {
             // convert linux timestamps
             let tmp = parseInt(this.el!.value)
-            if (w2utils.isInt(this.el!.value) && tmp > 3000) {
+            if (TsUtils.isInt(this.el!.value) && tmp > 3000) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (this.type === 'time') tmp = w2utils.formatTime(new Date(tmp), (this.options as any).format) as any // any: formatTime returns string
+                if (this.type === 'time') tmp = TsUtils.formatTime(new Date(tmp), (this.options as any).format) as any // any: formatTime returns string
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (this.type === 'date') tmp = w2utils.formatDate(new Date(tmp), (this.options as any).format) as any // any: formatDate returns string
+                if (this.type === 'date') tmp = TsUtils.formatDate(new Date(tmp), (this.options as any).format) as any // any: formatDate returns string
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if (this.type === 'datetime') tmp = w2utils.formatDateTime(new Date(tmp), (this.options as any).format) as any // any: formatDateTime returns string
+                if (this.type === 'datetime') tmp = TsUtils.formatDateTime(new Date(tmp), (this.options as any).format) as any // any: formatDateTime returns string
                 ;(query(this.el).val(String(tmp)) as Query).trigger('input').trigger('change')
             }
         }
@@ -1372,7 +1372,7 @@ class w2field extends w2base {
         if (this.type == 'list' && document.activeElement == this.el) {
             this.helpers.search_focus?.focus()
             // update overlay if needed
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
@@ -1396,11 +1396,11 @@ class w2field extends w2base {
                 return
             }
             // regenerate items
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (typeof (this.options as any)._items_fun == 'function') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(this.options as any).items = w2utils.normMenu.call(this, (this.options as any)._items_fun, this.options as any) // any: options is W2FieldOptions which is a superset of W2NormMenuOptions
+                ;(this.options as any).items = TsUtils.normMenu.call(this, (this.options as any)._items_fun, this.options as any) // any: options is TsFieldOptions which is a superset of TsNormMenuOptions
             }
             if (this.helpers.search) {
                 const search = this.helpers.search_focus
@@ -1418,7 +1418,7 @@ class w2field extends w2base {
             }
             this.resize()
             // update overlay if needed
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (event.showMenu !== false && (this.options as any).openOnFocus !== false && query(this.el).hasClass('has-focus')
                     && !this.tmp.overlay?.overlay?.displayed) {
@@ -1459,32 +1459,32 @@ class w2field extends w2base {
                         error = `Should be <= ${options.max}`
                     }
                 }
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this.options as any).autoCorrect) {
                     ;(query(this.el).val(newVal) as Query).trigger('input').trigger('change')
                     if (error) {
-                        w2tooltip.show({
+                        TsTooltip.show({
                             name: this.el!.id + '_error',
                             anchor: this.el,
                             html: error
                         })
-                        setTimeout(() => { w2tooltip.hide(this.el!.id + '_error') }, 3000)
+                        setTimeout(() => { TsTooltip.hide(this.el!.id + '_error') }, 3000)
                     }
                 }
             }
         }
         // date or time
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['date', 'time', 'datetime'].includes(this.type) && (this.options as any).autoCorrect) {
             if (val !== '') {
-                const check = this.type == 'date' ? w2utils.isDate :
-                    (this.type == 'time' ? w2utils.isTime : w2utils.isDateTime)
+                const check = this.type == 'date' ? TsUtils.isDate :
+                    (this.type == 'time' ? TsUtils.isTime : TsUtils.isDateTime)
                 if (!w2date.inRange(this.el!.value, this.options)
-                        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        || !check.bind(w2utils)(this.el!.value, (this.options as any).format)) {
+                        || !check.bind(TsUtils)(this.el!.value, (this.options as any).format)) {
                     // if not in range or wrong value - clear it
                     ;(query(this.el).val('') as Query).trigger('input').trigger('change')
                 }
@@ -1554,8 +1554,8 @@ class w2field extends w2base {
         // date/datetime
         if (['date', 'datetime'].includes(this.type)) {
             if (!options.keyboard || query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            const is = (this.type == 'date' ? w2utils.isDate : w2utils.isDateTime).bind(w2utils) as (val: string, format: string, returnDate: boolean) => Date | boolean
-            const format = (this.type == 'date' ? w2utils.formatDate : w2utils.formatDateTime).bind(w2utils) as (time: number, format: string) => string
+            const is = (this.type == 'date' ? TsUtils.isDate : TsUtils.isDateTime).bind(TsUtils) as (val: string, format: string, returnDate: boolean) => Date | boolean
+            const format = (this.type == 'date' ? TsUtils.formatDate : TsUtils.formatDateTime).bind(TsUtils) as (time: number, format: string) => string
 
             daymil = 24*60*60*1000
             inc = 1
@@ -1684,7 +1684,7 @@ class w2field extends w2base {
             this.refresh()
         }
         if (this.type == 'combo') {
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if (![9, 16, 27].includes(event.keyCode) && (this.options as any).openOnFocus !== true) {
                 // do not show when receives focus on tab or shift + tab or on esc
@@ -1699,7 +1699,7 @@ class w2field extends w2base {
             const search = this.helpers.multi?.find('input')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const styles = getComputedStyle(search?.get(0) as HTMLElement) as any // any: CSSStyleDeclaration has numeric-only index; cast for hyphenated key access
-            const width = w2utils.getStrWidth(search?.val() as string,
+            const width = TsUtils.getStrWidth(search?.val() as string,
                 `font-family: ${styles['font-family']}; font-size: ${styles['font-size']};`, undefined)
             search?.css({ width: (width + 15) + 'px' })
             this.resize()
@@ -1718,14 +1718,14 @@ class w2field extends w2base {
     findItemIndex(items: any[], id: any, parents?: number[]): number[] { // any: items/id vary by field type
         let inds: number[] = []
         if (!parents) parents = []
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['list', 'combo', 'enum'].includes(this.type) && (this.options as any).url) {
             // remove source, so get it from overlay
             const overlay = w2menu.get(this.el!.id + '_menu')
             if (overlay) {
                 items = overlay.options.items
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).items = items
             }
@@ -1734,7 +1734,7 @@ class w2field extends w2base {
         items.forEach((item: any, ind: number) => { // any: item shape varies by field type
             if (item.id === id) {
                 inds = parents.concat([ind])
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(this.options as any).index = [ind]
             }
@@ -1755,7 +1755,7 @@ class w2field extends w2base {
         // color
         if (this.type === 'color') {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            w2color.show(w2utils.extend({
+            w2color.show(TsUtils.extend({
                 name: this.el!.id + '_color',
                 anchor: this.el,
                 transparent: options.transparent,
@@ -1775,15 +1775,15 @@ class w2field extends w2base {
         // list
         if (['list', 'combo', 'enum'].includes(this.type)) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            let el: any = this.el // any: el is W2FieldElement|HTMLElement depending on type
+            let el: any = this.el // any: el is TsFieldElement|HTMLElement depending on type
             let input: HTMLElement = this.el!
             if (this.type === 'enum') {
-                el = this.helpers.multi?.get(0) as W2FieldElement ?? this.el
+                el = this.helpers.multi?.get(0) as TsFieldElement ?? this.el
                 input = query(el).find('input').get(0) as HTMLElement ?? this.el
             }
             if (this.type === 'list') {
                 const sel = this.selected
-                if (w2utils.isPlainObject(sel) && Object.keys(sel).length > 0) {
+                if (TsUtils.isPlainObject(sel) && Object.keys(sel).length > 0) {
                     const ind = this.findItemIndex(options.items, sel.id)
                     if (ind.length > 0) {
                         options.index = ind
@@ -1792,7 +1792,7 @@ class w2field extends w2base {
                 input = this.helpers.search_focus ?? this.el!
             }
             if (query(this.el).hasClass('has-focus') && !this.el!.readOnly && !this.el!.disabled) {
-                params = w2utils.extend({}, options, {
+                params = TsUtils.extend({}, options, {
                     name: this.el!.id + '_menu',
                     anchor: input,
                     selected: this.selected,
@@ -1837,7 +1837,7 @@ class w2field extends w2base {
         // date
         if (['date', 'time', 'datetime'].includes(this.type)) {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            w2date.show(w2utils.extend({
+            w2date.show(TsUtils.extend({
                 name: this.el!.id + '_date',
                 anchor: this.el,
                 value: this.el!.value,
@@ -1859,61 +1859,61 @@ class w2field extends w2base {
         let isValid = true
         switch (this.type) {
             case 'int':
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
-                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                    // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    isValid = w2utils.isInt(ch.replace((this.options as any).numberRE, ''))
+                    isValid = TsUtils.isInt(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'percent':
                 ch = ch.replace(/%/g, '')
             // falls through to float
             case 'float':
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', '', (this.options as any).decimalSymbol, (this.options as any).groupSymbol].includes(ch)) {
                     isValid = true
                 } else {
-                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                    // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    isValid = w2utils.isFloat(ch.replace((this.options as any).numberRE, ''))
+                    isValid = TsUtils.isFloat(ch.replace((this.options as any).numberRE, ''))
                 }
                 break
             case 'money':
             case 'currency':
-                // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if (loose && ['-', (this.options as any).decimalSymbol, (this.options as any).groupSymbol, (this.options as any).currency.prefix,
-                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                    // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     (this.options as any).currency.suffix].includes(ch)) {
                     isValid = true
                 } else {
-                    // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+                    // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    isValid = w2utils.isFloat(ch.replace((this.options as any).moneyRE, ''))
+                    isValid = TsUtils.isFloat(ch.replace((this.options as any).moneyRE, ''))
                 }
                 break
             case 'bin':
-                isValid = w2utils.isBin(ch)
+                isValid = TsUtils.isBin(ch)
                 break
             case 'color':
             case 'hex':
-                isValid = w2utils.isHex(ch)
+                isValid = TsUtils.isHex(ch)
                 break
             case 'alphanumeric':
-                isValid = w2utils.isAlphaNumeric(ch)
+                isValid = TsUtils.isAlphaNumeric(ch)
                 break
         }
         return isValid
     }
 
     addPrefix(): void {
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).prefix) {
             return
@@ -1925,7 +1925,7 @@ class w2field extends w2base {
         }
         // remove if already displayed
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query(this.el).before(`<div class="w2ui-field-helper">${(this.options as any).prefix}</div>`)
         const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
@@ -1954,7 +1954,7 @@ class w2field extends w2base {
     }
 
     addSuffix(): void {
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (!(this.options as any).suffix && !(this.options as any).arrows) {
             return
@@ -1965,7 +1965,7 @@ class w2field extends w2base {
             this.tmp['old-padding-right'] = styles['padding-right']
         }
         let pr = parseInt(styles['padding-right'] || '0')
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).arrows) {
             // remove if already displayed
@@ -2007,13 +2007,13 @@ class w2field extends w2base {
             query(this.el).css('padding-right', pr + 'px !important')
             this.helpers.arrows = arrowHelper
         }
-        // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+        // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if ((this.options as any).suffix !== '') {
             // remove if already displayed
             if (this.helpers.suffix) query(this.helpers.suffix).remove()
             // add fresh
-            // any: cast-to-any for dynamic dispatch; w2field instance shape varies by `type` (text/list/date/color/etc) at runtime
+            // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.el).after(`<div class="w2ui-field-helper">${(this.options as any).suffix}</div>`)
             const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
@@ -2121,12 +2121,12 @@ class w2field extends w2base {
         let html   = ''
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const styles = getComputedStyle(this.el!) as any // any: CSSStyleDeclaration has numeric-only index; cast for hyphenated key access
-        const margin = w2utils.stripSpaces(`
+        const margin = TsUtils.stripSpaces(`
             margin-top: 0px;
             margin-bottom: 0px;
             margin-left: ${styles['margin-left']};
             margin-right: ${styles['margin-right']};
-            width: ${(w2utils.getSize(this.el, 'width') - parseInt(styles['margin-left'], 10)
+            width: ${(TsUtils.getSize(this.el, 'width') - parseInt(styles['margin-left'], 10)
                                 - parseInt(styles['margin-right'], 10))}px;
         `)
         if (this.tmp['min-height'] == null) {
@@ -2282,21 +2282,21 @@ class w2field extends w2base {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             selected.forEach((item: any) => { // any: item is a file-like object
                 if (item.name == file.name && item.size == file.size) {
-                    errors.push(w2utils.lang('The file "${name}" (${size}) is already added.', {
-                        name: file.name, size: String(w2utils.formatSize(file.size)) }))
+                    errors.push(TsUtils.lang('The file "${name}" (${size}) is already added.', {
+                        name: file.name, size: String(TsUtils.formatSize(file.size)) }))
                 }
                 size += item.size
                 cnt++
             })
         }
         if (options.maxFileSize !== 0 && newItem.size > options.maxFileSize) {
-            errors.push(w2utils.lang('Maximum file size is ${size}', { size: String(w2utils.formatSize(options.maxFileSize)) }))
+            errors.push(TsUtils.lang('Maximum file size is ${size}', { size: String(TsUtils.formatSize(options.maxFileSize)) }))
         }
         if (options.maxSize !== 0 && size + newItem.size > options.maxSize) {
-            errors.push(w2utils.lang('Maximum total size is ${size}', { size: String(w2utils.formatSize(options.maxSize)) }))
+            errors.push(TsUtils.lang('Maximum total size is ${size}', { size: String(TsUtils.formatSize(options.maxSize)) }))
         }
         if (options.max !== 0 && cnt >= options.max) {
-            errors.push(w2utils.lang('Maximum number of files is ${count}', { count: options.max }))
+            errors.push(TsUtils.lang('Maximum number of files is ${count}', { count: options.max }))
         }
 
         // trigger event
@@ -2305,7 +2305,7 @@ class w2field extends w2base {
         // if errors
         if (errors.length > 0) {
             if (options.showErrors) {
-                w2tooltip.show({
+                TsTooltip.show({
                     anchor: this.el,
                     html: 'Errors: ' + errors.join('<br>'),
                     hideOn: ['input', 'doc-click']
@@ -2345,4 +2345,4 @@ class w2field extends w2base {
     }
 }
 
-export { w2field }
+export { TsField }

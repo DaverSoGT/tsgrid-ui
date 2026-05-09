@@ -1,7 +1,7 @@
 import query from '../src/query.js'
-import { w2toolbar } from '../src/tstoolbar.js'
+import { TsToolbar } from '../src/tstoolbar.js'
 
-let toolbar = new w2toolbar({
+let toolbar = new TsToolbar({
     name: 'toolbar',
     routeData: { id: 5, vid: '40-43' },
     tooltip: 'top|bottom',

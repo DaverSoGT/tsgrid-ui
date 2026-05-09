@@ -6,9 +6,9 @@ test.describe('Tooltip', () => {
         await page.waitForFunction(() => (window as any)._smokeReady === true)
     })
 
-    test('w2tooltip global is available', async ({ page }) => {
+    test('TsTooltip global is available', async ({ page }) => {
         const hasTooltip = await page.evaluate(() => {
-            return typeof (window as any).w2tooltip === 'object' && (window as any).w2tooltip !== null
+            return typeof (window as any).TsTooltip === 'object' && (window as any).TsTooltip !== null
         })
         expect(hasTooltip).toBe(true)
     })
@@ -16,7 +16,7 @@ test.describe('Tooltip', () => {
     test('tooltip.attach() registers a named tooltip', async ({ page }) => {
         // verify that attach() registered the tooltip in Tooltip.active
         const isRegistered = await page.evaluate(() => {
-            // Tooltip is the class exposed by the UMD bundle as part of w2tooltip module
+            // Tooltip is the class exposed by the UMD bundle as part of TsTooltip module
             return typeof (window as any).Tooltip !== 'undefined'
                 ? Object.prototype.hasOwnProperty.call((window as any).Tooltip.active, 'smoke-tip')
                 : false
@@ -42,9 +42,9 @@ test.describe('Tooltip', () => {
         expect(fired).toBe(true)
     })
 
-    test('w2tooltip.show() returns an overlay object', async ({ page }) => {
+    test('TsTooltip.show() returns an overlay object', async ({ page }) => {
         const result = await page.evaluate(async () => {
-            const res = (window as any).w2tooltip.show({
+            const res = (window as any).TsTooltip.show({
                 anchor: document.getElementById('hover-target'),
                 name: 'test-show-tip',
                 text: 'show test'

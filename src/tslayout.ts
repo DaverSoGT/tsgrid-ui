@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tabs, w2toolbar
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTabs, TsToolbar
  *
  * T3.6: Ported to TypeScript with aggressive typing per typing_policy.
  * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
@@ -14,11 +14,11 @@
  *  - assignTabs
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui as _w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui as _w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tabs } from './tstabs.js'
-import { w2toolbar } from './tstoolbar.js'
+import { TsTabs } from './tstabs.js'
+import { TsToolbar } from './tstoolbar.js'
 
 // any: query() returns Query|void; cast once for clean selector usage
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
@@ -31,16 +31,16 @@ const w2ui = _w2ui as Record<string, any> // any: values are w2 widget instances
 // ---------------------------------------------------------------------------
 
 /** Valid panel type names in a layout */
-type W2PanelType = 'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'
+type TsPanelType = 'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'
 
 /** Content that can be placed in a layout panel */
-type W2PanelContent =
+type TsPanelContent =
     | string
     | { render: (box?: HTMLElement) => void; unmount?: () => void; box?: HTMLElement | null; [key: string]: unknown }
 
 /** Individual panel configuration and runtime state */
-interface W2LayoutPanel {
-    type: W2PanelType | null
+interface TsLayoutPanel {
+    type: TsPanelType | null
     title: string
     size: number | string
     minSize: number
@@ -49,9 +49,9 @@ interface W2LayoutPanel {
     resizable: boolean
     overflow: string
     style: string
-    html: W2PanelContent
-    tabs: w2tabs | Record<string, unknown> | null
-    toolbar: w2toolbar | Record<string, unknown> | null
+    html: TsPanelContent
+    tabs: TsTabs | Record<string, unknown> | null
+    toolbar: TsToolbar | Record<string, unknown> | null
     /** Runtime-computed width (read-only after resize) */
     width: number | null
     /** Runtime-computed height (read-only after resize) */
@@ -62,28 +62,28 @@ interface W2LayoutPanel {
         toolbar: boolean
         tabs: boolean
     }
-    removed: ((info: { panel: string; html: W2PanelContent; html_new: W2PanelContent; transition: string }) => void) | null
+    removed: ((info: { panel: string; html: TsPanelContent; html_new: TsPanelContent; transition: string }) => void) | null
     onRefresh: ((event: unknown) => void) | null
     onShow: ((event: unknown) => void) | null
     onHide: ((event: unknown) => void) | null
 }
 
 /** Options for the html() method return promise-like */
-interface W2HtmlResult {
+interface TsHtmlResult {
     panel: string
-    html: W2PanelContent
+    html: TsPanelContent
     error: boolean
     cancelled: boolean
     status?: boolean
     removed: (cb: () => void) => void
 }
 
-const w2panels: W2PanelType[] = ['top', 'left', 'main', 'preview', 'right', 'bottom']
+const w2panels: TsPanelType[] = ['top', 'left', 'main', 'preview', 'right', 'bottom']
 
-class w2layout extends w2base {
+class TsLayout extends TsBase {
     declare box: HTMLElement | null
     declare name: string
-    panels: W2LayoutPanel[]
+    panels: TsLayoutPanel[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: Record<string, any> // any: accumulates resize state, observeResize, events dict
     padding: number
@@ -98,9 +98,9 @@ class w2layout extends w2base {
     onChange: ((event: unknown) => void) | null
     onResize: ((event: unknown) => void) | null
     onDestroy: ((event: unknown) => void) | null
-    panel_template: W2LayoutPanel
+    panel_template: TsLayoutPanel
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any // any: w2base dynamic event handlers
+    [key: string]: any // any: TsBase dynamic event handlers
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(options: any) { // any: options bag — mixed type at construction time
@@ -150,14 +150,14 @@ class w2layout extends w2base {
         if (!Array.isArray(this.panels)) this.panels = []
         // add defined panels
         this.panels.forEach((panel, ind) => {
-            this.panels[ind] = w2utils.extend({}, this.panel_template, panel)
-            if (w2utils.isPlainObject(panel.tabs) || Array.isArray(panel.tabs)) initTabs(this, panel.type)
-            if (w2utils.isPlainObject(panel.toolbar) || Array.isArray(panel.toolbar)) initToolbar(this, panel.type)
+            this.panels[ind] = TsUtils.extend({}, this.panel_template, panel)
+            if (TsUtils.isPlainObject(panel.tabs) || Array.isArray(panel.tabs)) initTabs(this, panel.type)
+            if (TsUtils.isPlainObject(panel.toolbar) || Array.isArray(panel.toolbar)) initToolbar(this, panel.type)
         })
         // add all other panels
         w2panels.forEach(tab => {
             if (this.get(tab) != null) return
-            this.panels.push(w2utils.extend({}, this.panel_template, { type: tab, hidden: (tab !== 'main'), size: 50 }))
+            this.panels.push(TsUtils.extend({}, this.panel_template, { type: tab, hidden: (tab !== 'main'), size: 50 }))
         })
 
         // render if box specified
@@ -166,7 +166,7 @@ class w2layout extends w2base {
         if (this.box) this.render(this.box)
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function initTabs(object: w2layout, panel: W2PanelType | null, tabs?: any): boolean { // any: tabs config bag
+        function initTabs(object: TsLayout, panel: TsPanelType | null, tabs?: any): boolean { // any: tabs config bag
             const pan = panel != null ? object.get(panel) : null
             if (pan != null && tabs == null) tabs = pan.tabs
             if (pan == null || tabs == null) return false
@@ -174,13 +174,13 @@ class w2layout extends w2base {
             if (Array.isArray(tabs)) tabs = { tabs: tabs }
             const name = object.name + '_' + (panel ?? '') + '_tabs'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
-            pan.tabs      = new w2tabs(w2utils.extend({}, tabs, { owner: object, name: object.name + '_' + (panel ?? '') + '_tabs' }))
+            pan.tabs      = new TsTabs(TsUtils.extend({}, tabs, { owner: object, name: object.name + '_' + (panel ?? '') + '_tabs' }))
             pan.show.tabs = true
             return true
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function initToolbar(object: w2layout, panel: W2PanelType | null, toolbar?: any): boolean { // any: toolbar config bag
+        function initToolbar(object: TsLayout, panel: TsPanelType | null, toolbar?: any): boolean { // any: toolbar config bag
             const pan = panel != null ? object.get(panel) : null
             if (pan != null && toolbar == null) toolbar = pan.toolbar
             if (pan == null || toolbar == null) return false
@@ -188,15 +188,15 @@ class w2layout extends w2base {
             if (Array.isArray(toolbar)) toolbar = { items: toolbar }
             const name = object.name + '_' + (panel ?? '') + '_toolbar'
             if (w2ui[name]) w2ui[name].destroy() // destroy if existed
-            pan.toolbar      = new w2toolbar(w2utils.extend({}, toolbar, { owner: object, name: object.name + '_' + (panel ?? '') + '_toolbar' }))
+            pan.toolbar      = new TsToolbar(TsUtils.extend({}, toolbar, { owner: object, name: object.name + '_' + (panel ?? '') + '_toolbar' }))
             pan.show.toolbar = true
             return true
         }
     }
 
-    html(panel: string, data: W2PanelContent, transition?: string): W2HtmlResult {
+    html(panel: string, data: TsPanelContent, transition?: string): TsHtmlResult {
         const p = this.get(panel)
-        const promise: W2HtmlResult = {
+        const promise: TsHtmlResult = {
             panel: panel,
             html: p.html,
             error: false,
@@ -270,19 +270,19 @@ class w2layout extends w2base {
                     let style1: string, style2: string
                     switch (transition) {
                         case 'slide-left':
-                            style1 = 'left: -'+ w2utils.getSize(query(this.box), 'width') +'px'
+                            style1 = 'left: -'+ TsUtils.getSize(query(this.box), 'width') +'px'
                             style2 = 'left: 0px'
                             break
                         case 'slide-right':
-                            style1 = 'left: '+ w2utils.getSize(query(this.box), 'width') +'px'
+                            style1 = 'left: '+ TsUtils.getSize(query(this.box), 'width') +'px'
                             style2 = 'left: 0px'
                             break
                         case 'slide-down':
-                            style1 = 'top: -'+ w2utils.getSize(query(this.box), 'height') +'px'
+                            style1 = 'top: -'+ TsUtils.getSize(query(this.box), 'height') +'px'
                             style2 = 'top: '+ panelTop +'px'
                             break
                         case 'slide-up':
-                            style1 = 'top: '+ w2utils.getSize(query(this.box), 'height') +'px'
+                            style1 = 'top: '+ TsUtils.getSize(query(this.box), 'height') +'px'
                             style2 = 'top: '+ panelTop +'px'
                             break
                         case 'flip-left':
@@ -340,14 +340,14 @@ class w2layout extends w2base {
         const box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
         const oldOverflow = box.css('overflow') as string
         box.css('overflow', 'hidden')
-        // any: options is pass-through from caller; w2utils.message accepts string|number|object
-        const prom = w2utils.message({
+        // any: options is pass-through from caller; TsUtils.message accepts string|number|object
+        const prom = TsUtils.message({
             owner: this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box  : box.get(0) as HTMLElement,
             after: '.w2ui-panel-title',
             param: panel
-        // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
+        // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
@@ -363,14 +363,14 @@ class w2layout extends w2base {
         const box = query(this.box).find('#layout_'+ this.name + '_panel_'+ p.type)
         const oldOverflow = box.css('overflow') as string
         box.css('overflow', 'hidden')
-        // any: options is pass-through from caller; w2utils.confirm accepts string|number|object
-        const prom = w2utils.confirm({
+        // any: options is pass-through from caller; TsUtils.confirm accepts string|number|object
+        const prom = TsUtils.confirm({
             owner : this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box   : box.get(0) as HTMLElement,
             after : '.w2ui-panel-title',
             param : panel
-        // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
+        // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         }, options as any)
         if (prom) {
@@ -382,7 +382,7 @@ class w2layout extends w2base {
     }
 
     load(panel: string, url: string, transition?: string) {
-        return new Promise<W2HtmlResult | void>((resolve, reject) => {
+        return new Promise<TsHtmlResult | void>((resolve, reject) => {
             if ((panel == 'css' || this.get(panel) != null) && url != null) {
                 fetch(url)
                     .then(resp => resp.text())
@@ -487,10 +487,10 @@ class w2layout extends w2base {
         if (p.hidden) return this.show(panel, immediate); else return this.hide(panel, immediate)
     }
 
-    set(panel: string, options: Partial<W2LayoutPanel>) {
+    set(panel: string, options: Partial<TsLayoutPanel>) {
         const ind = this.get(panel, true)
         if (ind == null) return false
-        w2utils.extend(this.panels[ind], options)
+        TsUtils.extend(this.panels[ind], options)
         // refresh only when content changed
         if (options.html != null || options.resizable != null) {
             this.refresh(panel)
@@ -540,18 +540,18 @@ class w2layout extends w2base {
         if (pan.show.toolbar) this.hideToolbar(panel); else this.showToolbar(panel)
     }
 
-    assignToolbar(panel: string, toolbar: w2toolbar | string | null) {
+    assignToolbar(panel: string, toolbar: TsToolbar | string | null) {
         if (typeof toolbar == 'string' && w2ui[toolbar] != null) toolbar = w2ui[toolbar]
         const pan = this.get(panel)
         pan.toolbar = toolbar
         // any: query().attr(name) returns string|undefined; used as selector fallback
         const tmp = query(this.box).find(panel +'> [data-role="panel-toolbar"]')
         if (pan.toolbar != null) {
-            if ((tmp.attr('name') as string | undefined) != (pan.toolbar as w2toolbar).name) {
+            if ((tmp.attr('name') as string | undefined) != (pan.toolbar as TsToolbar).name) {
                 // any: query().get(0) returns Node|Node[]; toolbar container is HTMLElement
-                ;(pan.toolbar as w2toolbar).render(tmp.get(0) as HTMLElement)
+                ;(pan.toolbar as TsToolbar).render(tmp.get(0) as HTMLElement)
             } else if (pan.toolbar != null) {
-                ;(pan.toolbar as w2toolbar).refresh()
+                ;(pan.toolbar as TsToolbar).refresh()
             }
             if (typeof toolbar != 'string' && toolbar) toolbar['owner'] = this
             this.showToolbar(panel)
@@ -584,17 +584,17 @@ class w2layout extends w2base {
         if (pan.show.tabs) this.hideTabs(panel); else this.showTabs(panel)
     }
 
-    assignTabs(panel: string, tabs: w2tabs | string | null) {
+    assignTabs(panel: string, tabs: TsTabs | string | null) {
         if (typeof tabs == 'string' && w2ui[tabs] != null) tabs = w2ui[tabs]
         const pan = this.get(panel)
         pan.tabs = tabs
         const tmp = query(this.box).find(panel +'> [data-role="panel-tabs"]')
         if (pan.tabs != null) {
-            if ((tmp.attr('name') as string | undefined) != (pan.tabs as w2tabs).name) {
+            if ((tmp.attr('name') as string | undefined) != (pan.tabs as TsTabs).name) {
                 // any: query().get(0) returns Node|Node[]; tabs container is HTMLElement
-                ;(pan.tabs as w2tabs).render(tmp.get(0) as HTMLElement)
+                ;(pan.tabs as TsTabs).render(tmp.get(0) as HTMLElement)
             } else if (pan.tabs != null) {
-                ;(pan.tabs as w2tabs).refresh()
+                ;(pan.tabs as TsTabs).refresh()
             }
             if (typeof tabs != 'string' && tabs) tabs['owner'] = this
             this.showTabs(panel)
@@ -712,8 +712,8 @@ class w2layout extends w2base {
                 const ptop    = self.get('top')
                 const pbottom = self.get('bottom')
                 const panel   = self.get(self.last['resize'].type)
-                const width   = w2utils.getSize(query(self.box), 'width')
-                const height  = w2utils.getSize(query(self.box), 'height')
+                const width   = TsUtils.getSize(query(self.box), 'width')
+                const height  = TsUtils.getSize(query(self.box), 'height')
                 const str     = String(panel.size)
                 let ns: number, nd: number
                 switch (self.last['resize'].type) {
@@ -862,10 +862,10 @@ class w2layout extends w2base {
     override unmount(): void {
         super.unmount()
         this.panels.forEach(panel => {
-            // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            // any: tabs/toolbar may be TsTabs/TsToolbar or plain config object
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.unmount?.()
-            // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.unmount?.()
         })
@@ -879,10 +879,10 @@ class w2layout extends w2base {
         if (w2ui[this.name] == null) return false
         // clean up
         this.panels.forEach(panel => {
-            // any: tabs/toolbar may be w2tabs/w2toolbar or plain config object
+            // any: tabs/toolbar may be TsTabs/TsToolbar or plain config object
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.tabs as any)?.destroy?.()
-            // any: cast-to-any for dynamic dispatch; w2layout panel shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             ;(panel.toolbar as any)?.destroy?.()
         })
@@ -953,10 +953,10 @@ class w2layout extends w2base {
             // if there are tabs and/or toolbar - render it
             let tmp = query(self.box).find(pname +'> [data-role="panel-tabs"]')
             if (p.show.tabs) {
-                if ((tmp.attr('name') as string | undefined) != (p.tabs as w2tabs)?.name && p.tabs != null) {
-                    ;(p.tabs as w2tabs).render(tmp.get(0) as HTMLElement)
+                if ((tmp.attr('name') as string | undefined) != (p.tabs as TsTabs)?.name && p.tabs != null) {
+                    ;(p.tabs as TsTabs).render(tmp.get(0) as HTMLElement)
                 } else {
-                    ;(p.tabs as w2tabs).refresh()
+                    ;(p.tabs as TsTabs).refresh()
                 }
                 tmp.addClass('w2ui-panel-tabs')
             } else {
@@ -967,10 +967,10 @@ class w2layout extends w2base {
             }
             tmp = query(self.box).find(pname +'> [data-role="panel-toolbar"]')
             if (p.show.toolbar) {
-                if ((tmp.attr('name') as string | undefined) != (p.toolbar as w2toolbar)?.name && p.toolbar != null) {
-                    ;(p.toolbar as w2toolbar).render(tmp.get(0) as HTMLElement)
+                if ((tmp.attr('name') as string | undefined) != (p.toolbar as TsToolbar)?.name && p.toolbar != null) {
+                    ;(p.toolbar as TsToolbar).render(tmp.get(0) as HTMLElement)
                 } else {
-                    ;(p.toolbar as w2toolbar).refresh()
+                    ;(p.toolbar as TsToolbar).refresh()
                 }
                 tmp.addClass('w2ui-panel-toolbar')
             } else {
@@ -1012,8 +1012,8 @@ class w2layout extends w2base {
         if (this.padding < 0) this.padding = 0
 
         // layout itself
-        const width  = w2utils.getSize(query(this.box), 'width')
-        const height = w2utils.getSize(query(this.box), 'height')
+        const width  = TsUtils.getSize(query(this.box), 'width')
+        const height = TsUtils.getSize(query(this.box), 'height')
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         // panels
@@ -1346,15 +1346,15 @@ class w2layout extends w2base {
             if (pan) {
                 if (pan.title) {
                     const el = query(this.box).find(tmp2 + '.w2ui-panel-title').css({ top: topHeight + 'px', display: 'block' })
-                    topHeight += w2utils.getSize(el, 'height')
+                    topHeight += TsUtils.getSize(el, 'height')
                 }
                 if (pan.show.tabs) {
                     const el = query(this.box).find(tmp2 + '[data-role="panel-tabs"]').css({ top: topHeight + 'px', display: 'block' })
-                    topHeight += w2utils.getSize(el, 'height')
+                    topHeight += TsUtils.getSize(el, 'height')
                 }
                 if (pan.show.toolbar) {
                     const el = query(this.box).find(tmp2 + '[data-role="panel-toolbar"]').css({ top: topHeight + 'px', display: 'block' })
-                    topHeight += w2utils.getSize(el, 'height')
+                    topHeight += TsUtils.getSize(el, 'height')
                 }
             }
             query(this.box).find(tmp2 + '[data-role="panel-content"]')
@@ -1366,22 +1366,22 @@ class w2layout extends w2base {
     }
 
     lock(panel: string, msg: unknown, showSpinner?: boolean) {
-        if (w2panels.indexOf(panel as W2PanelType) == -1) {
+        if (w2panels.indexOf(panel as TsPanelType) == -1) {
             console.log('ERROR: First parameter needs to be the a valid panel name.')
             return
         }
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        w2utils.lock('#layout_'+ this.name + '_panel_' + panel, msg as any, showSpinner) // any: msg is string|W2LockOptions; W2LockOptions not exported from w2utils
+        TsUtils.lock('#layout_'+ this.name + '_panel_' + panel, msg as any, showSpinner) // any: msg is string|TsLockOptions; TsLockOptions not exported from TsUtils
     }
 
     unlock(panel: string, speed?: number) {
-        if (w2panels.indexOf(panel as W2PanelType) == -1) {
+        if (w2panels.indexOf(panel as TsPanelType) == -1) {
             console.log('ERROR: First parameter needs to be the a valid panel name.')
             return
         }
         const nm = '#layout_'+ this.name + '_panel_' + panel
-        w2utils.unlock(nm, speed)
+        TsUtils.unlock(nm, speed)
     }
 }
 
-export { w2layout }
+export { TsLayout }

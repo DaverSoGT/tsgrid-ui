@@ -1,8 +1,8 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: w2utils, w2base, w2toolbar, w2tooltip, w2field
+ *  - Dependencies: TsUtils, TsBase, TsToolbar, TsTooltip, TsField
  *
- * T5.1: Renamed src/w2grid.js → src/w2grid.ts.
+ * T5.1: Renamed src/TsGrid.js → src/TsGrid.ts.
  * Skeleton + data CRUD cluster typed per typing_policy.
  * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
  * T5.6 will fix the pre-existing `??` unreachable warning at original line 3061.
@@ -62,23 +62,23 @@
  *  - added grid.groupBy = {} and grid.last.groupBy_links = {}
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
-import { w2toolbar } from './tstoolbar.js'
-import { w2menu as _w2menu, w2tooltip as _w2tooltip } from './tstooltip.js'
-import { w2field } from './tsfield.js'
+import { TsToolbar } from './tstoolbar.js'
+import { w2menu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
+import { TsField } from './tsfield.js'
 import type { RecId } from './types.js'
 
-// any: query() always returns Query at runtime; cast to any for clean duck-typing throughout w2grid
+// any: query() always returns Query at runtime; cast to any for clean duck-typing throughout TsGrid
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const query = _queryRaw as (...args: any[]) => any // any: Query wrapper used as jQuery-like in w2grid
-// any: w2menu/w2tooltip have complex show/hide overloads
+const query = _queryRaw as (...args: any[]) => any // any: Query wrapper used as jQuery-like in TsGrid
+// any: w2menu/TsTooltip have complex show/hide overloads
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const w2menu    = _w2menu as any    // any: menu overlay with dynamic option shapes
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2tooltip = _w2tooltip as any // any: tooltip with flexible option shapes
+const TsTooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 
 // ---------------------------------------------------------------------------
 // Type definitions — T5.1 (skeleton + CRUD); T5.2 (column + search cluster)
@@ -87,11 +87,11 @@ const w2tooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 // ---------------------------------------------------------------------------
 
 /** A single data record stored in the grid */
-interface W2GridRecord {
+interface TsGridRecord {
     recid: string | number
     w2ui?: {
         summary?: boolean
-        children?: W2GridRecord[]
+        children?: TsGridRecord[]
         parent_recid?: string | number
         expanded?: boolean
         selectable?: boolean
@@ -104,7 +104,7 @@ interface W2GridRecord {
 }
 
 /** Sort descriptor used in grid.sortData */
-interface W2GridSortData {
+interface TsGridSortData {
     field: string
     direction: 'asc' | 'desc'
     field_?: string // any: runtime-computed cached field name for date/time render types (localSort internal)
@@ -113,7 +113,7 @@ interface W2GridSortData {
 }
 
 /** Virtual scroll state kept in grid.last.vscroll */
-interface W2GridVScroll {
+interface TsGridVScroll {
     scrollTop: number
     scrollLeft: number
     recIndStart: number | null
@@ -126,7 +126,7 @@ interface W2GridVScroll {
 }
 
 /** Fetch state kept in grid.last.fetch */
-interface W2GridFetch {
+interface TsGridFetch {
     action: string
     offset?: number | null
     start: number
@@ -138,9 +138,9 @@ interface W2GridFetch {
 }
 
 /** Column definition — T5.2 */
-interface W2GridColumn {
+interface TsGridColumn {
     field: string
-    text: string | ((col: W2GridColumn) => string)
+    text: string | ((col: TsGridColumn) => string)
     size?: string | number        // CSS size e.g. '100px' or '20%'
     min?: number                  // minimum pixel width (for resize)
     max?: number                  // maximum pixel width (for resize)
@@ -151,17 +151,17 @@ interface W2GridColumn {
     sortable?: boolean            // if false column header is not clickable for sort
     searchable?: boolean | string // if true/string auto-adds a search field
     sortMode?: string             // 'default' | 'natural' | 'i18n' | function
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    editable?: boolean | { type: string; [key: string]: any } | ((rec: W2GridRecord, cell: any) => any)
-    render?: string | ((record: W2GridRecord, index: number, colIndex: number) => string)
+    editable?: boolean | { type: string; [key: string]: any } | ((rec: TsGridRecord, cell: any) => any)
+    render?: string | ((record: TsGridRecord, index: number, colIndex: number) => string)
     tooltip?: string              // tooltip shown on column header hover
     style?: string                // inline CSS for cells in this column
     attr?: string                 // HTML attributes for <td> elements
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clipboardCopy?: boolean | ((record: W2GridRecord, cell: any) => string) // if true/function show clipboard copy icon in cells
-    colspan?: Record<string, number> | ((record: W2GridRecord, index: number) => number)
+    clipboardCopy?: boolean | ((record: TsGridRecord, cell: any) => string) // if true/function show clipboard copy icon in cells
+    colspan?: Record<string, number> | ((record: TsGridRecord, index: number) => number)
     sizeCalculated?: string       // runtime-computed pixel width string (e.g. '120px')
     sizeOriginal?: string | number // original size before resize operations
     sizeType?: string             // 'px' or '%'
@@ -171,7 +171,7 @@ interface W2GridColumn {
 }
 
 /** Search field definition — T5.2 */
-interface W2GridSearch {
+interface TsGridSearch {
     field: string
     label?: string
     caption?: string              // deprecated alias for label
@@ -182,13 +182,13 @@ interface W2GridSearch {
     style?: string                // CSS style for the search cell
     operator?: string             // default operator key for this search
     operators?: string[]          // override available operators for this search
-    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    options?: Record<string, any> // extra options passed to w2field (list items, etc.)
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    options?: Record<string, any> // extra options passed to TsField (list items, etc.)
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any                   // current value of the search field (runtime)
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     svalue?: any                  // display value for enum/list searches (runtime)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -196,18 +196,18 @@ interface W2GridSearch {
 }
 
 /** Internal last-state object */
-interface W2GridLast {
+interface TsGridLast {
     field: string
     label: string
     logic: 'AND' | 'OR'
     search: string
     searchIds: number[]
-    selection: W2GridSelection
+    selection: TsGridSelection
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     saved_sel: any | null // any: complex selection restore payload
     multi: boolean
-    fetch: W2GridFetch
-    vscroll: W2GridVScroll
+    fetch: TsGridFetch
+    vscroll: TsGridVScroll
     sel_ind: number | null
     sel_col: number | null
     sel_type: string | null
@@ -217,7 +217,7 @@ interface W2GridLast {
     move: any | null // any: drag/move state object shape varies
     cancelClick: boolean | null
     inEditMode: boolean
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _edit: { value: any; index: number; column: number; recid: string | number; [key: string]: any } | null
     kbd_timer: ReturnType<typeof setTimeout> | null
@@ -229,42 +229,42 @@ interface W2GridLast {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tmp: any | null // any: column resize temp state
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    copy_event: any | null // any: copy() returns a w2event with .detail.text, not a ClipboardEvent
+    copy_event: any | null // any: copy() returns a TsEvent with .detail.text, not a ClipboardEvent
     userSelect: string
     columnDrag: false | { remove(): void }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     state: any | null // any: serialized grid state blob
     toolbar_height: number
-    groupBy_links: Record<string, W2GridRecord>
+    groupBy_links: Record<string, TsGridRecord>
     originalSort?: (string | number)[] // any: saved original record order for sort restore
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: runtime-assigned transient last-state properties
 }
 
 /** Cell-level selection descriptor returned by `getSelectionCells()` (and by `getSelection()` when `selectType === 'cell'`). */
-export interface W2GridCellSelection {
+export interface TsGridCellSelection {
     recid: string | number
     index: number
     column: number
 }
 
 /** Selection state — T5.4 */
-interface W2GridSelection {
+interface TsGridSelection {
     indexes: number[]
     columns: Record<string | number, number[]>
 }
 
 /** Range endpoint (used in addRange / refreshRanges) */
-interface W2GridRangeEndpoint {
+interface TsGridRangeEndpoint {
     recid: string | number
     column: number
     index?: number  // runtime index (added by refreshRanges)
 }
 
 /** Range descriptor for addRange / refreshRanges */
-interface W2GridRange {
+interface TsGridRange {
     name: string
-    range: W2GridRangeEndpoint[]  // [start, end] — 2-element in practice
+    range: TsGridRangeEndpoint[]  // [start, end] — 2-element in practice
     style?: string
     class?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -272,14 +272,14 @@ interface W2GridRange {
 }
 
 /** Active search filter — one entry in grid.searchData — T5.5 */
-interface W2GridSearchFilter {
+interface TsGridSearchFilter {
     field: string
     type: string
     operator: string
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value?: any
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     svalue?: any // display values for enum/list searches
     text?: string // display text for list/enum
@@ -288,42 +288,42 @@ interface W2GridSearchFilter {
 }
 
 /** GroupBy configuration object */
-interface W2GridGroupBy {
+interface TsGridGroupBy {
     field: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: user can attach extra groupBy metadata
 }
 
-class w2grid extends w2base {
+class TsGrid extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [key: string]: any // any: dynamic properties added via w2utils.extend and event handlers
+    [key: string]: any // any: dynamic properties added via TsUtils.extend and event handlers
 
     declare name: string
     declare box: HTMLElement | null
-    columns: W2GridColumn[]
+    columns: TsGridColumn[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnGroups: any[]   // any: column group shapes — span/text/main/style; minimal typing for T5.2
-    records: W2GridRecord[]
-    summary: W2GridRecord[]
-    searches: W2GridSearch[]
+    records: TsGridRecord[]
+    summary: TsGridRecord[]
+    searches: TsGridSearch[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    toolbar: any          // any: w2toolbar instance or config object
-    ranges: W2GridRange[]
+    toolbar: any          // any: TsToolbar instance or config object
+    ranges: TsGridRange[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     contextMenu: any[]    // any: context menu item shapes
     searchMap: Record<string, string>
-    searchData: W2GridSearchFilter[]
+    searchData: TsGridSearchFilter[]
     sortMap: Record<string, string>
-    sortData: W2GridSortData[]
+    sortData: TsGridSortData[]
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     savedSearches: any[]  // any: saved search objects
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     defaultSearches: any[] // any: default search objects
-    groupBy: W2GridGroupBy | null
+    groupBy: TsGridGroupBy | null
     total: number
     recid: string | null
     hierarchyColumn: number
-    last: W2GridLast
+    last: TsGridLast
     header: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     url: any // any: url can be string or {get,save,remove,...} object; duck-typed with ?.get ?? url pattern
@@ -570,7 +570,7 @@ class w2grid extends w2base {
         this.hasFocus          = false
         this.autoLoad          = true // for infinite scroll
         this.fixedBody         = true // if false; then grid grows with data
-        this.recordHeight      = (w2utils.settings?.['recordHeight'] as number) ?? 32
+        this.recordHeight      = (TsUtils.settings?.['recordHeight'] as number) ?? 32
         this.lineNumberWidth   = 34
         this.keyboard          = true
         this.selectType        = 'row' // can be row|cell
@@ -589,7 +589,7 @@ class w2grid extends w2base {
         this.vs_extra          = 5
         this.style             = ''
         this.tabIndex          = null
-        this.dataType          = null // if defined, then overwrites w2utils.settings.dataType
+        this.dataType          = null // if defined, then overwrites TsUtils.settings.dataType
         this.parser            = null
         this.advanceOnEdit     = true // automatically begin editing the next cell after submitting an inline edit?
         this.useLocalStorage   = true
@@ -663,17 +663,17 @@ class w2grid extends w2base {
         this.msgEmpty      = '' // if not blank, then it is message when server returns no records
 
         this.buttons = {
-            'reload'   : { type: 'button', id: 'w2ui-reload', icon: 'w2ui-icon-reload', tooltip: w2utils.lang('Reload data in the list') },
-            'columns'  : { type: 'menu-check', id: 'w2ui-column-on-off', icon: 'w2ui-icon-columns', tooltip: w2utils.lang('Show/hide columns'),
+            'reload'   : { type: 'button', id: 'w2ui-reload', icon: 'w2ui-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
+            'columns'  : { type: 'menu-check', id: 'w2ui-column-on-off', icon: 'w2ui-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
                 overlay: { align: 'none' }
             },
             'search'   : { type: 'html', id: 'w2ui-search',
                 html: '<div class="w2ui-icon w2ui-icon-search w2ui-search-down w2ui-action" data-click="searchShowFields"></div>'
             },
-            'add'      : { type: 'button', id: 'w2ui-add', text: 'Add New', tooltip: w2utils.lang('Add new record'), icon: 'w2ui-icon-plus' },
-            'edit'     : { type: 'button', id: 'w2ui-edit', text: 'Edit', tooltip: w2utils.lang('Edit selected record'), icon: 'w2ui-icon-pencil', batch: 1, disabled: true },
-            'delete'   : { type: 'button', id: 'w2ui-delete', text: 'Delete', tooltip: w2utils.lang('Delete selected records'), icon: 'w2ui-icon-cross', batch: true, disabled: true },
-            'save'     : { type: 'button', id: 'w2ui-save', text: 'Save', tooltip: w2utils.lang('Save changed records'), icon: 'w2ui-icon-check' }
+            'add'      : { type: 'button', id: 'w2ui-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'w2ui-icon-plus' },
+            'edit'     : { type: 'button', id: 'w2ui-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'w2ui-icon-pencil', batch: 1, disabled: true },
+            'delete'   : { type: 'button', id: 'w2ui-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'w2ui-icon-cross', batch: true, disabled: true },
+            'save'     : { type: 'button', id: 'w2ui-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'w2ui-icon-check' }
         }
 
         this.operators = { // for search fields
@@ -778,11 +778,11 @@ class w2grid extends w2base {
         this.onMouseLeave        = null
 
         // need deep merge, should be extend, not objectAssign
-        w2utils.extend(this, options)
+        TsUtils.extend(this, options)
 
         // check if there are records without recid
         if (Array.isArray(this.records)) {
-            // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+            // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const remove: any[] = [] // remove from records as they are summary
             this.records.forEach((rec, ind) => {
@@ -806,12 +806,12 @@ class w2grid extends w2base {
         // add searches
         if (Array.isArray(this.columns)) {
             this.columns.forEach((col, ind) => {
-                col = w2utils.extend({}, this.colTemplate, col)
+                col = TsUtils.extend({}, this.colTemplate, col)
                 this.columns[ind] = col
                 const search = col.searchable
                 if (search == null || search === false || this.getSearch(col.field) != null) return
-                if (w2utils.isPlainObject(search)) {
-                    this.addSearch(w2utils.extend({ field: col.field, label: col.text, type: 'text' }, search))
+                if (TsUtils.isPlainObject(search)) {
+                    this.addSearch(TsUtils.extend({ field: col.field, label: col.text, type: 'text' }, search))
                 } else {
                     let stype = col.searchable
                     let attr  = ''
@@ -851,7 +851,7 @@ class w2grid extends w2base {
         if (this.box) this.render(this.box)
     }
 
-    add(record: W2GridRecord | W2GridRecord[], first?: boolean): number {
+    add(record: TsGridRecord | TsGridRecord[], first?: boolean): number {
         if (!Array.isArray(record)) record = [record]
         let added = 0
         for (let i = 0; i < record.length; i++) {
@@ -885,7 +885,7 @@ class w2grid extends w2base {
                 // just update total if it it there
                 query(this.box)
                     .find('#grid_'+ this.name + '_footer .w2ui-footer-right .w2ui-total')
-                    .html(w2utils.formatNumber(this.total))
+                    .html(TsUtils.formatNumber(this.total))
             }
         } else {
             this.refresh()
@@ -893,7 +893,7 @@ class w2grid extends w2base {
         return added
     }
 
-    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     find(obj?: Record<string, any>, returnIndex?: boolean, displayedOnly?: boolean): (string | number)[] {
         // any: obj values are user-supplied record field values for matching
@@ -926,7 +926,7 @@ class w2grid extends w2base {
 
     // does not delete existing, but overrides on top of it
     // Overload: set(recid, record, noRefresh?) or set(record, noRefresh?) — shifts args when recid is object
-    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(recid: any, record?: any, noRefresh?: boolean): boolean {
         if ((typeof recid == 'object') && (recid !== null)) {
@@ -937,7 +937,7 @@ class w2grid extends w2base {
         // update all records
         if (recid == null) {
             for (let i = 0; i < this.records.length; i++) {
-                w2utils.extend(this.records[i], record) // recid is the whole record
+                TsUtils.extend(this.records[i], record) // recid is the whole record
             }
             if (noRefresh !== true) this.refresh()
         } else { // find record to update
@@ -945,9 +945,9 @@ class w2grid extends w2base {
             if (ind == null) return false
             const isSummary = (this.records[ind]?.recid == recid ? false : true)
             if (isSummary) {
-                w2utils.extend(this.summary[ind], record)
+                TsUtils.extend(this.summary[ind], record)
             } else {
-                w2utils.extend(this.records[ind], record)
+                TsUtils.extend(this.records[ind], record)
             }
             if (noRefresh !== true) this.refreshRow(recid, ind) // refresh only that record
         }
@@ -956,7 +956,7 @@ class w2grid extends w2base {
     }
 
     // replaces existing record
-    replace(recid: string | number, record: W2GridRecord, noRefresh?: boolean): boolean {
+    replace(recid: string | number, record: TsGridRecord, noRefresh?: boolean): boolean {
         const ind = this.get(recid, true)
         if (ind == null) return false
         const isSummary = (this.records[ind]?.recid == recid ? false : true)
@@ -970,15 +970,15 @@ class w2grid extends w2base {
         return true
     }
 
-    get(recid: (string | number)[], returnIndex?: boolean): (W2GridRecord | number)[]
+    get(recid: (string | number)[], returnIndex?: boolean): (TsGridRecord | number)[]
     get(recid: string | number, returnIndex: true): number | null
-    get(recid: string | number, returnIndex?: false): W2GridRecord | null
-    get(recid: string | number | (string | number)[], returnIndex?: boolean): W2GridRecord | (W2GridRecord | number)[] | number | null {
+    get(recid: string | number, returnIndex?: false): TsGridRecord | null
+    get(recid: string | number | (string | number)[], returnIndex?: boolean): TsGridRecord | (TsGridRecord | number)[] | number | null {
         // search records
         if (Array.isArray(recid)) {
             const recs = []
             for (let i = 0; i < recid.length; i++) {
-                // any: this-cast for legacy widget self-reference; w2grid record/cell shape is user-defined at runtime
+                // any: this-cast for legacy widget self-reference; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const v = (this as any).get(recid[i], returnIndex)
                 if (v !== null)
@@ -1022,9 +1022,9 @@ class w2grid extends w2base {
         }
     }
 
-    getFirst(offset?: number): W2GridRecord | null {
+    getFirst(offset?: number): TsGridRecord | null {
         if (this.records.length == 0) return null
-        let rec: W2GridRecord | null = this.records[0] ?? null
+        let rec: TsGridRecord | null = this.records[0] ?? null
         const tmp = this.last.searchIds
         if (this.searchData.length > 0) {
             if (Array.isArray(tmp) && tmp.length > 0) {
@@ -1063,14 +1063,14 @@ class w2grid extends w2base {
     processGroupBy(): void {
         if (this.groupBy == null) return
         const groupBy = this.groupBy
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const new_records: any[] = []
         this.records.forEach(rec => {
             const group = rec[groupBy.field]
             if (group != null) {
                 if (this.last.groupBy_links[group] == null) {
-                    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+                    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const gr: any = { recid: 'group-'+ group, group, w2ui: { ...groupBy, children: [] } }
                     this.last.groupBy_links[group] = gr
@@ -1079,7 +1079,7 @@ class w2grid extends w2base {
                 }
                 rec[groupBy.field] = ''
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(this.last.groupBy_links[group] as any).w2ui.children.push(rec) // any: groupBy_links values are W2GridRecord with w2ui.children
+                ;(this.last.groupBy_links[group] as any).w2ui.children.push(rec) // any: groupBy_links values are TsGridRecord with w2ui.children
             }
         })
         this.records = new_records
@@ -1102,7 +1102,7 @@ class w2grid extends w2base {
         }
         if (!Array.isArray(columns)) columns = [columns]
         for (let i = 0; i < columns.length; i++) {
-            const col = w2utils.extend({}, this.colTemplate, columns[i])
+            const col = TsUtils.extend({}, this.colTemplate, columns[i])
             this.columns.splice(before, 0, col)
             // if column is searchable, add search field
             if (columns[i].searchable) {
@@ -1136,8 +1136,8 @@ class w2grid extends w2base {
 
     getColumn(): string[]
     getColumn(field: string, returnIndex: true): number | null
-    getColumn(field: string, returnIndex?: false): W2GridColumn | null
-    getColumn(field?: string, returnIndex?: boolean): string[] | number | W2GridColumn | null {
+    getColumn(field: string, returnIndex?: false): TsGridColumn | null
+    getColumn(field?: string, returnIndex?: boolean): string[] | number | TsGridColumn | null {
         // no arguments - return fields of all columns
         if (field === undefined) {
             const ret = []
@@ -1153,15 +1153,15 @@ class w2grid extends w2base {
         return null
     }
 
-    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    updateColumn(fields: string | string[], updates: Partial<W2GridColumn> | Record<string, any>) {
+    updateColumn(fields: string | string[], updates: Partial<TsGridColumn> | Record<string, any>) {
         let effected = 0
         fields = (Array.isArray(fields) ? fields : [fields])
         fields.forEach((colName) => {
             this.columns.forEach((col) => {
                 if (col.field == colName) {
-                    const _updates = w2utils.clone(updates)
+                    const _updates = TsUtils.clone(updates)
                     Object.keys(_updates).forEach((key) => {
                         // if it is a function
                         if (typeof _updates[key] == 'function') {
@@ -1169,7 +1169,7 @@ class w2grid extends w2base {
                         }
                         if (col[key] != _updates[key]) effected++
                     })
-                    w2utils.extend(col, _updates)
+                    TsUtils.extend(col, _updates)
                 }
             })
         })
@@ -1180,7 +1180,7 @@ class w2grid extends w2base {
     }
 
     toggleColumn(...fields: string[]) {
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return this.updateColumn(fields, { hidden(col: any) { return !col.hidden } })
     }
@@ -1229,8 +1229,8 @@ class w2grid extends w2base {
 
     getSearch(): string[]
     getSearch(field: string, returnIndex: true): number | null
-    getSearch(field: string, returnIndex?: false): W2GridSearch | null
-    getSearch(field?: string, returnIndex?: boolean): string[] | number | W2GridSearch | null {
+    getSearch(field: string, returnIndex?: false): TsGridSearch | null
+    getSearch(field?: string, returnIndex?: boolean): string[] | number | TsGridSearch | null {
         // no arguments - return fields of all searches
         if (field === undefined) {
             const ret = []
@@ -1291,7 +1291,7 @@ class w2grid extends w2base {
         return hidden
     }
 
-    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getSearchData(field: string): Record<string, any> | null {
         for (let i = 0; i < this.searchData.length; i++) {
@@ -1331,7 +1331,7 @@ class w2grid extends w2base {
         // process sortData
         for (let i = 0; i < this.sortData.length; i++) {
             const sortItem = this.sortData[i]!
-            const column = this.getColumn(sortItem.field) as W2GridColumn | null
+            const column = this.getColumn(sortItem.field) as TsGridColumn | null
             if (!column) return // TODO: ability to sort columns when they are not part of colums array
             if (typeof column.render == 'string') {
                 const renderType = column.render.split(':')[0] ?? ''
@@ -1355,7 +1355,7 @@ class w2grid extends w2base {
         time = Date.now() - time
         if (silent !== true && this.show.statusSort) {
             setTimeout(() => {
-                this.status(w2utils.lang('Sorting took ${count} seconds', { count: time/1000 }))
+                this.status(TsUtils.lang('Sorting took ${count} seconds', { count: time/1000 }))
             }, 10)
         }
         return time
@@ -1382,7 +1382,7 @@ class w2grid extends w2base {
         }
 
         // compare two paths, from root of tree to given records
-        function compareRecordPaths(a: W2GridRecord, b: W2GridRecord): number {
+        function compareRecordPaths(a: TsGridRecord, b: TsGridRecord): number {
             if ((!a.w2ui || a.w2ui.parent_recid == null) && (!b.w2ui || b.w2ui.parent_recid == null)) {
                 return compareRecords(a, b) // no tree, fast path
             }
@@ -1399,10 +1399,10 @@ class w2grid extends w2base {
         }
 
         // return an array of all records from root to and including 'rec'
-        function getRecordPath(rec: W2GridRecord): W2GridRecord[] {
+        function getRecordPath(rec: TsGridRecord): TsGridRecord[] {
             if (!rec.w2ui || rec.w2ui.parent_recid == null) return [rec]
             if (rec.w2ui['_path'])
-                return rec.w2ui['_path'] as W2GridRecord[]
+                return rec.w2ui['_path'] as TsGridRecord[]
             // during actual sort, we should never reach this point
             const subrec = obj.get(rec.w2ui.parent_recid)
             if (!subrec) {
@@ -1413,26 +1413,26 @@ class w2grid extends w2base {
         }
 
         // compare two records according to sortData and finally recid
-        function compareRecords(a: W2GridRecord, b: W2GridRecord): number {
+        function compareRecords(a: TsGridRecord, b: TsGridRecord): number {
             if (a === b) return 0 // optimize, same object
             for (let i = 0; i < obj.sortData.length; i++) {
                 const sortItem = obj.sortData[i]!
                 const fld     = sortItem.field
                 const sortFld = sortItem.field_ ? sortItem.field_! : fld
-                // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+                // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let aa: any = a[sortFld]
-                // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+                // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let bb: any = b[sortFld]
                 if (String(fld).indexOf('.') != -1) {
                     aa = obj.parseField(a, sortFld)
                     bb = obj.parseField(b, sortFld)
                 }
-                const col = obj.getColumn(fld) as W2GridColumn | null
+                const col = obj.getColumn(fld) as TsGridColumn | null
                 if (col && col['editable'] && Object.keys(col['editable']).length > 0) { // for drop editable fields and drop downs
-                    if (w2utils.isPlainObject(aa) && aa.text) aa = aa.text
-                    if (w2utils.isPlainObject(bb) && bb.text) bb = bb.text
+                    if (TsUtils.isPlainObject(aa) && aa.text) aa = aa.text
+                    if (TsUtils.isPlainObject(bb) && bb.text) bb = bb.text
                 }
                 const ret = compareCells(aa, bb, i, sortItem.direction, col?.sortMode || 'default')
                 if (ret !== 0) return ret
@@ -1490,10 +1490,10 @@ class w2grid extends w2base {
 
             switch (sortMode) {
                 case 'natural':
-                    sortMode = w2utils.naturalCompare
+                    sortMode = TsUtils.naturalCompare
                     break
                 case 'i18n':
-                    sortMode = w2utils.i18nCompare
+                    sortMode = TsUtils.i18nCompare
                     break
             }
 
@@ -1561,20 +1561,20 @@ class w2grid extends w2base {
         time = Date.now() - time
         if (silent !== true && this.show.statusSearch) {
             setTimeout(() => {
-                this.status(w2utils.lang('Search took ${count} seconds', { count: time/1000 }))
+                this.status(TsUtils.lang('Search took ${count} seconds', { count: time/1000 }))
             }, 10)
         }
         return time
 
         // check if a record (or one of its closed children) matches the search data
-        function searchRecord(rec: W2GridRecord): boolean {
+        function searchRecord(rec: TsGridRecord): boolean {
             let fl = 0, val1, val2, val3, tmp
             let orEqual = false
             for (let j = 0; j < obj.searchData.length; j++) {
                 const sdata = obj.searchData[j]
                 if (sdata == null) continue
-                let search = obj.getSearch(sdata.field) as W2GridSearch | null
-                if (search == null) search = { field: sdata.field, type: sdata.type } as W2GridSearch
+                let search = obj.getSearch(sdata.field) as TsGridSearch | null
+                if (search == null) search = { field: sdata.field, type: sdata.type } as TsGridSearch
                 // поиск среди изменений
                 const val1b = rec.w2ui?.['changes']?.[search.field] ?? obj.parseField(rec, search.field)
                 val1 = (val1b != null && (typeof val1b != 'object' || val1b.toString != defaultToString))
@@ -1594,20 +1594,20 @@ class w2grid extends w2base {
                         if (val1b == sdata['value'] || String(val1b) == sdata['value']) fl++ // do not hide record
                         else if (search.type == 'date') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatDate(tmp, 'yyyy-mm-dd')
-                            val2 = w2utils.formatDate(w2utils.isDate(val2, w2utils.settings.dateFormat, true), 'yyyy-mm-dd')
+                            val1 = TsUtils.formatDate(tmp, 'yyyy-mm-dd')
+                            val2 = TsUtils.formatDate(TsUtils.isDate(val2, TsUtils.settings.dateFormat, true), 'yyyy-mm-dd')
                             if (val1 == val2) fl++
                         }
                         else if (search.type == 'time') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatTime(tmp, 'hh24:mi')
-                            val2 = w2utils.formatTime(val2, 'hh24:mi')
+                            val1 = TsUtils.formatTime(tmp, 'hh24:mi')
+                            val2 = TsUtils.formatTime(val2, 'hh24:mi')
                             if (val1 == val2) fl++
                         }
                         else if (search.type == 'datetime') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
-                            val2 = w2utils.formatDateTime(w2utils.isDateTime(val2, w2utils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
+                            val1 = TsUtils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
+                            val2 = TsUtils.formatDateTime(TsUtils.isDateTime(val2, TsUtils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
                             if (val1 == val2) fl++
                         }
                         break
@@ -1621,28 +1621,28 @@ class w2grid extends w2base {
                         }
                         else if (search.type == 'date') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.isDate(tmp, w2utils.settings.dateFormat, true)
-                            val2 = w2utils.isDate(val2, w2utils.settings.dateFormat, true)
-                            val3 = w2utils.isDate(val3, w2utils.settings.dateFormat, true)
+                            val1 = TsUtils.isDate(tmp, TsUtils.settings.dateFormat, true)
+                            val2 = TsUtils.isDate(val2, TsUtils.settings.dateFormat, true)
+                            val3 = TsUtils.isDate(val3, TsUtils.settings.dateFormat, true)
                             if (val3 instanceof Date) val3 = new Date((val3 as Date).getTime() + 86400000) // 1 day
                             if (val1 >= val2 && val1 < val3) fl++
                         }
                         else if (search.type == 'time') {
                             val1 = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val2 = w2utils.isTime(val2, true)
-                            val3 = w2utils.isTime(val3, true)
+                            val2 = TsUtils.isTime(val2, true)
+                            val3 = TsUtils.isTime(val3, true)
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const t2 = val2 as any // any: isTime(,true) returns W2TimeResult but union type is bool|W2TimeResult
+                            const t2 = val2 as any // any: isTime(,true) returns TsTimeResult but union type is bool|TsTimeResult
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            const t3 = val3 as any // any: isTime(,true) returns W2TimeResult but union type is bool|W2TimeResult
+                            const t3 = val3 as any // any: isTime(,true) returns TsTimeResult but union type is bool|TsTimeResult
                             val2 = (new Date()).setHours(t2.hours, t2.minutes, t2.seconds ? t2.seconds : 0, 0)
                             val3 = (new Date()).setHours(t3.hours, t3.minutes, t3.seconds ? t3.seconds : 0, 0)
                             if (val1 >= val2 && val1 < val3) fl++
                         }
                         else if (search.type == 'datetime') {
                             val1 = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val2 = w2utils.isDateTime(val2, w2utils.settings.datetimeFormat, true)
-                            val3 = w2utils.isDateTime(val3, w2utils.settings.datetimeFormat, true)
+                            val2 = TsUtils.isDateTime(val2, TsUtils.settings.datetimeFormat, true)
+                            val3 = TsUtils.isDateTime(val3, TsUtils.settings.datetimeFormat, true)
                             if (val3 instanceof Date) val3 = new Date((val3 as Date).getTime() + 86400000) // 1 day
                             if (val1 >= val2 && val1 < val3) fl++
                         }
@@ -1658,20 +1658,20 @@ class w2grid extends w2base {
                         }
                         else if (search.type == 'date') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.isDate(tmp, w2utils.settings.dateFormat, true)
-                            val2 = w2utils.isDate(val2, w2utils.settings.dateFormat, true)
+                            val1 = TsUtils.isDate(tmp, TsUtils.settings.dateFormat, true)
+                            val2 = TsUtils.isDate(val2, TsUtils.settings.dateFormat, true)
                             if (val1 < val2 || (orEqual && val1 === val2)) fl++
                         }
                         else if (search.type == 'time') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatTime(tmp, 'hh24:mi')
-                            val2 = w2utils.formatTime(val2, 'hh24:mi')
+                            val1 = TsUtils.formatTime(tmp, 'hh24:mi')
+                            val2 = TsUtils.formatTime(val2, 'hh24:mi')
                             if (val1 < val2 || (orEqual && val1 === val2)) fl++
                         }
                         else if (search.type == 'datetime') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
-                            val2 = w2utils.formatDateTime(w2utils.isDateTime(val2, w2utils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
+                            val1 = TsUtils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
+                            val2 = TsUtils.formatDateTime(TsUtils.isDateTime(val2, TsUtils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
                             if (val1.length == val2.length && (val1 < val2 || (orEqual && val1 === val2))) fl++
                         }
                         break
@@ -1686,32 +1686,32 @@ class w2grid extends w2base {
                         }
                         else if (search.type == 'date') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.isDate(tmp, w2utils.settings.dateFormat, true)
-                            val2 = w2utils.isDate(val2, w2utils.settings.dateFormat, true)
+                            val1 = TsUtils.isDate(tmp, TsUtils.settings.dateFormat, true)
+                            val2 = TsUtils.isDate(val2, TsUtils.settings.dateFormat, true)
                             if (val1 > val2 || (orEqual && val1 === val2)) fl++
                         }
                         else if (search.type == 'time') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatTime(tmp, 'hh24:mi')
-                            val2 = w2utils.formatTime(val2, 'hh24:mi')
+                            val1 = TsUtils.formatTime(tmp, 'hh24:mi')
+                            val2 = TsUtils.formatTime(val2, 'hh24:mi')
                             if (val1 > val2 || (orEqual && val1 === val2)) fl++
                         }
                         else if (search.type == 'datetime') {
                             tmp  = (obj.parseField(rec, search.field + '_') instanceof Date ? obj.parseField(rec, search.field + '_') : obj.parseField(rec, search.field))
-                            val1 = w2utils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
-                            val2 = w2utils.formatDateTime(w2utils.isDateTime(val2, w2utils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
+                            val1 = TsUtils.formatDateTime(tmp, 'yyyy-mm-dd|hh24:mm:ss')
+                            val2 = TsUtils.formatDateTime(TsUtils.isDateTime(val2, TsUtils.settings.datetimeFormat, true), 'yyyy-mm-dd|hh24:mm:ss')
                             if (val1.length == val2.length && (val1 > val2 || (orEqual && val1 === val2))) fl++
                         }
                         break
                     case 'in':
                         tmp = sdata['value']
                         if (sdata['svalue']) tmp = sdata['svalue']
-                        if ((tmp.indexOf(w2utils.isFloat(val1b) ? parseFloat(val1b) : val1b) !== -1) || (tmp.indexOf(val1) !== -1 && val1 !== '')) fl++
+                        if ((tmp.indexOf(TsUtils.isFloat(val1b) ? parseFloat(val1b) : val1b) !== -1) || (tmp.indexOf(val1) !== -1 && val1 !== '')) fl++
                         break
                     case 'not in':
                         tmp = sdata['value']
                         if (sdata['svalue']) tmp = sdata['svalue']
-                        if (!((tmp.indexOf(w2utils.isFloat(val1b) ? parseFloat(val1b) : val1b) !== -1) || (tmp.indexOf(val1) !== -1 && val1 !== ''))) fl++
+                        if (!((tmp.indexOf(TsUtils.isFloat(val1b) ? parseFloat(val1b) : val1b) !== -1) || (tmp.indexOf(val1) !== -1 && val1 !== ''))) fl++
                         break
                     case 'begins':
                     case 'begins with': // need for back compatibility
@@ -1764,7 +1764,7 @@ class w2grid extends w2base {
         }
     }
 
-    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getRangeData(range: [{ recid: string | number; column: number }, { recid: string | number; column: number }], extra?: boolean): any[] {
         const rec1 = this.get(range[0]!.recid, true) ?? 0
@@ -1796,7 +1796,7 @@ class w2grid extends w2base {
         } else {
             for (let r = Math.min(rec1, rec2); r <= Math.max(rec1, rec2); r++) {
                 const record = this.records[r]!
-                // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+                // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const rowData: any[] = []
                 res.push(rowData)
@@ -1815,10 +1815,10 @@ class w2grid extends w2base {
 
     // any: addRange accepts string 'selection' shorthand, single range object, or array of ranges
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    addRange(rangesInput: W2GridRange | W2GridRange[] | string | Record<string, any>): number {
+    addRange(rangesInput: TsGridRange | TsGridRange[] | string | Record<string, any>): number {
         let added = 0, first, last
         if (this.selectType == 'row') return added
-        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const ranges: any[] = !Array.isArray(rangesInput) ? [rangesInput] : rangesInput as any[]
         // if it is selection
@@ -1901,17 +1901,17 @@ class w2grid extends w2base {
                 first = last
                 last = tmp
             }
-            let td1  = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
-            let td2  = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
-            let td1f = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
-            let td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
+            let td1  = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
+            let td2  = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
+            let td1f = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(first.recid) + ' td[col="'+ first.column +'"]')
+            let td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(last.recid) + ' td[col="'+ last.column +'"]')
             let _lastColumn: number | string = last.column // any: sentinel 'end'/'start' used for virtual scroll boundary cols
             // adjustment due to column virtual scroll
             if (first.column < this.last.vscroll.colIndStart && last.column > this.last.vscroll.colIndStart) {
-                td1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(first.recid) + ' td[col="start"]')
+                td1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(first.recid) + ' td[col="start"]')
             }
             if (first.column < this.last.vscroll.colIndEnd && last.column > this.last.vscroll.colIndEnd) {
-                td2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(last.recid) + ' td[col="end"]')
+                td2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(last.recid) + ' td[col="end"]')
                 _lastColumn = 'end'
                 //_lastColumn = '"end"' // cause error
             }
@@ -1954,7 +1954,7 @@ class w2grid extends w2base {
                     range.find('.w2ui-selection-resizer').show()
                 }
                 if (td2f.length === 0) {
-                    td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(last.recid) +' td:last-child')
+                    td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(last.recid) +' td:last-child')
                     if (td2f.length === 0) td2f = query(this.box).find('#grid_'+ this.name +'_frec_bottom td:first-child')
                     range.css('border-right', '0px')
                     range.find('.w2ui-selection-resizer').hide()
@@ -1994,7 +1994,7 @@ class w2grid extends w2base {
                     range.attr('style', rg.style)
                 }
                 if (td1.length === 0) {
-                    td1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(first.recid) +' td:first-child')
+                    td1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(first.recid) +' td:first-child')
                     if (td1.length === 0) td1 = query(this.box).find('#grid_'+ this.name +'_rec_top td:first-child')
                 }
                 if (td2f.length !== 0) {
@@ -2024,7 +2024,7 @@ class w2grid extends w2base {
         query(this.box).find('.w2ui-selection-resizer')
             .off('.resizer')
             .on('mousedown.resizer', mouseStart)
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('dblclick.resizer', (event: any) => {
                 const edata = this.trigger('resizerDblClick', { target: this.name, originalEvent: event })
@@ -2032,10 +2032,10 @@ class w2grid extends w2base {
                 edata.finish()
             })
         // this variables are needed for selection expantion
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
-        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const detail: any = { target: this.name, originalRange: null, newRange: null }
         const letters = 'abcdefghijklmnopqrstuvwxyz'
@@ -2057,8 +2057,8 @@ class w2grid extends w2base {
                 recid  : first.recid,
                 column : first.column,
                 name   : letters[first.column]! + (first.index + 1) + ':' + letters[last.column]! + (last.index + 1),
-                originalRange : [w2utils.clone(first), w2utils.clone(last) ],
-                newRange      : [w2utils.clone(first), w2utils.clone(last) ]
+                originalRange : [TsUtils.clone(first), TsUtils.clone(last) ],
+                newRange      : [TsUtils.clone(first), TsUtils.clone(last) ]
             }
             detail.originalName  = self.last.move.name
             detail.originalRange = self.last.move.originalRange
@@ -2092,11 +2092,11 @@ class w2grid extends w2base {
                 // if range did not change
                 return
             }
-            const prevNewRange = w2utils.clone(mv.newRange)
+            const prevNewRange = TsUtils.clone(mv.newRange)
             mv.newRange = [{ recid: mv.recid, index: mv.index, column: mv.column }, { recid, index, column }]
             // remember update ranges
             detail.newName = letters[mv.column] + (mv.index + 1) + ':' + letters[column] + (index + 1)
-            detail.newRange = w2utils.clone(mv.newRange)
+            detail.newRange = TsUtils.clone(mv.newRange)
             // event before
             edata = self.trigger('selectionExtend', detail)
             if (edata.isCancelled === true) {
@@ -2154,7 +2154,7 @@ class w2grid extends w2base {
         const tmp: any = { target: this.name } // any: dynamic event payload built incrementally
         if (args.length == 1) {
             tmp.multiple = false
-            if (w2utils.isPlainObject(args[0])) {
+            if (TsUtils.isPlainObject(args[0])) {
                 tmp.clicked = {
                     recid: args[0].recid,
                     column: args[0].column
@@ -2182,8 +2182,8 @@ class w2grid extends w2base {
                 let recEl1 = null
                 let recEl2 = null
                 if (this.searchData.length !== 0 || (index + 1 >= (this.last.vscroll.recIndStart ?? 0) && index + 1 <= (this.last.vscroll.recIndEnd ?? 0))) {
-                    recEl1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid))
-                    recEl2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(recid))
+                    recEl1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
+                    recEl2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
                 }
                 if (this.selectType == 'row') {
                     if (sel.indexes.indexOf(index) != -1) continue
@@ -2198,7 +2198,7 @@ class w2grid extends w2base {
             }
         } else {
             // normalize for performance
-            // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+            // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const new_sel: Record<string, any[]> = {}
             for (let a = 0; a < args.length; a++) {
@@ -2207,7 +2207,7 @@ class w2grid extends w2base {
                 new_sel[recid] = new_sel[recid] || []
                 if (Array.isArray(column)) {
                     new_sel[recid] = column
-                } else if (w2utils.isInt(column)) {
+                } else if (TsUtils.isInt(column)) {
                     new_sel[recid].push(column)
                 } else {
                     for (let i = 0; i < this.columns.length; i++) { if (this.columns[i]!.hidden) continue; new_sel[recid]!.push(i) }
@@ -2221,8 +2221,8 @@ class w2grid extends w2base {
                 let recEl1 = null
                 let recEl2 = null
                 if (index + 1 >= (this.last.vscroll.recIndStart ?? 0) && index + 1 <= (this.last.vscroll.recIndEnd ?? 0)) {
-                    recEl1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(recid))
-                    recEl2 = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid))
+                    recEl1 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
+                    recEl2 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
                 }
                 const s = sel.columns[index] || []
                 // default action
@@ -2288,7 +2288,7 @@ class w2grid extends w2base {
         const tmp: any = { target: this.name } // any: dynamic event payload built incrementally
         if (args.length == 1) {
             tmp.multiple = false
-            if (w2utils.isPlainObject(args[0])) {
+            if (TsUtils.isPlainObject(args[0])) {
                 tmp.clicked = {
                     recid: args[0].recid,
                     column: args[0].column
@@ -2312,8 +2312,8 @@ class w2grid extends w2base {
             const record = this.get(recid)
             if (record == null) continue
             const index  = this.get(record.recid, true) ?? -1
-            const recEl1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid))
-            const recEl2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(recid))
+            const recEl1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
+            const recEl2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
             if (this.selectType == 'row') {
                 if (sel.indexes.indexOf(index) == -1) continue
                 // default action
@@ -2328,7 +2328,7 @@ class w2grid extends w2base {
                 unselected++
             } else {
                 const col = args[a].column
-                if (!w2utils.isInt(col)) { // unselect all columns
+                if (!TsUtils.isInt(col)) { // unselect all columns
                     const cols = []
                     for (let i = 0; i < this.columns.length; i++) { if (this.columns[i]!.hidden) continue; cols.push({ recid: recid, column: i }) }
                     return this.unselect(cols)
@@ -2337,8 +2337,8 @@ class w2grid extends w2base {
                 if (!Array.isArray(s) || s.indexOf(col) == -1) continue
                 // default action
                 s.splice(s.indexOf(col), 1)
-                query(this.box).find(`#grid_${this.name}_rec_${w2utils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
-                query(this.box).find(`#grid_${this.name}_frec_${w2utils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
+                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
+                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
                 // check if any row/column still selected
                 let isColSelected = false
                 let isRowSelected = false
@@ -2351,7 +2351,7 @@ class w2grid extends w2base {
                     query(this.box).find(`.w2ui-grid-columns td[col="${col}"] .w2ui-col-header, .w2ui-grid-fcolumns td[col="${col}"] .w2ui-col-header`).removeClass('w2ui-col-selected')
                 }
                 if (!isRowSelected) {
-                    query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid)).find('.w2ui-col-number').removeClass('w2ui-row-selected')
+                    query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid)).find('.w2ui-col-number').removeClass('w2ui-row-selected')
                 }
                 unselected++
                 if (s.length === 0) {
@@ -2378,7 +2378,7 @@ class w2grid extends w2base {
         return unselected
     }
 
-    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareSelection(newSel: any[]): { select: any[]; unselect: any[] } {
         const select = []
@@ -2425,7 +2425,7 @@ class w2grid extends w2base {
         // default action
         const url = this.url?.get ?? this.url
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let sel: any = w2utils.clone(this.last.selection) // any: w2utils.clone returns unknown; selection shape is W2GridLast['selection']
+        let sel: any = TsUtils.clone(this.last.selection) // any: TsUtils.clone returns unknown; selection shape is TsGridLast['selection']
         const cols = []
         for (let i = 0; i < this.columns.length; i++) cols.push(i)
         // if local data source and searched
@@ -2583,8 +2583,8 @@ class w2grid extends w2base {
      * is intentionally not a parameter — it was ignored in cell mode by the legacy
      * `getSelection()` API.
      */
-    getSelectionCells(): W2GridCellSelection[] {
-        const ret: W2GridCellSelection[] = []
+    getSelectionCells(): TsGridCellSelection[] {
+        const ret: TsGridCellSelection[] = []
         const sel = this.last.selection
         for (let i = 0; i < sel.indexes.length; i++) {
             const idx = sel.indexes[i]!
@@ -2600,13 +2600,13 @@ class w2grid extends w2base {
     /**
      * Discriminated-union wrapper. The shape depends on `this.selectType`:
      *   - `'row'`  → `RecId[]` (or `number[]` if `returnIndex === true`)
-     *   - `'cell'` → `W2GridCellSelection[]` (`returnIndex` is ignored)
+     *   - `'cell'` → `TsGridCellSelection[]` (`returnIndex` is ignored)
      *
      * Prefer the typed split methods (`getSelectionRows` / `getSelectionCells`)
      * when the caller knows the mode statically. This wrapper is kept for back-
      * compat with the v2.0 API and for callers that genuinely handle both modes.
      */
-    getSelection(returnIndex?: boolean): RecId[] | number[] | W2GridCellSelection[] {
+    getSelection(returnIndex?: boolean): RecId[] | number[] | TsGridCellSelection[] {
         return this.selectType === 'row'
             ? this.getSelectionRows(returnIndex)
             : this.getSelectionCells()
@@ -2672,7 +2672,7 @@ class w2grid extends w2base {
                     if (Array.isArray(value1)) {
                         svalue = []
                         for (let j = 0; j < value1.length; j++) {
-                            svalue.push(w2utils.isFloat(value1[j].id) ? parseFloat(value1[j].id) : String(value1[j].id).toLowerCase())
+                            svalue.push(TsUtils.isFloat(value1[j].id) ? parseFloat(value1[j].id) : String(value1[j].id).toLowerCase())
                             delete value1[j].hidden
                         }
                         if (Object.keys(value1).length === 0) value1 = ''
@@ -2682,7 +2682,7 @@ class w2grid extends w2base {
                     }
                 }
                 if ((value1 !== '' && value1 != null) || (value2 != null && value2 !== '')) {
-                    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+                    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const tmp: any = {
                         field    : search.field,
@@ -2690,25 +2690,25 @@ class w2grid extends w2base {
                         operator : operator
                     }
                     if (operator == 'between') {
-                        w2utils.extend(tmp, { value: [value1, value2] })
+                        TsUtils.extend(tmp, { value: [value1, value2] })
                     } else if (operator == 'in' && typeof value1 == 'string') {
-                        w2utils.extend(tmp, { value: value1.split(',') })
+                        TsUtils.extend(tmp, { value: value1.split(',') })
                     } else if (operator == 'not in' && typeof value1 == 'string') {
-                        w2utils.extend(tmp, { value: value1.split(',') })
+                        TsUtils.extend(tmp, { value: value1.split(',') })
                     } else {
-                        w2utils.extend(tmp, { value: value1 })
+                        TsUtils.extend(tmp, { value: value1 })
                     }
-                    if (svalue) w2utils.extend(tmp, { svalue: svalue })
-                    if (text) w2utils.extend(tmp, { text: text })
+                    if (svalue) TsUtils.extend(tmp, { svalue: svalue })
+                    if (text) TsUtils.extend(tmp, { text: text })
 
                     // convert date to unix time
                     try {
                         if (search.type == 'date' && operator == 'between') {
-                            tmp.value[0] = value1 // w2utils.isDate(value1, w2utils.settings.dateFormat, true).getTime();
-                            tmp.value[1] = value2 // w2utils.isDate(value2, w2utils.settings.dateFormat, true).getTime();
+                            tmp.value[0] = value1 // TsUtils.isDate(value1, TsUtils.settings.dateFormat, true).getTime();
+                            tmp.value[1] = value2 // TsUtils.isDate(value2, TsUtils.settings.dateFormat, true).getTime();
                         }
                         if (search.type == 'date' && operator == 'is') {
-                            tmp.value = value1 // w2utils.isDate(value1, w2utils.settings.dateFormat, true).getTime();
+                            tmp.value = value1 // TsUtils.isDate(value1, TsUtils.settings.dateFormat, true).getTime();
                         }
                     } catch (e) {
 
@@ -2736,13 +2736,13 @@ class w2grid extends w2base {
                     if (this.searches.length > 0) {
                         for (let i = 0; i < this.searches.length; i++) {
                             const search = this.searches[i]!
-                            if (search.type == 'text' || (search.type == 'alphanumeric' && w2utils.isAlphaNumeric(value))
-                                    || (search.type == 'int' && w2utils.isInt(value)) || (search.type == 'float' && w2utils.isFloat(value))
-                                    || (search.type == 'percent' && w2utils.isFloat(value)) || ((search.type == 'hex' || search.type == 'color') && w2utils.isHex(value))
-                                    || (search.type == 'currency' && w2utils.isMoney(value)) || (search.type == 'money' && w2utils.isMoney(value))
-                                    || (search.type == 'date' && w2utils.isDate(value)) || (search.type == 'time' && w2utils.isTime(value))
-                                    || (search.type == 'datetime' && w2utils.isDateTime(value)) || (search.type == 'datetime' && w2utils.isDate(value))
-                                    || (search.type == 'enum' && w2utils.isAlphaNumeric(value)) || (search.type == 'list' && w2utils.isAlphaNumeric(value))
+                            if (search.type == 'text' || (search.type == 'alphanumeric' && TsUtils.isAlphaNumeric(value))
+                                    || (search.type == 'int' && TsUtils.isInt(value)) || (search.type == 'float' && TsUtils.isFloat(value))
+                                    || (search.type == 'percent' && TsUtils.isFloat(value)) || ((search.type == 'hex' || search.type == 'color') && TsUtils.isHex(value))
+                                    || (search.type == 'currency' && TsUtils.isMoney(value)) || (search.type == 'money' && TsUtils.isMoney(value))
+                                    || (search.type == 'date' && TsUtils.isDate(value)) || (search.type == 'time' && TsUtils.isTime(value))
+                                    || (search.type == 'datetime' && TsUtils.isDateTime(value)) || (search.type == 'datetime' && TsUtils.isDate(value))
+                                    || (search.type == 'enum' && TsUtils.isAlphaNumeric(value)) || (search.type == 'list' && TsUtils.isAlphaNumeric(value))
                             ) {
                                 const def = this.defaultOperator[this.operatorsMap[search.type]!]
                                 const tmp = {
@@ -2755,7 +2755,7 @@ class w2grid extends w2base {
                             }
                             // range in global search box
                             if (['int', 'float', 'money', 'currency', 'percent'].indexOf(search.type) != -1){
-                                const t = String(value).trim().split('-').map(v => v.trim()).filter(v => w2utils.isFloat(v))
+                                const t = String(value).trim().split('-').map(v => v.trim()).filter(v => TsUtils.isFloat(v))
                                 if (t.length == 2) {
                                     const tmp = {
                                         field    : search.field,
@@ -2872,7 +2872,7 @@ class w2grid extends w2base {
                 if (typeof data.value == 'number' && data.operator == null) data.operator = this.defaultOperator['number']
                 if (typeof data.value == 'string' && data.operator == null) data.operator = this.defaultOperator['text']
                 if (Array.isArray(data.value) && data.operator == null) data.operator = this.defaultOperator['enum']
-                if (w2utils.isDate(data.value) && data.operator == null) data.operator = this.defaultOperator['date']
+                if (TsUtils.isDate(data.value) && data.operator == null) data.operator = this.defaultOperator['date']
 
                 // merge current field and search if any
                 searchData.push(data)
@@ -2890,7 +2890,7 @@ class w2grid extends w2base {
         if (edata.isCancelled === true) return
         // default action
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.searchData             = edata.detail['searchData'] as any[] // any: detail values are unknown from W2EventData
+        this.searchData             = edata.detail['searchData'] as any[] // any: detail values are unknown from TsEventData
         this.last.field             = last_field
         this.last.search            = last_search
         this.last.multi             = last_multi
@@ -2915,7 +2915,7 @@ class w2grid extends w2base {
     }
 
     // open advanced search popover
-    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchOpen(options: any = {}) {
         if (!this.box) return
@@ -2928,7 +2928,7 @@ class w2grid extends w2base {
         const $btn = query(this.toolbar.box).find('.w2ui-grid-search-input .w2ui-search-drop')
         $btn.addClass('checked')
         // show search
-        w2tooltip.show({
+        TsTooltip.show({
             name: this.name + '-search-overlay',
             anchor: query(this.box).find('#grid_'+ this.name +'_search_all').get(0),
             position: 'bottom|top',
@@ -2940,7 +2940,7 @@ class w2grid extends w2base {
             ...(options?.overlay ?? {})
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((_event: any) => { // any: w2menu/w2tooltip event detail shape varies
+        .then((_event: any) => { // any: w2menu/TsTooltip event detail shape varies
             this.initSearches()
             this.last['search_opened'] = true
             const overlay = query(`#w2overlay-${this.name}-search-overlay`)
@@ -2953,15 +2953,15 @@ class w2grid extends w2base {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const names: any[] = query(el).data('tooltipName') // any: tooltip name list shape varies
                         if (names) names.forEach((name: string) => {
-                            w2tooltip.hide(name)
+                            TsTooltip.hide(name)
                         })
                     })
                     console.log(event.target)
                     if (!query(event.target).hasClass('w2ui-saved-searches')) {
-                        w2tooltip.hide(this.name + '-search-suggest')
+                        TsTooltip.hide(this.name + '-search-suggest')
                     }
                 })
-            w2utils.bindEvents(overlay.find('select, input, button'), this)
+            TsUtils.bindEvents(overlay.find('select, input, button'), this)
             // init first field
             const sfields = query(`#w2overlay-${this.name}-search-overlay *[rel=search]`)
             if (sfields.length > 0) sfields[0].focus()
@@ -2969,7 +2969,7 @@ class w2grid extends w2base {
             edata.finish()
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .hide((_event: any) => { // any: w2tooltip event shape varies
+        .hide((_event: any) => { // any: TsTooltip event shape varies
             const edata = this.trigger('searchClose', { target: this.name })
             if (edata.isCancelled === true) {
                 return
@@ -2981,7 +2981,7 @@ class w2grid extends w2base {
     }
 
     searchClose() {
-        w2tooltip.hide(this.name + '-search-overlay')
+        TsTooltip.hide(this.name + '-search-overlay')
     }
 
     // if clicked on a field in the search strip
@@ -3002,17 +3002,17 @@ class w2grid extends w2base {
             if (sd.type == 'date') {
                 options = ''
                 sd.value.forEach(opt => {
-                    options += `<span class="value">${w2utils.formatDate(opt)}</span>`
+                    options += `<span class="value">${TsUtils.formatDate(opt)}</span>`
                 })
             }
         } else {
             if (sd.type == 'date') {
-                val = w2utils.formatDateTime(val)
+                val = TsUtils.formatDateTime(val)
             }
 
         }
-        w2tooltip.hide(this.name + '-search-props')
-        w2tooltip.show({
+        TsTooltip.hide(this.name + '-search-props')
+        TsTooltip.show({
             name: this.name + '-search-props',
             anchor: el,
             class: 'w2ui-white',
@@ -3020,22 +3020,22 @@ class w2grid extends w2base {
             html: `
                 <div class="w2ui-grid-search-single">
                     <span class="field">${sf.label ?? ''}</span>
-                    <span class="operator">${w2utils.lang(oper)}</span>
+                    <span class="operator">${TsUtils.lang(oper)}</span>
                     ${Array.isArray(sd.value)
                         ? `${options}`
                         : `<span class="value">${val}</span>`
                     }
                     <div class="buttons">
-                        <button id="remove" class="w2ui-btn">${w2utils.lang('Remove This Field')}</button>
+                        <button id="remove" class="w2ui-btn">${TsUtils.lang('Remove This Field')}</button>
                     </div>
                 </div>`
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).then((event: any) => { // any: w2menu/w2tooltip event detail shape varies
+        }).then((event: any) => { // any: w2menu/TsTooltip event detail shape varies
             query(event.detail.overlay.box).find('#remove').on('click', () => {
                 this.searchData.splice(sd_ind, 1)
                 this.reload()
                 this.localSearch()
-                w2tooltip.hide(this.name + '-search-props')
+                TsTooltip.hide(this.name + '-search-props')
             })
         })
     }
@@ -3047,7 +3047,7 @@ class w2grid extends w2base {
         this.searchShowFields(true)
         if (anchor == null) this.searchClose()
         if (forceHide === true || (anchor != null && query(`#w2overlay-${this.name}-search-suggest`).length > 0)) {
-            w2tooltip.hide(this.name + '-search-suggest')
+            TsTooltip.hide(this.name + '-search-suggest')
             return
         }
         if (query(`#w2overlay-${this.name}-search-suggest`).length > 0) {
@@ -3096,8 +3096,8 @@ class w2grid extends w2base {
                 this.last.logic  = event.detail.item.logic || 'AND'
                 this.last.search = ''
                 this.last.label  = '[Multiple Fields]'
-                this.searchData  = w2utils.clone(event.detail.item.data)
-                this['searchSelected'] = w2utils.clone(event.detail.item, { exclude: ['icon', 'remove'] })
+                this.searchData  = TsUtils.clone(event.detail.item.data)
+                this['searchSelected'] = TsUtils.clone(event.detail.item, { exclude: ['icon', 'remove'] })
                 this.reload()
                 edata.finish()
             })
@@ -3110,12 +3110,12 @@ class w2grid extends w2base {
                     return
                 }
                 queueMicrotask(() => event.detail.overlay.hide())
-                w2tooltip.hide(this.name + '-search-overlay')
+                TsTooltip.hide(this.name + '-search-overlay')
 
-                // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(this.confirm(w2utils.lang('Do you want to delete search "${item}"?', { item: item.text })) as any)
-                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                ;(this.confirm(TsUtils.lang('Do you want to delete search "${item}"?', { item: item.text })) as any)
+                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     .yes((evt: any) => {
                         // remove from searches
@@ -3123,7 +3123,7 @@ class w2grid extends w2base {
                         if (search !== -1) {
                             this.savedSearches.splice(search, 1)
                         }
-                        this.cacheSave('searches', this.savedSearches.map(s => w2utils.clone(s, { exclude: ['remove', 'icon'] })))
+                        this.cacheSave('searches', this.savedSearches.map(s => TsUtils.clone(s, { exclude: ['remove', 'icon'] })))
                         evt.detail.self.close()
                         // evt after
                         edata.finish()
@@ -3150,15 +3150,15 @@ class w2grid extends w2base {
             width: 350,
             height: 150,
             body: `<div class="w2ui-grid-save-search">
-                        <span>${w2utils.lang(ind != -1 ? 'Update Search' : 'Save New Search')}</span>
-                        <input class="search-name w2ui-input" placeholder="${w2utils.lang('Search name')}">
+                        <span>${TsUtils.lang(ind != -1 ? 'Update Search' : 'Save New Search')}</span>
+                        <input class="search-name w2ui-input" placeholder="${TsUtils.lang('Search name')}">
                    </div>`,
             buttons: `
-                <button id="grid-search-cancel" class="w2ui-btn">${w2utils.lang('Cancel')}</button>
-                <button id="grid-search-save" class="w2ui-btn w2ui-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${w2utils.lang('Save')}</button>
+                <button id="grid-search-cancel" class="w2ui-btn">${TsUtils.lang('Cancel')}</button>
+                <button id="grid-search-save" class="w2ui-btn w2ui-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
             `
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        })?.open(async (event: any) => { // any: w2event message open callback
+        })?.open(async (event: any) => { // any: TsEvent message open callback
             query(event.detail.box).find('input, button').eq(0).val(value)
             await event.complete
             query(event.detail.box).find('#grid-search-cancel').on('click', () => {
@@ -3173,7 +3173,7 @@ class w2grid extends w2base {
                         id: name,
                         text: name,
                         logic: this.last.logic,
-                        data: w2utils.clone(this.searchData)
+                        data: TsUtils.clone(this.searchData)
                     })
                 } else {
                     this.savedSearches.push({
@@ -3186,7 +3186,7 @@ class w2grid extends w2base {
                     })
                 }
                 // save local storage
-                this.cacheSave('searches', this.savedSearches.map(s => w2utils.clone(s, { exclude: ['remove', 'icon'] })))
+                this.cacheSave('searches', this.savedSearches.map(s => TsUtils.clone(s, { exclude: ['remove', 'icon'] })))
                 this.message()
                 // update on screen
                 if (this['searchSelected']) {
@@ -3196,14 +3196,14 @@ class w2grid extends w2base {
                     this['searchSelected'] = {
                         text: name,
                         logic: this.last.logic,
-                        data: w2utils.clone(this.searchData)
+                        data: TsUtils.clone(this.searchData)
                     }
                     query(event.detail.box).find(`#grid_${this.name}_search_all`).val(' ').prop('readOnly', true)
                     query(event.detail.box).find(`#grid_${this.name}_search_name`).show().find('.name-text').html(name)
                 }
                 edata.finish({ name })
             })
-            await w2utils.wait(100) // need this for dialog to be ready (sliding down) for focus to work
+            await TsUtils.wait(100) // need this for dialog to be ready (sliding down) for focus to work
             query(event.detail.box).find('input, button')
                 .off('.message')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3233,7 +3233,7 @@ class w2grid extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cache(type: any) { // any: cache key is always string, loosely typed
-        if (w2utils.hasLocalStorage && this.useLocalStorage) {
+        if (TsUtils.hasLocalStorage && this.useLocalStorage) {
             try {
                 const data = JSON.parse(localStorage['w2ui'] || '{}')
                 data[(this.stateId || this.name)] ??= {}
@@ -3246,7 +3246,7 @@ class w2grid extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     cacheSave(type: any, value: any) { // any: cache key and value are dynamic
-        if (w2utils.hasLocalStorage && this.useLocalStorage) {
+        if (TsUtils.hasLocalStorage && this.useLocalStorage) {
             try {
                 const data = JSON.parse(localStorage['w2ui'] || '{}')
                 data[(this.stateId || this.name)] ??= {}
@@ -3280,7 +3280,7 @@ class w2grid extends w2base {
         if (edata.isCancelled === true) return
         // default action
         const input = query(this.box).find('#grid_'+ this.name +'_search_all')
-        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.searchData = edata.detail['searchData'] as any[]
         this['searchSelected'] = null
@@ -3313,12 +3313,12 @@ class w2grid extends w2base {
 
     searchShowFields(forceHide?: boolean) {
         if (forceHide === true) {
-            w2tooltip.hide(this.name + '-search-fields')
+            TsTooltip.hide(this.name + '-search-fields')
             return
         }
         const items = []
         for (let s = -1; s < this.searches.length; s++) {
-            let search: W2GridSearch | undefined = this.searches[s]
+            let search: TsGridSearch | undefined = this.searches[s]
             const sField   = (search ? search.field : null)
             const column   = sField != null ? this.getColumn(sField) : null
             let disabled = false
@@ -3326,16 +3326,16 @@ class w2grid extends w2base {
             if (this.show.searchHiddenMsg == true && s != -1
                     && (column == null || (column.hidden === true && column.hideable !== false))) {
                 disabled = true
-                tooltip = w2utils.lang(`This column ${column == null ? 'does not exist' : 'is hidden'}`)
+                tooltip = TsUtils.lang(`This column ${column == null ? 'does not exist' : 'is hidden'}`)
             }
             if (s == -1) { // -1 is All Fields search
                 if (!this.multiSearch || !this.show.searchAll) continue
-                search = { field: 'all', label: 'All Fields', type: 'text' } as W2GridSearch
+                search = { field: 'all', label: 'All Fields', type: 'text' } as TsGridSearch
             } else {
                 if (column != null && column.hideable === false) continue
                 if (search == null) continue
                 if (search.hidden === true) {
-                    tooltip = w2utils.lang('This column is hidden')
+                    tooltip = TsUtils.lang('This column is hidden')
                     // don't show hidden (not simple) searches
                     if (search['simple'] === false) continue
                 }
@@ -3347,7 +3347,7 @@ class w2grid extends w2base {
             }
             items.push({
                 id: search.field,
-                text: w2utils.lang(search.label ?? ''),
+                text: TsUtils.lang(search.label ?? ''),
                 search,
                 tooltip,
                 disabled,
@@ -3368,13 +3368,13 @@ class w2grid extends w2base {
             })
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     searchInitInput(field: string, _value?: any) {
         let search
         const el = query(this.box).find('#grid_'+ this.name +'_search_all')
         if (field == 'all') {
-            search = { field: 'all', label: w2utils.lang('All Fields') }
+            search = { field: 'all', label: TsUtils.lang('All Fields') }
         } else {
             search = this.getSearch(field)
             if (search == null) return
@@ -3387,7 +3387,7 @@ class w2grid extends w2base {
             this.last.field = search.field
             this.last.label = search.label ?? ''
         }
-        el.attr('placeholder', w2utils.lang('Search') + ' ' + w2utils.lang(search.label || search['caption'] || search.field, true))
+        el.attr('placeholder', TsUtils.lang('Search') + ' ' + TsUtils.lang(search.label || search['caption'] || search.field, true))
 
         // if there is pre-selected search
         if (this['searchSelected']) {
@@ -3432,7 +3432,7 @@ class w2grid extends w2base {
         if (url) {
             this.offset = parseInt(offset)
             if (this.offset > this.total) this.offset = this.total - this.limit
-            if (this.offset < 0 || !w2utils.isInt(this.offset)) this.offset = 0
+            if (this.offset < 0 || !TsUtils.isInt(this.offset)) this.offset = 0
             this.clear(true)
             this.reload(callBack)
         } else {
@@ -3451,7 +3451,7 @@ class w2grid extends w2base {
         return this.request('load', {}, url, callBack)
     }
 
-    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     reload(callBack?: (...args: any[]) => void) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -3478,7 +3478,7 @@ class w2grid extends w2base {
     request(action: string, postData?: Record<string, any>, url?: any, callBack?: (...args: any[]) => void): Promise<any> {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
-        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let resolve: any, reject: any
         const requestProm = new Promise((res, rej) => { resolve = res; reject = rej })
@@ -3486,25 +3486,25 @@ class w2grid extends w2base {
         if (!url) url = this.url
         if (!url) return new Promise((resolve, reject) => { reject() })
         // build parameters list
-        if (!w2utils.isInt(this.offset)) this.offset = 0
-        if (!w2utils.isInt(this.last.fetch.offset)) this.last.fetch.offset = 0
+        if (!TsUtils.isInt(this.offset)) this.offset = 0
+        if (!TsUtils.isInt(this.last.fetch.offset)) this.last.fetch.offset = 0
         // add list params
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
-        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const params: any = {
             limit: this.limit,
             offset: (this.offset as number) + (this.last.fetch.offset as number),
             searchLogic: this.last.logic,
             search: this.searchData.map((search) => {
-                const _search = w2utils.clone(search)
+                const _search = TsUtils.clone(search)
                 if (this.searchMap && this.searchMap[_search.field]) _search.field = this.searchMap[_search.field]
                 return _search
             }),
             sort: this.sortData.map((sort) => {
-                const _sort = w2utils.clone(sort)
+                const _sort = TsUtils.clone(sort)
                 if (this.sortMap && this.sortMap[_sort.field]) _sort.field = this.sortMap[_sort.field]
                 return _sort
             })
@@ -3517,8 +3517,8 @@ class w2grid extends w2base {
             delete params.sort
         }
         // append other params
-        w2utils.extend(params, this.postData)
-        w2utils.extend(params, postData)
+        TsUtils.extend(params, this.postData)
+        TsUtils.extend(params, postData)
         // other actions
         if (action == 'delete' || action == 'save') {
             delete params.limit
@@ -3543,7 +3543,7 @@ class w2grid extends w2base {
         }
         // call server to get data
         if (this.last.fetch.offset === 0) {
-            this.lock(w2utils.lang(this.msgRefresh), true)
+            this.lock(TsUtils.lang(this.msgRefresh), true)
         }
         if (this.last.fetch.controller) try { this.last.fetch.controller.abort() } catch (e) {}
         // URL
@@ -3560,7 +3560,7 @@ class w2grid extends w2base {
         }
         // process url with routeData
         if (Object.keys(this.routeData).length > 0) {
-            const info = w2utils.parseRoute(url)
+            const info = TsUtils.parseRoute(url)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
                     const key_k = info.keys[k]!
@@ -3571,7 +3571,7 @@ class w2grid extends w2base {
         }
         url = new URL(url, location.href)
         // ajax options
-        const fetchOptions = w2utils.prepareParams(url, {
+        const fetchOptions = TsUtils.prepareParams(url, {
             method: edata.detail.httpMethod,
             headers: edata.detail.httpHeaders,
             body: edata.detail.postData
@@ -3586,7 +3586,7 @@ class w2grid extends w2base {
         fetchOptions['signal'] = this.last.fetch.controller!.signal
         fetch(url, fetchOptions)
             .catch(processError)
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .then((resp: any) => {
                 if (resp == null) return // request aborted
@@ -3630,7 +3630,7 @@ class w2grid extends w2base {
                 console.log('ERROR: Server communication failed.',
                     '\n   EXPECTED:', { total: 5, records: [{ recid: 1, field: 'value' }] },
                     '\n         OR:', { error: true, message: 'error message' })
-                self.requestComplete({ error: true, message: w2utils.lang(self.msgHTTPError), response }, action, callBack, resolve, reject)
+                self.requestComplete({ error: true, message: TsUtils.lang(self.msgHTTPError), response }, action, callBack, resolve, reject)
             }
             // event after
             edata2.finish()
@@ -3644,7 +3644,7 @@ class w2grid extends w2base {
         this.last.fetch.response = (Date.now() - this.last.fetch.start) / 1000
         setTimeout(() => {
             if (this.show.statusResponse) {
-                this.status(w2utils.lang('Server Response ${count} seconds', { count: this.last.fetch.response }))
+                this.status(TsUtils.lang('Server Response ${count} seconds', { count: this.last.fetch.response }))
             }
         }, 10)
         this.last.vscroll.pull_more = false
@@ -3671,7 +3671,7 @@ class w2grid extends w2base {
                 if (data == null) {
                     data = {
                         error: true,
-                        message: w2utils.lang(this.msgNotJSON),
+                        message: TsUtils.lang(this.msgNotJSON),
                     }
                 } else if (Array.isArray(data)) {
                     // if it is plain array, assume these are records
@@ -3707,9 +3707,9 @@ class w2grid extends w2base {
                     if (data.total != -1 && parseInt(String(data.total)) != this.total) {
                         // eslint-disable-next-line @typescript-eslint/no-this-alias
                         const grid = this
-                        // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                        // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        ;(this.message(w2utils.lang(this.msgNeedReload)) as any)
+                        ;(this.message(TsUtils.lang(this.msgNeedReload)) as any)
                             .ok(() => {
                                 delete grid.last.fetch.offset
                                 grid.reload()
@@ -3717,7 +3717,7 @@ class w2grid extends w2base {
                         return new Promise<void>(resolve => { resolve() })
                     }
                 }
-                if (w2utils.isInt(data.total)) this.total = parseInt(data.total)
+                if (TsUtils.isInt(data.total)) this.total = parseInt(data.total)
                 // records
                 if (data.records) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3758,7 +3758,7 @@ class w2grid extends w2base {
                 return this.reload()
             }
         } else {
-            this.error(w2utils.lang(data.message || this.msgServerError)) // || not ?? — empty string should also fall back
+            this.error(TsUtils.lang(data.message || this.msgServerError)) // || not ?? — empty string should also fall back
             reject(data)
         }
         // event after
@@ -3795,9 +3795,9 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getChanges(recordsBase?: W2GridRecord[]): Record<string, any>[] {
+    getChanges(recordsBase?: TsGridRecord[]): Record<string, any>[] {
         const changes = []
         if (typeof recordsBase == 'undefined') {
             recordsBase = this.records
@@ -3807,11 +3807,11 @@ class w2grid extends w2base {
             const rec = recordsBase[r]!
             if (rec?.w2ui) {
                 if (rec.w2ui['changes'] != null) {
-                    // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+                    // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const obj: Record<string, any> = {}
                     obj[this.recid || 'recid'] = rec.recid
-                    changes.push(w2utils.extend(obj, rec.w2ui['changes']))
+                    changes.push(TsUtils.extend(obj, rec.w2ui['changes']))
                 }
 
                 // recursively look for changes in non-expanded children
@@ -3835,7 +3835,7 @@ class w2grid extends w2base {
                 try {
                     _setValue(record, s, change_c[s])
                 } catch (e) {
-                    // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                    // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     console.log('ERROR: Cannot merge. ', (e as any)?.message || '', e)
                 }
@@ -3857,7 +3857,7 @@ class w2grid extends w2base {
         }
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     save(callBack?: (data: any) => void) {
         const changes = this.getChanges()
@@ -3901,10 +3901,10 @@ class w2grid extends w2base {
                 if (input.length > 0) {
                     if (input.get(0).tagName == 'DIV') {
                         input.text(input.text() + value)
-                        w2utils.setCursorPosition(input.get(0), input.text().length)
+                        TsUtils.setCursorPosition(input.get(0), input.text().length)
                     } else {
                         input.val(input.val() + value)
-                        w2utils.setCursorPosition(input.get(0), input.val().length)
+                        TsUtils.setCursorPosition(input.get(0), input.val().length)
                     }
                 }
             }
@@ -3932,7 +3932,7 @@ class w2grid extends w2base {
         this.selectNone(true) // no need to trigger select event
         this.select({ recid: recid, column: column })
         // create input element
-        const tr = query(this.box).find('#grid_'+ this.name + prefix +'rec_' + w2utils.escapeId(recid))
+        const tr = query(this.box).find('#grid_'+ this.name + prefix +'rec_' + TsUtils.escapeId(recid))
         let div = tr.find('[col="'+ column +'"] > div') // TD -> DIV
         this.last._edit['tr'] = tr
         this.last._edit['div'] = div
@@ -3954,8 +3954,8 @@ class w2grid extends w2base {
         edit.style = edit.style ?? ''
         edit.items = edit.items ?? []
         let val = (rec.w2ui?.['changes']?.[col.field] != null
-            ? w2utils.stripTags(rec.w2ui['changes'][col.field])
-            : w2utils.stripTags(self.parseField(rec, col.field)))
+            ? TsUtils.stripTags(rec.w2ui['changes'][col.field])
+            : TsUtils.stripTags(self.parseField(rec, col.field)))
         if (val == null) val = ''
         let prevValue = (typeof val != 'object' ? val : '')
         if (edata.detail['prevValue'] != null) prevValue = edata.detail['prevValue']
@@ -3968,10 +3968,10 @@ class w2grid extends w2base {
             }
         }
         // normalize items, if not yet normlized
-        if (edit.items.length > 0 && !w2utils.isPlainObject(edit.items[0])) {
-            edit.items = w2utils.normMenu(edit.items, edit)
+        if (edit.items.length > 0 && !TsUtils.isPlainObject(edit.items[0])) {
+            edit.items = TsUtils.normMenu(edit.items, edit)
         }
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let input: any
         const dropTypes = ['date', 'time', 'datetime', 'color', 'list', 'combo']
@@ -3980,7 +3980,7 @@ class w2grid extends w2base {
         switch (edit.type) {
             case 'div': {
                 div.addClass('w2ui-editable')
-                    .html(w2utils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input w2ui-focus"
+                    .html(TsUtils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input w2ui-focus"
                         contenteditable autocorrect="off" autocomplete="off" spellcheck="false"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>
@@ -3988,36 +3988,36 @@ class w2grid extends w2base {
                 input = div.find('div.w2ui-input').get(0)
                 input.innerText = (typeof val != 'object' ? val : '')
                 if (value != null) {
-                    w2utils.setCursorPosition(input, input.innerText.length)
+                    TsUtils.setCursorPosition(input, input.innerText.length)
                 } else {
-                    w2utils.setCursorPosition(input, 0, input.innerText.length)
+                    TsUtils.setCursorPosition(input, 0, input.innerText.length)
                 }
                 break
             }
             default: {
                 div.addClass('w2ui-editable')
-                    .html(w2utils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input"
+                    .html(TsUtils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input"
                         autocorrect="off" autocomplete="off" spellcheck="false" type="text"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>${edit.text}`))
                 input = div.find('input').get(0)
                 // issue #499
                 if (edit.type == 'number') {
-                    val = w2utils.formatNumber(val)
+                    val = TsUtils.formatNumber(val)
                 }
                 if (edit.type == 'date') {
-                    val = w2utils.formatDate(w2utils.isDate(val, edit.format, true) || new Date(), edit.format)
+                    val = TsUtils.formatDate(TsUtils.isDate(val, edit.format, true) || new Date(), edit.format)
                 }
                 input.value = (typeof val != 'object' ? val : '')
 
-                // init w2field, attached to input._w2field
+                // init TsField, attached to input._w2field
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const doHide = (event: any) => { // any: could be KeyboardEvent or custom event
                     const escKey = this.last._edit?.['escKey']
                     // check if any element is selected in drop down
                     let selected = false
                     const name = query(input).data('tooltipName')
-                    if (name && w2tooltip.get(name[0])?.selected != null) {
+                    if (name && TsTooltip.get(name[0])?.selected != null) {
                         selected = true
                     }
                     // trigger change on new value if selected from overlay
@@ -4027,7 +4027,7 @@ class w2grid extends w2base {
                         this.editDone(undefined, undefined, { keyCode: selected ? 13 : 0 }) // advance on select
                     }
                 }
-                new w2field(w2utils.extend({}, edit, {
+                new TsField(TsUtils.extend({}, edit, {
                     el: input,
                     selected: val,
                     onSelect: doHide,
@@ -4091,7 +4091,7 @@ class w2grid extends w2base {
                         const name = query(input).data('tooltipName')
                         if (name && name.length > 0) {
                             if (this.last._edit) this.last._edit['escKey'] = true
-                            w2tooltip.hide(name[0])
+                            TsTooltip.hide(name[0])
                             kev.preventDefault()
                             return // keep input editable just close tooltip
                         }
@@ -4123,7 +4123,7 @@ class w2grid extends w2base {
                             // check if any element is selected in drop down
                             let selected = false
                             const name = query(input).data('tooltipName')
-                            if (name && w2tooltip.get(name[0]).selected != null) {
+                            if (name && TsTooltip.get(name[0]).selected != null) {
                                 selected = true
                             }
                             // if tooltip is not open or no element is selected
@@ -4180,7 +4180,7 @@ class w2grid extends w2base {
                 const val = (input.tagName.toUpperCase() == 'DIV' ? input.innerText : input.value)
                 const editBox = query(self.box).find('#grid_'+ self.name + '_editable').get(0)
                 const style = `font-family: ${styles.getPropertyValue('font-family')}; font-size: ${styles.getPropertyValue('font-size')}; white-space: no-wrap;`
-                const width = w2utils.getStrWidth(val, style)
+                const width = TsUtils.getStrWidth(val, style)
                 if (width + 20 > editBox.clientWidth) {
                     query(editBox).css('width', width + 20 + 'px')
                 }
@@ -4209,7 +4209,7 @@ class w2grid extends w2base {
                 new_val = fld.selected
             }
             if (new_val == null || Object.keys(new_val).length === 0) new_val = ''
-            if (!w2utils.isPlainObject(new_val)) new_val = fld.clean(new_val)
+            if (!TsUtils.isPlainObject(new_val)) new_val = fld.clean(new_val)
         }
         if (input.type == 'checkbox') {
             if (rec.w2ui?.['editable'] === false) input.checked = !input.checked
@@ -4218,7 +4218,7 @@ class w2grid extends w2base {
         const old_val = this.parseField(rec, col.field)
         const prev_val = (rec.w2ui?.['changes'] && rec.w2ui['changes'].hasOwnProperty(col.field) ? rec.w2ui['changes'][col.field]: old_val)
         // change/restore event
-        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any = {
             target: this.name, input,
@@ -4337,19 +4337,19 @@ class w2grid extends w2base {
         if (recs.length === 0) return
         if (this.msgDelete != '' && !force) {
             ;(this.confirm({
-                text: w2utils.lang(this.msgDelete, {
+                text: TsUtils.lang(this.msgDelete, {
                     count: recs.length,
-                    records: w2utils.lang( recs.length == 1 ? 'record' : 'records')
+                    records: TsUtils.lang( recs.length == 1 ? 'record' : 'records')
                 }),
                 width: 380,
                 height: 170,
-                yes_text: w2utils.lang('Delete'),
+                yes_text: TsUtils.lang('Delete'),
                 yes_class: 'w2ui-btn-red',
-                no_text: w2utils.lang('Cancel'),
-            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                no_text: TsUtils.lang('Cancel'),
+            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             }) as any)
-                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .yes((event: any) => {
                     event.detail.self.close()
@@ -4371,7 +4371,7 @@ class w2grid extends w2base {
                 this.remove(...(recs as Array<RecId | number>))
             } else {
                 // clear cells
-                const cellRecs = recs as W2GridCellSelection[]
+                const cellRecs = recs as TsGridCellSelection[]
                 for (let r = 0; r < cellRecs.length; r++) {
                     const rr = cellRecs[r]!
                     const fld = this.columns[rr.column]!.field
@@ -4381,7 +4381,7 @@ class w2grid extends w2base {
                         this.records[ind]![fld] = ''
                         if (rec.w2ui?.['changes']) delete rec.w2ui['changes'][fld]
                         // -- style should not be deleted
-                        // if (rec.style != null && w2utils.isPlainObject(rec.style) && rec.style[recs[r].column]) {
+                        // if (rec.style != null && TsUtils.isPlainObject(rec.style) && rec.style[recs[r].column]) {
                         //     delete rec.style[recs[r].column];
                         // }
                     }
@@ -4447,7 +4447,7 @@ class w2grid extends w2base {
         // multi select with shift key
         let start: number = 0, end: number = 0, t1: number = 0, t2: number = 0
         if (event.shiftKey && sel.length > 0 && this.multiSelect) {
-            const cellSel = sel as W2GridCellSelection[]
+            const cellSel = sel as TsGridCellSelection[]
             if (typeof sel[0] === 'object' && cellSel[0]!.recid != null) {
                 start = this.get(cellSel[0]!.recid, true) ?? 0
                 end   = this.get(recid, true) ?? 0
@@ -4510,7 +4510,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnClick(field: string, event?: MouseEvent | any) {
         // ignore click if column was resized
@@ -4642,13 +4642,13 @@ class w2grid extends w2base {
             return true
         }
         const style = getComputedStyle(el)
-        let maxWidth = w2utils.getStrWidth(el.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
+        let maxWidth = TsUtils.getStrWidth(el.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
             + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4
 
         query(this.box).find(`.w2ui-grid-records td[col="${colIndex}"] > div`, this.box).each((el: Node) => {
             const htmlEl = el as HTMLElement // cast: query().each() passes Element but typed as Node
             const style = getComputedStyle(htmlEl)
-            const width = w2utils.getStrWidth(htmlEl.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
+            const width = TsUtils.getStrWidth(htmlEl.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
                 + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4 // add some extra because of the border
             if (maxWidth < width) {
                 maxWidth = width
@@ -4674,7 +4674,7 @@ class w2grid extends w2base {
         this.columns.forEach((col, ind) => this.columnAutoSize(ind))
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     focus(event?: Event | any) {
         // event before
@@ -4693,7 +4693,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     blur(event?: Event | any) {
         // event before
@@ -4707,10 +4707,10 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     keydown(event: KeyboardEvent | any) {
-        // this method is called from w2utils
+        // this method is called from TsUtils
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
         const url = this.url?.get ?? this.url
@@ -4731,18 +4731,18 @@ class w2grid extends w2base {
         // any: keyboard nav handles row/cell modes inline; recid is narrowed by `typeof recid == 'object'` runtime guard below
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let recid: any = sel[0] || null
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let columns: any[] = []
         // any: same as recid above; runtime-narrowed below
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let recid2: any = sel[sel.length-1]
         // Cell-mode alias used by sub-functions (moveLeft/Right/Up/Down) when selectType !== 'row'.
-        // Same data as `sel`, narrowed to W2GridCellSelection[]; safe to read inside the
+        // Same data as `sel`, narrowed to TsGridCellSelection[]; safe to read inside the
         // selectType-checked branches below.
-        const cellSel = sel as W2GridCellSelection[]
+        const cellSel = sel as TsGridCellSelection[]
         if (typeof recid == 'object' && recid != null) {
-            const cellSel = sel as W2GridCellSelection[]
+            const cellSel = sel as TsGridCellSelection[]
             recid   = cellSel[0]!.recid
             columns = []
             let ii  = 0
@@ -4755,7 +4755,7 @@ class w2grid extends w2base {
         }
         const ind      = obj.get(recid, true) ?? -1
         const ind2     = obj.get(recid2, true) ?? -1
-        const recEL    = query(obj.box).find(`#grid_${obj.name}_rec_${(ind >= 0 ? w2utils.escapeId(obj.records[ind]!.recid) : 'none')}`)
+        const recEL    = query(obj.box).find(`#grid_${obj.name}_rec_${(ind >= 0 ? TsUtils.escapeId(obj.records[ind]!.recid) : 'none')}`)
         const pageSize = Math.floor(records[0].clientHeight / obj.recordHeight)
         let cancel   = false
         const key      = event.keyCode
@@ -4853,7 +4853,7 @@ class w2grid extends w2base {
                 // SLOW: 10k records take 7.0
                 if (empty) break
                 // in Safari need to copy to buffer on cmd or ctrl key (otherwise does not work)
-                if (w2utils.isSafari) {
+                if (TsUtils.isSafari) {
                     obj.last.copy_event = obj.copy(false, event)
                     const focus = query(obj.box).find('#grid_'+ obj.name + '_focus')
                     focus.val(obj.last.copy_event.detail.text)
@@ -4864,7 +4864,7 @@ class w2grid extends w2base {
             case 67: { // - c
                 // this fill trigger event.onComplete
                 if (event.metaKey || event.ctrlKey) {
-                    if (w2utils.isSafari) {
+                    if (TsUtils.isSafari) {
                         obj.copy(obj.last.copy_event, event)
                     } else {
                         obj.last.copy_event = obj.copy(false, event)
@@ -4879,7 +4879,7 @@ class w2grid extends w2base {
             case 88: { // x - cut
                 if (empty) break
                 if (event.ctrlKey || event.metaKey) {
-                    if (w2utils.isSafari) {
+                    if (TsUtils.isSafari) {
                         obj.copy(obj.last.copy_event, event)
                     } else {
                         obj.last.copy_event = obj.copy(false, event)
@@ -5160,8 +5160,8 @@ class w2grid extends w2base {
         if (ind == null) {
             const sel = this.getSelection()
             if (sel.length === 0) return
-            if (w2utils.isPlainObject(sel[0])) {
-                const cellSel = sel as W2GridCellSelection[]
+            if (TsUtils.isPlainObject(sel[0])) {
+                const cellSel = sel as TsGridCellSelection[]
                 ind    = cellSel[0]!.index
                 column = cellSel[0]!.column
             } else {
@@ -5202,7 +5202,7 @@ class w2grid extends w2base {
         if (column != null) {
             let x1 = 0
             let x2 = 0
-            const sb = w2utils.scrollBarSize() as number
+            const sb = TsUtils.scrollBarSize() as number
             for (let i = 0; i <= column; i++) {
                 const col = this.columns[i]!
                 if (col.frozen || col.hidden) continue
@@ -5275,7 +5275,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showContextMenu(event: MouseEvent | any, options: { recid?: string | number; index?: number; column?: number }) {
         const { recid, index, column } = options
@@ -5287,7 +5287,7 @@ class w2grid extends w2base {
             event.offsetX = event.layerX - event.target.offsetLeft
             event.offsetY = event.layerY - event.target.offsetTop
         }
-        // if (w2utils.isFloat(recid)) recid = parseFloat(recid)
+        // if (TsUtils.isFloat(recid)) recid = parseFloat(recid)
         if (this.selectType == 'row') {
             const sel = this.getSelectionRows() as Array<RecId | number>
             if (recid != null && sel.indexOf(recid as RecId) == -1) {
@@ -5330,7 +5330,7 @@ class w2grid extends w2base {
         edata.finish()
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     contextMenuClick(recid: string | number, column: number | null, event: any) {
         // event before
@@ -5366,7 +5366,7 @@ class w2grid extends w2base {
         if (ind == null) return false
         const rec  = this.records[ind]!
         rec.w2ui = rec.w2ui ?? {}
-        const id   = w2utils.escapeId(recid)
+        const id   = TsUtils.escapeId(recid)
         const children = rec.w2ui.children
         let edata
         if (Array.isArray(children)) {
@@ -5395,7 +5395,7 @@ class w2grid extends w2base {
             edata.finish()
         } else {
             if (query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded_row').length > 0 || this.show.expandColumn !== true) return false
-            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             if ((rec.w2ui.expanded as any) == 'none') return false
             // insert expand row
@@ -5452,9 +5452,9 @@ class w2grid extends w2base {
         if (ind == null) return false
         const rec      = this.records[ind]!
         rec.w2ui     = rec.w2ui || {}
-        const id       = w2utils.escapeId(recid)
+        const id       = TsUtils.escapeId(recid)
         const children = rec.w2ui.children
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
         if (Array.isArray(children)) {
@@ -5463,7 +5463,7 @@ class w2grid extends w2base {
             if (edata.isCancelled === true) return false
             clearExpanded(rec)
             const stops = []
-            for (let r: W2GridRecord | null = rec; r != null; r = (r.w2ui?.parent_recid != null ? this.get(r.w2ui.parent_recid) : null))
+            for (let r: TsGridRecord | null = rec; r != null; r = (r.w2ui?.parent_recid != null ? this.get(r.w2ui.parent_recid) : null))
                 stops.push(r.w2ui?.parent_recid)
             // stops contains 'undefined' plus the ID of all nodes in the path from 'rec' to the tree root
             const start = ind + 1
@@ -5512,7 +5512,7 @@ class w2grid extends w2base {
         return true
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        function clearExpanded(rec: any) { // any: W2GridRecord
+        function clearExpanded(rec: any) { // any: TsGridRecord
             rec.w2ui.expanded = false
             rec.w2ui['_copied'] = false
             for (let i = 0; i < rec.w2ui.children.length; i++) {
@@ -5601,7 +5601,7 @@ class w2grid extends w2base {
                 this.sortData.splice(sortIndex, 1)
             } else {
                 // set new sort
-                this.sortData[sortIndex] ??= {} as W2GridSortData
+                this.sortData[sortIndex] ??= {} as TsGridSortData
                 Object.assign(this.sortData[sortIndex]!, { field, direction })
             }
         } else {
@@ -5626,10 +5626,10 @@ class w2grid extends w2base {
         }
     }
 
-    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     copy(flag: any, oEvent?: ClipboardEvent | any) {
-        if (w2utils.isPlainObject(flag)) {
+        if (TsUtils.isPlainObject(flag)) {
             // event after
             flag.finish()
             return flag.text
@@ -5639,7 +5639,7 @@ class w2grid extends w2base {
         if (sel.length === 0) return ''
         let text = ''
         if (typeof sel[0] == 'object') { // cell copy
-            const cellSel = sel as W2GridCellSelection[]
+            const cellSel = sel as TsGridCellSelection[]
             // find min/max column
             let minCol = cellSel[0]!.column
             let maxCol = cellSel[0]!.column
@@ -5667,7 +5667,7 @@ class w2grid extends w2base {
                 if (col.hidden === true) continue
                 let colName = (col.text ? col.text : col.field)
                 if (col.text && col.text.length < 3 && col.tooltip) colName = col.tooltip // if column name is less then 3 char and there is tooltip - use it
-                text += '"' + w2utils.stripTags(colName) + '"\t'
+                text += '"' + TsUtils.stripTags(colName) + '"\t'
             }
             text  = text.substr(0, text.length-1) // remove last \t
             text += '\n'
@@ -5714,10 +5714,10 @@ class w2grid extends w2base {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCellCopy(ind: any, col_ind: any) { // any: record index and column index
-        return w2utils.stripTags(this.getCellHTML(ind, col_ind))
+        return TsUtils.stripTags(this.getCellHTML(ind, col_ind))
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paste(text: string, event?: ClipboardEvent | any) {
         const sel = this.getSelectionCells()
@@ -5791,7 +5791,7 @@ class w2grid extends w2base {
         return Date.now() - time
     }
 
-    // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     update({ cells, fullCellRefresh, ignoreColumns }: any = {}) {
         const time = Date.now()
@@ -5807,14 +5807,14 @@ class w2grid extends w2base {
                     console.log('ERROR: Wrong argument for grid.update({ cells }), cells should be [{ index: X, column: Y }, ...]')
                     continue
                 }
-                const rec: W2GridRecord = this.records[index] ?? {} as W2GridRecord
+                const rec: TsGridRecord = this.records[index] ?? {} as TsGridRecord
                 rec.w2ui = rec.w2ui ?? {}
                 rec.w2ui['_update'] = rec.w2ui['_update'] ?? { cells: [] }
                 let row1 = rec.w2ui['_update'].row1
                 let row2 = rec.w2ui['_update'].row2
                 if (row1 == null || !row1.isConnected || row2 == null || !row2.isColSelected) {
-                    row1 = this.box.querySelector(`#grid_${this.name}_rec_${w2utils.escapeId(rec.recid)}`)
-                    row2 = this.box.querySelector(`#grid_${this.name}_frec_${w2utils.escapeId(rec.recid)}`)
+                    row1 = this.box.querySelector(`#grid_${this.name}_rec_${TsUtils.escapeId(rec.recid)}`)
+                    row2 = this.box.querySelector(`#grid_${this.name}_frec_${TsUtils.escapeId(rec.recid)}`)
                     rec.w2ui['_update'].row1 = row1
                     rec.w2ui['_update'].row2 = row2
                 }
@@ -5835,8 +5835,8 @@ class w2grid extends w2base {
                 let row1 = rec.w2ui['_update'].row1
                 let row2 = rec.w2ui['_update'].row2
                 if (row1 == null || !row1.isConnected || row2 == null || !row2.isColSelected) {
-                    row1 = this.box.querySelector(`#grid_${this.name}_rec_${w2utils.escapeId(rec.recid)}`)
-                    row2 = this.box.querySelector(`#grid_${this.name}_frec_${w2utils.escapeId(rec.recid)}`)
+                    row1 = this.box.querySelector(`#grid_${this.name}_rec_${TsUtils.escapeId(rec.recid)}`)
+                    row2 = this.box.querySelector(`#grid_${this.name}_frec_${TsUtils.escapeId(rec.recid)}`)
                     rec.w2ui['_update'].row1 = row1
                     rec.w2ui['_update'].row2 = row2
                 }
@@ -5901,7 +5901,7 @@ class w2grid extends w2base {
                         row2.classList.add(...add)
                     }
                 }
-                if (w2utils.isPlainObject(rec.w2ui.class) && typeof rec.w2ui.class[pcol?.field ?? ''] == 'string') {
+                if (TsUtils.isPlainObject(rec.w2ui.class) && typeof rec.w2ui.class[pcol?.field ?? ''] == 'string') {
                     const ignore = ['w2ui-grid-data']
                     const remove: string[] = []
                     const add = rec['w2ui']['class'][pcol!.field].split(' ').filter((cl: string) => !!cl)
@@ -5921,7 +5921,7 @@ class w2grid extends w2base {
                 if (rec.w2ui.styles == null) {
                     rec.w2ui.styles = rec.w2ui.style
                 }
-                if (w2utils.isPlainObject(rec.w2ui.styles) && typeof rec.w2ui.styles[pcol?.field ?? ''] == 'string'
+                if (TsUtils.isPlainObject(rec.w2ui.styles) && typeof rec.w2ui.styles[pcol?.field ?? ''] == 'string'
                         && cell.style.cssText !== rec.w2ui.styles[pcol?.field ?? '']) {
                     cell.style.cssText = rec.w2ui.styles[pcol!.field]
                 }
@@ -5944,8 +5944,8 @@ class w2grid extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refreshRow(recid: any, ind: any = null) { // any: recid is string|number; ind is number
-        let tr1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid))
-        let tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(recid))
+        let tr1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
+        let tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
         if (tr1.length > 0) {
             if (ind == null) ind = this.get(recid, true)
             const line = tr1.attr('line')
@@ -5959,8 +5959,8 @@ class w2grid extends w2base {
             // apply style to row if it was changed in render functions
             let st = (this.records[ind]!.w2ui ? this.records[ind]!.w2ui!['style'] : '')
             if (typeof st == 'string') {
-                tr1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ w2utils.escapeId(recid))
-                tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ w2utils.escapeId(recid))
+                tr1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
+                tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
                 tr1.attr('custom_style', st)
                 tr2.attr('custom_style', st)
                 if (tr1.hasClass('w2ui-selected')) {
@@ -5989,7 +5989,7 @@ class w2grid extends w2base {
         if (edata.isCancelled === true) return
         // -- header
         if (this.show.header) {
-            query(this.box).find(`#grid_${this.name}_header`).html(w2utils.lang(this.header) +'&#160;').show()
+            query(this.box).find(`#grid_${this.name}_header`).html(TsUtils.lang(this.header) +'&#160;').show()
         } else {
             query(this.box).find(`#grid_${this.name}_header`).hide()
         }
@@ -6036,9 +6036,9 @@ class w2grid extends w2base {
             }
         }
         if (this.last.multi) {
-            sInput.attr('placeholder', '[' + w2utils.lang('Multiple Fields') + ']')
+            sInput.attr('placeholder', '[' + TsUtils.lang('Multiple Fields') + ']')
         } else {
-            sInput.attr('placeholder', w2utils.lang('Search') + ' ' + w2utils.lang(this.last.label, true))
+            sInput.attr('placeholder', TsUtils.lang('Search') + ' ' + TsUtils.lang(this.last.label, true))
         }
         if (sInput.val() != this.last.search) {
             let val = this.last.search
@@ -6090,7 +6090,7 @@ class w2grid extends w2base {
                 if (search.length > 0) {
                     search.forEach((item) => {
                         const el = query(this.box).find('td[col="'+ item.col +'"]:not(.w2ui-head)')
-                        w2utils.marker(el, item.search)
+                        TsUtils.marker(el, item.search)
                     })
                 }
             }, 50)
@@ -6140,16 +6140,16 @@ class w2grid extends w2base {
                         let dsp1 = sd.value[0]
                         let dsp2 = sd.value[1]
                         if (Number(dsp1) === dsp1) {
-                            dsp1 = w2utils.formatDate(dsp1)
+                            dsp1 = TsUtils.formatDate(dsp1)
                         }
                         if (Number(dsp2) === dsp2) {
-                            dsp2 = w2utils.formatDate(dsp2)
+                            dsp2 = TsUtils.formatDate(dsp2)
                         }
                         display = `: ${dsp1} - ${dsp2}`
                     } else {
                         let dsp = sd.value
                         if (Number(dsp) == dsp) {
-                            dsp = w2utils.formatDate(dsp)
+                            dsp = TsUtils.formatDate(dsp)
                         }
                         let oper = sd.operator
                         if (oper == 'more') oper = 'since'
@@ -6172,7 +6172,7 @@ class w2grid extends w2base {
             searches += `
                 ${this.show.searchSave
                     ? `<div class="grid-search-line"></div>
-                       <button class="w2ui-btn grid-search-btn" data-click="searchSave" type="button">${w2utils.lang('Save')}</button>
+                       <button class="w2ui-btn grid-search-btn" data-click="searchSave" type="button">${TsUtils.lang('Save')}</button>
                       `
                     : ''
                 }
@@ -6180,7 +6180,7 @@ class w2grid extends w2base {
                     data-click="searchReset">X</button>
             `
             query(this.box).find(`#grid_${this.name}_searches`).html(searches)
-            query(this.box).find(`#grid_${this.name}_search_logic`).html(w2utils.lang(this.last.logic == 'AND' ? 'All' : 'Any'))
+            query(this.box).find(`#grid_${this.name}_search_logic`).html(TsUtils.lang(this.last.logic == 'AND' ? 'All' : 'Any'))
         } else {
             query(this.box).find('.w2ui-grid-toolbar')
                 .css('height', this.last.toolbar_height + 'px')
@@ -6194,7 +6194,7 @@ class w2grid extends w2base {
             query(this.box).find(`#grid_${this.name}_search_all`).prop('readOnly', false)
             query(this.box).find(`#grid_${this.name}_search_name`).hide().find('.name-text').html('')
         }
-        w2utils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .w2ui-action, #grid_${this.name}_searches button`), this)
+        TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .w2ui-action, #grid_${this.name}_searches button`), this)
     }
 
     refreshBody() {
@@ -6203,13 +6203,13 @@ class w2grid extends w2base {
         const recHTML  = this.getRecordsHTML()
         const colHTML  = this.getColumnsHTML()
         const bodyHTML =
-            '<div id="grid_'+ this.name +'_frecords" class="w2ui-grid-frecords" style="margin-bottom: '+ ((w2utils.scrollBarSize() as number) - 1) +'px;">'+
+            '<div id="grid_'+ this.name +'_frecords" class="w2ui-grid-frecords" style="margin-bottom: '+ ((TsUtils.scrollBarSize() as number) - 1) +'px;">'+
                 recHTML[0] +
             '</div>'+
             '<div id="grid_'+ this.name +'_records" class="w2ui-grid-records">' +
                 recHTML[1] +
             '</div>'+
-            '<div id="grid_'+ this.name +'_scroll1" class="w2ui-grid-scroll1" style="height: '+ w2utils.scrollBarSize() +'px"></div>'+
+            '<div id="grid_'+ this.name +'_scroll1" class="w2ui-grid-scroll1" style="height: '+ TsUtils.scrollBarSize() +'px"></div>'+
             // Columns need to be after to be able to overlap
             '<div id="grid_'+ this.name +'_fcolumns" class="w2ui-grid-fcolumns">'+
             '    <table><tbody>'+ colHTML[0] +'</tbody></table>'+
@@ -6230,18 +6230,18 @@ class w2grid extends w2base {
             records.on('mouseover mouseout', { delegate: 'tr' }, (event: any) => { // any: event.delegate is a Query extension
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
-                query(this.box).find(`#grid_${this.name}_frec_${w2utils.escapeId(recid)}`)
+                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)}`)
                     .toggleClass('w2ui-record-hover', event.type == 'mouseover')
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             frecords.on('mouseover mouseout', { delegate: 'tr' }, (event: any) => { // any: event.delegate is a Query extension
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
-                query(this.box).find(`#grid_${this.name}_rec_${w2utils.escapeId(recid)}`)
+                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)}`)
                     .toggleClass('w2ui-record-hover', event.type == 'mouseover')
             })
         }
-        if (w2utils.isMobile) {
+        if (TsUtils.isMobile) {
             records.append(frecords)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('click', { delegate: 'tr' }, (event: any) => { // any: event.delegate is a Query extension
@@ -6424,10 +6424,10 @@ class w2grid extends w2base {
                         .then(() => {
                             query(event.delegate)
                                 .off('.tooltip')
-                                .on('mouseleave.tooltip', () => { w2tooltip.hide(this.name + '-bubble') })
+                                .on('mouseleave.tooltip', () => { TsTooltip.hide(this.name + '-bubble') })
                         })
                 } else if (event.type == 'click') {
-                    w2tooltip.hide(this.name + '-bubble')
+                    TsTooltip.hide(this.name + '-bubble')
                     this.showBubble(parseInt(tr.attr('index')), parseInt(td.attr('col')), isSummary)
                 }
             })
@@ -6440,15 +6440,15 @@ class w2grid extends w2base {
                 const col = this.columns[td.attr('col')]
                 const isSummary = tr.parents('.w2ui-grid-body').hasClass('w2ui-grid-summary')
 
-                w2tooltip.show({
+                TsTooltip.show({
                     name: this.name + '-bubble',
                     anchor: event.delegate,
-                    html: w2utils.lang(typeof col?.clipboardCopy == 'string' ? col.clipboardCopy : 'Copy to clipboard'),
+                    html: TsUtils.lang(typeof col?.clipboardCopy == 'string' ? col.clipboardCopy : 'Copy to clipboard'),
                     position: 'top|bottom',
                     offsetY: -2
                 })
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .hide((_evt: any) => { // any: w2tooltip hide event
+                .hide((_evt: any) => { // any: TsTooltip hide event
                     event.delegate._tooltipShow = false
                     query(event.delegate).off('.tooltip')
                 })
@@ -6456,11 +6456,11 @@ class w2grid extends w2base {
                 query(event.delegate)
                     .off('.tooltip')
                     .on('mouseleave.tooltip', (_evt: Event) => {
-                        w2tooltip.hide(this.name + '-bubble')
+                        TsTooltip.hide(this.name + '-bubble')
                     })
                     .on('click.tooltip', (evt: Event) => {
                         evt.stopPropagation()
-                        w2tooltip.update(this.name + '-bubble', w2utils.lang('Copied'))
+                        TsTooltip.update(this.name + '-bubble', TsUtils.lang('Copied'))
                         this.clipboardCopy(tr.attr('index'), td.attr('col'), isSummary)
                     })
                 event.delegate._tooltipShow = true
@@ -6475,7 +6475,7 @@ class w2grid extends w2base {
         // show empty message
         if (this.records.length === 0 && this.msgEmpty) {
             query(this.box).find(`#grid_${this.name}_body`)
-                .append(`<div id="grid_${this.name}_empty_msg" class="w2ui-grid-empty-msg"><div>${w2utils.lang(this.msgEmpty)}</div></div>`)
+                .append(`<div id="grid_${this.name}_empty_msg" class="w2ui-grid-empty-msg"><div>${TsUtils.lang(this.msgEmpty)}</div></div>`)
         } else if (query(this.box).find(`#grid_${this.name}_empty_msg`).length > 0) {
             query(this.box).find(`#grid_${this.name}_empty_msg`).remove()
         }
@@ -6520,7 +6520,7 @@ class w2grid extends w2base {
                   '    <div id="grid_'+ this.name +'_footer" class="w2ui-grid-footer"></div>'+
                   '    <textarea id="grid_'+ this.name +'_focus" class="w2ui-grid-focus-input" '+
                             (this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : '')+
-                            (w2utils.isMobile ? 'readonly' : '') +'></textarea>'+ // readonly needed on android not to open keyboard
+                            (TsUtils.isMobile ? 'readonly' : '') +'></textarea>'+ // readonly needed on android not to open keyboard
                   '</div>')
         if (this.selectType != 'row') query(this.box).addClass('w2ui-ss')
         if (query(this.box).length > 0) query(this.box)[0].style.cssText += this.style
@@ -6562,7 +6562,7 @@ class w2grid extends w2base {
                     if (this.hasFocus) { this.blur() }
                 }, 100) // need this timer to be 100 ms
             })
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('paste', (event: any) => {
                 const cd = (event.clipboardData ? event.clipboardData : null)
@@ -6595,19 +6595,19 @@ class w2grid extends w2base {
                     if (items2send.length === 1 && items2send[0]!.kind != 'file') {
                         items2send = items2send[0]!.data
                     }
-                    // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                    // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     ;(w2ui[this.name] as any).paste(items2send, event)
                     event.preventDefault()
                 }
             })
             .on('keydown', function (event: Event) {
-                // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+                // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 ;(w2ui[obj.name] as any).keydown.call(w2ui[obj.name], event)
             })
         // init mouse events for mouse selection
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edataCol: any // event for column select
         query(this.box).off('mousedown.mouseStart').on('mousedown.mouseStart', mouseStart)
@@ -6746,7 +6746,7 @@ class w2grid extends w2base {
                     //obj.selectNone()
                     let sel: Array<RecId | number | string> = obj.getSelection() as Array<RecId | number | string>
                     if (sel.length > 0 && typeof sel[0] == 'object') {
-                        const cellSel = sel as unknown as W2GridCellSelection[]
+                        const cellSel = sel as unknown as TsGridCellSelection[]
                         obj.select([...new Set(cellSel.map(r => r.recid))])
                         sel = [...new Set(obj.getSelectionCells().map(r => r.recid))]
                     }
@@ -6756,10 +6756,10 @@ class w2grid extends w2base {
                         sel = [obj.last.move.recid]
                     }
                     //select children
-                    // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+                    // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const new_sel: any[] = []
-                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const selectExpandedChildren = (recid: any) => {
                         const rec = obj.get(recid)
@@ -7013,12 +7013,12 @@ class w2grid extends w2base {
                         }
                         // default behavior
                         // multiple rows reordering
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const ind1 = mv.from.map((recid: any) => obj.get(recid, true))
                         let ind2 = obj.get(mv.to, true)
                         if (mv.to == 'bottom') ind2 = obj.records.length // end of list
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const tmp = ind1.map((ind: any) => obj.records[ind])
                         // swap records
@@ -7081,7 +7081,7 @@ class w2grid extends w2base {
     // --- Internal Functions
 
     initColumnOnOff() {
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const items: any[] = [
             { id: 'line-numbers', text: 'Line #', checked: this.show.lineNumbers }
@@ -7093,7 +7093,7 @@ class w2grid extends w2base {
             if (col.hideable === false) continue
             if (!text && col.tooltip) text = col.tooltip
             if (!text) text = '- column '+ (c + 1) +' -'
-            items.push({ id: col.field, text: w2utils.stripTags(text as string), checked: !col.hidden })
+            items.push({ id: col.field, text: TsUtils.stripTags(text as string), checked: !col.hidden })
         }
         const url = this.url?.get ?? this.url
         if ((url && this.show.skipRecords) || this.show.saveRestoreState) {
@@ -7101,32 +7101,32 @@ class w2grid extends w2base {
         }
         // skip records
         if (this.show.skipRecords) {
-            const skip = w2utils.lang('Skip') +
+            const skip = TsUtils.lang('Skip') +
                 `<input id="${this.name}_skip" type="text" class="w2ui-input w2ui-grid-skip" value="${this.offset}">` +
-                w2utils.lang('records')
+                TsUtils.lang('records')
             items.push({ id: 'w2ui-skip', text: skip, group: false, icon: 'w2ui-icon-empty' })
         }
         // save/restore state
         if (this.show.saveRestoreState) {
             items.push(
-                { id: 'w2ui-stateSave', text: w2utils.lang('Save Grid State'), icon: 'w2ui-icon-empty', group: false },
-                { id: 'w2ui-stateReset', text: w2utils.lang('Restore Default State'), icon: 'w2ui-icon-empty', group: false }
+                { id: 'w2ui-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'w2ui-icon-empty', group: false },
+                { id: 'w2ui-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'w2ui-icon-empty', group: false }
             )
         }
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const selected: any[] = []
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items.forEach((item: any) => {
-            item.text = w2utils.lang(item.text) // translate
+            item.text = TsUtils.lang(item.text) // translate
             if (item.checked) selected.push(item.id)
         })
         this.toolbar.set('w2ui-column-on-off', { selected, items })
         return items
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initColumnDrag(_box?: any) {
         // throw error if using column groups
@@ -7136,7 +7136,7 @@ class w2grid extends w2base {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self = this
         let dragData: {
-            // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+            // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             pressed: boolean; targetPos: any; columnHead: any; [key: string]: any
         } = {
@@ -7144,7 +7144,7 @@ class w2grid extends w2base {
             targetPos: null,
             columnHead: null
         }
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const hasInvalidClass = (target: any, lastColumn?: any) => {
             const iClass = ['w2ui-col-number', 'w2ui-col-expand', 'w2ui-col-select']
@@ -7189,7 +7189,7 @@ class w2grid extends w2base {
             query(document).on('mousemove.colDrag', dragColOver)
 
             const col = self.columns[dragData['originalPos']]!
-            const colText = w2utils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
+            const colText = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
             dragData['ghost'] = _queryRaw.html(`<span col="${dragData['originalPos']}">${colText}</span>`)[0]
 
             query(document.body).append(dragData['ghost'])
@@ -7243,7 +7243,7 @@ class w2grid extends w2base {
 
                 // dragData.columns.css({ overflow: '' }).children('div').css({ overflow: '' });
                 query(document).off('.colDrag')
-                // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
+                // any: cast-to-any for return-position narrowing; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 dragData = {} as any
             }
@@ -7263,7 +7263,7 @@ class w2grid extends w2base {
             const columnConfig = self.columns
 
             if (dragData['originalPos'] != dragData.targetPos && dragData.targetPos != null) {
-                columnConfig.splice(dragData.targetPos, 0, w2utils.clone(selected))
+                columnConfig.splice(dragData.targetPos, 0, TsUtils.clone(selected))
                 columnConfig.splice(columnConfig.indexOf(selected), 1)
             }
             finish()
@@ -7295,7 +7295,7 @@ class w2grid extends w2base {
             return
         }
 
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function trackGhost(cursorX: any, cursorY: any){
             query(dragData['ghost'])
@@ -7315,7 +7315,7 @@ class w2grid extends w2base {
         }
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnOnOff(event: MouseEvent | any, field: string) {
         // event before
@@ -7352,12 +7352,12 @@ class w2grid extends w2base {
         }
         let tb_items = this.toolbar.items || []
         this.toolbar.items = []
-        this.toolbar = new w2toolbar(w2utils.extend({}, this.toolbar, { name: this.name +'_toolbar', owner: this }))
+        this.toolbar = new TsToolbar(TsUtils.extend({}, this.toolbar, { name: this.name +'_toolbar', owner: this }))
         if (this.show.toolbarReload) {
-            this.toolbar.items.push(w2utils.extend({}, this.buttons['reload']))
+            this.toolbar.items.push(TsUtils.extend({}, this.buttons['reload']))
         }
         if (this.show.toolbarColumns) {
-            this.toolbar.items.push(w2utils.extend({}, this.buttons['columns']))
+            this.toolbar.items.push(TsUtils.extend({}, this.buttons['columns']))
         }
         if (this.show.toolbarSearch) {
             const html =`
@@ -7370,7 +7370,7 @@ class w2grid extends w2base {
                     </div>
                     <input type="text" id="grid_${this.name}_search_all" class="w2ui-search-all" tabindex="-1"
                         autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
-                        placeholder="${w2utils.lang(this.last.label, true)}" value="${this.last.search}"
+                        placeholder="${TsUtils.lang(this.last.label, true)}" value="${this.last.search}"
                         data-focus="searchSuggest" data-click="stop"
                     >
                     <div class="w2ui-search-drop w2ui-action" data-click="searchOpen"
@@ -7382,16 +7382,16 @@ class w2grid extends w2base {
                 id: 'w2ui-search',
                 type: 'html',
                 html,
-                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 onRefresh: async (event: any) => {
                     await event.complete
                     const input = query(this.box).find(`#grid_${this.name}_search_all`)
-                    w2utils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .w2ui-action`), this)
+                    TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .w2ui-action`), this)
                     // slow down live search calls
-                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const slowSearch = w2utils.debounce((event: any) => {
+                    const slowSearch = TsUtils.debounce((event: any) => {
                         const val = event.target.value
                         if (this.liveSearch && this.last['liveText'] != val) {
                             this.last['liveText'] = val
@@ -7400,7 +7400,7 @@ class w2grid extends w2base {
                     }, 250)
                     input
                         .on('blur', () => { this.last['liveText'] = '' })
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .on('keyup', (event: any) => {
                             switch (event.keyCode) {
@@ -7433,25 +7433,25 @@ class w2grid extends w2base {
         if (Array.isArray(tb_items)) {
             const ids = tb_items.map(item => item.id)
             if (this.show.toolbarAdd && !ids.includes(this.buttons['add'].id)) {
-                this.toolbar.items.push(w2utils.extend({}, this.buttons['add']))
+                this.toolbar.items.push(TsUtils.extend({}, this.buttons['add']))
             }
             if (this.show.toolbarEdit && !ids.includes(this.buttons['edit'].id)) {
-                this.toolbar.items.push(w2utils.extend({}, this.buttons['edit']))
+                this.toolbar.items.push(TsUtils.extend({}, this.buttons['edit']))
             }
             if (this.show.toolbarDelete && !ids.includes(this.buttons['delete'].id)) {
-                this.toolbar.items.push(w2utils.extend({}, this.buttons['delete']))
+                this.toolbar.items.push(TsUtils.extend({}, this.buttons['delete']))
             }
             if (this.show.toolbarSave && !ids.includes(this.buttons['save'].id)) {
                 if (this.show.toolbarAdd || this.show.toolbarDelete || this.show.toolbarEdit) {
                     this.toolbar.items.push({ type: 'break', id: 'w2ui-break2' })
                 }
-                this.toolbar.items.push(w2utils.extend({}, this.buttons['save']))
+                this.toolbar.items.push(TsUtils.extend({}, this.buttons['save']))
             }
             // fill in overwritten items with default buttons
             // ids are w2ui-* but in this.buttons the map is just [add, edit, delete]
             // must specify at least {id, name} in this.toolbar.items if you want to keep order
             tb_items = tb_items.map(item => this.buttons[item.name]
-                                            ? w2utils.extend({}, this.buttons[item.name], item) : item)
+                                            ? TsUtils.extend({}, this.buttons[item.name], item) : item)
         }
         // add original buttons
         this.toolbar.items.push(...tb_items)
@@ -7459,7 +7459,7 @@ class w2grid extends w2base {
         // =============================================
         // ------ Toolbar onClick processing
 
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('click', (event: any) => {
             const edata = this.trigger('toolbar', { target: event.target, originalEvent: event })
@@ -7489,12 +7489,12 @@ class w2grid extends w2base {
                         setTimeout(() => {
                             query(`#w2overlay-${this.name}_toolbar-drop .w2ui-grid-skip`)
                                 .off('.w2ui-grid')
-                                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 .on('click.w2ui-grid', (evt: any) => {
                                     evt.stopPropagation()
                                 })
-                                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                                 .on('keypress', (evt: any) => {
                                     if (evt.keyCode == 13) {
@@ -7531,7 +7531,7 @@ class w2grid extends w2base {
             // no default action
             edata.finish()
         })
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('refresh', (event: any) => {
             if (event.target == 'w2ui-search') {
@@ -7580,7 +7580,7 @@ class w2grid extends w2base {
                     column: obj.last.tmp.col, field: obj.columns[obj.last.tmp.col]!.field
                 })
                 // set move event
-                // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+                // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let timer: any
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7588,7 +7588,7 @@ class w2grid extends w2base {
                     if (obj.last.colResizing != true) return
                     if (!event) event = window.event
                     // event before
-                    const edata2 = obj.trigger('columnResizeMove', w2utils.extend(edata.detail, { resizeBy: (event.screenX - obj.last.tmp.gx), originalEvent: event }))
+                    const edata2 = obj.trigger('columnResizeMove', TsUtils.extend(edata.detail, { resizeBy: (event.screenX - obj.last.tmp.gx), originalEvent: event }))
                     if (edata2.isCancelled === true) { return }
                     // default action
                     obj.last.tmp.x = (event.screenX - obj.last.tmp.x)
@@ -7631,7 +7631,7 @@ class w2grid extends w2base {
                 event.stopPropagation()
                 event.preventDefault()
             })
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 const td = query(el).get(0).parentNode
@@ -7661,17 +7661,17 @@ class w2grid extends w2base {
 
         if (this.show.toolbar) {
             toolbar.css({
-                top:   (0 + (this.show.header ? w2utils.getSize(header, 'height') : 0)) + 'px',
+                top:   (0 + (this.show.header ? TsUtils.getSize(header, 'height') : 0)) + 'px',
                 left:  '0px',
                 right: '0px'
             })
         }
         if (this.summary.length > 0) {
             fsummary.css({
-                bottom: (0 + (this.show.footer ? w2utils.getSize(footer, 'height') : 0)) + 'px'
+                bottom: (0 + (this.show.footer ? TsUtils.getSize(footer, 'height') : 0)) + 'px'
             })
             summary.css({
-                bottom: (0 + (this.show.footer ? w2utils.getSize(footer, 'height') : 0)) + 'px',
+                bottom: (0 + (this.show.footer ? TsUtils.getSize(footer, 'height') : 0)) + 'px',
                 right: '0px'
             })
         }
@@ -7683,8 +7683,8 @@ class w2grid extends w2base {
             })
         }
         body.css({
-            top: (0 + (this.show.header ? w2utils.getSize(header, 'height') : 0) + (this.show.toolbar ? w2utils.getSize(toolbar, 'height') : 0)) + 'px',
-            bottom: (0 + (this.show.footer ? w2utils.getSize(footer, 'height') : 0) + (this.summary.length > 0 ? w2utils.getSize(summary, 'height') : 0)) + 'px',
+            top: (0 + (this.show.header ? TsUtils.getSize(header, 'height') : 0) + (this.show.toolbar ? TsUtils.getSize(toolbar, 'height') : 0)) + 'px',
+            bottom: (0 + (this.show.footer ? TsUtils.getSize(footer, 'height') : 0) + (this.summary.length > 0 ? TsUtils.getSize(summary, 'height') : 0)) + 'px',
             left:   '0px',
             right:  '0px'
         })
@@ -7723,31 +7723,31 @@ class w2grid extends w2base {
         }
         if (records[0]?.clientWidth < sWidth) bodyOverflowX = true
         if (body[0]?.clientHeight - (columns[0]?.clientHeight ?? 0)
-                < (query(records).find(':scope > table')[0]?.clientHeight ?? 0) + (bodyOverflowX ? w2utils.scrollBarSize() : 0)) {
+                < (query(records).find(':scope > table')[0]?.clientHeight ?? 0) + (bodyOverflowX ? TsUtils.scrollBarSize() : 0)) {
             bodyOverflowY = true
         }
 
         // body might be expanded by data
         if (!this.fixedBody) {
             // allow it to render records, then resize
-            const bodyHeight = (w2utils.getSize(columns, 'height') as number)
-                + (w2utils.getSize(query(this.box).find('#grid_'+ this.name +'_records table'), 'height') as number)
-                + (bodyOverflowX ? (w2utils.scrollBarSize() as number) : 0)
+            const bodyHeight = (TsUtils.getSize(columns, 'height') as number)
+                + (TsUtils.getSize(query(this.box).find('#grid_'+ this.name +'_records table'), 'height') as number)
+                + (bodyOverflowX ? (TsUtils.scrollBarSize() as number) : 0)
             const calculatedHeight = bodyHeight
-                + (this.show.header ? w2utils.getSize(header, 'height') : 0)
-                + (this.show.toolbar ? w2utils.getSize(toolbar, 'height') : 0)
-                + (summary.css('display') != 'none' ? w2utils.getSize(summary, 'height') : 0)
-                + (this.show.footer ? w2utils.getSize(footer, 'height') : 0)
+                + (this.show.header ? TsUtils.getSize(header, 'height') : 0)
+                + (this.show.toolbar ? TsUtils.getSize(toolbar, 'height') : 0)
+                + (summary.css('display') != 'none' ? TsUtils.getSize(summary, 'height') : 0)
+                + (this.show.footer ? TsUtils.getSize(footer, 'height') : 0)
             grid.css('height', calculatedHeight + 'px')
             body.css('height', bodyHeight + 'px')
-            box.css('height', w2utils.getSize(grid, 'height') + 'px')
+            box.css('height', TsUtils.getSize(grid, 'height') + 'px')
         } else {
             // fixed body height
             const calculatedHeight = grid[0]?.clientHeight
-                - (this.show.header ? w2utils.getSize(header, 'height') : 0)
-                - (this.show.toolbar ? w2utils.getSize(toolbar, 'height') : 0)
-                - (summary.css('display') != 'none' ? w2utils.getSize(summary, 'height') : 0)
-                - (this.show.footer ? w2utils.getSize(footer, 'height') : 0)
+                - (this.show.header ? TsUtils.getSize(header, 'height') : 0)
+                - (this.show.toolbar ? TsUtils.getSize(toolbar, 'height') : 0)
+                - (summary.css('display') != 'none' ? TsUtils.getSize(summary, 'height') : 0)
+                - (this.show.footer ? TsUtils.getSize(footer, 'height') : 0)
             body.css('height', calculatedHeight + 'px')
         }
 
@@ -7758,10 +7758,10 @@ class w2grid extends w2base {
         if (!this.fixedBody) { bodyOverflowY = false }
         if (bodyOverflowX || bodyOverflowY) {
             columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last')
-                .css('width', w2utils.scrollBarSize() + 'px')
+                .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
             records.css({
-                top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (w2utils.getSize(columns, 'height') as number)) +'px',
+                top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (TsUtils.getSize(columns, 'height') as number)) +'px',
                 '-webkit-overflow-scrolling': 'touch',
                 'overflow-x': (bodyOverflowX ? 'auto' : 'hidden'),
                 'overflow-y': (bodyOverflowY ? 'auto' : 'hidden')
@@ -7769,13 +7769,13 @@ class w2grid extends w2base {
         } else {
             columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last').hide()
             records.css({
-                top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (w2utils.getSize(columns, 'height') as number)) +'px',
+                top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (TsUtils.getSize(columns, 'height') as number)) +'px',
                 overflow: 'hidden'
             })
             if (records.length > 0) { this.last.vscroll.scrollTop = 0; this.last.vscroll.scrollLeft = 0 } // if no scrollbars, always show top
         }
         if (bodyOverflowX) {
-            frecords.css('margin-bottom', w2utils.scrollBarSize() + 'px')
+            frecords.css('margin-bottom', TsUtils.scrollBarSize() + 'px')
             scroll1.show()
         } else {
             frecords.css('margin-bottom', 0)
@@ -7798,7 +7798,7 @@ class w2grid extends w2base {
             }
         }
 
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function addEmptyRow(row: any, height: any, grid: any) {
             let html1 = ''
@@ -7822,12 +7822,12 @@ class w2grid extends w2base {
             query(grid.box).find('#grid_'+ grid.name +'_frecords > table').append(html1)
             query(grid.box).find('#grid_'+ grid.name +'_records > table').append(html2)
         }
-        // any: parameter typed any — runtime dispatch by call site; w2grid record/cell shape is user-defined at runtime
+        // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let width_box: any, percent: any
         if (body.length > 0) {
             let width_max = parseInt(body[0].clientWidth)
-                - (bodyOverflowY ? (w2utils.scrollBarSize() as number) : 0)
+                - (bodyOverflowY ? (TsUtils.scrollBarSize() as number) : 0)
                 - (this.show.lineNumbers ? lineNumberWidth : 0)
                 - (this.reorderRows ? 26 : 0)
                 - (this.show.selectColumn ? 26 : 0)
@@ -7918,7 +7918,7 @@ class w2grid extends w2base {
             }
         } else if (width_diff > 0) {
             columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last')
-                .css('width', w2utils.scrollBarSize() + 'px')
+                .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
         }
 
@@ -7947,7 +7947,7 @@ class w2grid extends w2base {
         // resize columns
         columns.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(fcolumns.find(':scope > table > tbody > tr:nth-child(1) td'))
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -7977,7 +7977,7 @@ class w2grid extends w2base {
                         }
                         query(el).css('width', width + 'px')
                     } else {
-                        query(el).css('width', (w2utils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
+                        query(el).css('width', (TsUtils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
                     }
                 }
             })
@@ -7995,7 +7995,7 @@ class w2grid extends w2base {
         // resize records
         records.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(frecords.find(':scope > table > tbody > tr:nth-child(1) td'))
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -8032,7 +8032,7 @@ class w2grid extends w2base {
         // resize summary
         summary.find(':scope > table > tbody > tr:nth-child(1) td')
             .add(fsummary.find(':scope > table > tbody > tr:nth-child(1) td'))
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
@@ -8054,7 +8054,7 @@ class w2grid extends w2base {
                 }
                 // last column
                 if (query(el).hasClass('w2ui-grid-data-last') && query(el).parents('.w2ui-grid-frecords').length === 0) { // not in frecords
-                    query(el).css('width', (w2utils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
+                    query(el).css('width', (TsUtils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
                 }
             })
         this.initResize()
@@ -8072,20 +8072,20 @@ class w2grid extends w2base {
     getSearchesHTML() {
         let html = `
             <div class="search-title">
-                ${w2utils.lang('Advanced Search')}
+                ${TsUtils.lang('Advanced Search')}
                 ${this.savedSearches?.length > 0
                     ? `<button class="w2ui-btn w2ui-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
                     : ''
                 }
                 <span class="search-logic" style="${this.show.searchLogic ? '' : 'display: none'}">
                     <select id="grid_${this.name}_logic" class="w2ui-input">
-                        <option value="AND" ${this.last.logic == 'AND' ? 'selected' : ''}>${w2utils.lang('All')}</option>
-                        <option value="OR" ${this.last.logic == 'OR' ? 'selected' : ''}>${w2utils.lang('Any')}</option>
+                        <option value="AND" ${this.last.logic == 'AND' ? 'selected' : ''}>${TsUtils.lang('All')}</option>
+                        <option value="OR" ${this.last.logic == 'OR' ? 'selected' : ''}>${TsUtils.lang('Any')}</option>
                     </select>
                 </span>
             </div>
         `
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const columns: any[] = []
         let col_ind = 0
@@ -8115,7 +8115,7 @@ class w2grid extends w2base {
                 </select>
             `
             columns[col_ind] += `<tr>
-                        <td class="caption">${(w2utils.lang(s.label ?? s.field) || '')}</td>
+                        <td class="caption">${(TsUtils.lang(s.label ?? s.field) || '')}</td>
                         <td class="operator">${operator}</td>
                         <td class="value">`
 
@@ -8168,17 +8168,17 @@ class w2grid extends w2base {
                 ${columns.join('')}
             </div>
             <div class="search-bottom actions">
-                <button type="button" class="w2ui-btn close-btn" data-click="searchClose">${w2utils.lang('Close')}</button>
+                <button type="button" class="w2ui-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
                 <div style="float: right; display: inline">
-                    <button type="button" class="w2ui-btn" data-click="searchReset">${w2utils.lang('Reset')}</button>
-                    <button type="button" class="w2ui-btn w2ui-btn-blue" data-click="search">${w2utils.lang('Search')}</button>
+                    <button type="button" class="w2ui-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
+                    <button type="button" class="w2ui-btn w2ui-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
                 </div>
             </div>
         `
         return html
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getOperators(type: any, opers: any) {
         let operators = this.operators[this.operatorsMap[type] ?? ''] || []
@@ -8186,7 +8186,7 @@ class w2grid extends w2base {
             operators = opers
         }
         let html = ''
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         operators.forEach((oper: any) => {
             let displayText = oper
@@ -8194,17 +8194,17 @@ class w2grid extends w2base {
             if (Array.isArray(oper)) {
                 displayText = oper[1]
                 operValue = oper[0]
-            } else if (w2utils.isPlainObject(oper)) {
+            } else if (TsUtils.isPlainObject(oper)) {
                 displayText = oper.text
                 operValue = oper.oper
             }
             if (displayText == null) displayText = oper
-            html += `<option  value="${operValue}">${w2utils.lang(displayText)}</option>\n`
+            html += `<option  value="${operValue}">${TsUtils.lang(displayText)}</option>\n`
         })
         return html
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initOperator(ind: any) {
         let options
@@ -8251,8 +8251,8 @@ class w2grid extends w2base {
             case 'datetime':
                 if (!$fld1[0]._w2field) {
                     // init fields
-                    new w2field(search.type, { el: $fld1[0], ...search.options })
-                    new w2field(search.type, { el: $fld2[0], ...search.options })
+                    new TsField(search.type, { el: $fld1[0], ...search.options })
+                    new TsField(search.type, { el: $fld2[0], ...search.options })
                     setTimeout(() => { // convert to date if it is number
                         $fld1.trigger('keydown')
                         $fld2.trigger('keydown')
@@ -8268,16 +8268,16 @@ class w2grid extends w2base {
                 if (search.type == 'enum') options['selected'] = []
                 if (sdata) options['selected'] = sdata['value']
                 if (!$fld1[0]._w2field) {
-                    const fld = new w2field(search.type, {
+                    const fld = new TsField(search.type, {
                         el: $fld1[0],
                         ...options,
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onSelect: async (event: any) => {
                             await event.complete
                             this.initSearchLists(search.field)
                         },
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         onRemove: async (event: any) => {
                             await event.complete
@@ -8297,7 +8297,7 @@ class w2grid extends w2base {
                 const searchOpts = search.options ?? {}
                 for (let i = 0; i < searchOpts['items'].length; i++) {
                     const si = searchOpts['items'][i]
-                    if (w2utils.isPlainObject(searchOpts['items'][i])) {
+                    if (TsUtils.isPlainObject(searchOpts['items'][i])) {
                         let val = si.id
                         let txt = si.text
                         if (val == null && si.value != null) val = si.value
@@ -8314,11 +8314,11 @@ class w2grid extends w2base {
         this.initSearchLists()
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     initSearchLists(changedField?: any) {
         const fields = this.getSearch()
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         fields.forEach((field: any) => {
             const search = this.getSearch(field)
@@ -8331,16 +8331,16 @@ class w2grid extends w2base {
                 } else {
                     values = values?.id != null ? [values.id] : []
                 }
-                // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 search['_w2field']?.options?.items?.forEach?.((item: any) => {
-                    const parent = w2utils.getNested(item, search?.options?.['parentField'] ?? 'parentId')
+                    const parent = TsUtils.getNested(item, search?.options?.['parentField'] ?? 'parentId')
                     if (parent == null) {
                         return
                     }
-                    const possible = w2utils.clone(Array.isArray(parent) ? parent : [parent])
+                    const possible = TsUtils.clone(Array.isArray(parent) ? parent : [parent])
                     possible.unshift('')
-                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const includes = values.some((item: any) => possible.includes(item))
                     if (includes && item.hidden === true) {
@@ -8353,20 +8353,20 @@ class w2grid extends w2base {
         })
         // set all fields that refer to changed one to blank
         if (changedField != null) {
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fields.forEach((field: any) => {
                 const search = this.getSearch(field)
                 if (search != null && search.options?.['parentList'] == changedField) {
                     const fld = search['_w2field']
-                    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const items = fld.options.items.filter((it: any) => !it.hidden).map((it: any) => it.id)
                     if (fld.type == 'list' && !items.includes(fld.get()?.id)) {
                         fld.set(null)
                     }
                     if (fld.type == 'enum') {
-                        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const new_sel = fld.get()?.filter((it: any) => items.includes(it.id))
                         fld.set(new_sel || [])
@@ -8392,11 +8392,11 @@ class w2grid extends w2base {
             let operators = [...(this.operators[this.operatorsMap[search.type] ?? ''] ?? [])] // need a copy
             if (search.operators) operators = [...search.operators] // need a copy as this variable will be changed
             // normalize
-            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (w2utils.isPlainObject(operator)) operator = (operator as any).oper
+            if (TsUtils.isPlainObject(operator)) operator = (operator as any).oper
             operators.forEach((oper, ind) => {
-                if (w2utils.isPlainObject(oper)) operators[ind] = oper.oper
+                if (TsUtils.isPlainObject(oper)) operators[ind] = oper.oper
             })
             if (sdata && sdata['operator']) {
                 operator = sdata['operator']
@@ -8426,12 +8426,12 @@ class w2grid extends w2base {
         }
         // add on change event
         overlay.find('.w2ui-grid-search-advanced *[rel=search]')
-            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('keypress', (evnt: any) => {
                 if (evnt.keyCode == 13) {
                     this.search()
-                    w2tooltip.hide(this.name + '-search-overlay')
+                    TsTooltip.hide(this.name + '-search-overlay')
                 }
             })
     }
@@ -8492,7 +8492,7 @@ class w2grid extends w2base {
             }
             for (let i = 0; i < self.columnGroups.length; i++) {
                 const colg = self.columnGroups[i]
-                const col: W2GridColumn = self.columns[ii] ?? {} as W2GridColumn
+                const col: TsGridColumn = self.columns[ii] ?? {} as TsGridColumn
                 if (colg.colspan != null) colg.span = colg.colspan
                 if (colg.span == null || colg.span != parseInt(colg.span)) colg.span = 1
                 if (col.text == null && col['caption'] != null) {
@@ -8522,7 +8522,7 @@ class w2grid extends w2base {
                     if (col.resizable !== false) {
                         resizer = `<div class="w2ui-resizer" name="${ii}"></div>`
                     }
-                    const text = w2utils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
+                    const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
                     tmpf = `<td id="grid_${self.name}_column_${ii}" class="w2ui-head ${sortStyle}" col="${ii}" `+
                            `    rowspan="2" colspan="${colspan}">`+ resizer +
                            `    <div class="w2ui-col-group w2ui-col-header ${sortStyle ? 'w2ui-col-sorted' : ''}">` +
@@ -8531,7 +8531,7 @@ class w2grid extends w2base {
                            '</td>'
                     if (col && col.frozen) html1 += tmpf; else html2 += tmpf
                 } else {
-                    const gText = w2utils.lang(typeof colg.text == 'function' ? colg.text(colg) : colg.text)
+                    const gText = TsUtils.lang(typeof colg.text == 'function' ? colg.text(colg) : colg.text)
                     tmpf = `<td id="grid_${self.name}_column_${ii}" class="w2ui-head" col="${ii}" colspan="${colspan}">` +
                            `    <div class="w2ui-col-group" style="${colg.style ?? ''}">${!gText ? '&#160;' : gText}</div>` +
                            '</td>'
@@ -8544,7 +8544,7 @@ class w2grid extends w2base {
             return [html1, html2]
         }
 
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function getColumns(main: any) {
             let html1 = '<tr>'
@@ -8605,7 +8605,7 @@ class w2grid extends w2base {
         }
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getColumnCellHTML(i: any) {
         const col = this.columns[i]!
@@ -8628,7 +8628,7 @@ class w2grid extends w2base {
                 if (tmp[t]![si] == i) selected = true
             }
         }
-        const text = w2utils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
+        const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
         const html = '<td id="grid_'+ this.name + '_column_' + i +'" col="'+ i +'" class="w2ui-head '+ sortStyle + reorderCols + '">' +
                          (col.resizable !== false ? '<div class="w2ui-resizer" name="'+ i +'"></div>' : '') +
                     '    <div class="w2ui-col-header '+ (sortStyle ? 'w2ui-col-sorted' : '') +' '+ (selected ? 'w2ui-col-selected' : '') +'">'+
@@ -8640,13 +8640,13 @@ class w2grid extends w2base {
         return html
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnTooltipShow(ind: any, _event: any) {
         const $el  = query(this.box).find('#grid_'+ this.name + '_column_'+ ind)
         const item = this.columns[ind]
         const pos  = this.columnTooltip
-        w2tooltip.show({
+        TsTooltip.show({
             name: this.name + '-column-tooltip',
             anchor: $el.get(0),
             html: item?.tooltip,
@@ -8654,10 +8654,10 @@ class w2grid extends w2base {
         })
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     columnTooltipHide(_ind: any, _event: any) {
-        w2tooltip.hide(this.name + '-column-tooltip')
+        TsTooltip.hide(this.name + '-column-tooltip')
     }
 
     getRecordsHTML() {
@@ -8723,7 +8723,7 @@ class w2grid extends w2base {
         return [html1, html2]
     }
 
-    // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(event?: Event | any) {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -8746,7 +8746,7 @@ class w2grid extends w2base {
         }
         // hide bubble
         if (this.last.bubbleEl) {
-            w2tooltip.hide(this.name + '-bubble')
+            TsTooltip.hide(this.name + '-bubble')
             this.last.bubbleEl = null
         }
         // column virtual scroll
@@ -8809,7 +8809,7 @@ class w2grid extends w2base {
                             if (this.columns[i] && (this.columns[i]!.frozen || this.columns[i]!.hidden)) continue
                             $cfirst.after(this.getColumnCellHTML(i)) // column
                             // record
-                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8818,7 +8818,7 @@ class w2grid extends w2base {
                                 query(el).after(td)
                             })
                             // summary
-                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $sfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8834,7 +8834,7 @@ class w2grid extends w2base {
                             if (this.columns[i] && (this.columns[i]!.frozen || this.columns[i]!.hidden)) continue
                             $clast.before(this.getColumnCellHTML(i)) // column
                             // record
-                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rlast.each((el: any) => {
                                 const index = query(el).parent().attr('index')
@@ -8843,7 +8843,7 @@ class w2grid extends w2base {
                                 query(el).before(td)
                             })
                             // summary
-                            // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+                            // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $slast.each((el: any) => {
                                 const index = query(el).parent().attr('index') || -1
@@ -8892,11 +8892,11 @@ class w2grid extends w2base {
         if (t2 >= buffered - 1) t2 = buffered
         query(this.box).find('#grid_'+ this.name + '_footer .w2ui-footer-right').html(
             (this.show.statusRange
-                ? w2utils.formatNumber(this.offset + t1) + '-' + w2utils.formatNumber(this.offset + t2) +
-                    (this.total != -1 ? ' ' + w2utils.lang('of') + ' <span class="w2ui-total">' + w2utils.formatNumber(this.total) + '</span>' : '')
+                ? TsUtils.formatNumber(this.offset + t1) + '-' + TsUtils.formatNumber(this.offset + t2) +
+                    (this.total != -1 ? ' ' + TsUtils.lang('of') + ' <span class="w2ui-total">' + TsUtils.formatNumber(this.total) + '</span>' : '')
                     : '') +
-            (url && this.show.statusBuffered ? ' ('+ w2utils.lang('buffered') + ' <span class="w2ui-buffered">'+ w2utils.formatNumber(buffered) + '</span>' +
-                    (this.offset > 0 ? ', skip <span class="w2ui-skip">' + w2utils.formatNumber(this.offset) : '') + '</span>)' : '')
+            (url && this.show.statusBuffered ? ' ('+ TsUtils.lang('buffered') + ' <span class="w2ui-buffered">'+ TsUtils.formatNumber(buffered) + '</span>' +
+                    (this.offset > 0 ? ', skip <span class="w2ui-skip">' + TsUtils.formatNumber(this.offset) : '') + '</span>)' : '')
         )
         // only for local data source, else no extra records loaded
         if (!url && (!this.fixedBody || (this.total != -1 && this.total <= this.vs_start))) return
@@ -9019,7 +9019,7 @@ class w2grid extends w2base {
                 .find('td')
                 .html(obj.autoLoad
                     ? '<div><div style="width: 20px; height: 20px;" class="w2ui-spinner"></div></div>'
-                    : '<div style="padding-top: 15px">'+ w2utils.lang('Load ${count} more...', { count: obj.limit }) + '</div>'
+                    : '<div style="padding-top: 15px">'+ TsUtils.lang('Load ${count} more...', { count: obj.limit }) + '</div>'
                 )
         }
 
@@ -9040,7 +9040,7 @@ class w2grid extends w2base {
                 if (search.length > 0) {
                     search.forEach((item) => {
                         const el = query(obj.box).find('td[col="'+ item.col +'"]:not(.w2ui-head)')
-                        w2utils.marker(el, item.search)
+                        TsUtils.marker(el, item.search)
                     })
                 }
             }, 50)
@@ -9338,7 +9338,7 @@ class w2grid extends w2base {
                 '   style="'+ style + (col.style != null ? col.style : '') +'" '+
                     (col.attr != null ? col.attr : '') + attr +
                     ((col_span ?? 0) > 1 ? 'colspan="'+ col_span + '"' : '') +
-                '>' + data + (clipboardIcon && w2utils.stripTags(data) ? clipboardIcon : '') +'</td>'
+                '>' + data + (clipboardIcon && TsUtils.stripTags(data) ? clipboardIcon : '') +'</td>'
         // summary top row
         if (ind === -1 && summary === true) {
             data = '<td class="w2ui-grid-data" col="'+ col_ind +'" style="height: 0px; '+ style + '" '+
@@ -9347,7 +9347,7 @@ class w2grid extends w2base {
         }
         return data
 
-        // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+        // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function getTitle(cellData: any, title: any){
             if (title === undefined && obj.show.recordTitles) {
@@ -9357,14 +9357,14 @@ class w2grid extends w2base {
                     }
                     if (typeof col['title'] == 'string') title = col['title']
                 } else {
-                    title = w2utils.stripTags(String(cellData).replace(/"/g, '\'\''))
+                    title = TsUtils.stripTags(String(cellData).replace(/"/g, '\'\''))
                 }
             }
             return (title != null) ? 'title="' + String(title) + '"' : ''
         }
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     clipboardCopy(ind: any, col_ind: any, summary: any) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -9378,7 +9378,7 @@ class w2grid extends w2base {
         document.execCommand('copy')
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     showBubble(ind: any, col_ind: any, summary: any) {
         const info = this.columns[col_ind]?.['info']
@@ -9387,7 +9387,7 @@ class w2grid extends w2base {
         const rec  = this.records[ind]
         const el   = query(this.box).find(`${summary ? '.w2ui-grid-summary' : ''} #grid_${this.name}_data_${ind}_${col_ind} .w2ui-info`)
         if (this.last.bubbleEl) {
-            w2tooltip.hide(this.name + '-bubble')
+            TsTooltip.hide(this.name + '-bubble')
         }
         this.last.bubbleEl = el
         // if no fields defined - show all
@@ -9416,14 +9416,14 @@ class w2grid extends w2base {
                     continue
                 }
                 let col = this.getColumn(tmp[0] ?? '')
-                if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as W2GridColumn // if not found in columns
+                if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as TsGridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
                 if (rec?.w2ui?.['changes']?.[col.field] != null) {
                     val = rec.w2ui['changes'][col.field]
                 }
                 if (tmp.length > 1) {
-                    if (w2utils.formatters[tmp[1] ?? '']) {
+                    if (TsUtils.formatters[tmp[1] ?? '']) {
                         const extra = {
                             self: this,
                             value: val,
@@ -9433,9 +9433,9 @@ class w2grid extends w2base {
                             colIndex: col_ind,
                         }
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        val = (w2utils.formatters[tmp[1]!] as any).call(this, rec, extra) // any: formatter this-binding mismatch
+                        val = (TsUtils.formatters[tmp[1]!] as any).call(this, rec, extra) // any: formatter this-binding mismatch
                     } else {
-                        console.log('ERROR: w2utils.formatters["'+ tmp[1] + '"] does not exists.')
+                        console.log('ERROR: TsUtils.formatters["'+ tmp[1] + '"] does not exists.')
                     }
                 }
                 if (typeof val == 'object' && val.text != null) val = val.text
@@ -9444,7 +9444,7 @@ class w2grid extends w2base {
                 html += '<tr><td>' + col.text + '</td><td>' + ((val === 0 ? '0' : val) || '') + '</td></tr>'
             }
             html += '</table>'
-        } else if (w2utils.isPlainObject(fields)) {
+        } else if (TsUtils.isPlainObject(fields)) {
             // display some fields
             html = '<table cellpadding="0" cellspacing="0">'
             for (const caption in fields) {
@@ -9455,14 +9455,14 @@ class w2grid extends w2base {
                 }
                 const tmp = String(fld).split(':')
                 let col = this.getColumn(tmp[0] ?? '')
-                if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as W2GridColumn // if not found in columns
+                if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as TsGridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
                 if (rec?.w2ui?.['changes']?.[col.field] != null) {
                     val = rec.w2ui['changes'][col.field]
                 }
                 if (tmp.length > 1) {
-                    if (w2utils.formatters[tmp[1] ?? '']) {
+                    if (TsUtils.formatters[tmp[1] ?? '']) {
                         const extra = {
                             self: this,
                             value: val,
@@ -9472,9 +9472,9 @@ class w2grid extends w2base {
                             colIndex: col_ind,
                         }
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        val = (w2utils.formatters[tmp[1]!] as any).call(this, rec, extra) // any: formatter this-binding mismatch
+                        val = (TsUtils.formatters[tmp[1]!] as any).call(this, rec, extra) // any: formatter this-binding mismatch
                     } else {
-                        console.log('ERROR: w2utils.formatters["'+ tmp[1] + '"] does not exists.')
+                        console.log('ERROR: TsUtils.formatters["'+ tmp[1] + '"] does not exists.')
                     }
                 }
                 if (typeof fld == 'function') {
@@ -9487,7 +9487,7 @@ class w2grid extends w2base {
             }
             html += '</table>'
         }
-        return w2tooltip.show(w2utils.extend({
+        return TsTooltip.show(TsUtils.extend({
             name: this.name + '-bubble',
             html,
             anchor: el.get(0),
@@ -9502,7 +9502,7 @@ class w2grid extends w2base {
     }
 
     // return null or the editable object if the given cell is editable
-    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
+    // any: return type any — caller narrows by code path; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCellEditable(ind: number, col_ind: number): any {
         const col = this.columns[col_ind]
@@ -9521,7 +9521,7 @@ class w2grid extends w2base {
         return edit
     }
 
-    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
+    // any: return type any — caller narrows by code path; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getCellValue(ind: number, col_ind: number, summary?: boolean, extra?: boolean): any {
         const col = this.columns[col_ind]!
@@ -9541,18 +9541,18 @@ class w2grid extends w2base {
             if (typeof render == 'string') {
                 const tmp = render.toLowerCase().replace('|', ':').split(':')
                 // formatters
-                let func = w2utils.formatters[tmp[0] ?? '']
+                let func = TsUtils.formatters[tmp[0] ?? '']
                 if (col['options'] && col['options'].autoFormat === false) {
                     func = undefined
                 }
-                // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
+                // any: cast-to-any for return-position narrowing; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 render = func as any
                 params = tmp[1]
             }
             if (typeof render == 'function' && record != null) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                let html: any // any: render can be W2Formatter or column render, shapes differ
+                let html: any // any: render can be TsFormatter or column render, shapes differ
                 try {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     html = (render as any).call(this, record, { // any: unified call for both formatter and column render
@@ -9589,7 +9589,7 @@ class w2grid extends w2base {
             }
             // if it is an object
             if (typeof render == 'object') {
-                // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+                // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const tmp = (render as any)[value]
                 if (tmp != null && tmp !== '') {
@@ -9618,14 +9618,14 @@ class w2grid extends w2base {
             const sel     = this.getSelection()
             if (sel.length > 0) {
                 if (this.show.statusSelection && sel.length > 1) {
-                    msgLeft = String(sel.length).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + w2utils.settings.groupSymbol) + ' ' + w2utils.lang('selected')
+                    msgLeft = String(sel.length).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + TsUtils.settings.groupSymbol) + ' ' + TsUtils.lang('selected')
                 }
                 if (this.show.statusRecordID && sel.length == 1) {
                     // any: status bar widens recid display to include column for cell mode; mode is detected by typeof
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let tmp: any = sel[0]
-                    if (typeof tmp == 'object') tmp = tmp.recid + ', '+ w2utils.lang('Column') +': '+ tmp.column
-                    msgLeft = w2utils.lang('Record ID') + ': '+ tmp + ' '
+                    if (typeof tmp == 'object') tmp = tmp.recid + ', '+ TsUtils.lang('Column') +': '+ tmp.column
+                    msgLeft = TsUtils.lang('Record ID') + ': '+ tmp + ' '
                 }
             }
             query(this.box).find('#grid_'+ this.name +'_footer .w2ui-footer-left').html(msgLeft)
@@ -9634,13 +9634,13 @@ class w2grid extends w2base {
 
     lock(msg?: string, showSpinner?: boolean) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const args: any[] = [this.box, msg, showSpinner] // any: w2utils.lock accepts mixed args
+        const args: any[] = [this.box, msg, showSpinner] // any: TsUtils.lock accepts mixed args
         setTimeout(() => {
             // hide empty msg if any
             query(this.box).find('#grid_'+ this.name +'_empty_msg').remove()
-            // any: cast-to-any for dynamic dispatch; w2grid record/cell shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(w2utils.lock as any)(...args)
+            ;(TsUtils.lock as any)(...args)
         }, 10)
     }
 
@@ -9648,17 +9648,17 @@ class w2grid extends w2base {
         setTimeout(() => {
             // do not unlock if there is a message
             if (query(this.box).find('.w2ui-message').hasClass('w2ui-closing')) return
-            w2utils.unlock(this.box, speed)
+            TsUtils.unlock(this.box, speed)
         }, 25) // needed timer so if server fast, it will not flash
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateSave(returnOnly: any) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const state: { columns: Record<string, any>[]; show: any; last: any; sortData: any[]; searchData: any[] } = { // any: state blob is serialized JSON
             columns: [],
-            show: w2utils.clone(this.show),
+            show: TsUtils.clone(this.show),
             last: {
                 search: this.last.search,
                 multi : this.last.multi,
@@ -9671,29 +9671,29 @@ class w2grid extends w2base {
             sortData  : [],
             searchData: []
         }
-        // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
+        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let prop_val: any
         for (let i = 0; i < this.columns.length; i++) {
             const col          = this.columns[i]
-            // any: Record<string, any> — dynamic property bag; w2grid record/cell shape is user-defined at runtime
+            // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const col_save_obj: Record<string, any> = {}
             // iterate properties to save
             Object.keys(this.stateColProps).forEach((prop, _idx) => {
-                // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+                // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 if ((this.stateColProps as any)[prop]){
                     // check if the property is defined on the column
-                    // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+                    // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     if ((col as any)[prop] !== undefined){
-                        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+                        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         prop_val = (col as any)[prop]
                     } else {
                         // use fallback or null
-                        // any: cast-then-index for dynamic property access; w2grid record/cell shape is user-defined at runtime
+                        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         prop_val = (this.colTemplate as any)[prop] || null
                     }
@@ -9702,8 +9702,8 @@ class w2grid extends w2base {
             })
             state.columns.push(col_save_obj)
         }
-        for (let i = 0; i < this.sortData.length; i++) state.sortData.push(w2utils.clone(this.sortData[i]))
-        for (let i = 0; i < this.searchData.length; i++) state.searchData.push(w2utils.clone(this.searchData[i]))
+        for (let i = 0; i < this.sortData.length; i++) state.sortData.push(TsUtils.clone(this.sortData[i]))
+        for (let i = 0; i < this.searchData.length; i++) state.searchData.push(TsUtils.clone(this.searchData[i]))
         // event before
         const edata = this.trigger('stateSave', { target: this.name, state: state })
         if (edata.isCancelled === true) {
@@ -9730,16 +9730,16 @@ class w2grid extends w2base {
             return
         }
         // default behavior
-        if (w2utils.isPlainObject(newState)) {
-            w2utils.extend(this.show, newState.show ?? {})
-            w2utils.extend(this.last, newState.last ?? {})
+        if (TsUtils.isPlainObject(newState)) {
+            TsUtils.extend(this.show, newState.show ?? {})
+            TsUtils.extend(this.last, newState.last ?? {})
             const sTop  = this.last.vscroll.scrollTop
             const sLeft = this.last.vscroll.scrollLeft
             for (let c = 0; c < newState.columns?.length; c++) {
                 const tmp       = newState.columns[c]
                 const col_index = this.getColumn(tmp.field, true)
                 if (col_index !== null) {
-                    w2utils.extend(this.columns[col_index]!, tmp)
+                    TsUtils.extend(this.columns[col_index]!, tmp)
                     // restore column order from saved state
                     if (c !== col_index) this.columns.splice(c, 0, this.columns.splice(col_index, 1)[0]!)
                 }
@@ -9776,12 +9776,12 @@ class w2grid extends w2base {
         this.cacheSave('state', null)
     }
 
-    // any: return type any — caller narrows by code path; w2grid record/cell shape is user-defined at runtime
+    // any: return type any — caller narrows by code path; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    parseField(obj: W2GridRecord | null | undefined, field: string): any {
+    parseField(obj: TsGridRecord | null | undefined, field: string): any {
         let val
         if (this.nestedFields) {
-            val = w2utils.getNested(obj, field)
+            val = TsUtils.getNested(obj, field)
         } else {
             val = obj?.[field]
         }
@@ -9799,7 +9799,7 @@ class w2grid extends w2base {
         }
 
         // prepare date and time objects for the 'rec' record and its closed children
-        function prepareRecord(rec: W2GridRecord): void {
+        function prepareRecord(rec: TsGridRecord): void {
             for (let c = 0; c < obj.columns.length; c++) {
                 const column = obj.columns[c]!
                 if (rec[column.field] == null || typeof column.render != 'string') continue
@@ -9811,22 +9811,22 @@ class w2grid extends w2base {
                 if (['date', 'age'].indexOf(column.render.split(':')[0] ?? '') != -1) {
                     if (!rec[column.field + '_']) {
                         let dt = rec[column.field]
-                        if (w2utils.isInt(dt)) dt = parseInt(dt)
+                        if (TsUtils.isInt(dt)) dt = parseInt(dt)
                         rec[column.field + '_'] = new Date(dt)
                     }
                 }
                 // time
                 if (['time'].indexOf(column.render) != -1) {
-                    if (w2utils.isTime(rec[column.field])) { // if string
-                        // any: cast-to-any for return-position narrowing; w2grid record/cell shape is user-defined at runtime
+                    if (TsUtils.isTime(rec[column.field])) { // if string
+                        // any: cast-to-any for return-position narrowing; TsGrid record/cell shape is user-defined at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const tmp = w2utils.isTime(rec[column.field], true) as any
+                        const tmp = TsUtils.isTime(rec[column.field], true) as any
                         const dt  = new Date()
                         dt.setHours(tmp.hours, tmp.minutes, (tmp.seconds ? tmp.seconds : 0), 0) // sets hours, min, sec, mills
                         if (!rec[column.field + '_']) rec[column.field + '_'] = dt
                     } else { // if date object
                         let tmp = rec[column.field]
-                        if (w2utils.isInt(tmp)) tmp = parseInt(tmp)
+                        if (TsUtils.isInt(tmp)) tmp = parseInt(tmp)
                         tmp    = (tmp != null ? new Date(tmp) : new Date())
                         const dt = new Date()
                         dt.setHours(tmp.getHours(), tmp.getMinutes(), tmp.getSeconds(), 0) // sets hours, min, sec, mills
@@ -9952,7 +9952,7 @@ class w2grid extends w2base {
         const sel = this.last.selection
         const lst = this.last.saved_sel
         if (lst) for (let i = 0; i < lst.length; i++) {
-            if (w2utils.isPlainObject(lst[i])) {
+            if (TsUtils.isPlainObject(lst[i])) {
                 // selectType: cell
                 const tmp = this.get(lst[i].recid, true)
                 if (tmp != null) {
@@ -9973,24 +9973,24 @@ class w2grid extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options?: any) { // any: message options vary by type (string, object)
-        return w2utils.message({
+        return TsUtils.message({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            owner: this as any, // any: w2grid.lock signature differs from owner.lock type
+            owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
             after: '.w2ui-grid-header'
         }, options)
     }
 
-    // any: callback parameter — caller signature varies; w2grid record/cell shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
-        return w2utils.confirm({
+        return TsUtils.confirm({
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            owner: this as any, // any: w2grid.lock signature differs from owner.lock type
+            owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
             after: '.w2ui-grid-header'
         }, options)
     }
 }
 
-export { w2grid }
+export { TsGrid }

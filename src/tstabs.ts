@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tooltip
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip
  *
  * == 2.0 changes
  *  - CSP - fixed inline events
@@ -14,17 +14,17 @@
  *  - onMouseEnter, onMouseLeave, onMouseDown, onMouseUp
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tooltip } from './tstooltip.js'
+import { TsTooltip } from './tstooltip.js'
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
-class w2tabs extends w2base {
+class TsTabs extends TsBase {
     declare box: HTMLElement | null
     declare name: string
-    // any: targeted-any per typing_policy; w2tabs tab item shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     active: any
     reorder: boolean
@@ -38,7 +38,7 @@ class w2tabs extends w2base {
     right: string
     style: string
     tab_template: Record<string, unknown>
-    // any: targeted-any per typing_policy; w2tabs tab item shape is user-defined at runtime
+    // any: targeted-any per typing_policy; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -111,7 +111,7 @@ class w2tabs extends w2base {
                 console.log(`ERROR: The parameter "id" is required but not supplied. (obj: ${this.name})`)
                 return
             }
-            if (!w2utils.checkUniqueId(tab.id, this.tabs, 'tabs', this.name)) return
+            if (!TsUtils.checkUniqueId(tab.id, this.tabs, 'tabs', this.name)) return
             // add tab
             const it = Object.assign({}, this.tab_template, tab)
             if (id == null) {
@@ -127,7 +127,7 @@ class w2tabs extends w2base {
         return Promise.all(proms)
     }
 
-    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...ids: any[]) {
         let effected = 0
@@ -138,7 +138,7 @@ class w2tabs extends w2base {
             // remove from array
             this.tabs.splice(this.get(tab.id, true), 1)
             // remove from screen
-            query(this.box).find(`#tabs_${this.name}_tab_${w2utils.escapeId(tab.id)}`).remove()
+            query(this.box).find(`#tabs_${this.name}_tab_${TsUtils.escapeId(tab.id)}`).remove()
         })
         this.resize()
         return effected
@@ -156,12 +156,12 @@ class w2tabs extends w2base {
     set(id: any, tab: any): boolean { // any: tab partial update object
         const index = this.get(id, true)
         if (index == null) return false
-        w2utils.extend(this.tabs[index], tab)
+        TsUtils.extend(this.tabs[index], tab)
         this.refresh(id)
         return true
     }
 
-    // any: parameter typed any — runtime dispatch by call site; w2tabs tab item shape is user-defined at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean): any {
         if (arguments.length === 0) {
@@ -182,10 +182,10 @@ class w2tabs extends w2base {
         return null
     }
 
-    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...ids: any[]) {
-        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -198,10 +198,10 @@ class w2tabs extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...ids: any[]) {
-        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -214,10 +214,10 @@ class w2tabs extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...ids: any[]) {
-        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -230,10 +230,10 @@ class w2tabs extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+    // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...ids: any[]) {
-        // any: array of heterogeneous runtime values; w2tabs tab item shape is user-defined at runtime
+        // any: array of heterogeneous runtime values; TsTabs tab item shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         ids.forEach(it => {
@@ -254,9 +254,9 @@ class w2tabs extends w2base {
         const tab  = this.tabs[info.index]
         const next = _find(info.index, 1)
         const prev = _find(info.index, -1)
-        const $el  = query(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(tab.id))
+        const $el  = query(this.box).find('#tabs_'+ this.name + '_tab_'+ TsUtils.escapeId(tab.id))
         if (info.divX > 0 && next) {
-            const $nextEl = query(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(next.id))
+            const $nextEl = query(this.box).find('#tabs_'+ this.name + '_tab_'+ TsUtils.escapeId(next.id))
             let width1  = ($el.get(0) as HTMLElement).clientWidth
             let width2  = ($nextEl.get(0) as HTMLElement).clientWidth
             if (width1 < width2) {
@@ -281,7 +281,7 @@ class w2tabs extends w2base {
             }
         }
         if (info.divX < 0 && prev) {
-            const $prevEl = query(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(prev.id))
+            const $prevEl = query(this.box).find('#tabs_'+ this.name + '_tab_'+ TsUtils.escapeId(prev.id))
             let width1  = ($el.get(0) as HTMLElement).clientWidth
             let width2  = ($prevEl.get(0) as HTMLElement).clientWidth
             if (width1 < width2) {
@@ -340,14 +340,14 @@ class w2tabs extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tooltipShow(id: any): void { // any: tab id can be string or number
         const tab = this.get(id)
-        const el = query(this.box).find('#tabs_'+ this.name + '_tab_'+ w2utils.escapeId(id)).get(0) as HTMLElement
+        const el = query(this.box).find('#tabs_'+ this.name + '_tab_'+ TsUtils.escapeId(id)).get(0) as HTMLElement
         if (this.tooltip == null || tab?.disabled || this.last.reordering) {
             return
         }
         const pos = this.tooltip
         let txt = tab?.tooltip
         if (typeof txt == 'function') txt = txt.call(this, tab)
-        w2tooltip.show({
+        TsTooltip.show({
             anchor: el,
             name: this.name + '_tooltip',
             html: txt,
@@ -358,7 +358,7 @@ class w2tabs extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tooltipHide(_id: any): void { // any: id used for routing only, not checked here
         if (this.tooltip == null) return
-        w2tooltip.hide(this.name + '_tooltip')
+        TsTooltip.hide(this.name + '_tooltip')
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -400,11 +400,11 @@ class w2tabs extends w2base {
                 data-mousedown="mouseAction|Down|${tab.id}|event"
                 data-mouseup="mouseAction|Up|${tab.id}|event"
                 data-click="click|${tab.id}|event">
-                    ${icon + w2utils.lang(text) + closable}
+                    ${icon + TsUtils.lang(text) + closable}
             </div>`
     }
 
-    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
@@ -423,7 +423,7 @@ class w2tabs extends w2base {
             }
         } else {
             // create or refresh only one item
-            const selector = '#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id)
+            const selector = '#tabs_'+ this.name +'_tab_'+ TsUtils.escapeId(id)
             const $tab = query(this.box).find(selector)
             const tabHTML = this.getTabHTML(id)
             if ($tab.length === 0) {
@@ -433,7 +433,7 @@ class w2tabs extends w2base {
                     if (tabHTML) $tab.replace(tabHTML as string)
                 }
             }
-            w2utils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
+            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
         }
         // right html
         query(this.box).find('#tabs_'+ this.name +'_right').html(this.right)
@@ -443,7 +443,7 @@ class w2tabs extends w2base {
         return Date.now() - time
     }
 
-    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
@@ -472,7 +472,7 @@ class w2tabs extends w2base {
         if (query(this.box).length > 0) {
             (query(this.box)[0] as HTMLElement).style.cssText += this.style
         }
-        w2utils.bindEvents(query(this.box).find('.w2ui-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.w2ui-eaction'), this)
         // observe div resize
         this.last.observeResize = new ResizeObserver(() => { this.resize() })
         this.last.observeResize.observe(this.box)
@@ -488,11 +488,11 @@ class w2tabs extends w2base {
         if (!this.reorder) return
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const self     = this
-        const $tab     = query(this.box).find('#tabs_' + this.name + '_tab_' + w2utils.escapeId(id))
+        const $tab     = query(this.box).find('#tabs_' + this.name + '_tab_' + TsUtils.escapeId(id))
         const tabIndex = this.get(id, true)
         const $ghost   = query(($tab.get(0) as HTMLElement).cloneNode(true))
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let edata: any // any: w2event instance returned by trigger(); typed generically
+        let edata: any // any: TsEvent instance returned by trigger(); typed generically
         $ghost.attr('id', '#tabs_' + this.name + '_tab_ghost')
         this.last.moving = {
             index: tabIndex,
@@ -515,7 +515,7 @@ class w2tabs extends w2base {
                     edata = self.trigger('reorder', { target: self.tabs[tabIndex].id, indexFrom: tabIndex, tab: self.tabs[tabIndex] })
                     if (edata.isCancelled === true) return
 
-                    w2tooltip.hide(self.name + '_tooltip')
+                    TsTooltip.hide(self.name + '_tooltip')
                     self.last.reordering = true
                     $ghost.addClass('moving')
                     $ghost.css({
@@ -548,7 +548,7 @@ class w2tabs extends w2base {
             })
     }
 
-    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -577,14 +577,14 @@ class w2tabs extends w2base {
         })
     }
 
-    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scrollIntoView(id?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
             if (id == null) id = this.active
             const tab = this.get(id)
             if (tab == null) return
-            const tabEl = query(this.box).find('#tabs_' + this.name + '_tab_' + w2utils.escapeId(id)).get(0) as HTMLElement
+            const tabEl = query(this.box).find('#tabs_' + this.name + '_tab_' + TsUtils.escapeId(id)).get(0) as HTMLElement
             tabEl.scrollIntoView({ block: 'start', inline: 'center', behavior: instant ? 'auto' : 'smooth' })
             setTimeout(() => { this.resize(); resolve() }, instant ? 0 : 500)
         })
@@ -653,13 +653,13 @@ class w2tabs extends w2base {
         const edata = this.trigger('click', { target: id, tab: tab, object: tab, originalEvent: event })
         if (edata.isCancelled === true) return
         // default action
-        query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(this.active)).removeClass('active')
+        query(this.box).find('#tabs_'+ this.name +'_tab_'+ TsUtils.escapeId(this.active)).removeClass('active')
         this.active = tab.id
-        query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(this.active)).addClass('active')
+        query(this.box).find('#tabs_'+ this.name +'_tab_'+ TsUtils.escapeId(this.active)).addClass('active')
         // route processing
         if (typeof tab.route == 'string') {
             let route = tab.route !== '' ? String('/'+ tab.route).replace(/\/{2,}/g, '/') : ''
-            const info  = w2utils.parseRoute(route)
+            const info  = TsUtils.parseRoute(route)
             if (info.keys.length > 0) {
                 for (let k = 0; k < info.keys.length; k++) {
                     const key = info.keys[k]
@@ -688,11 +688,11 @@ class w2tabs extends w2base {
         event?.stopPropagation()
     }
 
-    // any: callback parameter — caller signature varies; w2tabs tab item shape is user-defined at runtime
+    // any: callback parameter — caller signature varies; TsTabs tab item shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animateClose(id?: any) {
         return new Promise<void>((resolve, _reject) => {
-            const $tab  = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
+            const $tab  = query(this.box).find('#tabs_'+ this.name +'_tab_'+ TsUtils.escapeId(id))
             const width = ($tab.get(0) as HTMLElement).clientWidth || 0
             const anim = `<div class="tab-animate-close" style="display: inline-block; flex-shrink: 0; width: ${width}px; transition: width 0.25s"></div>`
             const $anim = $tab.replace(anim)
@@ -708,9 +708,9 @@ class w2tabs extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     animateInsert(id: any, tab: any): Promise<void> { // any: id/tab objects have dynamic shape
         return new Promise<void>((resolve, _reject) => {
-            let $before = query(this.box).find('#tabs_'+ this.name +'_tab_'+ w2utils.escapeId(id))
+            let $before = query(this.box).find('#tabs_'+ this.name +'_tab_'+ TsUtils.escapeId(id))
             const tabHTML = this.getTabHTML(tab.id)
-            // any: cast-to-any for dynamic dispatch; w2tabs tab item shape is user-defined at runtime
+            // any: cast-to-any for dynamic dispatch; TsTabs tab item shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const $tab    = (_queryRaw as any).html(tabHTML) as Query
             if ($before.length == 0) {
@@ -724,7 +724,7 @@ class w2tabs extends w2base {
                 const $tmp  = query(this.box).find('#' + $tab.attr('id'))
                 const width = ($tmp.get(0) as HTMLElement)?.clientWidth ?? 0
                 // insert animation div
-                // any: cast-to-any for dynamic dispatch; w2tabs tab item shape is user-defined at runtime
+                // any: cast-to-any for dynamic dispatch; TsTabs tab item shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const $anim = (_queryRaw as any).html('<div class="tab-animate-insert" style="flex-shrink: 0; width: 0; transition: width 0.25s"></div>') as Query
                 $before.before($anim)
@@ -743,4 +743,4 @@ class w2tabs extends w2base {
         })
     }
 }
-export { w2tabs }
+export { TsTabs }

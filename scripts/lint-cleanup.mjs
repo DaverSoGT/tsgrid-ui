@@ -70,18 +70,18 @@ function* walkSrc(dir = 'src') {
 
 // Module-level context — feeds into the categorical reason.
 const MODULE_CONTEXT = {
-    'w2grid':    'w2grid record/cell shape is user-defined at runtime',
-    'w2tooltip': 'w2tooltip overlay options merge from multiple user sources at runtime',
-    'w2field':   'w2field instance shape varies by `type` (text/list/date/color/etc) at runtime',
-    'w2form':    'w2form field schema is user-defined at runtime',
-    'w2sidebar': 'w2sidebar node tree shape is user-defined at runtime',
-    'w2toolbar': 'w2toolbar item shape varies by `type` at runtime',
-    'w2popup':   'w2popup options accept untyped user payloads at runtime',
-    'w2utils':   'w2utils helper accepts heterogeneous runtime input',
-    'w2tabs':    'w2tabs tab item shape is user-defined at runtime',
-    'w2layout':  'w2layout panel shape is user-defined at runtime',
+    'TsGrid':    'TsGrid record/cell shape is user-defined at runtime',
+    'TsTooltip': 'TsTooltip overlay options merge from multiple user sources at runtime',
+    'TsField':   'TsField instance shape varies by `type` (text/list/date/color/etc) at runtime',
+    'TsForm':    'TsForm field schema is user-defined at runtime',
+    'TsSidebar': 'TsSidebar node tree shape is user-defined at runtime',
+    'TsToolbar': 'TsToolbar item shape varies by `type` at runtime',
+    'TsPopup':   'TsPopup options accept untyped user payloads at runtime',
+    'TsUtils':   'TsUtils helper accepts heterogeneous runtime input',
+    'TsTabs':    'TsTabs tab item shape is user-defined at runtime',
+    'TsLayout':  'TsLayout panel shape is user-defined at runtime',
     'w2compat':  'jQuery shim — runtime-validated dynamic dispatch',
-    'w2base':    'w2base event payload is widget-defined at runtime',
+    'TsBase':    'TsBase event payload is widget-defined at runtime',
     'query':     'query DOM-traversal accepts arbitrary HTMLElement subclasses at runtime',
 }
 

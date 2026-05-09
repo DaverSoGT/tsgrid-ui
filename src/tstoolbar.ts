@@ -1,6 +1,6 @@
 /**
  * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, w2utils, w2base, w2tooltip, w2color, w2menu
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip, w2color, w2menu
  *
  * == TODO ==
  *  - tab navigation (index state)
@@ -27,14 +27,14 @@
  *  - onLiveUpdate - for colors
  */
 
-import { w2base } from './tsbase.js'
-import { w2ui, w2utils } from './tsutils.js'
+import { TsBase } from './tsbase.js'
+import { w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tooltip, w2color, w2menu } from './tstooltip.js'
+import { TsTooltip, w2color, w2menu } from './tstooltip.js'
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
-class w2toolbar extends w2base {
+class TsToolbar extends TsBase {
     declare box: HTMLElement | null
     declare name: string
     routeData: Record<string, unknown>
@@ -45,11 +45,11 @@ class w2toolbar extends w2base {
     item_template: Record<string, unknown>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     last: any // any: accumulates badge, pendingRefresh, etc.
-    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+    // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     _refresh: (opts: any) => void
     _refreshDebounced: () => void
-    // any: targeted-any per typing_policy; w2toolbar item shape varies by `type` at runtime
+    // any: targeted-any per typing_policy; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any
 
@@ -78,7 +78,7 @@ class w2toolbar extends w2base {
             type: 'button', // button, check, radio, drop, menu, menu-radio, menu-check, break, html, label, input spacer
             text: null,
             html: '',
-            tooltip: null,  // w2toolbar.tooltip should be
+            tooltip: null,  // TsToolbar.tooltip should be
             count: null,
             hidden: false,
             disabled: false,
@@ -114,7 +114,7 @@ class w2toolbar extends w2base {
             Object.assign(options, { resize, refreshTooltip })
             this._refreshDebounced()
         }
-        this._refreshDebounced = w2utils.debounce(() => {
+        this._refreshDebounced = TsUtils.debounce(() => {
             const options = this.last.pendingRefresh
             // new Set will make array unique
             new Set(options.ids).forEach(id => {
@@ -167,13 +167,13 @@ class w2toolbar extends w2base {
                 console.log('ERROR: The parameter "type" is required but not supplied.', item)
                 return
             }
-            if (!w2utils.checkUniqueId(item.id, this.items, 'toolbar', this.name)) return
+            if (!TsUtils.checkUniqueId(item.id, this.items, 'toolbar', this.name)) return
             // add item
-            const newItem = w2utils.extend({}, this.item_template, item)
+            const newItem = TsUtils.extend({}, this.item_template, item)
             if (newItem.type == 'group' && Array.isArray(newItem.items)) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 newItem.items.forEach((_it: any, ind: any) => { // any: item shape is dynamic
-                    newItem.items[ind] = w2utils.extend({}, this.item_template, newItem.items[ind])
+                    newItem.items[ind] = TsUtils.extend({}, this.item_template, newItem.items[ind])
                 })
             }
             if (newItem.type == 'menu-check') {
@@ -214,7 +214,7 @@ class w2toolbar extends w2base {
         if (skipRefresh !== true) this.resize()
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     remove(...args: any[]) {
         let effected = 0
@@ -223,7 +223,7 @@ class w2toolbar extends w2base {
             if (!it || String(item).indexOf(':') != -1) return
             effected++
             // remove from screen
-            query(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(it.id)).remove()
+            query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(it.id)).remove()
             // remove from array
             const ind = this.get(it.id, true)
             if (ind != null) this.items.splice(ind, 1)
@@ -241,7 +241,7 @@ class w2toolbar extends w2base {
         return true
     }
 
-    // any: parameter typed any — runtime dispatch by call site; w2toolbar item shape varies by `type` at runtime
+    // any: parameter typed any — runtime dispatch by call site; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     get(id?: any, returnIndex?: boolean, items?: any[]): any {
         if (arguments.length === 0) {
@@ -290,7 +290,7 @@ class w2toolbar extends w2base {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     setCount(id: any, count: any, className?: any, style?: any): void { // any: toolbar item badge params are heterogeneous
-        const btn = query(this.box).find(`#tb_${this.name}_item_${w2utils.escapeId(id)} .w2ui-tb-count > span`)
+        const btn = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .w2ui-tb-count > span`)
         if (btn.length > 0) {
             btn.removeClass(null)
                 .addClass(className ?? '')
@@ -308,10 +308,10 @@ class w2toolbar extends w2base {
         }
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     show(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -330,10 +330,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hide(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -352,10 +352,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     enable(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -374,10 +374,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     disable(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -396,10 +396,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     check(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -418,10 +418,10 @@ class w2toolbar extends w2base {
         return effected
     }
 
-    // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     uncheck(...args: any[]) {
-        // any: array of heterogeneous runtime values; w2toolbar item shape varies by `type` at runtime
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const effected: any[] = []
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -430,7 +430,7 @@ class w2toolbar extends w2base {
             if (!it || String(item).indexOf(':') != -1) return
             // remove overlay
             if (['menu', 'menu-radio', 'menu-check', 'drop', 'color', 'text-color'].includes(it.type) && it.checked) {
-                w2tooltip.hide(this.name + '-drop')
+                TsTooltip.hide(this.name + '-drop')
             }
             if (it.type == 'group') {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -449,7 +449,7 @@ class w2toolbar extends w2base {
         // click on menu items
         const tmp   = String(id).split(':')
         const it    = this.get(tmp[0])
-        let items = (it && it.items ? w2utils.normMenu.call(this, it.items, it) : [])
+        let items = (it && it.items ? TsUtils.normMenu.call(this, it.items, it) : [])
 
         if (tmp.length > 1) {
             const subItem = this.get(id)
@@ -466,9 +466,9 @@ class w2toolbar extends w2base {
             })
             if (edata.isCancelled === true) return
             // read items again, they might have been changed in the click event handler
-            items = (it && it.items ? w2utils.normMenu.call(this, it.items, it) : [])
+            items = (it && it.items ? TsUtils.normMenu.call(this, it.items, it) : [])
 
-            const btn = '#tb_'+ this.name +'_item_'+ w2utils.escapeId(it.id)
+            const btn = '#tb_'+ this.name +'_item_'+ TsUtils.escapeId(it.id)
             query(this.box).find(btn).removeClass('down') // need to re-query at the moment -- as well as elsewhere in this function
 
             if (it.type == 'radio') {
@@ -497,22 +497,22 @@ class w2toolbar extends w2base {
             if (['menu', 'menu-radio', 'menu-check', 'drop', 'color', 'text-color'].includes(it.type)) {
                 this.tooltipHide(id)
                 if (it.checked) {
-                    w2tooltip.hide(this.name + '-drop')
+                    TsTooltip.hide(this.name + '-drop')
                     return
                 } else {
                     /**
                      * Need to clear all previous event listeners, since tooltip name is reused and it finds the old configuration and
                      * extends it. If events are not cleared, it would trigger old listeners too.
                      */
-                    // any: parameter typed any — runtime dispatch by call site; w2toolbar item shape varies by `type` at runtime
+                    // any: parameter typed any — runtime dispatch by call site; TsToolbar item shape varies by `type` at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const overlay: any = w2tooltip.get(this.name + '-drop')
+                    const overlay: any = TsTooltip.get(this.name + '-drop')
                     if (overlay?.displayed) overlay.hide()
                     overlay?.listeners?.splice(0)
 
                     // timeout is needed to make sure previous overlay hides
                     setTimeout(() => {
-                        // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+                        // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         const hideDrop = (id: any, _btn?: any) => {
                             // need a closure to capture id variable
@@ -520,10 +520,10 @@ class w2toolbar extends w2base {
                                 this.set(id, { checked: false })
                             }
                         }
-                        const el = query(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(it.id))
-                        if (!w2utils.isPlainObject(it.overlay)) it.overlay = {}
+                        const el = query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(it.id))
+                        if (!TsUtils.isPlainObject(it.overlay)) it.overlay = {}
                         if (it.type == 'drop') {
-                            ;(w2tooltip.show(w2utils.extend({
+                            ;(TsTooltip.show(TsUtils.extend({
                                 html: it.html,
                                 class: 'w2ui-white',
                                 hideOn: ['doc-click']
@@ -531,7 +531,7 @@ class w2toolbar extends w2base {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
-                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
+                            // any: cast-to-any for dynamic dispatch; TsToolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                             .hide(hideDrop(it.id, btn))
@@ -541,18 +541,18 @@ class w2toolbar extends w2base {
                             if (it.type == 'menu-radio') {
                                 menuType = 'radio'
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                items?.forEach((item: any) => { // any: W2MenuItem extended with checked flag
+                                items?.forEach((item: any) => { // any: TsMenuItem extended with checked flag
                                     if (it.selected == item.id) item['checked'] = true; else item['checked'] = false
                                 })
                             }
                             if (it.type == 'menu-check') {
                                 menuType = 'check'
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                items?.forEach((item: any) => { // any: W2MenuItem extended with checked flag
+                                items?.forEach((item: any) => { // any: TsMenuItem extended with checked flag
                                     if (Array.isArray(it.selected) && it.selected.includes(item.id)) item['checked'] = true; else item['checked'] = false
                                 })
                             }
-                            ;(w2menu.show(w2utils.extend({
+                            ;(w2menu.show(TsUtils.extend({
                                 items,
                                 selected: -1,
                                 align: it.text ? 'left' : 'none', // if there is no text, then no alignent
@@ -561,7 +561,7 @@ class w2toolbar extends w2base {
                                 name : this.name + '-drop',
                                 anchor: el[0],
                                 data: { item: it, btn }
-                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
+                            // any: cast-to-any for dynamic dispatch; TsToolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
@@ -577,13 +577,13 @@ class w2toolbar extends w2base {
                                 })
                         }
                         if (['color', 'text-color'].includes(it.type)) {
-                            ;(w2color.show(w2utils.extend({
+                            ;(w2color.show(TsUtils.extend({
                                 color: it.color
                             }, it.overlay, {
                                 anchor: el[0],
                                 name: this.name + '-drop',
                                 data: { item: it, btn }
-                            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
+                            // any: cast-to-any for dynamic dispatch; TsToolbar item shape varies by `type` at runtime
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             })) as any)
                                 .hide(hideDrop(it.id, btn))
@@ -614,7 +614,7 @@ class w2toolbar extends w2base {
             // route processing
             if (it.route) {
                 let route = String('/'+ it.route).replace(/\/{2,}/g, '/')
-                const info  = w2utils.parseRoute(route)
+                const info  = TsUtils.parseRoute(route)
                 if (info.keys.length > 0) {
                     for (let k = 0; k < info.keys.length; k++) {
                         const key = info.keys[k]
@@ -631,7 +631,7 @@ class w2toolbar extends w2base {
         }
     }
 
-    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+    // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(direction?: any, line?: any, instant?: any) {
         return new Promise<void>((resolve, _reject) => {
@@ -664,7 +664,7 @@ class w2toolbar extends w2base {
         })
     }
 
-    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+    // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     override render(box?: any) {
         const time = Date.now()
@@ -716,7 +716,7 @@ class w2toolbar extends w2base {
             (query(this.box)[0] as HTMLElement).style.cssText += this['style']
         }
         // overflow buttons
-        w2utils.bindEvents(query(this.box).find('.w2ui-tb-line .w2ui-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.w2ui-tb-line .w2ui-eaction'), this)
         // observe div resize
         this.last.observeResize = new ResizeObserver(() => { this.resize() })
         this.last.observeResize.observe(this.box)
@@ -728,7 +728,7 @@ class w2toolbar extends w2base {
         return Date.now() - time
     }
 
-    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+    // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     refresh(id?: any) {
         const time = Date.now()
@@ -736,7 +736,7 @@ class w2toolbar extends w2base {
         const edata = this.trigger('refresh', { target: (id != null ? id : this.name), item: this.get(id) })
         if (edata.isCancelled === true) return
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let edata2: any // any: w2event instance or undefined
+        let edata2: any // any: TsEvent instance or undefined
         // refresh all
         if (id == null) {
             for (let i = 0; i < this.items.length; i++) {
@@ -753,7 +753,7 @@ class w2toolbar extends w2base {
             edata2 = this.trigger('refresh', { target: id, item: it, object: it })
             if (edata2.isCancelled === true) return
         }
-        const selector = `#tb_${this.name}_item_${w2utils.escapeId(it.id)}`
+        const selector = `#tb_${this.name}_item_${TsUtils.escapeId(it.id)}`
         const btn  = query(this.box).find(selector)
         const html = this.getItemHTML(it)
         // hide tooltip
@@ -766,24 +766,24 @@ class w2toolbar extends w2base {
 
         if (btn.length === 0) {
             const next = parseInt(this.get(id, true)) + 1
-            let $next = query(this.box).find(`#tb_${this.name}_item_${w2utils.escapeId(this.items[next] ? this.items[next].id : '--')}`) // "--" is needed or it will insert wrong
+            let $next = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : '--')}`) // "--" is needed or it will insert wrong
             if ($next.length == 0) {
                 $next = query(this.box).find(`.w2ui-tb-line:nth-child(${it.line}`).find('.w2ui-tb-right').before(html)
             } else {
                 $next.after(html)
             }
-            w2utils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
+            TsUtils.bindEvents(query(this.box).find(`${selector}, ${selector} .w2ui-eaction`), this)
         } else {
             // refresh
-            // any: cast-to-any for dynamic dispatch; w2toolbar item shape varies by `type` at runtime
+            // any: cast-to-any for dynamic dispatch; TsToolbar item shape varies by `type` at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             query(this.box).find(selector).replace((_queryRaw as any).html(html))
             const newBtn = query(this.box).find(selector)
-            w2utils.bindEvents(newBtn, this)
-            w2utils.bindEvents(newBtn.find('.w2ui-eaction'), this)
+            TsUtils.bindEvents(newBtn, this)
+            TsUtils.bindEvents(newBtn.find('.w2ui-eaction'), this)
             // update overlay's anchor if changed
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const overlays = w2tooltip.get(true) as Record<string, any> | undefined // any: TooltipOverlay shape is dynamic
+            const overlays = TsTooltip.get(true) as Record<string, any> | undefined // any: TooltipOverlay shape is dynamic
             if (overlays != null) Object.keys(overlays).forEach(key => {
                 if (overlays[key]?.anchor == btn.get(0)) {
                     overlays[key].anchor = newBtn.get(0)
@@ -902,19 +902,19 @@ class w2toolbar extends w2base {
                 }
                 if (item.type == 'color') {
                     text = `<span class="w2ui-tb-color-box" style="background-color: ${(item.color != null ? item.color : '#fff')}"></span>
-                           ${(item.text ? `<div style="margin-left: 17px;">${w2utils.lang(item.text)}</div>` : '')}`
+                           ${(item.text ? `<div style="margin-left: 17px;">${TsUtils.lang(item.text)}</div>` : '')}`
                 }
                 if (item.type == 'text-color') {
                     const color = (item.color != null ? item.color : '#444')
                     let bcolor = item.backColor
                     if (item.backColor === true) {
                         bcolor = '#fff'
-                        if (Number(w2utils.colorContrast('#fff', color)) < 2) {
+                        if (Number(TsUtils.colorContrast('#fff', color)) < 2) {
                             bcolor = '#555'
                         }
                     }
                     text = `<span style="color: ${color}">${item.text
-                        ? w2utils.lang(item.text)
+                        ? TsUtils.lang(item.text)
                         : (item.backColor
                             ? `<b style="background-color: ${bcolor ?? 'transparent'}; padding: 2px 5px; border-radius: 3px;">Ab</b>`
                             : '<b>Ab</b>'
@@ -945,9 +945,9 @@ class w2toolbar extends w2base {
                         ${ icon }
                         ${ (text != '' && text != null) || item.count != null || arrow
                             ? `<div class="w2ui-tb-text" style="${item.type != 'label' ? (item.style ?? '') : ''}; ${!text ? 'padding-left: 0; margin-left: 23px;' : ''}">
-                                    ${ w2utils.lang(text) }
+                                    ${ TsUtils.lang(text) }
                                     ${ item.count != null
-                                        ? w2utils.stripSpaces(`
+                                        ? TsUtils.stripSpaces(`
                                             <span class="w2ui-tb-count">
                                                 <span class="${this.last.badge[item.id] ? this.last.badge[item.id].className ?? '' : ''}"
                                                         style="${this.last.badge[item.id] ? this.last.badge[item.id].style ?? '' : ''}">${item.count}</span>
@@ -1079,11 +1079,11 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 
-    // any: callback parameter — caller signature varies; w2toolbar item shape varies by `type` at runtime
+    // any: callback parameter — caller signature varies; TsToolbar item shape varies by `type` at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     change(id?: any, value?: any, dynamic?: any) {
         const it = this.get(id)
-        const input = query(this.box).find('#tb_'+ this.name +'_item_'+ w2utils.escapeId(id)).find('input.w2ui-toolbar-input')
+        const input = query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(id)).find('input.w2ui-toolbar-input')
         if (value instanceof HTMLInputElement) {
             value = value.value
         }
@@ -1128,7 +1128,7 @@ class w2toolbar extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tooltipShow(id: any): void { // any: id can be string or number
         if (this.tooltip == null) return
-        const el   = query(this.box).find('#tb_'+ this.name + '_item_'+ w2utils.escapeId(id)).get(0) as HTMLElement
+        const el   = query(this.box).find('#tb_'+ this.name + '_item_'+ TsUtils.escapeId(id)).get(0) as HTMLElement
         const item = this.get(id)
         const overlay = (typeof this.tooltip == 'string' ? { position: this.tooltip } : this.tooltip)
         let txt  = item.tooltip
@@ -1138,7 +1138,7 @@ class w2toolbar extends w2base {
             && item.checked == true) {
             return
         }
-        w2tooltip.show({
+        TsTooltip.show({
             anchor: el,
             name: this.name + '-tooltip',
             html: txt,
@@ -1150,7 +1150,7 @@ class w2toolbar extends w2base {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tooltipHide(_id: any): void { // any: id can be string or number
         if (this.tooltip == null) return
-        w2tooltip.hide(this.name + '-tooltip')
+        TsTooltip.hide(this.name + '-tooltip')
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1226,7 +1226,7 @@ class w2toolbar extends w2base {
             }
             if (typeof it.route == 'string') {
                 let route = it.route !== '' ? String('/'+ it.route).replace(/\/{2,}/g, '/') : ''
-                const info  = w2utils.parseRoute(route)
+                const info  = TsUtils.parseRoute(route)
                 if (info.keys.length > 0) {
                     for (let k = 0; k < info.keys.length; k++) {
                         const key = info.keys[k]
@@ -1290,4 +1290,4 @@ class w2toolbar extends w2base {
         edata.finish()
     }
 }
-export { w2toolbar }
+export { TsToolbar }

@@ -30,7 +30,7 @@ export type Brand<K, T> = K & { readonly __brand: T }
 // ---------------------------------------------------------------------------
 
 /**
- * A record identifier value — the `recid` field used across w2grid records.
+ * A record identifier value — the `recid` field used across TsGrid records.
  * Can be either a string or a number at runtime; branded to prevent mixing
  * generic string/number primitives with record identifiers.
  *
@@ -40,7 +40,7 @@ export type Brand<K, T> = K & { readonly __brand: T }
 export type RecId = Brand<string | number, 'RecId'>
 
 /**
- * A w2layout panel identifier — one of the six panel slots.
+ * A TsLayout panel identifier — one of the six panel slots.
  * Branded to distinguish from arbitrary strings.
  *
  * Valid runtime values: `'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'`
@@ -51,7 +51,7 @@ export type RecId = Brand<string | number, 'RecId'>
 export type LayoutPanelId = Brand<string, 'LayoutPanelId'>
 
 /**
- * A w2form / w2field field name string — the `field` property that maps a
+ * A TsForm / TsField field name string — the `field` property that maps a
  * form input to a record key.
  * Branded to prevent mixing with arbitrary display labels or column names.
  *
