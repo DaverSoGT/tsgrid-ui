@@ -46,14 +46,14 @@ let tasks = {
     icons(cb) {
         let fs  = require('fs')
         let css = `@font-face {
-    font-family: "w2ui-font";
-    src: url("w2ui-font.woff");
+    font-family: "tsgrid-font";
+    src: url("tsgrid-font.woff");
     font-weight: normal;
     font-style: normal;
 }
-[class^="w2ui-icon-"]:before,
-[class*=" w2ui-icon-"]:before {
-    font-family: "w2ui-font";
+[class^="tsg-icon-"]:before,
+[class*=" tsg-icon-"]:before {
+    font-family: "tsgrid-font";
     display: inline-block;
     vertical-align: middle;
     line-height: 1;
@@ -71,8 +71,8 @@ let tasks = {
 <html>
 <head>
     <meta charset="utf-8">
-    <link href="w2ui-font.css" rel="stylesheet">
-    <title>w2ui-font</title>
+    <link href="tsgrid-font.css" rel="stylesheet">
+    <title>tsgrid-font</title>
     <style>
         body { font-family: verdana; font-size: 13px }
         .preview { padding: 8px; margin: 4px; width: 200px; box-shadow: 1px 1px 2px #ccc; float: left }
@@ -81,13 +81,13 @@ let tasks = {
     </style>
 </head>
 <body>
-    <h1 style="font-family: arial; padding-left: 15px;">w2ui-font $count</h1>
+    <h1 style="font-family: arial; padding-left: 15px;">tsgrid-font $count</h1>
 `
         let json = []
         gulp.src(['src/less/icons/svg/*.svg'])
             .pipe(iconfont({
                 startUnicode: 65,
-                fontName: 'w2ui-font',
+                fontName: 'tsgrid-font',
                 formats: ['woff'],
                 fontHeight: 1500,
                 normalize: true,
@@ -102,24 +102,24 @@ let tasks = {
                 icons = icons.sort((a, b) => (a.name > b.name) - (a.name < b.name)) // need reorder f series
                 icons.forEach(function(icon, i) {
                     let unicode = icon.unicode
-                    html       += `    <div class="preview"><span class="icon w2ui-icon-${icons[i].name}"></span><span>w2ui-icon-${icons[i].name}</span></div>\n`
-                    css        += `.w2ui-icon-${icons[i].name}:before { content: "${unicode.toString(16)}" }\n`
+                    html       += `    <div class="preview"><span class="icon tsg-icon-${icons[i].name}"></span><span>tsg-icon-${icons[i].name}</span></div>\n`
+                    css        += `.tsg-icon-${icons[i].name}:before { content: "${unicode.toString(16)}" }\n`
                     json.push(icons[i].name)
                 })
 
                 html += '    <div style="clear: both; height: 10px;"></div>\n</body>\n</html>'
                 html  = html.replace('$count', ' - ' + icons.length + ' icons')
-                fs.writeFileSync('src/less/icons/w2ui-font.css', css)
+                fs.writeFileSync('src/less/icons/tsgrid-font.css', css)
                 fs.writeFileSync('src/less/icons/preview.html', html)
                 fs.writeFileSync('src/less/icons/icons.json', JSON.stringify(json))
             })
             .pipe(gulp.dest('src/less/icons/'))
             .on('end', function () {
-                let font = fs.readFileSync('src/less/icons/w2ui-font.woff')
-                let file = fs.readFileSync('src/less/icons/w2ui-font.css', 'utf-8')
-                file     = file.replace('src: url("w2ui-font.woff");',
+                let font = fs.readFileSync('src/less/icons/tsgrid-font.woff')
+                let file = fs.readFileSync('src/less/icons/tsgrid-font.css', 'utf-8')
+                file     = file.replace('src: url("tsgrid-font.woff");',
                     `src: url("data:application/x-font-woff;charset=utf-8;base64,${font.toString('base64')}") format("woff");`)
-                fs.writeFileSync('src/less/icons/w2ui-font.css', file)
+                fs.writeFileSync('src/less/icons/tsgrid-font.css', file)
                 fs.writeFileSync('src/less/src/icons.less', file) // copy of the file
                 cb()
             })

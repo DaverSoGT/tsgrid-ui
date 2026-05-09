@@ -9,7 +9,7 @@ gulp icons
 It will regenerate following files
 - icons.json
 - preview.html
-- w2ui-font.css
-- w2ui-font.woff
+- tsgrid-font.css
+- tsgrid-font.woff
 
-And also copy `w2ui-font.css` into `src/less/src/icons.less` file that will be included into final `w2ui.css` file.
+And also copy `tsgrid-font.css` into `src/less/src/icons.less` file that will be included into final `w2ui.css` file.
