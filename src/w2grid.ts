@@ -68,6 +68,7 @@ import { query as _queryRaw } from './query.js'
 import { w2toolbar } from './w2toolbar.js'
 import { w2menu as _w2menu, w2tooltip as _w2tooltip } from './w2tooltip.js'
 import { w2field } from './w2field.js'
+import type { RecId } from './types.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout w2grid
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
@@ -240,10 +241,10 @@ interface W2GridLast {
     [key: string]: any // any: runtime-assigned transient last-state properties
 }
 
-/** Cell-level selection descriptor used in cell-select mode */
-interface _W2GridCellSelection {
+/** Cell-level selection descriptor returned by `getSelectionCells()` (and by `getSelection()` when `selectType === 'cell'`). */
+export interface W2GridCellSelection {
     recid: string | number
-    index?: number
+    index: number
     column: number
 }
 
@@ -2043,9 +2044,9 @@ class w2grid extends w2base {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function mouseStart(event: any) { // any: event is MouseEvent at runtime; typed loosely to avoid EventListener mismatch
-            const sel = self.getSelection()
-            const first = sel[0]
-            const last = sel[sel.length-1]
+            const sel = self.getSelectionCells()
+            const first = sel[0]!
+            const last = sel[sel.length-1]!
             self.last.move = {
                 type   : 'expand',
                 x      : event.screenX,
@@ -2055,7 +2056,7 @@ class w2grid extends w2base {
                 index  : first.index,
                 recid  : first.recid,
                 column : first.column,
-                name   : letters[first.column] + (first.index + 1) + ':' + letters[last.column] + (last.index + 1),
+                name   : letters[first.column]! + (first.index + 1) + ':' + letters[last.column]! + (last.index + 1),
                 originalRange : [w2utils.clone(first), w2utils.clone(last) ],
                 newRange      : [w2utils.clone(first), w2utils.clone(last) ]
             }
@@ -2341,10 +2342,10 @@ class w2grid extends w2base {
                 // check if any row/column still selected
                 let isColSelected = false
                 let isRowSelected = false
-                const tmp           = this.getSelection()
+                const tmp           = this.getSelectionCells()
                 for (let i = 0; i < tmp.length; i++) {
-                    if (tmp[i].column == col) isColSelected = true
-                    if (tmp[i].recid == recid) isRowSelected = true
+                    if (tmp[i]!.column == col) isColSelected = true
+                    if (tmp[i]!.recid == recid) isRowSelected = true
                 }
                 if (!isColSelected) {
                     query(this.box).find(`.w2ui-grid-columns td[col="${col}"] .w2ui-col-header, .w2ui-grid-fcolumns td[col="${col}"] .w2ui-col-header`).removeClass('w2ui-col-selected')
@@ -2380,38 +2381,39 @@ class w2grid extends w2base {
     // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     compareSelection(newSel: any[]): { select: any[]; unselect: any[] } {
-        const sel = this.getSelection()
         const select = []
         const unselect = []
         if (this.selectType == 'row') {
+            const sel = this.getSelectionRows() as Array<RecId | number>
             // normalize
             newSel.forEach((sel, ind) => {
                 if (typeof sel == 'object') newSel[ind] = sel.recid
             })
             // add items
             for (let i = 0; i < newSel.length; i++) {
-                if (!sel.includes(newSel[i])) {
+                if (!(sel as Array<RecId | number>).includes(newSel[i])) {
                     select.push(newSel[i])
                 }
             }
             // remove items
             for (let i = 0; i < newSel.length; i++) {
-                if (sel.includes(newSel[i])) {
+                if ((sel as Array<RecId | number>).includes(newSel[i])) {
                     unselect.push(newSel[i])
                 }
             }
         } else {
+            const sel = this.getSelectionCells()
             // add more items
             for (let ns = 0; ns < newSel.length; ns++) {
                 let flag = false
-                for (let s = 0; s < sel.length; s++) if (newSel[ns].recid == sel[s].recid && newSel[ns].column == sel[s].column) flag = true
+                for (let s = 0; s < sel.length; s++) if (newSel[ns].recid == sel[s]!.recid && newSel[ns].column == sel[s]!.column) flag = true
                 if (!flag) select.push({ recid: newSel[ns].recid, column: newSel[ns].column })
             }
             // remove items
             for (let s = 0; s < sel.length; s++) {
                 let flag = false
-                for (let ns = 0; ns < newSel.length; ns++) if (newSel[ns].recid == sel[s].recid && newSel[ns].column == sel[s].column) flag = true
-                if (!flag) unselect.push({ recid: sel[s].recid, column: sel[s].column })
+                for (let ns = 0; ns < newSel.length; ns++) if (newSel[ns].recid == sel[s]!.recid && newSel[ns].column == sel[s]!.column) flag = true
+                if (!flag) unselect.push({ recid: sel[s]!.recid, column: sel[s]!.column })
             }
         }
         return { select, unselect }
@@ -2465,7 +2467,7 @@ class w2grid extends w2base {
             query(this.box).find('input.w2ui-grid-select-check').prop('checked', true)
         }
         // enable/disable toolbar buttons
-        sel = this.getSelection(true)
+        sel = this.getSelectionRows(true) as number[]
         this.addRange('selection')
         query(this.box).find('#grid_'+ this.name +'_check_all').prop('checked', true)
         this.status()
@@ -2560,31 +2562,54 @@ class w2grid extends w2base {
         }
     }
 
-    // any: row-select returns (string|number)[], cell-select returns W2GridCellSelection[] — runtime branching
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    getSelection(returnIndex?: boolean): any[] {
-        // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const ret: any[] = []
+    /**
+     * Row-mode selection. Returns the recids of selected records, or their indexes
+     * when `returnIndex === true`. Unaffected by `selectType === 'cell'` — callers
+     * should branch on `this.selectType` and use `getSelectionCells()` for cell mode.
+     */
+    getSelectionRows(returnIndex?: boolean): RecId[] | number[] {
+        const ret: Array<RecId | number> = []
         const sel = this.last.selection
-        if (this.selectType == 'row') {
-            for (let i = 0; i < sel.indexes.length; i++) {
-                const idx = sel.indexes[i]!
-                if (!this.records[idx]) continue
-                if (returnIndex === true) ret.push(idx); else ret.push(this.records[idx]!.recid)
-            }
-            return ret
-        } else {
-            for (let i = 0; i < sel.indexes.length; i++) {
-                const idx = sel.indexes[i]!
-                const cols = sel.columns[idx] ?? []
-                if (!this.records[idx]) continue
-                for (let j = 0; j < cols.length; j++) {
-                    ret.push({ recid: this.records[idx]!.recid, index: idx, column: cols[j]! })
-                }
-            }
-            return ret
+        for (let i = 0; i < sel.indexes.length; i++) {
+            const idx = sel.indexes[i]!
+            if (!this.records[idx]) continue
+            if (returnIndex === true) ret.push(idx); else ret.push(this.records[idx]!.recid as RecId)
         }
+        return ret as RecId[] | number[]
+    }
+
+    /**
+     * Cell-mode selection. Returns one descriptor per selected cell. `returnIndex`
+     * is intentionally not a parameter — it was ignored in cell mode by the legacy
+     * `getSelection()` API.
+     */
+    getSelectionCells(): W2GridCellSelection[] {
+        const ret: W2GridCellSelection[] = []
+        const sel = this.last.selection
+        for (let i = 0; i < sel.indexes.length; i++) {
+            const idx = sel.indexes[i]!
+            const cols = sel.columns[idx] ?? []
+            if (!this.records[idx]) continue
+            for (let j = 0; j < cols.length; j++) {
+                ret.push({ recid: this.records[idx]!.recid, index: idx, column: cols[j]! })
+            }
+        }
+        return ret
+    }
+
+    /**
+     * Discriminated-union wrapper. The shape depends on `this.selectType`:
+     *   - `'row'`  → `RecId[]` (or `number[]` if `returnIndex === true`)
+     *   - `'cell'` → `W2GridCellSelection[]` (`returnIndex` is ignored)
+     *
+     * Prefer the typed split methods (`getSelectionRows` / `getSelectionCells`)
+     * when the caller knows the mode statically. This wrapper is kept for back-
+     * compat with the v2.0 API and for callers that genuinely handle both modes.
+     */
+    getSelection(returnIndex?: boolean): RecId[] | number[] | W2GridCellSelection[] {
+        return this.selectType === 'row'
+            ? this.getSelectionRows(returnIndex)
+            : this.getSelectionCells()
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4343,11 +4368,12 @@ class w2grid extends w2base {
         } else {
             if (typeof recs[0] != 'object') {
                 this.selectNone()
-                this.remove(...recs)
+                this.remove(...(recs as Array<RecId | number>))
             } else {
                 // clear cells
-                for (let r = 0; r < recs.length; r++) {
-                    const rr = recs[r]!
+                const cellRecs = recs as W2GridCellSelection[]
+                for (let r = 0; r < cellRecs.length; r++) {
+                    const rr = cellRecs[r]!
                     const fld = this.columns[rr.column]!.field
                     const ind = this.get(rr.recid, true)
                     const rec = ind != null ? this.records[ind]! : null
@@ -4421,15 +4447,16 @@ class w2grid extends w2base {
         // multi select with shift key
         let start: number = 0, end: number = 0, t1: number = 0, t2: number = 0
         if (event.shiftKey && sel.length > 0 && this.multiSelect) {
-            if (sel[0].recid) {
-                start = this.get(sel[0].recid, true) ?? 0
+            const cellSel = sel as W2GridCellSelection[]
+            if (typeof sel[0] === 'object' && cellSel[0]!.recid != null) {
+                start = this.get(cellSel[0]!.recid, true) ?? 0
                 end   = this.get(recid, true) ?? 0
-                if (column > sel[0].column) {
-                    t1 = sel[0].column
+                if (column > cellSel[0]!.column) {
+                    t1 = cellSel[0]!.column
                     t2 = column
                 } else {
                     t1 = column
-                    t2 = sel[0].column
+                    t2 = cellSel[0]!.column
                 }
                 for (let c = t1; c <= t2; c++) selectColumns.push(c)
             } else {
@@ -4520,7 +4547,7 @@ class w2grid extends w2base {
                 if (!event.shiftKey && !event.metaKey && !event.ctrlKey) {
                     this.selectNone(true)
                 }
-                const tmp    = this.getSelection()
+                const tmp    = this.getSelectionCells()
                 const column = this.getColumn(edata.detail['field'] as string, true) ?? 0
                 const sel    = []
                 const cols   = []
@@ -4701,21 +4728,30 @@ class w2grid extends w2base {
         const records = query(obj.box).find('#grid_'+ obj.name +'_records')
         const sel     = obj.getSelection()
         if (sel.length === 0) empty = true
-        let recid   = sel[0] || null
+        // any: keyboard nav handles row/cell modes inline; recid is narrowed by `typeof recid == 'object'` runtime guard below
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let recid: any = sel[0] || null
         // any: array of heterogeneous runtime values; w2grid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let columns: any[] = []
-        let recid2  = sel[sel.length-1]
+        // any: same as recid above; runtime-narrowed below
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let recid2: any = sel[sel.length-1]
+        // Cell-mode alias used by sub-functions (moveLeft/Right/Up/Down) when selectType !== 'row'.
+        // Same data as `sel`, narrowed to W2GridCellSelection[]; safe to read inside the
+        // selectType-checked branches below.
+        const cellSel = sel as W2GridCellSelection[]
         if (typeof recid == 'object' && recid != null) {
-            recid   = sel[0].recid
+            const cellSel = sel as W2GridCellSelection[]
+            recid   = cellSel[0]!.recid
             columns = []
             let ii  = 0
             while (true) {
-                if (!sel[ii] || sel[ii].recid != recid) break
-                columns.push(sel[ii].column)
+                if (!cellSel[ii] || cellSel[ii]!.recid != recid) break
+                columns.push(cellSel[ii]!.column)
                 ii++
             }
-            recid2 = sel[sel.length-1].recid
+            recid2 = cellSel[cellSel.length-1]!.recid
         }
         const ind      = obj.get(recid, true) ?? -1
         const ind2     = obj.get(recid2, true) ?? -1
@@ -4905,15 +4941,15 @@ class w2grid extends w2base {
                         const unSel  = []
                         if (columns.indexOf(obj.last.sel_col) === 0 && columns.length > 1) {
                             for (let i = 0; i < sel.length; i++) {
-                                if (tmp.indexOf(sel[i].recid) == -1) tmp.push(sel[i].recid)
-                                unSel.push({ recid: sel[i].recid, column: columns[columns.length-1]! })
+                                if (tmp.indexOf(cellSel[i]!.recid) == -1) tmp.push(cellSel[i]!.recid)
+                                unSel.push({ recid: cellSel[i]!.recid, column: columns[columns.length-1]! })
                             }
                             obj.unselect(unSel)
                             obj.scrollIntoView(ind, columns[columns.length-1]!, true)
                         } else {
                             for (let i = 0; i < sel.length; i++) {
-                                if (tmp.indexOf(sel[i].recid) == -1) tmp.push(sel[i].recid)
-                                newSel.push({ recid: sel[i].recid, column: prevCol })
+                                if (tmp.indexOf(cellSel[i]!.recid) == -1) tmp.push(cellSel[i]!.recid)
+                                newSel.push({ recid: cellSel[i]!.recid, column: prevCol })
                             }
                             obj.select(newSel)
                             obj.scrollIntoView(ind, prevCol, true)
@@ -4955,15 +4991,15 @@ class w2grid extends w2base {
                         const unSel  = []
                         if (columns.indexOf(obj.last.sel_col) == columns.length-1 && columns.length > 1) {
                             for (let i = 0; i < sel.length; i++) {
-                                if (tmp.indexOf(sel[i].recid) == -1) tmp.push(sel[i].recid)
-                                unSel.push({ recid: sel[i].recid, column: columns[0]! })
+                                if (tmp.indexOf(cellSel[i]!.recid) == -1) tmp.push(cellSel[i]!.recid)
+                                unSel.push({ recid: cellSel[i]!.recid, column: columns[0]! })
                             }
                             obj.unselect(unSel)
                             obj.scrollIntoView(ind, columns[0]!, true)
                         } else {
                             for (let i = 0; i < sel.length; i++) {
-                                if (tmp.indexOf(sel[i].recid) == -1) tmp.push(sel[i].recid)
-                                newSel.push({ recid: sel[i].recid, column: nextCol })
+                                if (tmp.indexOf(cellSel[i]!.recid) == -1) tmp.push(cellSel[i]!.recid)
+                                newSel.push({ recid: cellSel[i]!.recid, column: nextCol })
                             }
                             obj.select(newSel)
                             obj.scrollIntoView(ind, nextCol, true)
@@ -4987,7 +5023,7 @@ class w2grid extends w2base {
             if (empty) selectTopRecord()
             if (recEL.length <= 0) return
             // move to the previous record
-            let prev = obj.prevRow(ind, obj.selectType == 'row' ? 0 : sel[0].column, numRows)
+            let prev = obj.prevRow(ind, obj.selectType == 'row' ? 0 : cellSel[0]!.column, numRows)
             if (!shiftKey && prev == null) {
                 if (obj.searchData.length != 0 && !url) {
                     prev = obj.last.searchIds[0] ?? null
@@ -5036,7 +5072,7 @@ class w2grid extends w2base {
             if (empty) selectTopRecord()
             if (recEL.length <= 0) return
             // move to the next record
-            let next = obj.nextRow(ind2, obj.selectType == 'row' ? 0 : sel[0].column, numRows)
+            let next = obj.nextRow(ind2, obj.selectType == 'row' ? 0 : cellSel[0]!.column, numRows)
             if (!shiftKey && next == null) {
                 if (obj.searchData.length != 0 && !url) {
                     next = obj.last.searchIds[obj.last.searchIds.length - 1] ?? null
@@ -5094,7 +5130,7 @@ class w2grid extends w2base {
                 obj.last.sel_type = 'key'
                 if (sel.length > 1) {
                     for (let s = 0; s < sel.length; s++) {
-                        if (sel[s].recid == obj.last.sel_recid && sel[s].column == obj.last.sel_col) {
+                        if (cellSel[s]!.recid == obj.last.sel_recid && cellSel[s]!.column == obj.last.sel_col) {
                             sel.splice(s, 1)
                             break
                         }
@@ -5106,8 +5142,10 @@ class w2grid extends w2base {
             } else {
                 obj.last.sel_type = 'key'
                 if (sel.length > 1) {
-                    sel.splice(sel.indexOf(obj.records[obj.last.sel_ind ?? 0]!.recid), 1)
-                    obj.unselect(sel)
+                    // tmpUnselect runs in row mode here (cell-mode early-returns above)
+                    const rowSel = sel as Array<RecId | number>
+                    rowSel.splice(rowSel.indexOf(obj.records[obj.last.sel_ind ?? 0]!.recid as RecId), 1)
+                    obj.unselect(rowSel)
                     return true
                 }
                 return false
@@ -5123,10 +5161,11 @@ class w2grid extends w2base {
             const sel = this.getSelection()
             if (sel.length === 0) return
             if (w2utils.isPlainObject(sel[0])) {
-                ind    = sel[0].index
-                column = sel[0].column
+                const cellSel = sel as W2GridCellSelection[]
+                ind    = cellSel[0]!.index
+                column = cellSel[0]!.column
             } else {
-                ind = this.get(sel[0], true)
+                ind = this.get(sel[0] as RecId | number, true)
             }
         }
         const records = query(this.box).find(`#grid_${this.name}_records`)
@@ -5249,12 +5288,13 @@ class w2grid extends w2base {
             event.offsetY = event.layerY - event.target.offsetTop
         }
         // if (w2utils.isFloat(recid)) recid = parseFloat(recid)
-        const sel = this.getSelection()
         if (this.selectType == 'row') {
-            if (recid != null && sel.indexOf(recid) == -1) {
+            const sel = this.getSelectionRows() as Array<RecId | number>
+            if (recid != null && sel.indexOf(recid as RecId) == -1) {
                 this.click(recid)
             }
         } else {
+            const sel = this.getSelectionCells()
             let sel_col = false  // any cell in a column
             let sel_row = false  // any cell in a row
             let sel_cell = false // this exact cell
@@ -5599,14 +5639,15 @@ class w2grid extends w2base {
         if (sel.length === 0) return ''
         let text = ''
         if (typeof sel[0] == 'object') { // cell copy
+            const cellSel = sel as W2GridCellSelection[]
             // find min/max column
-            let minCol = sel[0].column
-            let maxCol = sel[0].column
+            let minCol = cellSel[0]!.column
+            let maxCol = cellSel[0]!.column
             const recs   = []
-            for (let s = 0; s < sel.length; s++) {
-                if (sel[s].column < minCol) minCol = sel[s].column
-                if (sel[s].column > maxCol) maxCol = sel[s].column
-                if (recs.indexOf(sel[s].index) == -1) recs.push(sel[s].index)
+            for (let s = 0; s < cellSel.length; s++) {
+                if (cellSel[s]!.column < minCol) minCol = cellSel[s]!.column
+                if (cellSel[s]!.column > maxCol) maxCol = cellSel[s]!.column
+                if (recs.indexOf(cellSel[s]!.index) == -1) recs.push(cellSel[s]!.index)
             }
             recs.sort((a, b) => { return a-b }) // sort function must be for numerical sort
             for (let r = 0 ; r < recs.length; r++) {
@@ -5630,9 +5671,9 @@ class w2grid extends w2base {
             }
             text  = text.substr(0, text.length-1) // remove last \t
             text += '\n'
-            // copy selected text
+            // copy selected text — row branch, sel[s] is RecId | number
             for (let s = 0; s < sel.length; s++) {
-                const ind = this.get(sel[s], true)
+                const ind = this.get(sel[s] as RecId | number, true)
                 for (let c = 0; c < this.columns.length; c++) {
                     const col = this.columns[c]!
                     if (col.hidden === true) continue
@@ -5679,9 +5720,9 @@ class w2grid extends w2base {
     // any: targeted-any per typing_policy; w2grid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     paste(text: string, event?: ClipboardEvent | any) {
-        const sel = this.getSelection()
-        let ind: number = this.get(sel[0].recid, true) ?? 0
-        const col = sel[0].column
+        const sel = this.getSelectionCells()
+        let ind: number = this.get(sel[0]!.recid, true) ?? 0
+        const col = sel[0]!.column
         // before event
         const edata = this.trigger('paste', { target: this.name, text: text, index: ind, column: col, originalEvent: event })
         if (edata.isCancelled === true) return
@@ -6703,10 +6744,11 @@ class w2grid extends w2base {
                 if (query(el).hasClass('w2ui-col-number') || query(el).hasClass('w2ui-col-order')) {
                     //multiple rows reordering
                     //obj.selectNone()
-                    let sel = obj.getSelection()
+                    let sel: Array<RecId | number | string> = obj.getSelection() as Array<RecId | number | string>
                     if (sel.length > 0 && typeof sel[0] == 'object') {
-                        obj.select([...new Set(sel.map(r => r.recid))])
-                        sel = [...new Set(obj.getSelection().map(r => r.recid))]
+                        const cellSel = sel as unknown as W2GridCellSelection[]
+                        obj.select([...new Set(cellSel.map(r => r.recid))])
+                        sel = [...new Set(obj.getSelectionCells().map(r => r.recid))]
                     }
                     if (sel.indexOf(obj.last.move.recid) == -1) {
                         obj.selectNone()
@@ -6921,7 +6963,10 @@ class w2grid extends w2base {
                     mv.newRange = newSel
                 } else {
                     if (obj.multiSelect) {
-                        const sel = obj.getSelection()
+                        // any: range select handles row + cell selections via raw arrays;
+                        // both sel and newSel carry mode-specific shapes that this method intentionally treats opaquely
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        const sel = obj.getSelection() as any[]
                         for (let ns = 0; ns < newSel.length; ns++) {
                             if (sel.indexOf(newSel[ns]) == -1) obj.select(newSel[ns]) // add more items
                         }
@@ -9576,7 +9621,9 @@ class w2grid extends w2base {
                     msgLeft = String(sel.length).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + w2utils.settings.groupSymbol) + ' ' + w2utils.lang('selected')
                 }
                 if (this.show.statusRecordID && sel.length == 1) {
-                    let tmp = sel[0]
+                    // any: status bar widens recid display to include column for cell mode; mode is detected by typeof
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    let tmp: any = sel[0]
                     if (typeof tmp == 'object') tmp = tmp.recid + ', '+ w2utils.lang('Column') +': '+ tmp.column
                     msgLeft = w2utils.lang('Record ID') + ': '+ tmp + ' '
                 }
