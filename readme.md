@@ -1,144 +1,107 @@
-## Road to 2.0
-The `master` branch has a new, in-progress version of w2ui. You might want to consider [1.5 branch](https://github.com/vitmalina/w2ui/tree/w2ui-1.5) that is stable and supports older browsers. Here are the goals for the new version of w2ui.
+# TsGrid UI
 
-[Road to 2.0 discussion](https://github.com/vitmalina/w2ui/discussions/1955)
+TypeScript-native UI component library: data grid, forms, fields, layout, sidebar, tabs, toolbar, popup, tooltip. Strict-mode TypeScript port of the venerable w2ui v2.0 codebase, with modern tooling, zero runtime dependencies, and full `.d.ts` declarations.
 
-**W2UI v.2 no longer requires jQuery as a dependency**. You can download it from the master branch and at the moment, it is stable enough to be considrered for a Release Candidate. All [demos](https://w2ui.com/web/demos) have been updated to work as ES6 modules without any dependencies.
+> **This is a hard fork of [w2ui](https://github.com/vitmalina/w2ui) by Vit Malina.** See [Acknowledgments](#acknowledgments) below.
 
-## About W2UI
+[![npm version](https://img.shields.io/npm/v/tsgrid-ui.svg)](https://www.npmjs.com/package/tsgrid-ui)
+[![license](https://img.shields.io/npm/l/tsgrid-ui.svg)](LICENSE)
 
-W2UI is a modern JavaScript UI library for building rich web applications. It aims to let you define your UI in a declarative way via JSON data structures.
+## Install
 
-The library has a small footprint (120KB gzipped) and has **NO DEPENDENCIES** (as of v2.0). W2UI can be used in Vanilla JS projects, ES6 modules, as well as in Angular, React, and Vue based projects.
+```bash
+pnpm add tsgrid-ui
+# or: npm install tsgrid-ui
+# or: yarn add tsgrid-ui
+```
 
-The library implements the following UI controls:
+## Quick start
 
-* **[w2grid](http://w2ui.com/web/docs/1.5/layout/grid)** - an advanced Grid component - *[demo](http://w2ui.com/web/demos/#/grid/1)*
-* **[w2toolbar](http://w2ui.com/web/docs/1.5/toolbar)** - a Toolbar component - *[demo](http://w2ui.com/web/demos/#/toolbar/1)*
-* **[w2sidebar](http://w2ui.com/web/docs/1.5/sidebar)** - a Tree/Sidebar component - *[demo](http://w2ui.com/web/demos/#/sidebar/1)*
-* **[w2tabs](http://w2ui.com/web/docs/1.5/tabs)** - Tabs - *[demo](http://w2ui.com/web/demos/#/tabs/1)*
-* **[w2form](http://w2ui.com/web/docs/1.5/form)** - Forms - *[demo](http://w2ui.com/web/demos/#/form/1)*
-* **[w2fields](http://w2ui.com/web/docs/1.5/fields)** - various Fields - *[demo](http://w2ui.com/web/demos/#/fields/1)*
-* **[w2popup](http://w2ui.com/web/docs/1.5/popup)** - a Popup component - *[demo](http://w2ui.com/web/demos/#/popup/1)*
-* **[w2layout](http://w2ui.com/web/docs/1.5/layout)** - a Layout component - *[demo](http://w2ui.com/web/demos/#/layout/1)*
-* **[w2utils](http://w2ui.com/web/docs/1.5/utils)** - various utilities - *[demo](http://w2ui.com/web/demos/#/utils/1)*
+```ts
+import { TsGrid } from 'tsgrid-ui'
+import 'tsgrid-ui/css'
 
-The complete library is under **100Kb** (minified & gzipped).
+const grid = new TsGrid({
+    name: 'mygrid',
+    columns: [
+        { field: 'name',  text: 'Name',  size: '50%' },
+        { field: 'email', text: 'Email', size: '50%' }
+    ],
+    records: [
+        { recid: 1, name: 'Ada Lovelace',     email: 'ada@example.com' },
+        { recid: 2, name: 'Alan Turing',      email: 'alan@example.com' },
+        { recid: 3, name: 'Grace Hopper',     email: 'grace@example.com' }
+    ]
+})
+grid.render('#mygrid')
+```
 
-## Quick Start
+```html
+<div id="mygrid" style="width: 600px; height: 300px;"></div>
+```
 
-Current stable version is 1.5 (supports older browsers).
-Current development version is 2.0.
+## Components
 
-[Getting Started Guide](http://w2ui.com/web/get-started)
+| Class       | Purpose                                        |
+|-------------|------------------------------------------------|
+| `TsGrid`    | Data grid with sort / search / select / edit   |
+| `TsForm`    | Form with field validation + submit lifecycle  |
+| `TsField`   | Standalone field types (text/list/date/color/file) |
+| `TsLayout`  | 6-panel resizable layout                       |
+| `TsSidebar` | Tree / sidebar with expandable nodes           |
+| `TsTabs`    | Tab strip                                      |
+| `TsToolbar` | Toolbar with multiple item types               |
+| `TsTooltip` | Hover tooltips and overlays                    |
+| `TsPopup`   | Modal popup, alert, confirm, prompt            |
 
-You can download latest stable version here: [http://w2ui.com](http://w2ui.com). If you want to use the dev version, see the `dist/` folder in the master branch.
+Helpers exported: `TsAlert`, `TsConfirm`, `TsPrompt`, `TsColor`, `TsDate`, `TsMenu`, `TsDialog`, `TsUtils`, `TsLocale`, `TsBase`, `TsEvent`, `TsUi` (instance registry), `query` (DOM helper), plus branded primitive types `RecId`, `LayoutPanelId`, `FieldName`.
 
-To start using the library you need to include into your page:
+## TypeScript support
 
-- w2ui.js (or w2ui.min.js)
-- w2ui.css (or w2ui.min.css)
+Full type declarations ship in `dist/w2ui.d.ts` (will be renamed to `dist/tsgrid-ui.d.ts` once the build artifacts are rebuilt — see CHANGELOG). Strict mode is active in source: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`.
 
-All the controls and their css classes are defined inside of these two files. There are no image dependencies. Some images and font icons are embedded into the CSS file.
+```ts
+import { TsGrid, type TsGridColumn, type TsGridCellSelection } from 'tsgrid-ui'
 
-There is no requirement for a server side language. Node, Java, PHP, ASP, Perl or .NET will all work, as long as you can
-return JSON format from the server (or write a converter into JSON format on the client). Some server side example implementations
-can be found [here](https://github.com/vitmalina/w2ui/tree/master/server).
-
-## Documentation & Demos
-
-You can find documentation and demos here:
-
-* [http://w2ui.com/web/docs](http://w2ui.com/web/docs) - documentation
-* [http://w2ui.com/web/demos](http://w2ui.com/web/demos) - detailed demos
-
-
-## Bug Tracking
-
-Have a bug or a feature request? Please open an issue here [https://github.com/vitmalina/w2ui/issues](https://github.com/vitmalina/w2ui/issues).
-Please make sure that the same issue was not previously submitted by someone else.
+const cols: TsGridColumn[] = [
+    { field: 'name', text: 'Name', sortable: true }
+]
+```
 
 ## Building
 
-This is a Node.js + pnpm repository. Install dependencies and run the build:
-
-```
+```bash
 pnpm install
-pnpm build
+pnpm build       # CSS (gulp) + JS (tsup) + .d.ts rollup
+pnpm verify      # lint + typecheck + consumer-smoke + unit tests + Playwright smoke
 ```
 
-The build produces:
+| Script               | Purpose                                             |
+|----------------------|-----------------------------------------------------|
+| `pnpm test`          | ESLint + `tsc --noEmit`                             |
+| `pnpm test:unit`     | Vitest unit suite (w2utils helpers, w2base events, types brands) |
+| `pnpm consumer-smoke`| Typecheck the public API surface as a consumer would |
+| `pnpm smoke`         | Playwright DOM smoke harness (38 tests)             |
+| `pnpm verify`        | All of the above, end-to-end                        |
+| `pnpm dev`           | tsup watch mode for JS bundle                       |
+| `pnpm start`         | Local dev server (Python http.server) on :3500     |
 
-- `dist/w2ui.js` — IIFE/CJS/AMD bundle with global `window.w2ui` registration (legacy script-tag consumers and the jQuery `w2compat` shim)
-- `dist/w2ui.es6.js` — pure ESM bundle for `import` consumers
-- `dist/w2ui.d.ts` — TypeScript type declarations rolled up across all 23 public exports
-- `dist/w2ui.css` / `dist/w2ui-dark.css` — compiled stylesheets (and `.min.css` variants)
-- `dist/w2ui-font.woff` — embedded into the CSS via base64
+## Migration from w2ui
 
-JavaScript bundling is done by **tsup** (esbuild) and CSS/iconfont by **gulp**. The CSS-side Gulp tasks (`gulp` / `gulp less` / `gulp icons`) still work standalone if you only need to rebuild stylesheets; the v2.0 JS-bundling tasks (`pack` / `build` / `build_es6`) were removed in v2.1 — JS is now owned by tsup.
+If you're coming from `w2ui` v2.0 or v2.1, see [MIGRATION-FROM-W2UI.md](MIGRATION-FROM-W2UI.md) for the complete renaming map (JS globals, CSS classes, file paths, jQuery shim removal).
 
-### Other scripts
+## Acknowledgments
 
-- `pnpm test` — ESLint + `tsc --noEmit` (lint + typecheck)
-- `pnpm smoke` — Playwright smoke harness for grid, form, layout, sidebar, popup, and tooltip widgets
-- `pnpm verify` — `test` + `smoke` (use as your CI signal)
-- `pnpm start` — local server on http://localhost:3500 to preview the demos
+TsGrid UI is a hard fork of **[w2ui](https://github.com/vitmalina/w2ui)** by **Vit Malina** ([@vitmalina](https://github.com/vitmalina)). The original w2ui (MIT-licensed, started in 2014) was the foundation for this project — every widget pattern, every interaction model, and most of the architectural decisions originate there. This fork's contribution is:
 
-## TypeScript Support
+- A full **TypeScript-native** port (the original was JS with optional types).
+- Modern **tsup / esbuild** build pipeline replacing the original Gulp-based regex concat.
+- **Zero runtime dependencies** — the jQuery shim (`w2compat`) was removed.
+- **Vitest** unit test layer alongside the original Playwright smoke harness.
+- **Renamed identity** at every layer (package, globals, classes, types, CSS classes) to operate as an independent library while preserving the original's MIT copyright per license terms.
 
-Starting with v2.1.0, w2ui ships with full TypeScript type declarations.
+If you need the original library, please use [vitmalina/w2ui](https://github.com/vitmalina/w2ui).
 
-```ts
-import { w2grid, type W2GridColumn } from 'w2ui'
-import 'w2ui/css'
+## License
 
-const grid = new w2grid({
-    name: 'myGrid',
-    columns: [
-        { field: 'recid', text: 'ID',   size: '10%' },
-        { field: 'fname', text: 'Name', size: '50%' },
-    ] satisfies W2GridColumn[],
-    records: [
-        { recid: 1, fname: 'Alice' },
-        { recid: 2, fname: 'Bob' },
-    ],
-})
-grid.render('#main')
-```
-
-All 23 public exports are typed, including widget classes (`w2grid`, `w2form`, `w2field`, `w2layout`, `w2sidebar`, `w2tabs`, `w2toolbar`, `w2popup`, `w2tooltip`), helper functions (`w2alert`, `w2confirm`, `w2prompt`, `w2menu`, `w2color`, `w2date`), utilities (`w2utils`, `w2locale`, `w2base`, `w2event`, `query`, `Tooltip`, `Dialog`), and domain interfaces (`W2GridColumn`, `W2GridSearch`, `W2GridSelection`, `W2MessageProm`, etc.).
-
-The library is compiled under TypeScript strict mode with `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes` enabled. See [`CHANGELOG.md`](CHANGELOG.md) for the full v2.1.0 native-port history.
-
-## File Structure
-
-```
-- demos       - all demos, same as on w2ui.com
-- dist        - compiled JS and CSS files
-- docs        - stand alone documentation, same as on w2ui.com
-- es6mods     - ES6 modules playground
-- libs        - external libs, some used in demos, etc.
-- server      - server api samples (to get you started)
-- specs       - test automation
-- src         - source JS files
-  - less      - LESS files (source for css)
-  - locale    - int18n - translation to other languages
-- test        - manual testing files
-```
-
-## Who Is Using W2UI
-
-[List of projects that use **`w2ui`**](https://github.com/vitmalina/w2ui/wiki/Projects-that-use-w2ui)!
-
-If you're using **`w2ui`**, I'd love to hear about it, please email to `vitmalina@gmail.com` the name of your project and a link to a public website or demo, and I will add it to the list.
-
-## Contributing
-
-Your contributions are welcome. However, a few things you need to know before contributing:
-
-1. Please check out the latest code before changing anything. It is harder to merge if your changes will not merge cleanly.
-2. If you are changing source files - do all changes in `/src` (TypeScript as of v2.1.0)
-3. If you are changing CSS files - do all changes in LESS in /src/less/src
-4. If you want to help with unit test - do all changes in /qa
-5. If you want to change documentation - do all changes in /docs
-6. If you want to add demos - do all changes in /demos
+[MIT](LICENSE) — preserves the original w2ui copyright (2014, Vit Malina) and adds the fork copyright (2026, DaverSoGT). You are free to use, modify, and redistribute under MIT terms.

@@ -1,13 +1,31 @@
 {
-  "name": "w2ui",
-  "version": "2.0.0",
-  "title": "W2UI: New JavaScript UI Library",
-  "description": "JavaScript UI library for development of data-driven web applications. Includes layout, grid, toolbar, sidebar, tabs, forms, fields, popup, overlay",
+  "name": "tsgrid-ui",
+  "version": "1.0.0",
+  "title": "TsGrid UI: TypeScript-native UI component library",
+  "description": "TypeScript-native UI components: data grid, forms, fields, layout, sidebar, tabs, toolbar, popup, tooltip. ESM + CJS dual bundle, .d.ts rollup, zero runtime dependencies.",
   "license": "MIT",
-  "repository": "https://github.com/vitmalina/w2ui",
-  "dependencies": {
-    "jquery": ">=3.5"
+  "author": "DaverSoGT <jodaniheso@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DaverSoGT/tsgrid-ui.git"
   },
+  "homepage": "https://github.com/DaverSoGT/tsgrid-ui",
+  "bugs": "https://github.com/DaverSoGT/tsgrid-ui/issues",
+  "keywords": [
+    "typescript",
+    "ui",
+    "grid",
+    "datagrid",
+    "form",
+    "layout",
+    "sidebar",
+    "tabs",
+    "toolbar",
+    "popup",
+    "tooltip",
+    "esm",
+    "components"
+  ],
   "main": "dist/w2ui.js",
   "module": "dist/w2ui.es6.js",
   "types": "dist/w2ui.d.ts",
@@ -21,11 +39,18 @@
     "./dark": "./dist/w2ui-dark.css"
   },
   "style": "dist/w2ui.css",
+  "files": [
+    "dist/",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+    "MIGRATION-FROM-W2UI.md"
+  ],
   "scripts": {
     "start": "run-script-os",
     "start:win32": "start http://localhost:3500 & python -m http.server 3500",
     "start:nix": "open http://localhost:3500; python3 -m http.server 3500",
-    "lint": "eslint src demos --ext .js,.ts",
+    "lint": "eslint src --ext .js,.ts",
     "typecheck": "tsc --noEmit",
     "build:css": "gulp less && gulp icons",
     "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs",
