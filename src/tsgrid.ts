@@ -70,6 +70,7 @@ import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
 import { TsField } from './tsfield.js'
 import type { RecId } from './types.js'
 import * as gridColumns from './grid-columns.js'
+import * as gridState from './grid-state.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout TsGrid
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
@@ -9544,386 +9545,75 @@ class TsGrid extends TsBase {
     }
 
     status(msg?: string) {
-        if (msg != null) {
-            query(this.box).find(`#grid_${this.name}_footer`).find('.tsg-footer-left').html(msg)
-        } else {
-            // show number of selected
-            let msgLeft = ''
-            const sel     = this.getSelection()
-            if (sel.length > 0) {
-                if (this.show.statusSelection && sel.length > 1) {
-                    msgLeft = String(sel.length).replace(/(\d)(?=(\d\d\d)+(?!\d))/g, '$1' + TsUtils.settings.groupSymbol) + ' ' + TsUtils.lang('selected')
-                }
-                if (this.show.statusRecordID && sel.length == 1) {
-                    // any: status bar widens recid display to include column for cell mode; mode is detected by typeof
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    let tmp: any = sel[0]
-                    if (typeof tmp == 'object') tmp = tmp.recid + ', '+ TsUtils.lang('Column') +': '+ tmp.column
-                    msgLeft = TsUtils.lang('Record ID') + ': '+ tmp + ' '
-                }
-            }
-            query(this.box).find('#grid_'+ this.name +'_footer .tsg-footer-left').html(msgLeft)
-        }
+        return gridState.status(this, msg)
     }
 
     lock(msg?: string, showSpinner?: boolean) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const args: any[] = [this.box, msg, showSpinner] // any: TsUtils.lock accepts mixed args
-        setTimeout(() => {
-            // hide empty msg if any
-            query(this.box).find('#grid_'+ this.name +'_empty_msg').remove()
-            // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            ;(TsUtils.lock as any)(...args)
-        }, 10)
+        return gridState.lock(this, msg, showSpinner)
     }
 
     unlock(speed?: number) {
-        setTimeout(() => {
-            // do not unlock if there is a message
-            if (query(this.box).find('.tsg-message').hasClass('tsg-closing')) return
-            TsUtils.unlock(this.box, speed)
-        }, 25) // needed timer so if server fast, it will not flash
+        return gridState.unlock(this, speed)
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateSave(returnOnly: any) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const state: { columns: Record<string, any>[]; show: any; last: any; sortData: any[]; searchData: any[] } = { // any: state blob is serialized JSON
-            columns: [],
-            show: TsUtils.clone(this.show),
-            last: {
-                search: this.last.search,
-                multi : this.last.multi,
-                logic : this.last.logic,
-                label : this.last.label,
-                field : this.last.field,
-                scrollTop : this.last.vscroll.scrollTop,
-                scrollLeft: this.last.vscroll.scrollLeft
-            },
-            sortData  : [],
-            searchData: []
-        }
-        // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let prop_val: any
-        for (let i = 0; i < this.columns.length; i++) {
-            const col          = this.columns[i]
-            // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const col_save_obj: Record<string, any> = {}
-            // iterate properties to save
-            Object.keys(this.stateColProps).forEach((prop, _idx) => {
-                // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                if ((this.stateColProps as any)[prop]){
-                    // check if the property is defined on the column
-                    // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if ((col as any)[prop] !== undefined){
-                        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        prop_val = (col as any)[prop]
-                    } else {
-                        // use fallback or null
-                        // any: cast-then-index for dynamic property access; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        prop_val = (this.colTemplate as any)[prop] || null
-                    }
-                    col_save_obj[prop] = prop_val
-                }
-            })
-            state.columns.push(col_save_obj)
-        }
-        for (let i = 0; i < this.sortData.length; i++) state.sortData.push(TsUtils.clone(this.sortData[i]))
-        for (let i = 0; i < this.searchData.length; i++) state.searchData.push(TsUtils.clone(this.searchData[i]))
-        // event before
-        const edata = this.trigger('stateSave', { target: this.name, state: state })
-        if (edata.isCancelled === true) {
-            return
-        }
-        // save into local storage
-        if (returnOnly !== true) {
-            this.cacheSave('state', state)
-        }
-        // event after
-        edata.finish()
-        return state
+        return gridState.stateSave(this, returnOnly)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     stateRestore(newState?: any) { // any: state blob is serialized JSON
-        const url = this.url?.get ?? this.url
-        if (!newState) {
-            newState = this.cache('state')
-        }
-        // event before
-        const edata = this.trigger('stateRestore', { target: this.name, state: newState })
-        if (edata.isCancelled === true) {
-            return
-        }
-        // default behavior
-        if (TsUtils.isPlainObject(newState)) {
-            TsUtils.extend(this.show, newState.show ?? {})
-            TsUtils.extend(this.last, newState.last ?? {})
-            const sTop  = this.last.vscroll.scrollTop
-            const sLeft = this.last.vscroll.scrollLeft
-            for (let c = 0; c < newState.columns?.length; c++) {
-                const tmp       = newState.columns[c]
-                const col_index = this.getColumn(tmp.field, true)
-                if (col_index !== null) {
-                    TsUtils.extend(this.columns[col_index]!, tmp)
-                    // restore column order from saved state
-                    if (c !== col_index) this.columns.splice(c, 0, this.columns.splice(col_index, 1)[0]!)
-                }
-            }
-            this.sortData.splice(0, this.sortData.length)
-            for (let c = 0; c < newState.sortData?.length; c++) {
-                this.sortData.push(newState.sortData[c])
-            }
-            this.searchData.splice(0, this.searchData.length)
-            for (let c = 0; c < newState.searchData?.length; c++) {
-                this.searchData.push(newState.searchData[c])
-            }
-            // apply sort and search
-            setTimeout(() => {
-                // needs timeout as records need to be populated
-                // ez 10.09.2014 this -->
-                if (!url) {
-                    if (this.sortData.length > 0) this.localSort()
-                    if (this.searchData.length > 0) this.localSearch()
-                }
-                this.last.vscroll.scrollTop = sTop
-                this.last.vscroll.scrollLeft = sLeft
-                this.refresh()
-            }, 1)
-            console.log(`INFO (TsUi): state restored for "${this.name}"`)
-        }
-        // event after
-        edata.finish()
-        return true
+        return gridState.stateRestore(this, newState)
     }
 
     stateReset() {
-        this.stateRestore(this.last.state)
-        this.cacheSave('state', null)
+        return gridState.stateReset(this)
     }
 
     // any: return type any — caller narrows by code path; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     parseField(obj: TsGridRecord | null | undefined, field: string): any {
-        let val
-        if (this.nestedFields) {
-            val = TsUtils.getNested(obj, field)
-        } else {
-            val = obj?.[field]
-        }
-        return (val != null ? val : '')
+        return gridState.parseField(this, obj, field)
     }
 
     prepareData() {
-        // eslint-disable-next-line @typescript-eslint/no-this-alias
-        const obj = this
-
-        // loops thru records and prepares date and time objects
-        for (let r = 0; r < this.records.length; r++) {
-            const rec = this.records[r]!
-            prepareRecord(rec)
-        }
-
-        // prepare date and time objects for the 'rec' record and its closed children
-        function prepareRecord(rec: TsGridRecord): void {
-            for (let c = 0; c < obj.columns.length; c++) {
-                const column = obj.columns[c]!
-                if (rec[column.field] == null || typeof column.render != 'string') continue
-                // number
-                if (['number', 'int', 'float', 'money', 'currency', 'percent'].indexOf(column.render.split(':')[0] ?? '') != -1) {
-                    if (typeof rec[column.field] != 'number') rec[column.field] = parseFloat(rec[column.field])
-                }
-                // date
-                if (['date', 'age'].indexOf(column.render.split(':')[0] ?? '') != -1) {
-                    if (!rec[column.field + '_']) {
-                        let dt = rec[column.field]
-                        if (TsUtils.isInt(dt)) dt = parseInt(dt)
-                        rec[column.field + '_'] = new Date(dt)
-                    }
-                }
-                // time
-                if (['time'].indexOf(column.render) != -1) {
-                    if (TsUtils.isTime(rec[column.field])) { // if string
-                        // any: cast-to-any for return-position narrowing; TsGrid record/cell shape is user-defined at runtime
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        const tmp = TsUtils.isTime(rec[column.field], true) as any
-                        const dt  = new Date()
-                        dt.setHours(tmp.hours, tmp.minutes, (tmp.seconds ? tmp.seconds : 0), 0) // sets hours, min, sec, mills
-                        if (!rec[column.field + '_']) rec[column.field + '_'] = dt
-                    } else { // if date object
-                        let tmp = rec[column.field]
-                        if (TsUtils.isInt(tmp)) tmp = parseInt(tmp)
-                        tmp    = (tmp != null ? new Date(tmp) : new Date())
-                        const dt = new Date()
-                        dt.setHours(tmp.getHours(), tmp.getMinutes(), tmp.getSeconds(), 0) // sets hours, min, sec, mills
-                        if (!rec[column.field + '_']) rec[column.field + '_'] = dt
-                    }
-                }
-            }
-
-            if (rec.TsUi?.children && rec.TsUi?.expanded !== true) {
-                // there are closed children, prepare them too.
-                for (let r = 0; r < rec.TsUi.children.length; r++) {
-                    const subRec = rec.TsUi.children[r]!
-                    prepareRecord(subRec)
-                }
-            }
-        }
+        return gridState.prepareData(this)
     }
 
     nextCell(index: number, col_ind: number, editable?: boolean): { index: number; colIndex: number } | null {
-        const check = col_ind + 1
-        if (check >= this.columns.length) {
-            const nextIdx = this.nextRow(index)
-            return nextIdx == null ? null : this.nextCell(nextIdx, -1, editable)
-        }
-        const tmp = this.records[index]?.TsUi
-        const col = this.columns[check]
-        const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
-        if (col == null) return null
-        if (col && col.hidden || span === 0) return this.nextCell(index, check, editable)
-        if (editable) {
-            const edit = this.getCellEditable(index, check)
-            if (edit == null || ['checkbox', 'check'].indexOf(edit.type) != -1) {
-                return this.nextCell(index, check, editable)
-            }
-        }
-        return { index, colIndex: check }
+        return gridState.nextCell(this, index, col_ind, editable)
     }
 
     prevCell(index: number, col_ind: number, editable?: boolean): { index: number; colIndex: number } | null {
-        const check = col_ind - 1
-        if (check < 0) {
-            const prevIdx = this.prevRow(index)
-            return prevIdx == null ? null : this.prevCell(prevIdx, this.columns.length, editable)
-        }
-        if (check < 0) return null
-        const tmp = this.records[index]?.TsUi
-        const col = this.columns[check]
-        const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
-        if (col == null) return null
-        if (col && col.hidden || span === 0) return this.prevCell(index, check, editable)
-        if (editable) {
-            const edit = this.getCellEditable(index, check)
-            if (edit == null || ['checkbox', 'check'].indexOf(edit.type) != -1) {
-                return this.prevCell(index, check, editable)
-            }
-        }
-        return { index, colIndex: check }
+        return gridState.prevCell(this, index, col_ind, editable)
     }
 
     nextRow(ind: number, col_ind?: number, numRows?: number): number | null {
-        const sids = this.last.searchIds
-        let ret  = null
-        if (numRows == null) numRows = 1
-        if (numRows == -1) {
-            return this.records.length-1
-        }
-        if ((ind + numRows < this.records.length && sids.length === 0) // if there are more records
-                || (sids.length > 0 && ind < (sids[sids.length-numRows] ?? 0))) {
-            ind += numRows
-            if (sids.length > 0) while (true) {
-                if (sids.includes(ind) || ind > this.records.length) break
-                ind += numRows
-            }
-            // colspan
-            const tmp  = this.records[ind]?.TsUi
-            const col  = col_ind != null ? this.columns[col_ind] : undefined
-            const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
-            if (span === 0 || tmp?.selectable === false) {
-                ret = this.nextRow(ind, col_ind, numRows)
-            } else {
-                ret = ind
-            }
-        }
-        return ret
+        return gridState.nextRow(this, ind, col_ind, numRows)
     }
 
     prevRow(ind: number, col_ind?: number, numRows?: number): number | null {
-        const sids = this.last.searchIds
-        let ret  = null
-        if (numRows == null) numRows = 1
-        if (numRows == -1) {
-            return 0
-        }
-        if ((ind - numRows >= 0 && sids.length === 0) // if there are more records
-                || (sids.length > 0 && ind > (sids[0] ?? 0))) {
-            ind -= numRows
-            if (sids.length > 0) while (true) {
-                if (sids.includes(ind) || ind < 0) break
-                ind -= numRows
-            }
-            // colspan
-            const tmp  = this.records[ind]?.TsUi
-            const col  = col_ind != null ? this.columns[col_ind] : undefined
-            const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
-            if (span === 0 || tmp?.selectable === false) {
-                ret = this.prevRow(ind, col_ind, numRows)
-                if (ret == null) ret = ind
-            } else {
-                ret = ind
-            }
-        }
-        return ret
+        return gridState.prevRow(this, ind, col_ind, numRows)
     }
 
     selectionSave() {
-        this.last.saved_sel = this.getSelection()
-        return this.last.saved_sel
+        return gridState.selectionSave(this)
     }
 
     selectionRestore(noRefresh?: boolean) {
-        const time = Date.now()
-        this.last.selection = { indexes: [], columns: {} }
-        const sel = this.last.selection
-        const lst = this.last.saved_sel
-        if (lst) for (let i = 0; i < lst.length; i++) {
-            if (TsUtils.isPlainObject(lst[i])) {
-                // selectType: cell
-                const tmp = this.get(lst[i].recid, true)
-                if (tmp != null) {
-                    if (sel.indexes.indexOf(tmp) == -1) sel.indexes.push(tmp)
-                    if (!sel.columns[tmp]) sel.columns[tmp] = []
-                    sel.columns[tmp].push(lst[i].column)
-                }
-            } else {
-                // selectType: row
-                const tmp = this.get(lst[i], true)
-                if (tmp != null) sel.indexes.push(tmp)
-            }
-        }
-        delete this.last.saved_sel
-        if (noRefresh !== true) this.refresh()
-        return Date.now() - time
+        return gridState.selectionRestore(this, noRefresh)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message(options?: any) { // any: message options vary by type (string, object)
-        return TsUtils.message({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
-            box  : this.box,
-            after: '.tsg-grid-header'
-        }, options)
+        return gridState.message(this, options)
     }
 
     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     confirm(options: any) {
-        return TsUtils.confirm({
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
-            box  : this.box,
-            after: '.tsg-grid-header'
-        }, options)
+        return gridState.confirm(this, options)
     }
 }
 
