@@ -32,7 +32,8 @@
     "build": "pnpm build:css && pnpm build:js",
     "smoke": "playwright test",
     "smoke:update": "playwright test --update-snapshots",
-    "verify": "pnpm lint && pnpm typecheck && pnpm smoke",
+    "consumer-smoke": "tsc --noEmit --project test/tsconfig.json",
+    "verify": "pnpm lint && pnpm typecheck && pnpm consumer-smoke && pnpm smoke",
     "test": "pnpm lint && pnpm typecheck",
     "dev": "tsup --watch"
   },
