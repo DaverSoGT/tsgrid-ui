@@ -26,19 +26,19 @@
     "esm",
     "components"
   ],
-  "main": "dist/w2ui.js",
-  "module": "dist/w2ui.es6.js",
-  "types": "dist/w2ui.d.ts",
+  "main": "dist/tsgrid-ui.js",
+  "module": "dist/tsgrid-ui.es6.js",
+  "types": "dist/tsgrid-ui.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/w2ui.d.ts",
-      "import": "./dist/w2ui.es6.js",
-      "require": "./dist/w2ui.js"
+      "types": "./dist/tsgrid-ui.d.ts",
+      "import": "./dist/tsgrid-ui.es6.js",
+      "require": "./dist/tsgrid-ui.js"
     },
-    "./css": "./dist/w2ui.css",
-    "./dark": "./dist/w2ui-dark.css"
+    "./css": "./dist/tsgrid-ui.css",
+    "./dark": "./dist/tsgrid-ui-dark.css"
   },
-  "style": "dist/w2ui.css",
+  "style": "dist/tsgrid-ui.css",
   "files": [
     "dist/",
     "LICENSE",

@@ -17,12 +17,12 @@ let tasks = {
 
     clean(cb) {
         let files = [
-            'dist/w2ui.js',
-            'dist/w2ui.min.js',
-            'dist/w2ui.css',
-            'dist/w2ui-dark.css',
-            'dist/w2ui.min.css',
-            'dist/w2ui-dark.min.css'
+            'dist/tsgrid-ui.js',
+            'dist/tsgrid-ui.min.js',
+            'dist/tsgrid-ui.css',
+            'dist/tsgrid-ui-dark.css',
+            'dist/tsgrid-ui.min.css',
+            'dist/tsgrid-ui-dark.min.css'
         ]
         return del(files)
     },
