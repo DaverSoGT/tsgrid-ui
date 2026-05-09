@@ -1,5 +1,5 @@
 import { describe, expect, it, beforeEach } from 'vitest'
-import { w2utils } from '../../src/w2utils.js'
+import { w2utils } from '../../src/tsutils.js'
 
 // Snapshot of mutable settings — restore between tests so locale/grouping
 // changes don't leak across cases.

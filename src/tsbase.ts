@@ -9,9 +9,9 @@
  *
  */
 
-import { w2utils, query } from './w2utils.js'
+import { w2utils, query } from './tsutils.js'
 // w2ui is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
-import { w2ui as _w2uiRegistry } from './w2utils.js'
+import { w2ui as _w2uiRegistry } from './tsutils.js'
 const w2ui = _w2uiRegistry as Record<string, unknown>
 
 interface W2EventData {

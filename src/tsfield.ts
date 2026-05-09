@@ -32,9 +32,9 @@
  *  - options.msgNoItems
  */
 
-import { w2base } from './w2base.js'
-import { w2utils } from './w2utils.js'
-import { w2tooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './w2tooltip.js'
+import { w2base } from './tsbase.js'
+import { w2utils } from './tsutils.js'
+import { w2tooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './tstooltip.js'
 import { query as _queryRaw, Query } from './query.js'
 
 // any: query() returns Query|void; cast once here for clean chaining

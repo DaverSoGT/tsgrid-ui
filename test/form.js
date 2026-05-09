@@ -1,6 +1,6 @@
-import { w2form } from '../src/w2form.js'
-import { w2menu } from '../src/w2tooltip.js'
-import { w2ui } from '../src/w2utils.js'
+import { w2form } from '../src/tsform.js'
+import { w2menu } from '../src/tstooltip.js'
+import { w2ui } from '../src/tsutils.js'
 
 // TOOD: remove
 window.w2ui = w2ui

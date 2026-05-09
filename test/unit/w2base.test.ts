@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { w2base, w2event } from '../../src/w2base.js'
+import { w2base, w2event } from '../../src/tsbase.js'
 
 // Tiny harness — give every test a fresh w2base instance with a unique name
 // so the global w2ui registry stays uncluttered. The base class registers

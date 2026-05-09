@@ -1,5 +1,5 @@
 // import { w2overlay } from '../src/w2overlay.js'
-import { w2tooltip } from '../src/w2tooltip.js'
+import { w2tooltip } from '../src/tstooltip.js'
 import { $, query } from '../src/query.js'
 
 // window.query = query

@@ -62,12 +62,12 @@
  *  - added grid.groupBy = {} and grid.last.groupBy_links = {}
  */
 
-import { w2base } from './w2base.js'
-import { w2ui, w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2ui, w2utils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
-import { w2toolbar } from './w2toolbar.js'
-import { w2menu as _w2menu, w2tooltip as _w2tooltip } from './w2tooltip.js'
-import { w2field } from './w2field.js'
+import { w2toolbar } from './tstoolbar.js'
+import { w2menu as _w2menu, w2tooltip as _w2tooltip } from './tstooltip.js'
+import { w2field } from './tsfield.js'
 import type { RecId } from './types.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout w2grid

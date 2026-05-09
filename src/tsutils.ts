@@ -31,8 +31,8 @@
  *  - w2utils.wait() - async timer
  */
 
-import { w2base } from './w2base.js'
-import { w2locale } from './w2locale.js'
+import { w2base } from './tsbase.js'
+import { w2locale } from './tslocale.js'
 import { query as _query, Query } from './query.js'
 
 // w2utils always calls query() with a selector (never a callback) so the return is always Query.

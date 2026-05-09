@@ -19,8 +19,8 @@
  * - added onMouseEnter and onMouseLeave for w2menu
  */
 
-import { w2base } from './w2base.js'
-import { w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2utils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 
 // w2tooltip always calls query() with a selector (never a callback), so return is always Query.

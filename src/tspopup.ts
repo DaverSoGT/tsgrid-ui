@@ -22,8 +22,8 @@
  *  - resize - returns promise
  */
 
-import { w2base } from './w2base.js'
-import { w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2utils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 // any: query() returns Query|void but is always used in chain; cast once here
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query

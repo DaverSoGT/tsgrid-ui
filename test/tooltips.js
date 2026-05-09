@@ -1,6 +1,6 @@
 // import { w2overlay } from '../src/w2overlay.js'
-import { w2utils } from '../src/w2utils.js'
-import { w2tooltip, w2color, w2menu } from '../src/w2tooltip.js'
+import { w2utils } from '../src/tsutils.js'
+import { w2tooltip, w2color, w2menu } from '../src/tstooltip.js'
 import { $, query } from '../src/query.js'
 
 window.query = query

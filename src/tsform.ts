@@ -39,13 +39,13 @@
  *  - getAction/actionHide/actionShow/actionDisable/actionEnable - new methods
  */
 
-import { w2base } from './w2base.js'
-import { w2ui, w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2ui, w2utils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tabs } from './w2tabs.js'
-import { w2toolbar } from './w2toolbar.js'
-import { w2tooltip as _w2tooltip } from './w2tooltip.js'
-import { w2field } from './w2field.js'
+import { w2tabs } from './tstabs.js'
+import { w2toolbar } from './tstoolbar.js'
+import { w2tooltip as _w2tooltip } from './tstooltip.js'
+import { w2field } from './tsfield.js'
 
 // any: w2tooltip has complex show/hide overloads; cast once for clean call sites
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

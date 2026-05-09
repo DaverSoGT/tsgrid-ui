@@ -14,11 +14,11 @@
  *  - assignTabs
  */
 
-import { w2base } from './w2base.js'
-import { w2ui as _w2ui, w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2ui as _w2ui, w2utils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tabs } from './w2tabs.js'
-import { w2toolbar } from './w2toolbar.js'
+import { w2tabs } from './tstabs.js'
+import { w2toolbar } from './tstoolbar.js'
 
 // any: query() returns Query|void; cast once for clean selector usage
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query

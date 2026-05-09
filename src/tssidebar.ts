@@ -24,10 +24,10 @@
  *  - prev(), next(), getChain()
  */
 
-import { w2base } from './w2base.js'
-import { w2ui, w2utils } from './w2utils.js'
+import { w2base } from './tsbase.js'
+import { w2ui, w2utils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
-import { w2tooltip, w2menu } from './w2tooltip.js'
+import { w2tooltip, w2menu } from './tstooltip.js'
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 

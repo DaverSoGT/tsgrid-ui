@@ -1,6 +1,6 @@
 import query from '../src/query.js'
-import { w2sidebar } from '../src/w2sidebar.js'
-import { w2ui } from '../src/w2utils.js'
+import { w2sidebar } from '../src/tssidebar.js'
+import { w2ui } from '../src/tsutils.js'
 
 // TODO: remove
 window.w2ui = w2ui
