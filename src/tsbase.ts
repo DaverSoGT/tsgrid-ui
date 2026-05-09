@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: TsUtils
  *  - on/off/trigger methods id not showing in help
  *  - refactored with event object
@@ -10,9 +10,9 @@
  */
 
 import { TsUtils, query } from './tsutils.js'
-// w2ui is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
-import { w2ui as _w2uiRegistry } from './tsutils.js'
-const w2ui = _w2uiRegistry as Record<string, unknown>
+// TsUi is a plain object registry; typed as Record to allow dynamic name-keyed assignment.
+import { TsUi as _w2uiRegistry } from './tsutils.js'
+const TsUi = _w2uiRegistry as Record<string, unknown>
 
 interface TsEventData {
     type?: string | null
@@ -107,7 +107,7 @@ class TsBase {
     [key: string]: unknown
 
     /**
-     * Initializes base object for w2ui, registers it with w2ui object
+     * Initializes base object for TsUi, registers it with TsUi object
      *
      * @param {string} name  - name of the object
      * @returns
@@ -118,7 +118,7 @@ class TsBase {
         // register globally
         if (typeof name !== 'undefined') {
             if (!TsUtils.checkName(name)) return
-            w2ui[name] = this
+            TsUi[name] = this
         }
         this.debug = false // if true, will trigger all events
     }
@@ -346,7 +346,7 @@ class TsBase {
     }
 
     /**
-     * Removes all classes that start with w2ui-* and sets box to null. It is needed so that control will
+     * Removes all classes that start with TsUi-* and sets box to null. It is needed so that control will
      * release the box to be used for other widgets
      */
     unmount(): void {
@@ -355,10 +355,10 @@ class TsBase {
             return
         }
         const remove: string[] = []
-        // find classes that start with "w2ui-*"
+        // find classes that start with "TsUi-*"
         if (this.box instanceof HTMLElement) {
             this.box.classList.forEach(cl => {
-                if (cl.startsWith('w2ui-')) remove.push(cl)
+                if (cl.startsWith('TsUi-')) remove.push(cl)
             })
         }
         query(this.box)

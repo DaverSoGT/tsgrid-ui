@@ -1,6 +1,6 @@
 // import { w2overlay } from '../src/w2overlay.js'
 import { TsUtils } from '../src/tsutils.js'
-import { TsTooltip, w2color, w2menu } from '../src/tstooltip.js'
+import { TsTooltip, TsColor, TsMenu } from '../src/tstooltip.js'
 import { $, query } from '../src/query.js'
 
 window.query = query
@@ -35,7 +35,7 @@ $('button').on('click', event => {
         // TsTooltip.show({
         //     name: 'tpB',
         //     anchor: anchor[0],
-        //     class: 'w2ui-light',
+        //     class: 'TsUi-light',
         //     html: 'White small tooltip',
         //     position: 'bottom',
         //     hideOn: ['click']
@@ -63,7 +63,7 @@ $('button').on('click', event => {
                    Long text for the tooltip to see how it would wrap if any.<br>
                    Long text for the tooltip to see how it would wrap if any.`
                 : 'Small text tooltip',
-            class: 'w2ui-light',
+            class: 'TsUi-light',
             style: 'background-color: white; border: 1px solid red; color: red; text-shadow: none',
             // onShow(event) {
             //     console.log('show', event)
@@ -118,15 +118,15 @@ $('button').on('click', event => {
 //     style: 'background-color: white; border: 1px solid red; color: red; text-shadow: none'
 // })
 
-let ret2 = w2menu.attach({
+let ret2 = TsMenu.attach({
     type: 'check',
     anchor: query('#inp0')[0],
     // align: 'both',
     items: [
-        { id: 1, text: 'item 1', icon: 'w2ui-icon-plus', count1: 4, remove: true, group: false },
-        { id: 2, text: 'item 2', icon: 'w2ui-icon-pencil', hotkey: 'Cmd + A' },
-        { id: 3, text: 'item 3', icon: 'w2ui-icon-colors' },
-        { id: 4, text: 'item 4', icon: 'w2ui-icon-drop' },
+        { id: 1, text: 'item 1', icon: 'TsUi-icon-plus', count1: 4, remove: true, group: false },
+        { id: 2, text: 'item 2', icon: 'TsUi-icon-pencil', hotkey: 'Cmd + A' },
+        { id: 3, text: 'item 3', icon: 'TsUi-icon-colors' },
+        { id: 4, text: 'item 4', icon: 'TsUi-icon-drop' },
     ]
 })
 .select(event => {
@@ -147,7 +147,7 @@ console.log(ret2)
 //     console.log('selected', event.color)
 // });
 
-let ret = w2menu.attach({
+let ret = TsMenu.attach({
     anchor: query('#inp6')[0],
     type: 'radio',
     // search: true,
@@ -156,23 +156,23 @@ let ret = w2menu.attach({
     // menuStyle: 'border: 1px solid red;',
     // spinner: true,
     items: [
-        { id: 1, text: 'item 1', icon1: 'w2ui-icon-plus', count: 'ab', checked: true, disabled: true },
-        { id: 2, text: 'item 2', icon: 'w2ui-icon-pencil', remove: true, group: 1, disabled: true },
-        { id: 21, text: 'This is some longer item', icon: 'w2ui-icon-colors', remove: true, group: 1 },
-        { id: 3, text: 'item 3', icon: 'w2ui-icon-drop',  group: 1,  hotkey: 'Cmd + A' },
+        { id: 1, text: 'item 1', icon1: 'TsUi-icon-plus', count: 'ab', checked: true, disabled: true },
+        { id: 2, text: 'item 2', icon: 'TsUi-icon-pencil', remove: true, group: 1, disabled: true },
+        { id: 21, text: 'This is some longer item', icon: 'TsUi-icon-colors', remove: true, group: 1 },
+        { id: 3, text: 'item 3', icon: 'TsUi-icon-drop',  group: 1,  hotkey: 'Cmd + A' },
         { text: '--' },
         { id: 4, text: 'Has sub items', icon: true, count: '5A', expanded: true, group: false,
             items: [
-                { id: 41, text: 'sub item 6', icon: 'w2ui-icon-info', group: 1 },
-                { id: 42, text: 'sub item long 7', icon: 'w2ui-icon-info', group: 1 },
-                { id: 43, text: 'sub item long 8', icon: 'w2ui-icon-info', group: 1 },
+                { id: 41, text: 'sub item 6', icon: 'TsUi-icon-info', group: 1 },
+                { id: 42, text: 'sub item long 7', icon: 'TsUi-icon-info', group: 1 },
+                { id: 43, text: 'sub item long 8', icon: 'TsUi-icon-info', group: 1 },
             ]
         },
         { id: 5, text: 'item 5', icon: true, tooltip: 'Some tooltip' },
         { text: '-- group' },
-        { id: 6, text: 'item 6', icon: 'w2ui-icon-info', disabled: true },
-        { id: 7, text: 'item long 7', icon: 'w2ui-icon-info' },
-        { id: 8, text: 'item long 8', icon: 'w2ui-icon-info' },
+        { id: 6, text: 'item 6', icon: 'TsUi-icon-info', disabled: true },
+        { id: 7, text: 'item long 7', icon: 'TsUi-icon-info' },
+        { id: 8, text: 'item long 8', icon: 'TsUi-icon-info' },
         { text: '-- No icon items' },
         'Some text w/o an icon',
         'Some text w/o an icon',

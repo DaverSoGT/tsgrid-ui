@@ -1,6 +1,6 @@
 /**
- * Part of w2ui 2.0 library
- *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip, w2color, w2menu, w2date
+ * Part of TsUi 2.0 library
+ *  - Dependencies: mQuery, TsUtils, TsBase, TsTooltip, TsColor, TsMenu, TsDate
  *
  * T4.1: Ported to TypeScript with aggressive typing per typing_policy.
  * No @ts-nocheck. Targeted `any` sites documented with // any: comments.
@@ -34,20 +34,20 @@
 
 import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
-import { TsTooltip as _w2tooltip, w2color as _w2color, w2menu as _w2menu, w2date as _w2date } from './tstooltip.js'
+import { TsTooltip as _w2tooltip, TsColor as _w2color, TsMenu as _w2menu, TsDate as _w2date } from './tstooltip.js'
 import { query as _queryRaw, Query } from './query.js'
 
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
-// any: w2menu/w2color/w2date/TsTooltip have rich return types with .select()/.hide()/.show()
+// any: TsMenu/TsColor/TsDate/TsTooltip have rich return types with .select()/.hide()/.show()
 // that are hard to match from external call sites; cast once here for clean usage
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2menu    = _w2menu as any // any: overlay manager with .show()/.hide()/.get() returning dynamic overlay objects
+const TsMenu    = _w2menu as any // any: overlay manager with .show()/.hide()/.get() returning dynamic overlay objects
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2color   = _w2color as any // any: color picker with .show() returning AttachReturn with .select()/.liveUpdate()
+const TsColor   = _w2color as any // any: color picker with .show() returning AttachReturn with .select()/.liveUpdate()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2date    = _w2date as any // any: date picker with .show()/.inRange()/.str2min()/.min2str() etc.
+const TsDate    = _w2date as any // any: date picker with .show()/.inRange()/.str2min()/.min2str() etc.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TsTooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide() accepting flexible option shapes
 
@@ -352,7 +352,7 @@ interface TsFieldTmp {
     'current_width'?: number
     pholder?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    overlay?: any // any: w2menu overlay instance with dynamic .overlay sub-object
+    overlay?: any // any: TsMenu overlay instance with dynamic .overlay sub-object
     openedOnFocus?: boolean
     sizeTimer?: ReturnType<typeof setInterval>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -639,7 +639,7 @@ class TsField extends TsBase {
                 options.items = TsUtils.normMenu.call(this, options.items, options)
                 if (this.type === 'list') {
                     // defaults.search = (options.items && options.items.length >= 10 ? true : false);
-                    query(this.el).addClass('w2ui-select')
+                    query(this.el).addClass('TsUi-select')
                     // if simple value - look it up
                     if (!TsUtils.isPlainObject(options.selected) && Array.isArray(options.items)) {
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -771,7 +771,7 @@ class TsField extends TsBase {
         // attach events
         const $elInit = query(this.el)
         $elInit.css('box-sizing', 'border-box')
-        $elInit.addClass('TsField w2ui-input')
+        $elInit.addClass('TsField TsUi-input')
             .off('.TsField')
             .on('change.TsField', (event: Event) => { this.change(event) })
             .on('click.TsField', (event: Event) => { this.click(event as MouseEvent) })
@@ -804,7 +804,7 @@ class TsField extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     set(val: any, append?: boolean): void { // any: val can be string, object, array depending on type
         if (['list', 'enum', 'file'].indexOf(this.type) !== -1) {
-            const overlay = w2menu.get(this.el!.id + '_menu')
+            const overlay = TsMenu.get(this.el!.id + '_menu')
             overlay?.hide()
             if (this.type !== 'list' && append) {
                 if (!Array.isArray(this.selected)) this.selected = []
@@ -826,7 +826,7 @@ class TsField extends TsBase {
 
     setIndex(ind: number, append?: boolean): boolean {
         if (['list', 'enum'].indexOf(this.type) !== -1) {
-            const overlay = w2menu.get(this.el!.id + '_menu')
+            const overlay = TsMenu.get(this.el!.id + '_menu')
             overlay?.hide()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const items = (this.options as any).items // any: items array is type-specific
@@ -871,7 +871,7 @@ class TsField extends TsBase {
             // if empty show no icon
             if (this.selected == null && options.icon) {
                 options.prefix = `
-                    <span class="w2ui-icon ${options.icon} "style="cursor: pointer; font-size: 14px;
+                    <span class="TsUi-icon ${options.icon} "style="cursor: pointer; font-size: 14px;
                         display: inline-block; margin-top: -1px; color: #7F98AD; ${options.iconStyle}">
                     </span>`
                 this.addPrefix()
@@ -908,11 +908,11 @@ class TsField extends TsBase {
                     if (this.helpers.prefix) query(this.helpers.prefix).hide()
                     if (options.icon) {
                         focus.css('margin-left', '17px')
-                        query(this.helpers.search).find('.w2ui-icon-search')
+                        query(this.helpers.search).find('.TsUi-icon-search')
                             .addClass('show-search')
                     } else {
                         focus.css('margin-left', '0px')
-                        query(this.helpers.search).find('.w2ui-icon-search')
+                        query(this.helpers.search).find('.TsUi-icon-search')
                             .removeClass('show-search')
                     }
                 }, 1)
@@ -942,10 +942,10 @@ class TsField extends TsBase {
                         <div class="li-item" index="${ind}" style="max-width: ${parseInt(options.maxItemWidth)}px; ${it.style ? it.style : ''}">
                         ${
                             typeof options.renderItem === 'function'
-                            ? options.renderItem(it, ind, `<div class="w2ui-list-remove" index="${ind}">&#160;&#160;</div>`)
+                            ? options.renderItem(it, ind, `<div class="TsUi-list-remove" index="${ind}">&#160;&#160;</div>`)
                             : `
-                               ${it.icon ? `<span class="w2ui-icon ${it.icon}"></span>` : ''}
-                               <div class="w2ui-list-remove" index="${ind}">&#160;&#160;</div>
+                               ${it.icon ? `<span class="TsUi-icon ${it.icon}"></span>` : ''}
+                               <div class="TsUi-list-remove" index="${ind}">&#160;&#160;</div>
                                ${(this.type === 'enum' ? it.text : it.name) ?? it.id ?? it }
                                ${it.size ? `<span class="file-size"> - ${TsUtils.formatSize(it.size)}</span>` : ''}
                             `
@@ -953,7 +953,7 @@ class TsField extends TsBase {
                         </div>`
                 })
             }
-            const ul  = div.find('.w2ui-multi-items')
+            const ul  = div.find('.TsUi-multi-items')
             if (options.style) {
                 div.attr('style', div.attr('style') + ';' + options.style)
             }
@@ -961,21 +961,21 @@ class TsField extends TsBase {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) {
                 setTimeout(() => {
                     (div.get(0) as HTMLElement).scrollTop = 0 // scroll to the top
-                    div.addClass('w2ui-readonly')
+                    div.addClass('TsUi-readonly')
                         .find('.li-item').css('opacity', '0.9')
                     ;(div.find('.li-item') as Query).parent().find('.li-search').hide()
                         .find('input').prop('readOnly', true)
-                        .closest('.w2ui-multi-items')
-                        .find('.w2ui-list-remove').hide()
+                        .closest('.TsUi-multi-items')
+                        .find('.TsUi-list-remove').hide()
                 }, 1)
             } else {
                 setTimeout(() => {
-                    div.removeClass('w2ui-readonly')
+                    div.removeClass('TsUi-readonly')
                         .find('.li-item').css('opacity', '1')
                     ;(div.find('.li-item') as Query).parent().find('.li-search').show()
                         .find('input').prop('readOnly', false)
-                        .closest('.w2ui-multi-items')
-                        .find('.w2ui-list-remove').show()
+                        .closest('.TsUi-multi-items')
+                        .find('.TsUi-list-remove').show()
                 }, 1)
             }
 
@@ -983,7 +983,7 @@ class TsField extends TsBase {
             if (this.selected?.length > 0) {
                 query(this.el).attr('placeholder', '')
             }
-            div.find('.w2ui-enum-placeholder').remove()
+            div.find('.TsUi-enum-placeholder').remove()
             ul.find('.li-item').remove()
 
             // add new list
@@ -998,7 +998,7 @@ class TsField extends TsBase {
                     font-size: ${styles['font-size']};
                     font-family: ${styles['font-family']};
                 `)
-                div.prepend(`<div class="w2ui-enum-placeholder" style="${style}">${query(this.el).attr('placeholder')}</div>`)
+                div.prepend(`<div class="TsUi-enum-placeholder" style="${style}">${query(this.el).attr('placeholder')}</div>`)
             }
             // ITEMS events
             div.off('.w2item')
@@ -1023,14 +1023,14 @@ class TsField extends TsBase {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     let edata: any // any: trigger() returns an event-data object with dynamic properties
                     // default behavior
-                    if (query(mouseEvent.target).hasClass('w2ui-list-remove')) {
+                    if (query(mouseEvent.target).hasClass('TsUi-list-remove')) {
                         if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
                         // trigger event
                         edata = this.trigger('remove', { target: this.el, originalEvent: mouseEvent, item })
                         if (edata.isCancelled === true) return
                         // remove file from input element
                         const transfer = new DataTransfer()
-                        const input = query(mouseEvent.target).closest('.w2ui-list').find('input.file-input').get(0) as HTMLInputElement
+                        const input = query(mouseEvent.target).closest('.TsUi-list').find('input.file-input').get(0) as HTMLInputElement
                         if (input) {
                             Array.from(input.files ?? [])
                                 .filter((f: File) => f.name != item.name)
@@ -1052,13 +1052,13 @@ class TsField extends TsBase {
                         if (this.type === 'file') {
                             if ((/image/i).test(item.type)) { // image
                                 preview = `
-                                    <div class="w2ui-file-preview">
+                                    <div class="TsUi-file-preview">
                                         <img src="${(item.content ? 'data:'+ item.type +';base64,'+ item.content : '')}"
                                             style="max-width: 300px">
                                     </div>`
                             }
                             preview += `
-                                <div class="w2ui-file-info">
+                                <div class="TsUi-file-info">
                                     <div class="file-caption">${TsUtils.lang('Name')}:</div>
                                     <div class="file-value">${item.name}</div>
                                     <div class="file-caption">${TsUtils.lang('Size')}:</div>
@@ -1166,7 +1166,7 @@ class TsField extends TsBase {
         if (['enum', 'file'].includes(this.type) && div) {
             // adjust height
             query(this.el).css('height', '')
-            let cntHeight = (query(div).find(':scope div.w2ui-multi-items').get(0) as HTMLElement).clientHeight + 5
+            let cntHeight = (query(div).find(':scope div.TsUi-multi-items').get(0) as HTMLElement).clientHeight + 5
             if (cntHeight < 20) cntHeight = 20
             // max height
             if (this.tmp['max-height'] != null && cntHeight > this.tmp['max-height']) {
@@ -1204,7 +1204,7 @@ class TsField extends TsBase {
         }
         // remove events and (data)
         ;(query(this.el).val(this.clean(query(this.el).val())) as Query)
-            .removeClass('TsField w2ui-input')
+            .removeClass('TsField TsUi-input')
             .removeData('selected selectedIndex')
             .off('.TsField') // remove only events added by TsField
         // remove helpers
@@ -1345,9 +1345,9 @@ class TsField extends TsBase {
                 // if overlay is already open (and not just opened on focus event) then hide it
                 if (!this.tmp.openedOnFocus) {
                     const name = this.el!.id + '_menu'
-                    const overlay = w2menu.get(name)
+                    const overlay = TsMenu.get(name)
                     if (overlay?.displayed) {
-                        w2menu.hide(name)
+                        TsMenu.hide(name)
                     } else {
                         this.updateOverlay()
                     }
@@ -1481,7 +1481,7 @@ class TsField extends TsBase {
             if (val !== '') {
                 const check = this.type == 'date' ? TsUtils.isDate :
                     (this.type == 'time' ? TsUtils.isTime : TsUtils.isDateTime)
-                if (!w2date.inRange(this.el!.value, this.options)
+                if (!TsDate.inRange(this.el!.value, this.options)
                         // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         || !check.bind(TsUtils)(this.el!.value, (this.options as any).format)) {
@@ -1494,7 +1494,7 @@ class TsField extends TsBase {
         if (this.type === 'enum') {
             ;(query(this.helpers.multi).find('input').val('') as Query).css('width', '15px')
             // don't hide menu on blur, it should be hidden on tab key up instead, or it will not alow select with click
-            // w2menu.hide(this.el!.id + '_menu')
+            // TsMenu.hide(this.el!.id + '_menu')
         }
         if (this.type == 'file') {
             const prev = this.el!.previousElementSibling
@@ -1503,7 +1503,7 @@ class TsField extends TsBase {
         if (this.type === 'list') {
             this.el!.value = this.selected?.text ?? ''
             // don't hide menu on blur, it should be hidden on tab key up instead, or it will not alow select with click
-            // w2menu.hide(this.el!.id + '_menu')
+            // TsMenu.hide(this.el!.id + '_menu')
         }
     }
 
@@ -1597,7 +1597,7 @@ class TsField extends TsBase {
             if (!options.keyboard || query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
             inc = (event.ctrlKey || event.metaKey ? 60 : 1)
             val = query(this.el).val()
-            let time = w2date.str2min(val as string) || w2date.str2min((new Date()).getHours() + ':' + ((new Date()).getMinutes() - 1))
+            let time = TsDate.str2min(val as string) || TsDate.str2min((new Date()).getHours() + ':' + ((new Date()).getMinutes() - 1))
             switch (key) {
                 case 38: // up
                     if (event.shiftKey) break // no action if shift key is pressed
@@ -1612,7 +1612,7 @@ class TsField extends TsBase {
             }
             if (cancel) {
                 event.preventDefault()
-                ;(query(this.el).val(w2date.min2str(time)) as Query).trigger('input').trigger('change')
+                ;(query(this.el).val(TsDate.min2str(time)) as Query).trigger('input').trigger('change')
                 this.moveCaret2end()
             }
         }
@@ -1627,7 +1627,7 @@ class TsField extends TsBase {
                             const edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected })
                             if (edata.isCancelled === true) return
                             this.selected = null
-                            w2menu.hide(this.el!.id + '_menu')
+                            TsMenu.hide(this.el!.id + '_menu')
                             ;(query(this.el).val('') as Query).trigger('input').trigger('change')
                             edata.finish()
                         }
@@ -1637,10 +1637,10 @@ class TsField extends TsBase {
                             const edata = this.trigger('remove', { target: this.el, originalEvent: event, item: this.selected[this.selected.length - 1] })
                             if (edata.isCancelled === true) return
 
-                            w2menu.hide(this.el!.id + '_menu')
+                            TsMenu.hide(this.el!.id + '_menu')
                             this.selected.pop()
                             // update selected array in overlay
-                            const overlay = w2menu.get(this.el!.id + '_menu')
+                            const overlay = TsMenu.get(this.el!.id + '_menu')
                             if (overlay) overlay.options.selected = this.selected
                             this.refresh()
                             edata.finish()
@@ -1649,10 +1649,10 @@ class TsField extends TsBase {
                     break
                 case 9: // tab key
                 case 16: // shift key (when shift+tab)
-                    w2menu.hide(this.el!.id + '_menu')
+                    TsMenu.hide(this.el!.id + '_menu')
                     break
                 case 27: // escape
-                    w2menu.hide(this.el!.id + '_menu')
+                    TsMenu.hide(this.el!.id + '_menu')
                     this.refresh()
                     break
                 default: {
@@ -1673,7 +1673,7 @@ class TsField extends TsBase {
             if (event.keyCode == 13) {
                 setTimeout(() => {
                     search.val('')
-                    w2menu.hide(this.el!.id + '_menu')
+                    TsMenu.hide(this.el!.id + '_menu')
                     this.refresh()
                 }, 1)
             }
@@ -1706,7 +1706,7 @@ class TsField extends TsBase {
             // if delete, backspace, tab, shift, escape - hide menu
             if ([8, 46, 9, 16, 27].includes(event.keyCode)) {
                 if (this.tmp.overlay?.overlay?.displayed) {
-                    w2menu.hide(this.el!.id + '_menu')
+                    TsMenu.hide(this.el!.id + '_menu')
                 }
             } else {
                 this.updateOverlay()
@@ -1722,7 +1722,7 @@ class TsField extends TsBase {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         if (['list', 'combo', 'enum'].includes(this.type) && (this.options as any).url) {
             // remove source, so get it from overlay
-            const overlay = w2menu.get(this.el!.id + '_menu')
+            const overlay = TsMenu.get(this.el!.id + '_menu')
             if (overlay) {
                 items = overlay.options.items
                 // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
@@ -1751,11 +1751,11 @@ class TsField extends TsBase {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const options = this.options as any // any: options shape depends on type
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        let params: any // any: params object is assembled per-type and passed to w2menu/w2color/w2date
+        let params: any // any: params object is assembled per-type and passed to TsMenu/TsColor/TsDate
         // color
         if (this.type === 'color') {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            w2color.show(TsUtils.extend({
+            TsColor.show(TsUtils.extend({
                 name: this.el!.id + '_color',
                 anchor: this.el,
                 transparent: options.transparent,
@@ -1804,7 +1804,7 @@ class TsField extends TsBase {
                     maxWidth: options.maxDropWidth,  // TODO: check
                     minWidth: options.minDropWidth   // TODO: check
                 })
-                this.tmp.overlay = w2menu.show(params)
+                this.tmp.overlay = TsMenu.show(params)
                     .select((event: CustomEvent) => {
                         if (['list', 'combo'].includes(this.type)) {
                             this.selected = event.detail.item
@@ -1825,7 +1825,7 @@ class TsField extends TsBase {
                                 query(this.el).trigger('input').trigger('change')
                                 query(this.helpers.multi).find('input').val('')
                                 // updaet selected array in overlays
-                                const overlay = w2menu.get(this.el!.id + '_menu')
+                                const overlay = TsMenu.get(this.el!.id + '_menu')
                                 if (overlay) overlay.options.selected = this.selected
                                 // event after
                                 edata.finish()
@@ -1837,7 +1837,7 @@ class TsField extends TsBase {
         // date
         if (['date', 'time', 'datetime'].includes(this.type)) {
             if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-            w2date.show(TsUtils.extend({
+            TsDate.show(TsUtils.extend({
                 name: this.el!.id + '_date',
                 anchor: this.el,
                 value: this.el!.value,
@@ -1927,7 +1927,7 @@ class TsField extends TsBase {
         if (this.helpers.prefix) query(this.helpers.prefix).remove()
         // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        query(this.el).before(`<div class="w2ui-field-helper">${(this.options as any).prefix}</div>`)
+        query(this.el).before(`<div class="TsUi-field-helper">${(this.options as any).prefix}</div>`)
         const helper = (query(this.el).get(0) as Element).previousElementSibling as HTMLElement
         query(helper)
             .css({
@@ -1972,11 +1972,11 @@ class TsField extends TsBase {
             if (this.helpers.arrows) query(this.helpers.arrows).remove()
             // add fresh
             query(this.el).after(
-                '<div class="w2ui-field-helper" style="border: 1px solid transparent">&#160;'+
-                '    <div class="w2ui-field-up" type="up">'+
+                '<div class="TsUi-field-helper" style="border: 1px solid transparent">&#160;'+
+                '    <div class="TsUi-field-up" type="up">'+
                 '        <div class="arrow-up" type="up"></div>'+
                 '    </div>'+
-                '    <div class="w2ui-field-down" type="down">'+
+                '    <div class="TsUi-field-down" type="down">'+
                 '        <div class="arrow-down" type="down"></div>'+
                 '    </div>'+
                 '</div>')
@@ -2015,7 +2015,7 @@ class TsField extends TsBase {
             // add fresh
             // any: cast-to-any for dynamic dispatch; TsField instance shape varies by `type` (text/list/date/color/etc) at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            query(this.el).after(`<div class="w2ui-field-helper">${(this.options as any).suffix}</div>`)
+            query(this.el).after(`<div class="TsUi-field-helper">${(this.options as any).suffix}</div>`)
             const suffixHelper = (query(this.el).get(0) as Element).nextElementSibling as HTMLElement
             query(suffixHelper)
                 .css({
@@ -2054,8 +2054,8 @@ class TsField extends TsBase {
         }
         // build helper
         const html = `
-            <div class="w2ui-field-helper">
-                <span class="w2ui-icon w2ui-icon-search"></span>
+            <div class="TsUi-field-helper">
+                <span class="TsUi-icon TsUi-icon-search"></span>
                 <input ${searchId} type="text" tabIndex="${tabIndex}" ${query(this.el).prop('readOnly') ? 'readonly' : ''}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`
@@ -2085,27 +2085,27 @@ class TsField extends TsBase {
             })
         // INPUT events
         query(helper).find('input')
-            .off('.w2ui-helper')
-            .on('focus.w2ui-helper', (event: Event) => {
+            .off('.TsUi-helper')
+            .on('focus.TsUi-helper', (event: Event) => {
                 const focusEvent = event as FocusEvent
                 query(focusEvent.target).val('')
                 this.tmp.pholder = query(this.el).attr('placeholder') ?? ''
                 this.focus(focusEvent)
                 focusEvent.stopPropagation()
             })
-            .on('blur.w2ui-helper', (event: Event) => {
+            .on('blur.TsUi-helper', (event: Event) => {
                 const focusEvent = event as FocusEvent
                 query(focusEvent.target).val('')
                 if (this.tmp.pholder != null) query(this.el).attr('placeholder', this.tmp.pholder)
                 this.blur(focusEvent)
                 focusEvent.stopPropagation()
             })
-            .on('keydown.w2ui-helper', (event: Event) => { this.keyDown(event as KeyboardEvent) })
-            .on('keyup.w2ui-helper', (event: Event) => { this.keyUp(event as KeyboardEvent) })
+            .on('keydown.TsUi-helper', (event: Event) => { this.keyDown(event as KeyboardEvent) })
+            .on('keyup.TsUi-helper', (event: Event) => { this.keyUp(event as KeyboardEvent) })
         // MAIN div
         query(helper)
-            .off('.w2ui-helper')
-            .on('click.w2ui-helper', (_event: Event) => {
+            .off('.TsUi-helper')
+            .on('click.TsUi-helper', (_event: Event) => {
                 (query(helper).find('input').get(0) as HTMLInputElement).focus()
             })
     }
@@ -2151,8 +2151,8 @@ class TsField extends TsBase {
 
         if (this.type === 'enum') {
             html = `
-            <div class="w2ui-field-helper w2ui-list" style="${margin}">
-                <div class="w2ui-multi-items">
+            <div class="TsUi-field-helper TsUi-list" style="${margin}">
+                <div class="TsUi-multi-items">
                     <div class="li-search">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
@@ -2164,15 +2164,15 @@ class TsField extends TsBase {
         }
         if (this.type === 'file') {
             html = `
-            <div class="w2ui-field-helper w2ui-list" style="${margin}">
-                <div class="w2ui-multi-file">
+            <div class="TsUi-field-helper TsUi-list" style="${margin}">
+                <div class="TsUi-multi-file">
                     <input name="attachment" class="file-input" type="file" tabindex="-1"'
                         style="width: 100%; height: 100%; opacity: 0" title=""
                         ${(this.options as { max?: number }).max !== 1 ? 'multiple' : ''}
                         ${query(this.el).prop('readOnly') || query(this.el).prop('disabled') ? 'disabled': ''}
                         ${query(this.el).attr('accept') ? ' accept="'+ query(this.el).attr('accept') +'"': ''}>
                 </div>
-                <div class="w2ui-multi-items">
+                <div class="TsUi-multi-items">
                     <div class="li-search" style="display: none">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
@@ -2221,16 +2221,16 @@ class TsField extends TsBase {
                 })
                 .on('dragenter.drag', (_event: Event) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.addClass('w2ui-file-dragover')
+                    div.addClass('TsUi-file-dragover')
                 })
                 .on('dragleave.drag', (_event: Event) => {
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.removeClass('w2ui-file-dragover')
+                    div.removeClass('TsUi-file-dragover')
                 })
                 .on('drop.drag', (event: Event) => {
                     const dragEvent = event as DragEvent
                     if (query(this.el).prop('readOnly') || query(this.el).prop('disabled')) return
-                    div.removeClass('w2ui-file-dragover')
+                    div.removeClass('TsUi-file-dragover')
                     const files = Array.from(dragEvent.dataTransfer?.files ?? [])
                     files.forEach((file: File) => { this.addFile(file) })
                     this.focus(dragEvent as unknown as FocusEvent)

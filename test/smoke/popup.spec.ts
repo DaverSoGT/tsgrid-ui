@@ -15,15 +15,15 @@ test.describe('Popup', () => {
 
     test('popup opens and renders title', async ({ page }) => {
         await page.click('#btn-open')
-        await page.waitForSelector('.w2ui-popup', { state: 'attached' })
-        await expect(page.locator('.w2ui-popup')).toBeAttached()
-        const title = await page.locator('.w2ui-popup-title').innerText()
+        await page.waitForSelector('.TsUi-popup', { state: 'attached' })
+        await expect(page.locator('.TsUi-popup')).toBeAttached()
+        const title = await page.locator('.TsUi-popup-title').innerText()
         expect(title).toContain('Smoke Test Popup')
     })
 
     test('popup body renders content', async ({ page }) => {
         await page.click('#btn-open')
-        await page.waitForSelector('.w2ui-popup', { state: 'attached' })
+        await page.waitForSelector('.TsUi-popup', { state: 'attached' })
         await page.waitForSelector('#popup-body-content', { state: 'attached' })
         const body = page.locator('#popup-body-content')
         await expect(body).toBeAttached()
@@ -31,23 +31,23 @@ test.describe('Popup', () => {
         expect(text).toContain('Hello from smoke test')
     })
 
-    test('w2alert API is available and callable', async ({ page }) => {
+    test('TsAlert API is available and callable', async ({ page }) => {
         const hasAlert = await page.evaluate(() => {
-            return typeof (window as any).w2alert === 'function'
+            return typeof (window as any).TsAlert === 'function'
         })
         expect(hasAlert).toBe(true)
     })
 
-    test('w2confirm API is available and callable', async ({ page }) => {
+    test('TsConfirm API is available and callable', async ({ page }) => {
         const hasConfirm = await page.evaluate(() => {
-            return typeof (window as any).w2confirm === 'function'
+            return typeof (window as any).TsConfirm === 'function'
         })
         expect(hasConfirm).toBe(true)
     })
 
-    test('w2prompt API is available and callable', async ({ page }) => {
+    test('TsPrompt API is available and callable', async ({ page }) => {
         const hasPrompt = await page.evaluate(() => {
-            return typeof (window as any).w2prompt === 'function'
+            return typeof (window as any).TsPrompt === 'function'
         })
         expect(hasPrompt).toBe(true)
     })

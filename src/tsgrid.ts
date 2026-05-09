@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: TsUtils, TsBase, TsToolbar, TsTooltip, TsField
  *
  * T5.1: Renamed src/TsGrid.js → src/TsGrid.ts.
@@ -15,7 +15,7 @@
  *  - send parsed URL to the event if there is routeData
  *  - add selectType: 'none' so that no selection can be make but with mouse
  *  - focus/blur for selectType = cell not display grayed out selection
- *  - allow enum in inline edit (see https://github.com/vitmalina/w2ui/issues/911#issuecomment-107341193)
+ *  - allow enum in inline edit (see https://github.com/vitmalina/TsUi/issues/911#issuecomment-107341193)
  *  - remote source, but localSort/localSearch
  *  - promise for request, load, save, etc.
  *  - onloadmore event (so it will be easy to implement remote data source with local sort)
@@ -57,16 +57,16 @@
  *  - grid.compareSelection
  *  - this.showContextMenu(event, { recid, column, index }) - arguments changed
  *  - this.parseField
- *  - added rec.w2ui.selectable
- *  - added rec.w2ui.styles
+ *  - added rec.TsUi.selectable
+ *  - added rec.TsUi.styles
  *  - added grid.groupBy = {} and grid.last.groupBy_links = {}
  */
 
 import { TsBase } from './tsbase.js'
-import { w2ui, TsUtils } from './tsutils.js'
+import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
 import { TsToolbar } from './tstoolbar.js'
-import { w2menu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
+import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
 import { TsField } from './tsfield.js'
 import type { RecId } from './types.js'
 
@@ -74,9 +74,9 @@ import type { RecId } from './types.js'
 // (grid makes extensive use of .get(0) as HTMLElement and Node.style patterns)
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const query = _queryRaw as (...args: any[]) => any // any: Query wrapper used as jQuery-like in TsGrid
-// any: w2menu/TsTooltip have complex show/hide overloads
+// any: TsMenu/TsTooltip have complex show/hide overloads
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2menu    = _w2menu as any    // any: menu overlay with dynamic option shapes
+const TsMenu    = _w2menu as any    // any: menu overlay with dynamic option shapes
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const TsTooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 
@@ -89,7 +89,7 @@ const TsTooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 /** A single data record stored in the grid */
 interface TsGridRecord {
     recid: string | number
-    w2ui?: {
+    TsUi?: {
         summary?: boolean
         children?: TsGridRecord[]
         parent_recid?: string | number
@@ -97,7 +97,7 @@ interface TsGridRecord {
         selectable?: boolean
         styles?: Record<string, string>
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        [key: string]: any // any: dynamic per-record w2ui metadata
+        [key: string]: any // any: dynamic per-record TsUi metadata
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: user-defined field values
@@ -663,17 +663,17 @@ class TsGrid extends TsBase {
         this.msgEmpty      = '' // if not blank, then it is message when server returns no records
 
         this.buttons = {
-            'reload'   : { type: 'button', id: 'w2ui-reload', icon: 'w2ui-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
-            'columns'  : { type: 'menu-check', id: 'w2ui-column-on-off', icon: 'w2ui-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
+            'reload'   : { type: 'button', id: 'TsUi-reload', icon: 'TsUi-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
+            'columns'  : { type: 'menu-check', id: 'TsUi-column-on-off', icon: 'TsUi-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
                 overlay: { align: 'none' }
             },
-            'search'   : { type: 'html', id: 'w2ui-search',
-                html: '<div class="w2ui-icon w2ui-icon-search w2ui-search-down w2ui-action" data-click="searchShowFields"></div>'
+            'search'   : { type: 'html', id: 'TsUi-search',
+                html: '<div class="TsUi-icon TsUi-icon-search TsUi-search-down TsUi-action" data-click="searchShowFields"></div>'
             },
-            'add'      : { type: 'button', id: 'w2ui-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'w2ui-icon-plus' },
-            'edit'     : { type: 'button', id: 'w2ui-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'w2ui-icon-pencil', batch: 1, disabled: true },
-            'delete'   : { type: 'button', id: 'w2ui-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'w2ui-icon-cross', batch: true, disabled: true },
-            'save'     : { type: 'button', id: 'w2ui-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'w2ui-icon-check' }
+            'add'      : { type: 'button', id: 'TsUi-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'TsUi-icon-plus' },
+            'edit'     : { type: 'button', id: 'TsUi-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'TsUi-icon-pencil', batch: 1, disabled: true },
+            'delete'   : { type: 'button', id: 'TsUi-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'TsUi-icon-cross', batch: true, disabled: true },
+            'save'     : { type: 'button', id: 'TsUi-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'TsUi-icon-check' }
         }
 
         this.operators = { // for search fields
@@ -792,7 +792,7 @@ class TsGrid extends TsBase {
                 if (rec.recid == null) {
                     console.log('ERROR: Cannot add records without recid. (obj: '+ this.name +')')
                 }
-                if (rec.w2ui?.summary === true) {
+                if (rec.TsUi?.summary === true) {
                     this.summary.push(rec)
                     remove.push(ind) // cannot remove here as it will mess up array walk thru
                 }
@@ -827,7 +827,7 @@ class TsGrid extends TsBase {
         if (Array.isArray(this.defaultSearches)) {
             this.defaultSearches.forEach((search, ind) => {
                 search.id = 'default-'+ ind
-                search.icon ??= 'w2ui-icon-search'
+                search.icon ??= 'TsUi-icon-search'
             })
         }
         // check if there are saved searches in localStorage
@@ -837,7 +837,7 @@ class TsGrid extends TsBase {
                 this.savedSearches.push({
                     id: search.id ?? 'none',
                     text: search.text ?? 'none',
-                    icon: 'w2ui-icon-search',
+                    icon: 'TsUi-icon-search',
                     remove: true,
                     logic: search.logic ?? 'AND',
                     data: search.data ?? []
@@ -863,7 +863,7 @@ class TsGrid extends TsBase {
                 console.log('ERROR: Cannot add record without recid. (obj: '+ this.name +')')
                 continue
             }
-            if (rec.w2ui?.summary === true) {
+            if (rec.TsUi?.summary === true) {
                 if (first) this.summary.unshift(rec); else this.summary.push(rec)
             } else {
                 if (first) this.records.unshift(rec); else this.records.push(rec)
@@ -884,7 +884,7 @@ class TsGrid extends TsBase {
             } else {
                 // just update total if it it there
                 query(this.box)
-                    .find('#grid_'+ this.name + '_footer .w2ui-footer-right .w2ui-total')
+                    .find('#grid_'+ this.name + '_footer .TsUi-footer-right .TsUi-total')
                     .html(TsUtils.formatNumber(this.total))
             }
         } else {
@@ -1072,14 +1072,14 @@ class TsGrid extends TsBase {
                 if (this.last.groupBy_links[group] == null) {
                     // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const gr: any = { recid: 'group-'+ group, group, w2ui: { ...groupBy, children: [] } }
+                    const gr: any = { recid: 'group-'+ group, group, TsUi: { ...groupBy, children: [] } }
                     this.last.groupBy_links[group] = gr
-                    delete gr.w2ui!['field'] // no need for this field
+                    delete gr.TsUi!['field'] // no need for this field
                     new_records.push(gr)
                 }
                 rec[groupBy.field] = ''
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(this.last.groupBy_links[group] as any).w2ui.children.push(rec) // any: groupBy_links values are TsGridRecord with w2ui.children
+                ;(this.last.groupBy_links[group] as any).TsUi.children.push(rec) // any: groupBy_links values are TsGridRecord with TsUi.children
             }
         })
         this.records = new_records
@@ -1365,8 +1365,8 @@ class TsGrid extends TsBase {
         function preparePaths(): void {
             for (let i = 0; i < obj.records.length; i++) {
                 const rec = obj.records[i]!
-                if (rec.w2ui?.parent_recid != null) {
-                    rec.w2ui['_path'] = getRecordPath(rec)
+                if (rec.TsUi?.parent_recid != null) {
+                    rec.TsUi['_path'] = getRecordPath(rec)
                 }
             }
         }
@@ -1375,15 +1375,15 @@ class TsGrid extends TsBase {
         function cleanupPaths(): void {
             for (let i = 0; i < obj.records.length; i++) {
                 const rec = obj.records[i]!
-                if (rec.w2ui?.parent_recid != null) {
-                    rec.w2ui['_path'] = null
+                if (rec.TsUi?.parent_recid != null) {
+                    rec.TsUi['_path'] = null
                 }
             }
         }
 
         // compare two paths, from root of tree to given records
         function compareRecordPaths(a: TsGridRecord, b: TsGridRecord): number {
-            if ((!a.w2ui || a.w2ui.parent_recid == null) && (!b.w2ui || b.w2ui.parent_recid == null)) {
+            if ((!a.TsUi || a.TsUi.parent_recid == null) && (!b.TsUi || b.TsUi.parent_recid == null)) {
                 return compareRecords(a, b) // no tree, fast path
             }
             const pa = getRecordPath(a)
@@ -1400,13 +1400,13 @@ class TsGrid extends TsBase {
 
         // return an array of all records from root to and including 'rec'
         function getRecordPath(rec: TsGridRecord): TsGridRecord[] {
-            if (!rec.w2ui || rec.w2ui.parent_recid == null) return [rec]
-            if (rec.w2ui['_path'])
-                return rec.w2ui['_path'] as TsGridRecord[]
+            if (!rec.TsUi || rec.TsUi.parent_recid == null) return [rec]
+            if (rec.TsUi['_path'])
+                return rec.TsUi['_path'] as TsGridRecord[]
             // during actual sort, we should never reach this point
-            const subrec = obj.get(rec.w2ui.parent_recid)
+            const subrec = obj.get(rec.TsUi.parent_recid)
             if (!subrec) {
-                console.log('ERROR: no parent record: ' + rec.w2ui.parent_recid)
+                console.log('ERROR: no parent record: ' + rec.TsUi.parent_recid)
                 return [rec]
             }
             return (getRecordPath(subrec).concat(rec))
@@ -1533,7 +1533,7 @@ class TsGrid extends TsBase {
                 const rec = this.records[i]!
                 const match = searchRecord(rec)
                 if (match) {
-                    if (rec?.w2ui) addParent(rec.w2ui.parent_recid ?? null)
+                    if (rec?.TsUi) addParent(rec.TsUi.parent_recid ?? null)
                     if (this.showExtraOnSearch > 0) {
                         let before = this.showExtraOnSearch
                         let after  = this.showExtraOnSearch
@@ -1576,7 +1576,7 @@ class TsGrid extends TsBase {
                 let search = obj.getSearch(sdata.field) as TsGridSearch | null
                 if (search == null) search = { field: sdata.field, type: sdata.type } as TsGridSearch
                 // поиск среди изменений
-                const val1b = rec.w2ui?.['changes']?.[search.field] ?? obj.parseField(rec, search.field)
+                const val1b = rec.TsUi?.['changes']?.[search.field] ?? obj.parseField(rec, search.field)
                 val1 = (val1b != null && (typeof val1b != 'object' || val1b.toString != defaultToString))
                     ? String(val1b).toLowerCase()
                     : '' // do not match a bogus string
@@ -1736,10 +1736,10 @@ class TsGrid extends TsBase {
             if ((obj.last.logic == 'OR' && fl !== 0) || (obj.last.logic == 'AND' && fl == obj.searchData.length)) {
                 return true
             }
-            if (rec.w2ui?.children && rec.w2ui?.expanded !== true) {
+            if (rec.TsUi?.children && rec.TsUi?.expanded !== true) {
                 // there are closed children, search them too.
-                for (let r = 0; r < rec.w2ui.children.length; r++) {
-                    const subRec = rec.w2ui.children[r]!
+                for (let r = 0; r < rec.TsUi.children.length; r++) {
+                    const subRec = rec.TsUi.children[r]!
                     if (searchRecord(subRec)) {
                         return true
                     }
@@ -1757,8 +1757,8 @@ class TsGrid extends TsBase {
             }
             duplicateMap[recid] = true
             const rec = obj.records[i]!
-            if (rec?.w2ui) {
-                addParent(rec.w2ui.parent_recid ?? null)
+            if (rec?.TsUi) {
+                addParent(rec.TsUi.parent_recid ?? null)
             }
             obj.last.searchIds.push(i)
         }
@@ -1935,7 +1935,7 @@ class TsGrid extends TsBase {
 
             // do not show selection cell if it is editable
             const edit = query(this.box).find('#grid_'+ this.name + '_editable')
-            const tmp  = edit.find('.w2ui-input')
+            const tmp  = edit.find('.TsUi-input')
             const tmp_ind = tmp.attr('index')
             const tmp1 = this.records[tmp_ind]?.recid
             const tmp2 = tmp.attr('column')
@@ -1945,19 +1945,19 @@ class TsGrid extends TsBase {
             range = query(this.box).find('#grid_'+ this.name +'_f'+ rg.name)
             if (td1f.length > 0 || td2f.length > 0) {
                 if (range.length === 0) {
-                    rec1.append('<div id="grid_'+ this.name +'_f' + rg.name +'" class="w2ui-selection" style="'+ rg.style +'">'+
-                                    (rg.name == 'selection' && this.show.selectionResizer ? '<div id="grid_'+ this.name +'_resizer" class="w2ui-selection-resizer"></div>' : '')+
+                    rec1.append('<div id="grid_'+ this.name +'_f' + rg.name +'" class="TsUi-selection" style="'+ rg.style +'">'+
+                                    (rg.name == 'selection' && this.show.selectionResizer ? '<div id="grid_'+ this.name +'_resizer" class="TsUi-selection-resizer"></div>' : '')+
                                 '</div>')
                     range = query(this.box).find('#grid_'+ this.name +'_f'+ rg.name)
                 } else {
                     range.attr('style', rg.style)
-                    range.find('.w2ui-selection-resizer').show()
+                    range.find('.TsUi-selection-resizer').show()
                 }
                 if (td2f.length === 0) {
                     td2f = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(last.recid) +' td:last-child')
                     if (td2f.length === 0) td2f = query(this.box).find('#grid_'+ this.name +'_frec_bottom td:first-child')
                     range.css('border-right', '0px')
-                    range.find('.w2ui-selection-resizer').hide()
+                    range.find('.TsUi-selection-resizer').hide()
                 }
                 if (first.recid != null && last.recid != null && td1f.length > 0 && td2f.length > 0) {
                     const style = getComputedStyle(td2f[0])
@@ -1982,9 +1982,9 @@ class TsGrid extends TsBase {
             if (td1.length > 0 || td2.length > 0) {
                 if (range.length === 0) {
                     rec2.append(`
-                        <div id="grid_${this.name}_${rg.name}" class="w2ui-selection ${rg.class ?? ''}" style="${rg.style}">
+                        <div id="grid_${this.name}_${rg.name}" class="TsUi-selection ${rg.class ?? ''}" style="${rg.style}">
                             ${rg.name == 'selection' && this.show.selectionResizer
-                                ? `<div id="grid_${this.name}_resizer" class="w2ui-selection-resizer"></div>`
+                                ? `<div id="grid_${this.name}_resizer" class="TsUi-selection-resizer"></div>`
                                 : ''
                             }
                         </div>
@@ -2021,7 +2021,7 @@ class TsGrid extends TsBase {
         }
 
         // add resizer events
-        query(this.box).find('.w2ui-selection-resizer')
+        query(this.box).find('.TsUi-selection-resizer')
             .off('.resizer')
             .on('mousedown.resizer', mouseStart)
             // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -2063,9 +2063,9 @@ class TsGrid extends TsBase {
             detail.originalName  = self.last.move.name
             detail.originalRange = self.last.move.originalRange
             query('body')
-                .off('.w2ui-' + self.name)
-                .on('mousemove.w2ui-' + self.name, mouseMove)
-                .on('mouseup.w2ui-' + self.name, mouseStop)
+                .off('.TsUi-' + self.name)
+                .on('mousemove.TsUi-' + self.name, mouseMove)
+                .on('mouseup.TsUi-' + self.name, mouseStop)
             // do not blur grid
             event.preventDefault()
         }
@@ -2108,7 +2108,7 @@ class TsGrid extends TsBase {
                 self.addRange({
                     name: 'selection-expand',
                     range: mv.newRange,
-                    class: 'w2ui-selection-expand'
+                    class: 'TsUi-selection-expand'
                 })
             }
         }
@@ -2117,7 +2117,7 @@ class TsGrid extends TsBase {
         function mouseStop(_event: any) { // any: event is MouseEvent at runtime; typed loosely to avoid EventListener mismatch
             // default behavior
             self.removeRange('selection-expand')
-            query('body').off('.w2ui-' + self.name)
+            query('body').off('.TsUi-' + self.name)
             // event after
             if (self.last.move?.type == 'expand' && edata.finish) {
                 edata.finish()
@@ -2140,7 +2140,7 @@ class TsGrid extends TsBase {
             const recid = aa?.recid ?? aa
             const index = aa?.index ?? this.get(recid, true)
             const rec = this.records[index]!
-            if (rec?.w2ui?.selectable === false) {
+            if (rec?.TsUi?.selectable === false) {
                 return false
             }
             if (typeof aa === 'object') {
@@ -2189,9 +2189,9 @@ class TsGrid extends TsBase {
                     if (sel.indexes.indexOf(index) != -1) continue
                     sel.indexes.push(index)
                     if (recEl1 && recEl2) {
-                        recEl1.addClass('w2ui-selected').find('.w2ui-col-number').addClass('w2ui-row-selected')
-                        recEl2.addClass('w2ui-selected').find('.w2ui-col-number').addClass('w2ui-row-selected')
-                        recEl1.find('.w2ui-grid-select-check').prop('checked', true)
+                        recEl1.addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
+                        recEl2.addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
+                        recEl1.find('.TsUi-grid-select-check').prop('checked', true)
                     }
                     selected++
                 }
@@ -2239,14 +2239,14 @@ class TsGrid extends TsBase {
                     const col = new_sel_recid[t]
                     if (col_sel.indexOf(col) == -1) col_sel.push(col)
                     if (recEl1) {
-                        recEl1.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('w2ui-selected')
-                        recEl1.find('.w2ui-col-number').addClass('w2ui-row-selected')
-                        recEl1.find('.w2ui-grid-select-check').prop('checked', true)
+                        recEl1.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('TsUi-selected')
+                        recEl1.find('.TsUi-col-number').addClass('TsUi-row-selected')
+                        recEl1.find('.TsUi-grid-select-check').prop('checked', true)
                     }
                     if (recEl2) {
-                        recEl2.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('w2ui-selected')
-                        recEl2.find('.w2ui-col-number').addClass('w2ui-row-selected')
-                        recEl2.find('.w2ui-grid-select-check').prop('checked', true)
+                        recEl2.find('#grid_'+ this.name +'_data_'+ index +'_'+ col).addClass('TsUi-selected')
+                        recEl2.find('.TsUi-col-number').addClass('TsUi-row-selected')
+                        recEl2.find('.TsUi-grid-select-check').prop('checked', true)
                     }
                     selected++
                 }
@@ -2255,7 +2255,7 @@ class TsGrid extends TsBase {
             }
             // select columns (need here for speed)
             for (let c = 0; c < col_sel.length; c++) {
-                query(this.box).find('#grid_'+ this.name +'_column_'+ col_sel[c] +' .w2ui-col-header').addClass('w2ui-col-selected')
+                query(this.box).find('#grid_'+ this.name +'_column_'+ col_sel[c] +' .TsUi-col-header').addClass('TsUi-col-selected')
             }
         }
         // need to sort new selection for speed
@@ -2318,13 +2318,13 @@ class TsGrid extends TsBase {
                 if (sel.indexes.indexOf(index) == -1) continue
                 // default action
                 sel.indexes.splice(sel.indexes.indexOf(index), 1)
-                recEl1.removeClass('w2ui-selected w2ui-inactive').find('.w2ui-col-number').removeClass('w2ui-row-selected')
-                recEl2.removeClass('w2ui-selected w2ui-inactive').find('.w2ui-col-number').removeClass('w2ui-row-selected')
+                recEl1.removeClass('TsUi-selected TsUi-inactive').find('.TsUi-col-number').removeClass('TsUi-row-selected')
+                recEl2.removeClass('TsUi-selected TsUi-inactive').find('.TsUi-col-number').removeClass('TsUi-row-selected')
                 if (recEl1.length != 0) {
                     recEl1[0].style.cssText = 'height: '+ this.recordHeight +'px; ' + recEl1.attr('custom_style')
                     recEl2[0].style.cssText = 'height: '+ this.recordHeight +'px; ' + recEl2.attr('custom_style')
                 }
-                recEl1.find('.w2ui-grid-select-check').prop('checked', false)
+                recEl1.find('.TsUi-grid-select-check').prop('checked', false)
                 unselected++
             } else {
                 const col = args[a].column
@@ -2337,8 +2337,8 @@ class TsGrid extends TsBase {
                 if (!Array.isArray(s) || s.indexOf(col) == -1) continue
                 // default action
                 s.splice(s.indexOf(col), 1)
-                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
-                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('w2ui-selected w2ui-inactive')
+                query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('TsUi-selected TsUi-inactive')
+                query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass('TsUi-selected TsUi-inactive')
                 // check if any row/column still selected
                 let isColSelected = false
                 let isRowSelected = false
@@ -2348,16 +2348,16 @@ class TsGrid extends TsBase {
                     if (tmp[i]!.recid == recid) isRowSelected = true
                 }
                 if (!isColSelected) {
-                    query(this.box).find(`.w2ui-grid-columns td[col="${col}"] .w2ui-col-header, .w2ui-grid-fcolumns td[col="${col}"] .w2ui-col-header`).removeClass('w2ui-col-selected')
+                    query(this.box).find(`.TsUi-grid-columns td[col="${col}"] .TsUi-col-header, .TsUi-grid-fcolumns td[col="${col}"] .TsUi-col-header`).removeClass('TsUi-col-selected')
                 }
                 if (!isRowSelected) {
-                    query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid)).find('.w2ui-col-number').removeClass('w2ui-row-selected')
+                    query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid)).find('.TsUi-col-number').removeClass('TsUi-row-selected')
                 }
                 unselected++
                 if (s.length === 0) {
                     delete sel.columns[index]
                     sel.indexes.splice(sel.indexes.indexOf(index), 1)
-                    recEl1.find('.w2ui-grid-select-check').prop('checked', false)
+                    recEl1.find('.TsUi-grid-select-check').prop('checked', false)
                 }
             }
         }
@@ -2451,20 +2451,20 @@ class TsGrid extends TsBase {
         this.last.selection = sel
         // add selected class
         if (this.selectType == 'row') {
-            query(this.box).find('.w2ui-grid-records tr:not(.w2ui-empty-record)')
-                .addClass('w2ui-selected').find('.w2ui-col-number').addClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-frecords tr:not(.w2ui-empty-record)')
-                .addClass('w2ui-selected').find('.w2ui-col-number').addClass('w2ui-row-selected')
-            query(this.box).find('input.w2ui-grid-select-check').prop('checked', true)
+            query(this.box).find('.TsUi-grid-records tr:not(.TsUi-empty-record)')
+                .addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-frecords tr:not(.TsUi-empty-record)')
+                .addClass('TsUi-selected').find('.TsUi-col-number').addClass('TsUi-row-selected')
+            query(this.box).find('input.TsUi-grid-select-check').prop('checked', true)
         } else {
-            query(this.box).find('.w2ui-grid-columns td .w2ui-col-header, .w2ui-grid-fcolumns td .w2ui-col-header').addClass('w2ui-col-selected')
-            query(this.box).find('.w2ui-grid-records tr .w2ui-col-number').addClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-records tr:not(.w2ui-empty-record)')
-                .find('.w2ui-grid-data:not(.w2ui-col-select)').addClass('w2ui-selected')
-            query(this.box).find('.w2ui-grid-frecords tr .w2ui-col-number').addClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-frecords tr:not(.w2ui-empty-record)')
-                .find('.w2ui-grid-data:not(.w2ui-col-select)').addClass('w2ui-selected')
-            query(this.box).find('input.w2ui-grid-select-check').prop('checked', true)
+            query(this.box).find('.TsUi-grid-columns td .TsUi-col-header, .TsUi-grid-fcolumns td .TsUi-col-header').addClass('TsUi-col-selected')
+            query(this.box).find('.TsUi-grid-records tr .TsUi-col-number').addClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-records tr:not(.TsUi-empty-record)')
+                .find('.TsUi-grid-data:not(.TsUi-col-select)').addClass('TsUi-selected')
+            query(this.box).find('.TsUi-grid-frecords tr .TsUi-col-number').addClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-frecords tr:not(.TsUi-empty-record)')
+                .find('.TsUi-grid-data:not(.TsUi-col-select)').addClass('TsUi-selected')
+            query(this.box).find('input.TsUi-grid-select-check').prop('checked', true)
         }
         // enable/disable toolbar buttons
         sel = this.getSelectionRows(true) as number[]
@@ -2489,17 +2489,17 @@ class TsGrid extends TsBase {
         const sel = this.last.selection
         // remove selected class
         if (this.selectType == 'row') {
-            query(this.box).find('.w2ui-grid-records tr.w2ui-selected').removeClass('w2ui-selected w2ui-inactive')
-                .find('.w2ui-col-number').removeClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-frecords tr.w2ui-selected').removeClass('w2ui-selected w2ui-inactive')
-                .find('.w2ui-col-number').removeClass('w2ui-row-selected')
-            query(this.box).find('input.w2ui-grid-select-check').prop('checked', false)
+            query(this.box).find('.TsUi-grid-records tr.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
+                .find('.TsUi-col-number').removeClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-frecords tr.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
+                .find('.TsUi-col-number').removeClass('TsUi-row-selected')
+            query(this.box).find('input.TsUi-grid-select-check').prop('checked', false)
         } else {
-            query(this.box).find('.w2ui-grid-columns td .w2ui-col-header, .w2ui-grid-fcolumns td .w2ui-col-header').removeClass('w2ui-col-selected')
-            query(this.box).find('.w2ui-grid-records tr .w2ui-col-number').removeClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-frecords tr .w2ui-col-number').removeClass('w2ui-row-selected')
-            query(this.box).find('.w2ui-grid-data.w2ui-selected').removeClass('w2ui-selected w2ui-inactive')
-            query(this.box).find('input.w2ui-grid-select-check').prop('checked', false)
+            query(this.box).find('.TsUi-grid-columns td .TsUi-col-header, .TsUi-grid-fcolumns td .TsUi-col-header').removeClass('TsUi-col-selected')
+            query(this.box).find('.TsUi-grid-records tr .TsUi-col-number').removeClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-frecords tr .TsUi-col-number').removeClass('TsUi-row-selected')
+            query(this.box).find('.TsUi-grid-data.TsUi-selected').removeClass('TsUi-selected TsUi-inactive')
+            query(this.box).find('input.TsUi-grid-select-check').prop('checked', false)
         }
         sel.indexes = []
         sel.columns = {}
@@ -2536,9 +2536,9 @@ class TsGrid extends TsBase {
         // enable/disable toolbar search button
         if (this.show.toolbarSave) {
             if (this.getChanges().length > 0) {
-                this.toolbar.enable('w2ui-save')
+                this.toolbar.enable('TsUi-save')
             } else {
-                this.toolbar.disable('w2ui-save')
+                this.toolbar.disable('TsUi-save')
             }
         }
 
@@ -2925,7 +2925,7 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) {
             return
         }
-        const $btn = query(this.toolbar.box).find('.w2ui-grid-search-input .w2ui-search-drop')
+        const $btn = query(this.toolbar.box).find('.TsUi-grid-search-input .TsUi-search-drop')
         $btn.addClass('checked')
         // show search
         TsTooltip.show({
@@ -2935,12 +2935,12 @@ class TsGrid extends TsBase {
             html: this.getSearchesHTML(),
             align: 'left',
             arrowSize: 12,
-            class: 'w2ui-grid-search-advanced',
+            class: 'TsUi-grid-search-advanced',
             hideOn: ['doc-click'],
             ...(options?.overlay ?? {})
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .then((_event: any) => { // any: w2menu/TsTooltip event detail shape varies
+        .then((_event: any) => { // any: TsMenu/TsTooltip event detail shape varies
             this.initSearches()
             this.last['search_opened'] = true
             const overlay = query(`#w2overlay-${this.name}-search-overlay`)
@@ -2957,7 +2957,7 @@ class TsGrid extends TsBase {
                         })
                     })
                     console.log(event.target)
-                    if (!query(event.target).hasClass('w2ui-saved-searches')) {
+                    if (!query(event.target).hasClass('TsUi-saved-searches')) {
                         TsTooltip.hide(this.name + '-search-suggest')
                     }
                 })
@@ -3015,10 +3015,10 @@ class TsGrid extends TsBase {
         TsTooltip.show({
             name: this.name + '-search-props',
             anchor: el,
-            class: 'w2ui-white',
+            class: 'TsUi-white',
             hideOn: 'doc-click',
             html: `
-                <div class="w2ui-grid-search-single">
+                <div class="TsUi-grid-search-single">
                     <span class="field">${sf.label ?? ''}</span>
                     <span class="operator">${TsUtils.lang(oper)}</span>
                     ${Array.isArray(sd.value)
@@ -3026,11 +3026,11 @@ class TsGrid extends TsBase {
                         : `<span class="value">${val}</span>`
                     }
                     <div class="buttons">
-                        <button id="remove" class="w2ui-btn">${TsUtils.lang('Remove This Field')}</button>
+                        <button id="remove" class="TsUi-btn">${TsUtils.lang('Remove This Field')}</button>
                     </div>
                 </div>`
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        }).then((event: any) => { // any: w2menu/TsTooltip event detail shape varies
+        }).then((event: any) => { // any: TsMenu/TsTooltip event detail shape varies
             query(event.detail.overlay.box).find('#remove').on('click', () => {
                 this.searchData.splice(sd_ind, 1)
                 this.reload()
@@ -3066,7 +3066,7 @@ class TsGrid extends TsBase {
             ...this.savedSearches ?? []
         ]
         if (Array.isArray(searches) && searches.length > 0) {
-            w2menu.show({
+            TsMenu.show({
                 name: this.name + '-search-suggest',
                 anchor: el,
                 align: anchor != null ? 'left' : 'both',
@@ -3075,14 +3075,14 @@ class TsGrid extends TsBase {
                 filter: true,
                 hideOn: ['doc-click', 'sleect', 'remove'],
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                render(item: any) { // any: w2menu item shape varies
+                render(item: any) { // any: TsMenu item shape varies
                     let ret = item.text
                     if (item.isDefault) ret = `<b>${ret}</b>`
                     return ret
                 }
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .select((event: any) => { // any: w2menu event shape varies
+            .select((event: any) => { // any: TsMenu event shape varies
                 const edata = this.trigger('searchSelect', {
                     target: this.name,
                     index: event.detail.index,
@@ -3102,7 +3102,7 @@ class TsGrid extends TsBase {
                 edata.finish()
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .remove((event: any) => { // any: w2menu event shape varies
+            .remove((event: any) => { // any: TsMenu event shape varies
                 const item = event.detail.item
                 const edata = this.trigger('searchRemove', { target: this.name, index: event.detail.index, item })
                 if (edata.isCancelled === true) {
@@ -3129,7 +3129,7 @@ class TsGrid extends TsBase {
                         edata.finish()
                     })
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    .no((evt: any) => { // any: w2confirm evt shape
+                    .no((evt: any) => { // any: TsConfirm evt shape
                         evt.detail.self.close()
                     })
             })
@@ -3149,13 +3149,13 @@ class TsGrid extends TsBase {
         this.message({
             width: 350,
             height: 150,
-            body: `<div class="w2ui-grid-save-search">
+            body: `<div class="TsUi-grid-save-search">
                         <span>${TsUtils.lang(ind != -1 ? 'Update Search' : 'Save New Search')}</span>
-                        <input class="search-name w2ui-input" placeholder="${TsUtils.lang('Search name')}">
+                        <input class="search-name TsUi-input" placeholder="${TsUtils.lang('Search name')}">
                    </div>`,
             buttons: `
-                <button id="grid-search-cancel" class="w2ui-btn">${TsUtils.lang('Cancel')}</button>
-                <button id="grid-search-save" class="w2ui-btn w2ui-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
+                <button id="grid-search-cancel" class="TsUi-btn">${TsUtils.lang('Cancel')}</button>
+                <button id="grid-search-save" class="TsUi-btn TsUi-btn-blue" ${String(value).trim() == '' ? 'disabled': ''}>${TsUtils.lang('Save')}</button>
             `
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         })?.open(async (event: any) => { // any: TsEvent message open callback
@@ -3165,7 +3165,7 @@ class TsGrid extends TsBase {
                 this.message()
             })
             query(event.detail.box).find('#grid-search-save').on('click', () => {
-                const input = query(event.detail.box).find('.w2ui-message .search-name')
+                const input = query(event.detail.box).find('.TsUi-message .search-name')
                 const name = input.val()
                 // save in savedSearches
                 if (this['searchSelected'] && ind != -1) {
@@ -3179,7 +3179,7 @@ class TsGrid extends TsBase {
                     this.savedSearches.push({
                         id: name,
                         text: name,
-                        icon: 'w2ui-icon-search',
+                        icon: 'TsUi-icon-search',
                         remove: true,
                         logic: this.last.logic,
                         data: this.searchData
@@ -3208,7 +3208,7 @@ class TsGrid extends TsBase {
                 .off('.message')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keydown.message', (evt: any) => { // any: KeyboardEvent at runtime
-                    const val = String(query(event.detail.box).find('.w2ui-message-body input').val()).trim()
+                    const val = String(query(event.detail.box).find('.TsUi-message-body input').val()).trim()
                     if (evt.keyCode == 13 && val != '') {
                         query(event.detail.box).find('#grid-search-save').trigger('click') // enter
                     }
@@ -3219,7 +3219,7 @@ class TsGrid extends TsBase {
                 .eq(0)
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('input.message', (_evt: any) => { // any: InputEvent at runtime
-                    const $save = query(event.detail.box).closest('.w2ui-message').find('#grid-search-save')
+                    const $save = query(event.detail.box).closest('.TsUi-message').find('#grid-search-save')
                     if (String(query(event.detail.box).val()).trim() === '') {
                         $save.prop('disabled', true)
                     } else {
@@ -3235,7 +3235,7 @@ class TsGrid extends TsBase {
     cache(type: any) { // any: cache key is always string, loosely typed
         if (TsUtils.hasLocalStorage && this.useLocalStorage) {
             try {
-                const data = JSON.parse(localStorage['w2ui'] || '{}')
+                const data = JSON.parse(localStorage['TsUi'] || '{}')
                 data[(this.stateId || this.name)] ??= {}
                 return data[(this.stateId || this.name)][type]
             } catch (e) {
@@ -3248,13 +3248,13 @@ class TsGrid extends TsBase {
     cacheSave(type: any, value: any) { // any: cache key and value are dynamic
         if (TsUtils.hasLocalStorage && this.useLocalStorage) {
             try {
-                const data = JSON.parse(localStorage['w2ui'] || '{}')
+                const data = JSON.parse(localStorage['TsUi'] || '{}')
                 data[(this.stateId || this.name)] ??= {}
                 data[(this.stateId || this.name)][type] = value
-                localStorage['w2ui'] = JSON.stringify(data)
+                localStorage['TsUi'] = JSON.stringify(data)
                 return true
             } catch (e) {
-                delete localStorage['w2ui']
+                delete localStorage['TsUi']
             }
         }
         return false
@@ -3354,16 +3354,16 @@ class TsGrid extends TsBase {
                 checked: (search.field == this.last.field)
             })
         }
-        w2menu.show({
+        TsMenu.show({
             type: 'radio',
             name: this.name + '-search-fields',
-            anchor: query(this.box).find('#grid_'+ this.name +'_search_name').parent().find('.w2ui-search-down').get(0),
+            anchor: query(this.box).find('#grid_'+ this.name +'_search_name').parent().find('.TsUi-search-down').get(0),
             items,
             align: 'none',
             hideOn: ['doc-click', 'select']
         })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .select((event: any) => { // any: w2menu event shape varies
+            .select((event: any) => { // any: TsMenu event shape varies
                 this.searchInitInput(event.detail.item.search.field)
             })
     }
@@ -3728,7 +3728,7 @@ class TsGrid extends TsBase {
                         if (rec.recid == null) {
                             rec.recid = 'recid-' + this.records.length
                         }
-                        if (rec.w2ui?.summary === true) {
+                        if (rec.TsUi?.summary === true) {
                             this.summary.push(rec)
                         } else {
                             this.records.push(rec)
@@ -3805,18 +3805,18 @@ class TsGrid extends TsBase {
 
         for (let r = 0; r < recordsBase.length; r++) {
             const rec = recordsBase[r]!
-            if (rec?.w2ui) {
-                if (rec.w2ui['changes'] != null) {
+            if (rec?.TsUi) {
+                if (rec.TsUi['changes'] != null) {
                     // any: Record<string, any> — dynamic property bag; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const obj: Record<string, any> = {}
                     obj[this.recid || 'recid'] = rec.recid
-                    changes.push(TsUtils.extend(obj, rec.w2ui['changes']))
+                    changes.push(TsUtils.extend(obj, rec.TsUi['changes']))
                 }
 
                 // recursively look for changes in non-expanded children
-                if (rec.w2ui.expanded !== true && rec.w2ui.children && rec.w2ui.children.length) {
-                    changes.push(...this.getChanges(rec.w2ui.children))
+                if (rec.TsUi.expanded !== true && rec.TsUi.children && rec.TsUi.children.length) {
+                    changes.push(...this.getChanges(rec.TsUi.children))
                 }
             }
         }
@@ -3839,7 +3839,7 @@ class TsGrid extends TsBase {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     console.log('ERROR: Cannot merge. ', (e as any)?.message || '', e)
                 }
-                if (record.w2ui) delete record.w2ui['changes']
+                if (record.TsUi) delete record.TsUi['changes']
             }
         }
         this.refresh()
@@ -3897,7 +3897,7 @@ class TsGrid extends TsBase {
                 this.editDone(index, column, event)
             } else {
                 // when 2 chars entered fast (spreadsheet)
-                const input = query(this.box).find('div.w2ui-edit-box .w2ui-input')
+                const input = query(this.box).find('div.TsUi-edit-box .TsUi-input')
                 if (input.length > 0) {
                     if (input.get(0).tagName == 'DIV') {
                         input.text(input.text() + value)
@@ -3937,15 +3937,15 @@ class TsGrid extends TsBase {
         this.last._edit['tr'] = tr
         this.last._edit['div'] = div
         // clear previous if any (spreadsheet)
-        query(this.box).find('div.w2ui-edit-box').remove()
+        query(this.box).find('div.TsUi-edit-box').remove()
         // for spreadsheet - insert into selection
         if (this.selectType != 'row') {
             query(this.box).find('#grid_'+ this.name + prefix + 'selection')
                 .attr('id', 'grid_'+ this.name + '_editable')
-                .removeClass('w2ui-selection')
-                .addClass('w2ui-edit-box')
+                .removeClass('TsUi-selection')
+                .addClass('TsUi-edit-box')
                 .prepend('<div style="position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;"></div>')
-                .find('.w2ui-selection-resizer')
+                .find('.TsUi-selection-resizer')
                 .remove()
             div = query(this.box).find('#grid_'+ this.name + '_editable > div:first-child')
         }
@@ -3953,8 +3953,8 @@ class TsGrid extends TsBase {
         edit.text  = edit.text ?? ''
         edit.style = edit.style ?? ''
         edit.items = edit.items ?? []
-        let val = (rec.w2ui?.['changes']?.[col.field] != null
-            ? TsUtils.stripTags(rec.w2ui['changes'][col.field])
+        let val = (rec.TsUi?.['changes']?.[col.field] != null
+            ? TsUtils.stripTags(rec.TsUi['changes'][col.field])
             : TsUtils.stripTags(self.parseField(rec, col.field)))
         if (val == null) val = ''
         let prevValue = (typeof val != 'object' ? val : '')
@@ -3979,13 +3979,13 @@ class TsGrid extends TsBase {
         const font = `font-family: ${styles.getPropertyValue('font-family')}; font-size: ${styles.getPropertyValue('font-size')};`
         switch (edit.type) {
             case 'div': {
-                div.addClass('w2ui-editable')
-                    .html(TsUtils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input w2ui-focus"
+                div.addClass('TsUi-editable')
+                    .html(TsUtils.stripSpaces(`<div id="grid_${this.name}_edit_${recid}_${column}" class="TsUi-input TsUi-focus"
                         contenteditable autocorrect="off" autocomplete="off" spellcheck="false"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>
                     </div>${edit.text}`))
-                input = div.find('div.w2ui-input').get(0)
+                input = div.find('div.TsUi-input').get(0)
                 input.innerText = (typeof val != 'object' ? val : '')
                 if (value != null) {
                     TsUtils.setCursorPosition(input, input.innerText.length)
@@ -3995,8 +3995,8 @@ class TsGrid extends TsBase {
                 break
             }
             default: {
-                div.addClass('w2ui-editable')
-                    .html(TsUtils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="w2ui-input"
+                div.addClass('TsUi-editable')
+                    .html(TsUtils.stripSpaces(`<input id="grid_${this.name}_edit_${recid}_${column}" class="TsUi-input"
                         autocorrect="off" autocomplete="off" spellcheck="false" type="text"
                         style="${font + addStyle + edit.style}"
                         field="${col.field}" recid="${recid}" column="${column}" ${edit.attr}>${edit.text}`))
@@ -4041,8 +4041,8 @@ class TsGrid extends TsBase {
         }
         Object.assign(this.last._edit, { input, edit })
         query(input)
-            .off('.w2ui-editable')
-            .on('blur.w2ui-editable', (event: Event) => {
+            .off('.TsUi-editable')
+            .on('blur.TsUi-editable', (event: Event) => {
                 if (this.last.inEditMode) {
                     const type = this.last._edit?.['edit']?.type
                     const name = query(input).data('tooltipName') // if popup is open
@@ -4057,23 +4057,23 @@ class TsGrid extends TsBase {
                     this.editDone()
                 }
             })
-            .on('mousedown.w2ui-editable', (event: Event) => {
+            .on('mousedown.TsUi-editable', (event: Event) => {
                 event.stopPropagation()
             })
-            .on('click.w2ui-editable', (event: Event) => {
+            .on('click.TsUi-editable', (event: Event) => {
                 expand.call(input, event)
             })
-            .on('paste.w2ui-editable', (event: Event) => {
+            .on('paste.TsUi-editable', (event: Event) => {
                 // clean paste to be plain text
                 event.preventDefault()
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const text = (event as any as ClipboardEvent).clipboardData!.getData('text/plain') // any: typed as Event but is ClipboardEvent
                 document.execCommand('insertHTML', false, text)
             })
-            .on('keyup.w2ui-editable', (event: Event) => {
+            .on('keyup.TsUi-editable', (event: Event) => {
                 expand.call(input, event)
             })
-            .on('keydown.w2ui-editable', (event: Event) => {
+            .on('keydown.TsUi-editable', (event: Event) => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const kev = event as any as KeyboardEvent // any: typed as Event but is KeyboardEvent
                 switch (kev.keyCode) {
@@ -4139,7 +4139,7 @@ class TsGrid extends TsBase {
                         case 27: { // escape
                             if (this.last._edit) this.last._edit['escKey'] = false
                             let old = self.parseField(rec, col.field)
-                            if (rec.w2ui?.['changes']?.[col.field] != null) old = rec.w2ui['changes'][col.field]
+                            if (rec.TsUi?.['changes']?.[col.field] != null) old = rec.TsUi['changes'][col.field]
                             if (input._prevValue != null) old = input._prevValue
                             if (input.tagName == 'DIV') {
                                 input.innerText = old != null ? old : ''
@@ -4212,11 +4212,11 @@ class TsGrid extends TsBase {
             if (!TsUtils.isPlainObject(new_val)) new_val = fld.clean(new_val)
         }
         if (input.type == 'checkbox') {
-            if (rec.w2ui?.['editable'] === false) input.checked = !input.checked
+            if (rec.TsUi?.['editable'] === false) input.checked = !input.checked
             new_val = input.checked
         }
         const old_val = this.parseField(rec, col.field)
-        const prev_val = (rec.w2ui?.['changes'] && rec.w2ui['changes'].hasOwnProperty(col.field) ? rec.w2ui['changes'][col.field]: old_val)
+        const prev_val = (rec.TsUi?.['changes'] && rec.TsUi['changes'].hasOwnProperty(col.field) ? rec.TsUi['changes'][col.field]: old_val)
         // change/restore event
         // any: parameter typed any — runtime dispatch by call site; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4249,9 +4249,9 @@ class TsGrid extends TsBase {
                     if ((edata.detail.value.new === '' || edata.detail.value.new == null) && (prev_val === '' || prev_val == null)) {
                         // value did not change, was empty is empty
                     } else {
-                        rec.w2ui = rec.w2ui ?? {}
-                        rec.w2ui['changes'] = rec.w2ui['changes'] ?? {}
-                        rec.w2ui['changes'][col.field] = edata.detail.value.new
+                        rec.TsUi = rec.TsUi ?? {}
+                        rec.TsUi['changes'] = rec.TsUi['changes'] ?? {}
+                        rec.TsUi['changes'][col.field] = edata.detail.value.new
                     }
                     // event after
                     edata.finish()
@@ -4265,10 +4265,10 @@ class TsGrid extends TsBase {
                         continue
                     }
                     // default action
-                    if (rec.w2ui?.['changes']) {
-                        delete rec.w2ui['changes'][col.field]
-                        if (Object.keys(rec.w2ui['changes']).length === 0) {
-                            delete rec.w2ui['changes']
+                    if (rec.TsUi?.['changes']) {
+                        delete rec.TsUi['changes'][col.field]
+                        if (Object.keys(rec.TsUi['changes']).length === 0) {
+                            delete rec.TsUi['changes']
                         }
                     }
                     // event after
@@ -4306,15 +4306,15 @@ class TsGrid extends TsBase {
         this.last._edit = null
         // remove - by updating cell data
         if (!summary) {
-            if (rec.w2ui?.['changes']?.[col.field] != null) {
-                cell.addClass('w2ui-changed')
+            if (rec.TsUi?.['changes']?.[col.field] != null) {
+                cell.addClass('TsUi-changed')
             } else {
-                cell.removeClass('w2ui-changed')
+                cell.removeClass('TsUi-changed')
             }
             cell.replace(this.getCellHTML(index, column, summary))
         }
         // remove - spreadsheet
-        query(this.box).find('div.w2ui-edit-box').remove()
+        query(this.box).find('div.TsUi-edit-box').remove()
         // update toolbar buttons
         this.updateToolbar()
         // keep grid in focus if needed
@@ -4344,7 +4344,7 @@ class TsGrid extends TsBase {
                 width: 380,
                 height: 170,
                 yes_text: TsUtils.lang('Delete'),
-                yes_class: 'w2ui-btn-red',
+                yes_class: 'TsUi-btn-red',
                 no_text: TsUtils.lang('Cancel'),
             // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4356,7 +4356,7 @@ class TsGrid extends TsBase {
                     this.delete(true)
                 })
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                .no((event: any) => { // any: w2confirm event shape
+                .no((event: any) => { // any: TsConfirm event shape
                     event.detail.self.close()
                 })
             return
@@ -4379,7 +4379,7 @@ class TsGrid extends TsBase {
                     const rec = ind != null ? this.records[ind]! : null
                     if (ind != null && fld != 'recid' && rec != null) {
                         this.records[ind]![fld] = ''
-                        if (rec.w2ui?.['changes']) delete rec.w2ui['changes'][fld]
+                        if (rec.TsUi?.['changes']) delete rec.TsUi['changes'][fld]
                         // -- style should not be deleted
                         // if (rec.style != null && TsUtils.isPlainObject(rec.style) && rec.style[recs[r].column]) {
                         //     delete rec.style[recs[r].column];
@@ -4425,9 +4425,9 @@ class TsGrid extends TsBase {
         // check if record is selectable
         const index = this.get(recid, true)
         const rec = index != null ? this.records[index]! : null
-        if (rec?.w2ui?.selectable === false && (rec?.w2ui?.children?.length ?? 0) > 0) {
+        if (rec?.TsUi?.selectable === false && (rec?.TsUi?.children?.length ?? 0) > 0) {
             // if not a show-children button, then toggle
-            if (!query(event.target).hasClass('w2ui-show-children')) {
+            if (!query(event.target).hasClass('TsUi-show-children')) {
                 this.toggle(recid)
                 return
             }
@@ -4483,7 +4483,7 @@ class TsGrid extends TsBase {
             let flag = (last.indexes.indexOf(ind ?? -1) != -1 ? true : false)
             let fselect = false
             // if clicked on the checkbox
-            if (query(event.target).closest('td').hasClass('w2ui-col-select')) fselect = true
+            if (query(event.target).closest('td').hasClass('TsUi-col-select')) fselect = true
             // clear other if necessary
             if (((!event.ctrlKey && !event.shiftKey && !event.metaKey && !fselect) || !this.multiSelect) && !this['showSelectColumn']) {
                 if (this.selectType != 'row' && !last.columns[ind ?? -1]?.includes(column)) {
@@ -4591,32 +4591,32 @@ class TsGrid extends TsBase {
         const edata = this.trigger('columnContextMenu', { target: this.name, field: field, originalEvent: event })
         if (edata.isCancelled === true) return
         // show menu
-        w2menu.show({
+        TsMenu.show({
             type: 'check',
             contextMenu: true,
             originalEvent: event,
             items: this.initColumnOnOff()
         })
         .then(() => {
-            query('#w2overlay-context-menu .w2ui-grid-skip')
-                .off('.w2ui-grid')
-                .on('click.w2ui-grid', (evt: Event) => {
+            query('#w2overlay-context-menu .TsUi-grid-skip')
+                .off('.TsUi-grid')
+                .on('click.TsUi-grid', (evt: Event) => {
                     evt.stopPropagation()
                 })
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 .on('keypress', (evt: any) => { // any: KeyboardEvent at runtime; typed loosely
                     if (evt.keyCode == 13) {
                         this.skip(evt.target.value)
-                        this.toolbar.click('w2ui-column-on-off') // close menu
+                        this.toolbar.click('TsUi-column-on-off') // close menu
                     }
                 })
         })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .select((event: any) => { // any: w2menu select event shape varies
+        .select((event: any) => { // any: TsMenu select event shape varies
             const id = event.detail.item.id
-            if (['w2ui-stateSave', 'w2ui-stateReset'].includes(id)) {
+            if (['TsUi-stateSave', 'TsUi-stateReset'].includes(id)) {
                 this[id.substring(5)]()
-            } else if (id == 'w2ui-skip') {
+            } else if (id == 'TsUi-skip') {
                 // empty
             } else {
                 this.columnOnOff(event, event.detail.item.id)
@@ -4637,7 +4637,7 @@ class TsGrid extends TsBase {
             return
         }
         const col = this.columns[colIndex]!
-        const el = query(`#grid_${this.name}_column_${colIndex} .w2ui-col-header`)[0]
+        const el = query(`#grid_${this.name}_column_${colIndex} .TsUi-col-header`)[0]
         if (col['autoResize'] === false || col.hidden === true || !el) {
             return true
         }
@@ -4645,7 +4645,7 @@ class TsGrid extends TsBase {
         let maxWidth = TsUtils.getStrWidth(el.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
             + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4
 
-        query(this.box).find(`.w2ui-grid-records td[col="${colIndex}"] > div`, this.box).each((el: Node) => {
+        query(this.box).find(`.TsUi-grid-records td[col="${colIndex}"] > div`, this.box).each((el: Node) => {
             const htmlEl = el as HTMLElement // cast: query().each() passes Element but typed as Node
             const style = getComputedStyle(htmlEl)
             const width = TsUtils.getStrWidth(htmlEl.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true)
@@ -4682,7 +4682,7 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = true
-        query(this.box).removeClass('w2ui-inactive').find('.w2ui-inactive').removeClass('w2ui-inactive')
+        query(this.box).removeClass('TsUi-inactive').find('.TsUi-inactive').removeClass('TsUi-inactive')
         setTimeout(() => {
             const txt = query(this.box).find(`#grid_${this.name}_focus`).get(0)
             if (txt && document.activeElement != txt) {
@@ -4701,8 +4701,8 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) return false
         // default behaviour
         this.hasFocus = false
-        query(this.box).addClass('w2ui-inactive').find('.w2ui-selected').addClass('w2ui-inactive')
-        query(this.box).find('.w2ui-selection').addClass('w2ui-inactive')
+        query(this.box).addClass('TsUi-inactive').find('.TsUi-selected').addClass('TsUi-inactive')
+        query(this.box).find('.TsUi-selection').addClass('TsUi-inactive')
         // event after
         edata.finish()
     }
@@ -4719,7 +4719,7 @@ class TsGrid extends TsBase {
         const edata = obj.trigger('keydown', { target: obj.name, originalEvent: event })
         if (edata.isCancelled === true) return
         // default behavior
-        if (query(this.box).find('.w2ui-message').length > 0) {
+        if (query(this.box).find('.TsUi-message').length > 0) {
             // if there are messages
             if (event.keyCode == 27) this.message()
             return
@@ -4918,7 +4918,7 @@ class TsGrid extends TsBase {
             }
             if (obj.selectType == 'row') {
                 if (recEL.length <= 0) return
-                const tmp = obj.records[ind]!.w2ui || {}
+                const tmp = obj.records[ind]!.TsUi || {}
                 if (tmp && tmp.parent_recid != null && (!Array.isArray(tmp.children) || tmp.children.length === 0 || !tmp.expanded)) {
                     obj.unselect(recid)
                     obj.collapse(tmp.parent_recid, event)
@@ -5269,7 +5269,7 @@ class TsGrid extends TsBase {
             this.editField(recid, column, null, event)
         } else {
             this.select({ recid: recid, column: column })
-            if (this.show.expandColumn || (rec && rec.w2ui && Array.isArray(rec.w2ui.children))) this.toggle(recid)
+            if (this.show.expandColumn || (rec && rec.TsUi && Array.isArray(rec.TsUi.children))) this.toggle(recid)
         }
         // event after
         edata.finish()
@@ -5312,13 +5312,13 @@ class TsGrid extends TsBase {
         if (edata.isCancelled === true) return
         // default action
         if (this.contextMenu?.length > 0) {
-            w2menu.show({
+            TsMenu.show({
                 contextMenu: true,
                 originalEvent: event,
                 items: this.contextMenu
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .select((event: any) => { // any: w2menu select event shape varies
+            .select((event: any) => { // any: TsMenu select event shape varies
                 clearTimeout(this.last.kbd_timer ?? undefined) // keep grid in focus
                 this.contextMenuClick(recid ?? '', column ?? null, event)
             })
@@ -5346,8 +5346,8 @@ class TsGrid extends TsBase {
     toggle(recid: string | number, _event?: Event) {
         const rec  = this.get(recid)
         if (rec == null) return
-        rec.w2ui = rec.w2ui ?? {}
-        if (rec.w2ui.expanded === true) {
+        rec.TsUi = rec.TsUi ?? {}
+        if (rec.TsUi.expanded === true) {
             return this.collapse(recid)
         } else {
             return this.expand(recid)
@@ -5355,8 +5355,8 @@ class TsGrid extends TsBase {
     }
 
     /**
-     * When record is expaned, then w2ui.children of the record is copied into this.records and this.total is updated. It will
-     * also set w2ui._copeid = true, so it would not copy it again.
+     * When record is expaned, then TsUi.children of the record is copied into this.records and this.total is updated. It will
+     * also set TsUi._copeid = true, so it would not copy it again.
      *
      * There is also updateExpaned() that is called in this.refresh()
      */
@@ -5365,20 +5365,20 @@ class TsGrid extends TsBase {
         const ind  = this.get(recid, true)
         if (ind == null) return false
         const rec  = this.records[ind]!
-        rec.w2ui = rec.w2ui ?? {}
+        rec.TsUi = rec.TsUi ?? {}
         const id   = TsUtils.escapeId(recid)
-        const children = rec.w2ui.children
+        const children = rec.TsUi.children
         let edata
         if (Array.isArray(children)) {
-            if (rec.w2ui.expanded === true || children.length === 0) return false // already shown
+            if (rec.TsUi.expanded === true || children.length === 0) return false // already shown
             edata = this.trigger('expand', { target: this.name, recid: recid })
             if (edata.isCancelled === true) return false
-            rec.w2ui.expanded = true
-            rec.w2ui['_copied'] = true
+            rec.TsUi.expanded = true
+            rec.TsUi['_copied'] = true
             children.forEach((child) => {
-                child.w2ui = child.w2ui ?? {}
-                child.w2ui.parent_recid = rec.recid
-                if (child.w2ui.children == null) child.w2ui.children = []
+                child.TsUi = child.TsUi ?? {}
+                child.TsUi.parent_recid = rec.recid
+                if (child.TsUi.children == null) child.TsUi.children = []
             })
             this.records.splice(ind + 1, 0, ...children)
             if (this.total !== -1) {
@@ -5397,20 +5397,20 @@ class TsGrid extends TsBase {
             if (query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded_row').length > 0 || this.show.expandColumn !== true) return false
             // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((rec.w2ui.expanded as any) == 'none') return false
+            if ((rec.TsUi.expanded as any) == 'none') return false
             // insert expand row
             query(this.box).find('#grid_'+ this.name +'_rec_'+ id).after(
-                `<tr id="grid_${this.name}_rec_${recid}_expanded_row" class="w2ui-expanded-row">
-                    <td colspan="100" class="w2ui-expanded2">
+                `<tr id="grid_${this.name}_rec_${recid}_expanded_row" class="TsUi-expanded-row">
+                    <td colspan="100" class="TsUi-expanded2">
                         <div id="grid_${this.name}_rec_${recid}_expanded"></div>
                     </td>
-                    <td class="w2ui-grid-data-last"></td>
+                    <td class="TsUi-grid-data-last"></td>
                 </tr>`)
 
             query(this.box).find('#grid_'+ this.name +'_frec_'+ id).after(
-                `<tr id="grid_${this.name}_frec_${recid}_expanded_row" class="w2ui-expanded-row">
-                    ${this.show.lineNumbers ? '<td class="w2ui-col-number"></td>' : ''}
-                    <td class="w2ui-grid-data w2ui-expanded1" colspan="100">
+                `<tr id="grid_${this.name}_frec_${recid}_expanded_row" class="TsUi-expanded-row">
+                    ${this.show.lineNumbers ? '<td class="TsUi-col-number"></td>' : ''}
+                    <td class="TsUi-grid-data TsUi-expanded1" colspan="100">
                        <div id="grid_${this.name}_frec_${recid}_expanded"></div>
                     </td>
                 </tr>`)
@@ -5434,10 +5434,10 @@ class TsGrid extends TsBase {
                 row2.css({ height: innerHeight + 'px' })
             }
             // default action
-            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).attr('expanded', 'yes').addClass('w2ui-expanded')
-            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).attr('expanded', 'yes').addClass('w2ui-expanded')
+            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).attr('expanded', 'yes').addClass('TsUi-expanded')
+            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).attr('expanded', 'yes').addClass('TsUi-expanded')
             query(this.box).find('#grid_'+ this.name +'_cell_'+ this.get(recid, true) +'_expand div').html('-')
-            rec.w2ui.expanded = true
+            rec.TsUi.expanded = true
             // event after
             edata.finish()
             this.resizeRecords()
@@ -5451,26 +5451,26 @@ class TsGrid extends TsBase {
         const ind      = this.get(recid, true)
         if (ind == null) return false
         const rec      = this.records[ind]!
-        rec.w2ui     = rec.w2ui || {}
+        rec.TsUi     = rec.TsUi || {}
         const id       = TsUtils.escapeId(recid)
-        const children = rec.w2ui.children
+        const children = rec.TsUi.children
         // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let edata: any
         if (Array.isArray(children)) {
-            if (rec.w2ui.expanded !== true) return false // already hidden
+            if (rec.TsUi.expanded !== true) return false // already hidden
             edata = this.trigger('collapse', { target: this.name, recid: recid })
             if (edata.isCancelled === true) return false
             clearExpanded(rec)
             const stops = []
-            for (let r: TsGridRecord | null = rec; r != null; r = (r.w2ui?.parent_recid != null ? this.get(r.w2ui.parent_recid) : null))
-                stops.push(r.w2ui?.parent_recid)
+            for (let r: TsGridRecord | null = rec; r != null; r = (r.TsUi?.parent_recid != null ? this.get(r.TsUi.parent_recid) : null))
+                stops.push(r.TsUi?.parent_recid)
             // stops contains 'undefined' plus the ID of all nodes in the path from 'rec' to the tree root
             const start = ind + 1
             let end   = start
             while (true) {
-                if (this.records.length <= end + 1 || this.records[end+1]!.w2ui == null ||
-                    stops.indexOf(this.records[end+1]!.w2ui!.parent_recid) >= 0) {
+                if (this.records.length <= end + 1 || this.records[end+1]!.TsUi == null ||
+                    stops.indexOf(this.records[end+1]!.TsUi!.parent_recid) >= 0) {
                     break
                 }
                 end++
@@ -5494,15 +5494,15 @@ class TsGrid extends TsBase {
                 box_id: 'grid_'+ this.name +'_rec_'+ recid +'_expanded', fbox_id: 'grid_'+ this.name +'_frec_'+ recid +'_expanded' })
             if (edata.isCancelled === true) return false
             // default action
-            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).removeAttr('expanded').removeClass('w2ui-expanded')
-            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).removeAttr('expanded').removeClass('w2ui-expanded')
+            query(this.box).find('#grid_'+ this.name +'_rec_'+ id).removeAttr('expanded').removeClass('TsUi-expanded')
+            query(this.box).find('#grid_'+ this.name +'_frec_'+ id).removeAttr('expanded').removeClass('TsUi-expanded')
             query(this.box).find('#grid_'+ this.name +'_cell_'+ this.get(recid, true) +'_expand div').html('+')
             query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded').css('height', '0px')
             query(this.box).find('#grid_'+ this.name +'_frec_'+ id +'_expanded').css('height', '0px')
             setTimeout(() => {
                 query(this.box).find('#grid_'+ this.name +'_rec_'+ id +'_expanded_row').remove()
                 query(this.box).find('#grid_'+ this.name +'_frec_'+ id +'_expanded_row').remove()
-                if (rec.w2ui) rec.w2ui.expanded = false
+                if (rec.TsUi) rec.TsUi.expanded = false
                 // event after
                 edata.finish()
                 this.resizeRecords()
@@ -5513,11 +5513,11 @@ class TsGrid extends TsBase {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function clearExpanded(rec: any) { // any: TsGridRecord
-            rec.w2ui.expanded = false
-            rec.w2ui['_copied'] = false
-            for (let i = 0; i < rec.w2ui.children.length; i++) {
-                const subRec = rec.w2ui.children[i]
-                if (subRec.w2ui?.expanded) {
+            rec.TsUi.expanded = false
+            rec.TsUi['_copied'] = false
+            for (let i = 0; i < rec.TsUi.children.length; i++) {
+                const subRec = rec.TsUi.children[i]
+                if (subRec.TsUi?.expanded) {
                     clearExpanded(subRec)
                 }
             }
@@ -5528,13 +5528,13 @@ class TsGrid extends TsBase {
         let updated = false
         for (let ind = this.records.length - 1; ind >= 0; ind--) {
             const rec = this.records[ind]!
-            const children = rec.w2ui?.children
-            if (rec.w2ui?.expanded === true && (children?.length ?? 0) > 0 && !rec.w2ui['_copied']) {
-                rec.w2ui['_copied'] = true
+            const children = rec.TsUi?.children
+            if (rec.TsUi?.expanded === true && (children?.length ?? 0) > 0 && !rec.TsUi['_copied']) {
+                rec.TsUi['_copied'] = true
                 children!.forEach((child) => {
-                    child.w2ui ??= {}
-                    child.w2ui.parent_recid = rec.recid
-                    child.w2ui.children ??= []
+                    child.TsUi ??= {}
+                    child.TsUi.parent_recid = rec.recid
+                    child.TsUi.children ??= []
                 })
                 this.records.splice(ind + 1, 0, ...children!)
                 if (this.total !== -1) {
@@ -5765,9 +5765,9 @@ class TsGrid extends TsBase {
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function setCellPaste(rec: any, field: any, paste: any) { // any: record, field name, paste value
-            rec.w2ui = rec.w2ui ?? {}
-            rec.w2ui['changes'] = rec.w2ui['changes'] || {}
-            rec.w2ui['changes'][field] = paste
+            rec.TsUi = rec.TsUi ?? {}
+            rec.TsUi['changes'] = rec.TsUi['changes'] || {}
+            rec.TsUi['changes'][field] = paste
         }
     }
 
@@ -5808,15 +5808,15 @@ class TsGrid extends TsBase {
                     continue
                 }
                 const rec: TsGridRecord = this.records[index] ?? {} as TsGridRecord
-                rec.w2ui = rec.w2ui ?? {}
-                rec.w2ui['_update'] = rec.w2ui['_update'] ?? { cells: [] }
-                let row1 = rec.w2ui['_update'].row1
-                let row2 = rec.w2ui['_update'].row2
+                rec.TsUi = rec.TsUi ?? {}
+                rec.TsUi['_update'] = rec.TsUi['_update'] ?? { cells: [] }
+                let row1 = rec.TsUi['_update'].row1
+                let row2 = rec.TsUi['_update'].row2
                 if (row1 == null || !row1.isConnected || row2 == null || !row2.isColSelected) {
                     row1 = this.box.querySelector(`#grid_${this.name}_rec_${TsUtils.escapeId(rec.recid)}`)
                     row2 = this.box.querySelector(`#grid_${this.name}_frec_${TsUtils.escapeId(rec.recid)}`)
-                    rec.w2ui['_update'].row1 = row1
-                    rec.w2ui['_update'].row2 = row2
+                    rec.TsUi['_update'].row1 = row1
+                    rec.TsUi['_update'].row2 = row2
                 }
                 _update(rec, row1, row2, index, column)
             }
@@ -5830,15 +5830,15 @@ class TsGrid extends TsBase {
                 }
                 const rec = this.records[index]!
                 if (index < 0 || rec == null) continue
-                rec.w2ui = rec.w2ui ?? {}
-                rec.w2ui['_update'] = rec.w2ui['_update'] ?? { cells: [] }
-                let row1 = rec.w2ui['_update'].row1
-                let row2 = rec.w2ui['_update'].row2
+                rec.TsUi = rec.TsUi ?? {}
+                rec.TsUi['_update'] = rec.TsUi['_update'] ?? { cells: [] }
+                let row1 = rec.TsUi['_update'].row1
+                let row2 = rec.TsUi['_update'].row2
                 if (row1 == null || !row1.isConnected || row2 == null || !row2.isColSelected) {
                     row1 = this.box.querySelector(`#grid_${this.name}_rec_${TsUtils.escapeId(rec.recid)}`)
                     row2 = this.box.querySelector(`#grid_${this.name}_frec_${TsUtils.escapeId(rec.recid)}`)
-                    rec.w2ui['_update'].row1 = row1
-                    rec.w2ui['_update'].row2 = row2
+                    rec.TsUi['_update'].row1 = row1
+                    rec.TsUi['_update'].row2 = row2
                 }
                 for (let column = 0; column < this.columns.length; column++) {
                     _update(rec, row1, row2, index, column)
@@ -5853,17 +5853,17 @@ class TsGrid extends TsBase {
             if (Array.isArray(ignoreColumns) && (ignoreColumns.includes(column) || ignoreColumns.includes(pcol?.field))) {
                 return
             }
-            let cell = rec.w2ui['_update'].cells[column]
+            let cell = rec.TsUi['_update'].cells[column]
             if (cell == null || !cell.isConnected) {
                 cell = self.box!.querySelector(`#grid_${self.name}_data_${index}_${column}`)
-                rec.w2ui['_update'].cells[column] = cell
+                rec.TsUi['_update'].cells[column] = cell
             }
             if (cell == null) return
             if (fullCellRefresh) {
                 query(cell).replace(self.getCellHTML(index, column, false))
                 // need to reselect as it was replaced
                 cell = self.box!.querySelector(`#grid_${self.name}_data_${index}_${column}`)
-                rec.w2ui['_update'].cells[column] = cell
+                rec.TsUi['_update'].cells[column] = cell
             } else {
                 const div = cell.children[0] // there is always a div inside a cell
                 // value, attr, style, className, divAttr -- all on TD level except divAttr
@@ -5875,7 +5875,7 @@ class TsGrid extends TsBase {
                     cell.style.cssText = style
                 }
                 if (className != '') {
-                    const ignore = ['w2ui-grid-data']
+                    const ignore = ['TsUi-grid-data']
                     const remove: string[] = []
                     const add = className.split(' ').filter((cl: string) => !!cl) // remove empty
                     cell.classList.forEach((cl: string) => { if (!ignore.includes(cl)) remove.push(cl) })
@@ -5888,11 +5888,11 @@ class TsGrid extends TsBase {
                 cell.style.cssText = self.columns[column]?.style ?? ''
             }
             // record class if any
-            if (rec.w2ui.class != null) {
-                if (typeof rec.w2ui.class == 'string') {
-                    const ignore = ['w2ui-odd', 'w2ui-even', 'w2ui-record']
+            if (rec.TsUi.class != null) {
+                if (typeof rec.TsUi.class == 'string') {
+                    const ignore = ['TsUi-odd', 'TsUi-even', 'TsUi-record']
                     const remove: string[] = []
-                    const add = rec['w2ui']['class'].split(' ').filter((cl: string) => !!cl) // remove empty
+                    const add = rec['TsUi']['class'].split(' ').filter((cl: string) => !!cl) // remove empty
                     if (row1 && row2) {
                         row1.classList.forEach((cl: string) => { if (!ignore.includes(cl)) remove.push(cl) })
                         row1.classList.remove(...remove)
@@ -5901,29 +5901,29 @@ class TsGrid extends TsBase {
                         row2.classList.add(...add)
                     }
                 }
-                if (TsUtils.isPlainObject(rec.w2ui.class) && typeof rec.w2ui.class[pcol?.field ?? ''] == 'string') {
-                    const ignore = ['w2ui-grid-data']
+                if (TsUtils.isPlainObject(rec.TsUi.class) && typeof rec.TsUi.class[pcol?.field ?? ''] == 'string') {
+                    const ignore = ['TsUi-grid-data']
                     const remove: string[] = []
-                    const add = rec['w2ui']['class'][pcol!.field].split(' ').filter((cl: string) => !!cl)
+                    const add = rec['TsUi']['class'][pcol!.field].split(' ').filter((cl: string) => !!cl)
                     cell.classList.forEach((cl: string) => { if (!ignore.includes(cl)) remove.push(cl) })
                     cell.classList.remove(...remove)
                     cell.classList.add(...add)
                 }
             }
             // record styles if any
-            if (rec.w2ui.style != null || rec.w2ui.styles != null) {
-                if (row1 && row2 && typeof rec.w2ui.style == 'string' && row1.style.cssText !== rec.w2ui.style) {
-                    row1.style.cssText = 'height: '+ self.recordHeight + 'px;' + rec.w2ui.style
-                    row1.setAttribute('custom_style', rec.w2ui.style)
-                    row2.style.cssText = 'height: '+ self.recordHeight + 'px;' + rec.w2ui.style
-                    row2.setAttribute('custom_style', rec.w2ui.style)
+            if (rec.TsUi.style != null || rec.TsUi.styles != null) {
+                if (row1 && row2 && typeof rec.TsUi.style == 'string' && row1.style.cssText !== rec.TsUi.style) {
+                    row1.style.cssText = 'height: '+ self.recordHeight + 'px;' + rec.TsUi.style
+                    row1.setAttribute('custom_style', rec.TsUi.style)
+                    row2.style.cssText = 'height: '+ self.recordHeight + 'px;' + rec.TsUi.style
+                    row2.setAttribute('custom_style', rec.TsUi.style)
                 }
-                if (rec.w2ui.styles == null) {
-                    rec.w2ui.styles = rec.w2ui.style
+                if (rec.TsUi.styles == null) {
+                    rec.TsUi.styles = rec.TsUi.style
                 }
-                if (TsUtils.isPlainObject(rec.w2ui.styles) && typeof rec.w2ui.styles[pcol?.field ?? ''] == 'string'
-                        && cell.style.cssText !== rec.w2ui.styles[pcol?.field ?? '']) {
-                    cell.style.cssText = rec.w2ui.styles[pcol!.field]
+                if (TsUtils.isPlainObject(rec.TsUi.styles) && typeof rec.TsUi.styles[pcol?.field ?? ''] == 'string'
+                        && cell.style.cssText !== rec.TsUi.styles[pcol?.field ?? '']) {
+                    cell.style.cssText = rec.TsUi.styles[pcol!.field]
                 }
             }
         }
@@ -5935,7 +5935,7 @@ class TsGrid extends TsBase {
         const col_ind = this.getColumn(field, true)
         if (index == null || col_ind == null) return false
         const isSummary = (this.records[index] && this.records[index]!.recid == recid ? false : true)
-        const cell = query(this.box).find(`${isSummary ? '.w2ui-grid-summary ' : ''}#grid_${this.name}_data_${index}_${col_ind}`)
+        const cell = query(this.box).find(`${isSummary ? '.TsUi-grid-summary ' : ''}#grid_${this.name}_data_${index}_${col_ind}`)
         if (cell.length == 0) return false
         // set cell html and changed flag
         cell.replace(this.getCellHTML(index, col_ind, isSummary))
@@ -5957,13 +5957,13 @@ class TsGrid extends TsBase {
             tr1.replace(rec_html[0])
             tr2.replace(rec_html[1])
             // apply style to row if it was changed in render functions
-            let st = (this.records[ind]!.w2ui ? this.records[ind]!.w2ui!['style'] : '')
+            let st = (this.records[ind]!.TsUi ? this.records[ind]!.TsUi!['style'] : '')
             if (typeof st == 'string') {
                 tr1 = query(this.box).find('#grid_'+ this.name +'_frec_'+ TsUtils.escapeId(recid))
                 tr2 = query(this.box).find('#grid_'+ this.name +'_rec_'+ TsUtils.escapeId(recid))
                 tr1.attr('custom_style', st)
                 tr2.attr('custom_style', st)
-                if (tr1.hasClass('w2ui-selected')) {
+                if (tr1.hasClass('TsUi-selected')) {
                     st = st.replace('background-color', 'none')
                 }
                 tr1[0].style.cssText = 'height: '+ this.recordHeight + 'px;' + st
@@ -6068,9 +6068,9 @@ class TsGrid extends TsBase {
         // show number of selected
         this.status()
         // collapse all records
-        const rows = this.find({ 'w2ui.expanded': true }, true, true)
+        const rows = this.find({ 'TsUi.expanded': true }, true, true)
         for (let r = 0; r < rows.length; r++) {
-            const tmp = this.records[rows[r]! as number]!.w2ui
+            const tmp = this.records[rows[r]! as number]!.TsUi
             if (tmp && !Array.isArray(tmp.children)) {
                 tmp.expanded = false
             }
@@ -6089,7 +6089,7 @@ class TsGrid extends TsBase {
                 }
                 if (search.length > 0) {
                     search.forEach((item) => {
-                        const el = query(this.box).find('td[col="'+ item.col +'"]:not(.w2ui-head)')
+                        const el = query(this.box).find('td[col="'+ item.col +'"]:not(.TsUi-head)')
                         TsUtils.marker(el, item.search)
                     })
                 }
@@ -6115,14 +6115,14 @@ class TsGrid extends TsBase {
 
     refreshSearch() {
         if (this.multiSearch && this.searchData.length > 0) {
-            if (query(this.box).find('.w2ui-grid-searches').length == 0) {
-                query(this.box).find('.w2ui-grid-toolbar')
+            if (query(this.box).find('.TsUi-grid-searches').length == 0) {
+                query(this.box).find('.TsUi-grid-toolbar')
                     .css('height', (this.last.toolbar_height + 35) + 'px')
-                    .append(`<div id="grid_${this.name}_searches" class="w2ui-grid-searches"></div>`)
+                    .append(`<div id="grid_${this.name}_searches" class="TsUi-grid-searches"></div>`)
 
             }
             let searches = `
-                <span id="grid_${this.name}_search_logic" class="w2ui-grid-search-logic"></span>
+                <span id="grid_${this.name}_search_logic" class="TsUi-grid-search-logic"></span>
                 <div class="grid-search-line"></div>`
             this.searchData.forEach((sd, sd_ind) => {
                 const ind = this.getSearch(sd.field, true)
@@ -6162,7 +6162,7 @@ class TsGrid extends TsBase {
                         display = `: ${oper} ${dsp}`
                     }
                 }
-                searches += `<span class="w2ui-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
+                searches += `<span class="TsUi-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
                     ${sf ? (sf.label ?? sf.field) : sd.field}
                     ${display}
                     <span class="icon-chevron-down"></span>
@@ -6172,19 +6172,19 @@ class TsGrid extends TsBase {
             searches += `
                 ${this.show.searchSave
                     ? `<div class="grid-search-line"></div>
-                       <button class="w2ui-btn grid-search-btn" data-click="searchSave" type="button">${TsUtils.lang('Save')}</button>
+                       <button class="TsUi-btn grid-search-btn" data-click="searchSave" type="button">${TsUtils.lang('Save')}</button>
                       `
                     : ''
                 }
-                <button class="w2ui-btn grid-search-btn btn-remove" type="button"
+                <button class="TsUi-btn grid-search-btn btn-remove" type="button"
                     data-click="searchReset">X</button>
             `
             query(this.box).find(`#grid_${this.name}_searches`).html(searches)
             query(this.box).find(`#grid_${this.name}_search_logic`).html(TsUtils.lang(this.last.logic == 'AND' ? 'All' : 'Any'))
         } else {
-            query(this.box).find('.w2ui-grid-toolbar')
+            query(this.box).find('.TsUi-grid-toolbar')
                 .css('height', this.last.toolbar_height + 'px')
-                .find('.w2ui-grid-searches')
+                .find('.TsUi-grid-searches')
                 .remove()
         }
         if (this['searchSelected']) {
@@ -6194,7 +6194,7 @@ class TsGrid extends TsBase {
             query(this.box).find(`#grid_${this.name}_search_all`).prop('readOnly', false)
             query(this.box).find(`#grid_${this.name}_search_name`).hide().find('.name-text').html('')
         }
-        TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .w2ui-action, #grid_${this.name}_searches button`), this)
+        TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_searches .TsUi-action, #grid_${this.name}_searches button`), this)
     }
 
     refreshBody() {
@@ -6203,21 +6203,21 @@ class TsGrid extends TsBase {
         const recHTML  = this.getRecordsHTML()
         const colHTML  = this.getColumnsHTML()
         const bodyHTML =
-            '<div id="grid_'+ this.name +'_frecords" class="w2ui-grid-frecords" style="margin-bottom: '+ ((TsUtils.scrollBarSize() as number) - 1) +'px;">'+
+            '<div id="grid_'+ this.name +'_frecords" class="TsUi-grid-frecords" style="margin-bottom: '+ ((TsUtils.scrollBarSize() as number) - 1) +'px;">'+
                 recHTML[0] +
             '</div>'+
-            '<div id="grid_'+ this.name +'_records" class="w2ui-grid-records">' +
+            '<div id="grid_'+ this.name +'_records" class="TsUi-grid-records">' +
                 recHTML[1] +
             '</div>'+
-            '<div id="grid_'+ this.name +'_scroll1" class="w2ui-grid-scroll1" style="height: '+ TsUtils.scrollBarSize() +'px"></div>'+
+            '<div id="grid_'+ this.name +'_scroll1" class="TsUi-grid-scroll1" style="height: '+ TsUtils.scrollBarSize() +'px"></div>'+
             // Columns need to be after to be able to overlap
-            '<div id="grid_'+ this.name +'_fcolumns" class="w2ui-grid-fcolumns">'+
+            '<div id="grid_'+ this.name +'_fcolumns" class="TsUi-grid-fcolumns">'+
             '    <table><tbody>'+ colHTML[0] +'</tbody></table>'+
             '</div>'+
-            '<div id="grid_'+ this.name +'_columns" class="w2ui-grid-columns">'+
+            '<div id="grid_'+ this.name +'_columns" class="TsUi-grid-columns">'+
             '    <table><tbody>'+ colHTML[1] +'</tbody></table>'+
             '</div>'+
-            `<div class="w2ui-intersection-marker" style="display: none; height: ${this.recordHeight - 5}px">
+            `<div class="TsUi-intersection-marker" style="display: none; height: ${this.recordHeight - 5}px">
                <div class="top-marker"></div>
                <div class="bottom-marker"></div>
             </div>`
@@ -6231,14 +6231,14 @@ class TsGrid extends TsBase {
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
                 query(this.box).find(`#grid_${this.name}_frec_${TsUtils.escapeId(recid)}`)
-                    .toggleClass('w2ui-record-hover', event.type == 'mouseover')
+                    .toggleClass('TsUi-record-hover', event.type == 'mouseover')
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             frecords.on('mouseover mouseout', { delegate: 'tr' }, (event: any) => { // any: event.delegate is a Query extension
                 const ind = query(event.delegate).attr('index') // don't read recid directly as it could be a number or a string
                 const recid = this.records[ind]?.recid
                 query(this.box).find(`#grid_${this.name}_rec_${TsUtils.escapeId(recid)}`)
-                    .toggleClass('w2ui-record-hover', event.type == 'mouseover')
+                    .toggleClass('TsUi-record-hover', event.type == 'mouseover')
             })
         }
         if (TsUtils.isMobile) {
@@ -6339,13 +6339,13 @@ class TsGrid extends TsBase {
         // enable scrolling on frozen records,
         gridBody
             .data('scroll', { lastDelta: 0, lastTime: 0 })
-            .find('.w2ui-grid-frecords')
+            .find('.TsUi-grid-frecords')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('mousewheel DOMMouseScroll ', (event: any) => { // any: WheelEvent or MouseEvent, browser-specific
                 event.preventDefault()
                 // TODO: improve, scroll is not smooth, if scrolled to the end, it takes a while to return
                 const scroll = gridBody.data('scroll')
-                const container = gridBody.find('.w2ui-grid-records')
+                const container = gridBody.find('.TsUi-grid-records')
                 let amount = typeof event.wheelDelta != 'undefined' ? -event.wheelDelta : (event.detail || event.deltaY)
                 const newScrollTop = container.prop('scrollTop')
 
@@ -6360,15 +6360,15 @@ class TsGrid extends TsBase {
         // scroll on records (and frozen records)
         records.off('.body-global')
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('scroll.body-global', { delegate: '.w2ui-grid-records' }, (event: any) => { // any: event.delegate Query extension
+            .on('scroll.body-global', { delegate: '.TsUi-grid-records' }, (event: any) => { // any: event.delegate Query extension
                 this.scroll(event)
             })
 
-        query(this.box).find('.w2ui-grid-body') // gridBody
+        query(this.box).find('.TsUi-grid-body') // gridBody
             .off('.body-global')
             // header column click
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global dblclick.body-global contextmenu.body-global', { delegate: 'td.w2ui-head' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global dblclick.body-global contextmenu.body-global', { delegate: 'td.TsUi-head' }, (event: any) => { // any: event.delegate Query extension
                 const col_ind = parseInt(query(event.delegate).attr('col'))
                 const col = this.columns[col_ind] ?? { field: String(col_ind) } // it could be line number
                 switch (event.type) {
@@ -6389,7 +6389,7 @@ class TsGrid extends TsBase {
                 }
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('mouseover.body-global', { delegate: '.w2ui-col-header' }, (event: any) => { // any: event.delegate Query extension
+            .on('mouseover.body-global', { delegate: '.TsUi-col-header' }, (event: any) => { // any: event.delegate Query extension
                 const col = query(event.delegate).parent().attr('col')
                 this.columnTooltipShow(col, event)
                 query(event.delegate)
@@ -6400,25 +6400,25 @@ class TsGrid extends TsBase {
             })
             // select all
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: 'input.w2ui-select-all' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: 'input.TsUi-select-all' }, (event: any) => { // any: event.delegate Query extension
                 if (event.delegate.checked) { this.selectAll() } else { this.selectNone() }
                 event.stopPropagation()
                 clearTimeout(this.last.kbd_timer ?? undefined) // keep grid in focus
             })
             // tree-like grid (or expandable column) expand/collapse
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: '.w2ui-show-children, .w2ui-col-expand' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: '.TsUi-show-children, .TsUi-col-expand' }, (event: any) => { // any: event.delegate Query extension
                 event.stopPropagation()
                 const ind = query(event.target).parents('tr').attr('index')
                 this.toggle(this.records[ind]!.recid)
             })
             // info bubbles
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global mouseover.body-global', { delegate: '.w2ui-info' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global mouseover.body-global', { delegate: '.TsUi-info' }, (event: any) => { // any: event.delegate Query extension
                 const td = query(event.delegate).closest('td')
                 const tr = td.parent()
                 const col = this.columns[td.attr('col')]
-                const isSummary = tr.parents('.w2ui-grid-body').hasClass('w2ui-grid-summary')
+                const isSummary = tr.parents('.TsUi-grid-body').hasClass('TsUi-grid-summary')
                 if (['mouseenter', 'mouseover'].includes(col?.['info']?.showOn?.toLowerCase()) && event.type == 'mouseover') {
                     this.showBubble(parseInt(tr.attr('index')), parseInt(td.attr('col')), isSummary)
                         .then(() => {
@@ -6433,12 +6433,12 @@ class TsGrid extends TsBase {
             })
             // clipborad copy icon
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('mouseover.body-global', { delegate: '.w2ui-clipboard-copy' }, (event: any) => { // any: event.delegate Query extension
+            .on('mouseover.body-global', { delegate: '.TsUi-clipboard-copy' }, (event: any) => { // any: event.delegate Query extension
                 if (event.delegate._tooltipShow) return
                 const td = query(event.delegate).parent()
                 const tr = td.parent()
                 const col = this.columns[td.attr('col')]
-                const isSummary = tr.parents('.w2ui-grid-body').hasClass('w2ui-grid-summary')
+                const isSummary = tr.parents('.TsUi-grid-body').hasClass('TsUi-grid-summary')
 
                 TsTooltip.show({
                     name: this.name + '-bubble',
@@ -6466,7 +6466,7 @@ class TsGrid extends TsBase {
                 event.delegate._tooltipShow = true
             })
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .on('click.body-global', { delegate: '.w2ui-editable-checkbox' }, (event: any) => { // any: event.delegate Query extension
+            .on('click.body-global', { delegate: '.TsUi-editable-checkbox' }, (event: any) => { // any: event.delegate Query extension
                 const dt = query(event.delegate).data()
                 this.editChange.call(this, event.delegate, dt.changeind, dt.colind, event)
                 this.updateToolbar()
@@ -6475,7 +6475,7 @@ class TsGrid extends TsBase {
         // show empty message
         if (this.records.length === 0 && this.msgEmpty) {
             query(this.box).find(`#grid_${this.name}_body`)
-                .append(`<div id="grid_${this.name}_empty_msg" class="w2ui-grid-empty-msg"><div>${TsUtils.lang(this.msgEmpty)}</div></div>`)
+                .append(`<div id="grid_${this.name}_empty_msg" class="TsUi-grid-empty-msg"><div>${TsUtils.lang(this.msgEmpty)}</div></div>`)
         } else if (query(this.box).find(`#grid_${this.name}_empty_msg`).length > 0) {
             query(this.box).find(`#grid_${this.name}_empty_msg`).remove()
         }
@@ -6510,19 +6510,19 @@ class TsGrid extends TsBase {
         // insert elements
         query(this.box)
             .attr('name', this.name)
-            .addClass('w2ui-reset w2ui-grid w2ui-inactive')
-            .html('<div class="w2ui-grid-box">'+
-                  '    <div id="grid_'+ this.name +'_header" class="w2ui-grid-header"></div>'+
-                  '    <div id="grid_'+ this.name +'_toolbar" class="w2ui-grid-toolbar"></div>'+
-                  '    <div id="grid_'+ this.name +'_body" class="w2ui-grid-body"></div>'+
-                  '    <div id="grid_'+ this.name +'_fsummary" class="w2ui-grid-body w2ui-grid-summary"></div>'+
-                  '    <div id="grid_'+ this.name +'_summary" class="w2ui-grid-body w2ui-grid-summary"></div>'+
-                  '    <div id="grid_'+ this.name +'_footer" class="w2ui-grid-footer"></div>'+
-                  '    <textarea id="grid_'+ this.name +'_focus" class="w2ui-grid-focus-input" '+
+            .addClass('TsUi-reset TsUi-grid TsUi-inactive')
+            .html('<div class="TsUi-grid-box">'+
+                  '    <div id="grid_'+ this.name +'_header" class="TsUi-grid-header"></div>'+
+                  '    <div id="grid_'+ this.name +'_toolbar" class="TsUi-grid-toolbar"></div>'+
+                  '    <div id="grid_'+ this.name +'_body" class="TsUi-grid-body"></div>'+
+                  '    <div id="grid_'+ this.name +'_fsummary" class="TsUi-grid-body TsUi-grid-summary"></div>'+
+                  '    <div id="grid_'+ this.name +'_summary" class="TsUi-grid-body TsUi-grid-summary"></div>'+
+                  '    <div id="grid_'+ this.name +'_footer" class="TsUi-grid-footer"></div>'+
+                  '    <textarea id="grid_'+ this.name +'_focus" class="TsUi-grid-focus-input" '+
                             (this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : '')+
                             (TsUtils.isMobile ? 'readonly' : '') +'></textarea>'+ // readonly needed on android not to open keyboard
                   '</div>')
-        if (this.selectType != 'row') query(this.box).addClass('w2ui-ss')
+        if (this.selectType != 'row') query(this.box).addClass('TsUi-ss')
         if (query(this.box).length > 0) query(this.box)[0].style.cssText += this.style
         // render toolbar
         const tb_box = query(this.box).find(`#grid_${this.name}_toolbar`)
@@ -6597,14 +6597,14 @@ class TsGrid extends TsBase {
                     }
                     // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ;(w2ui[this.name] as any).paste(items2send, event)
+                    ;(TsUi[this.name] as any).paste(items2send, event)
                     event.preventDefault()
                 }
             })
             .on('keydown', function (event: Event) {
                 // any: cast-to-any for dynamic dispatch; TsGrid record/cell shape is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                ;(w2ui[obj.name] as any).keydown.call(w2ui[obj.name], event)
+                ;(TsUi[obj.name] as any).keydown.call(TsUi[obj.name], event)
             })
         // init mouse events for mouse selection
         // any: targeted-any per typing_policy; TsGrid record/cell shape is user-defined at runtime
@@ -6628,14 +6628,14 @@ class TsGrid extends TsBase {
             // restore css user-select
             if (obj.last.userSelect == 'text') {
                 obj.last.userSelect = ''
-                query(obj.box).find('.w2ui-grid-body').css('user-select', 'none')
+                query(obj.box).find('.TsUi-grid-body').css('user-select', 'none')
             }
             // regular record select
-            if (obj.selectType == 'row' && (query(event.target).parents().hasClass('w2ui-head') || query(event.target).hasClass('w2ui-head'))) return
+            if (obj.selectType == 'row' && (query(event.target).parents().hasClass('TsUi-head') || query(event.target).hasClass('TsUi-head'))) return
             if (obj.last.move && obj.last.move.type == 'expand') return
             // if altKey - alow text selection
             if (event.altKey) {
-                query(obj.box).find('.w2ui-grid-body').css('user-select', 'text')
+                query(obj.box).find('.TsUi-grid-body').css('user-select', 'text')
                 obj.selectNone()
                 obj.last.move = { type: 'text-select' }
                 obj.last.userSelect = 'text'
@@ -6647,7 +6647,7 @@ class TsGrid extends TsBase {
                 }
                 let tmps = false
                 while (tmp) {
-                    if (tmp.classList && tmp.classList.contains('w2ui-grid')) break
+                    if (tmp.classList && tmp.classList.contains('TsUi-grid')) break
                     if (tmp.tagName && tmp.tagName.toUpperCase() == 'TD') tmps = true
                     if (tmp.tagName && tmp.tagName.toUpperCase() != 'TR' && tmps == true) {
                         pos.x += tmp.offsetLeft
@@ -6669,7 +6669,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid, column: column1 }, { recid, column: column2 }],
-                        class: 'w2ui-selection-preview'
+                        class: 'TsUi-selection-preview'
                     })
                 }
 
@@ -6694,7 +6694,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid: start, column }, { recid: end, column }],
-                        class: 'w2ui-selection-preview'
+                        class: 'TsUi-selection-preview'
                     })
                 }
                 // set focus to grid
@@ -6705,17 +6705,17 @@ class TsGrid extends TsBase {
                     let sLeft  = obj.last.move.focusX
                     let sTop   = obj.last.move.focusY
                     const $owner = query(target).parents('table').parent()
-                    if ($owner.hasClass('w2ui-grid-records') || $owner.hasClass('w2ui-grid-frecords')
-                            || $owner.hasClass('w2ui-grid-columns') || $owner.hasClass('w2ui-grid-fcolumns')
-                            || $owner.hasClass('w2ui-grid-summary')) {
+                    if ($owner.hasClass('TsUi-grid-records') || $owner.hasClass('TsUi-grid-frecords')
+                            || $owner.hasClass('TsUi-grid-columns') || $owner.hasClass('TsUi-grid-fcolumns')
+                            || $owner.hasClass('TsUi-grid-summary')) {
                         sLeft = obj.last.move.focusX - query(obj.box).find('#grid_'+ obj.name +'_records').prop('scrollLeft')
                         sTop  = obj.last.move.focusY - query(obj.box).find('#grid_'+ obj.name +'_records').prop('scrollTop')
                     }
-                    if (query(target).hasClass('w2ui-grid-footer') || query(target).parents('div.w2ui-grid-footer').length > 0) {
+                    if (query(target).hasClass('TsUi-grid-footer') || query(target).parents('div.TsUi-grid-footer').length > 0) {
                         sTop = query(obj.box).find('#grid_'+ obj.name +'_footer').get(0).offsetTop
                     }
                     // if clicked on toolbar
-                    if ($owner.hasClass('w2ui-scroll-wrapper') && $owner.parent().hasClass('w2ui-toolbar')) {
+                    if ($owner.hasClass('TsUi-scroll-wrapper') && $owner.parent().hasClass('TsUi-toolbar')) {
                         sLeft = obj.last.move.focusX - $owner.prop('scrollLeft')
                     }
                     $input.css({
@@ -6741,7 +6741,7 @@ class TsGrid extends TsBase {
             if (obj.reorderRows == true) {
                 let el = event.target
                 if (el.tagName.toUpperCase() != 'TD') el = query(el).parents('td')[0]
-                if (query(el).hasClass('w2ui-col-number') || query(el).hasClass('w2ui-col-order')) {
+                if (query(el).hasClass('TsUi-col-number') || query(el).hasClass('TsUi-col-order')) {
                     //multiple rows reordering
                     //obj.selectNone()
                     let sel: Array<RecId | number | string> = obj.getSelection() as Array<RecId | number | string>
@@ -6763,8 +6763,8 @@ class TsGrid extends TsBase {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const selectExpandedChildren = (recid: any) => {
                         const rec = obj.get(recid)
-                        if (rec?.w2ui?.children) {
-                            rec.w2ui.children.forEach(c => {
+                        if (rec?.TsUi?.children) {
+                            rec.TsUi.children.forEach(c => {
                                 const child_rec = obj.get(c.recid)
                                 if (!child_rec) return
                                 new_sel.push(c.recid)
@@ -6776,13 +6776,13 @@ class TsGrid extends TsBase {
                     sel = [...sel, ...new_sel]
                     obj.last.move.reorder = true
                     // suppress hover
-                    const eColor = query(obj.box).find('.w2ui-even.w2ui-empty-record').css('background-color')
-                    const oColor = query(obj.box).find('.w2ui-odd.w2ui-empty-record').css('background-color')
-                    query(obj.box).find('.w2ui-even td').filter(':not(.w2ui-col-number)').css('background-color', eColor)
-                    query(obj.box).find('.w2ui-odd td').filter(':not(.w2ui-col-number)').css('background-color', oColor)
+                    const eColor = query(obj.box).find('.TsUi-even.TsUi-empty-record').css('background-color')
+                    const oColor = query(obj.box).find('.TsUi-odd.TsUi-empty-record').css('background-color')
+                    query(obj.box).find('.TsUi-even td').filter(':not(.TsUi-col-number)').css('background-color', eColor)
+                    query(obj.box).find('.TsUi-odd td').filter(':not(.TsUi-col-number)').css('background-color', oColor)
                     // display empty record and ghost record
                     const mv = obj.last.move
-                    const recs = query(obj.box).find('.w2ui-grid-records')
+                    const recs = query(obj.box).find('.TsUi-grid-records')
                     if (!mv['ghost']) {
                         //multiple rows reordering
                         //let row = query(obj.box).find(`#grid_${obj.name}_rec_${mv.recid}`)
@@ -6803,7 +6803,7 @@ class TsGrid extends TsBase {
                         })
                         rows.forEach(row => {
                             row.find('td').remove()
-                            row.append(`<td colspan="1000"><div class="w2ui-reorder-empty" style="height: ${(obj.recordHeight - 2)}px"></div></td>`)
+                            row.append(`<td colspan="1000"><div class="TsUi-reorder-empty" style="height: ${(obj.recordHeight - 2)}px"></div></td>`)
                         })
                         recs.append('<div id="grid_'+ obj.name + '_ghost_line" style="position: absolute; z-index: 999999; pointer-events: none; width: 100%;"></div>')
                         recs.append('<table id="grid_'+ obj.name + '_ghost" style="position: absolute; z-index: 999998; opacity: 0.9; pointer-events: none;"></table>')
@@ -6819,8 +6819,8 @@ class TsGrid extends TsBase {
                 }
             }
             query(document)
-                .on('mousemove.w2ui-' + obj.name, mouseMove)
-                .on('mouseup.w2ui-' + obj.name, mouseStop)
+                .on('mousemove.TsUi-' + obj.name, mouseMove)
+                .on('mouseup.TsUi-' + obj.name, mouseStop)
             // needed when grid grids are nested, see issue #1275
             event.stopPropagation()
         }
@@ -6889,8 +6889,8 @@ class TsGrid extends TsBase {
                 const col = parseInt(query(event.target).parents('td').attr('col'))
                 if (isNaN(col)) {
                     obj.removeRange('column-selection')
-                    query(obj.box).find('.w2ui-grid-columns .w2ui-col-header, .w2ui-grid-fcolumns .w2ui-col-header').removeClass('w2ui-col-selected')
-                    query(obj.box).find('.w2ui-col-number').removeClass('w2ui-row-selected')
+                    query(obj.box).find('.TsUi-grid-columns .TsUi-col-header, .TsUi-grid-fcolumns .TsUi-col-header').removeClass('TsUi-col-selected')
+                    query(obj.box).find('.TsUi-col-number').removeClass('TsUi-row-selected')
                     delete mv.colRange
                 } else {
                     // add all columns in between
@@ -6913,7 +6913,7 @@ class TsGrid extends TsBase {
                             obj.addRange({
                                 name: 'selection-preview',
                                 range: [{ recid: start, column: tmp[0] }, { recid: end, column: tmp[1] }],
-                                class: 'w2ui-selection-preview'
+                                class: 'TsUi-selection-preview'
                             })
                         }
                     }
@@ -6958,7 +6958,7 @@ class TsGrid extends TsBase {
                     obj.addRange({
                         name: 'selection-preview',
                         range: [{ recid: start?.recid, column: start?.column }, { recid: end?.recid, column: end?.column }],
-                        class: 'w2ui-selection-preview'
+                        class: 'TsUi-selection-preview'
                     })
                     mv.newRange = newSel
                 } else {
@@ -6984,7 +6984,7 @@ class TsGrid extends TsBase {
             setTimeout(() => {
                 obj.last.cancelClick = null
             }, 1)
-            if (query(event.target).parents().hasClass('.w2ui-head') || query(event.target).hasClass('.w2ui-head')) return
+            if (query(event.target).parents().hasClass('.TsUi-head') || query(event.target).hasClass('.TsUi-head')) return
             obj.removeRange('selection-preview')
             if (mv && ['select', 'select-column'].includes(mv.type)) {
                 if (mv.colRange != null && edataCol.isCancelled !== true) {
@@ -7033,8 +7033,8 @@ class TsGrid extends TsBase {
                         // clear sortData
                         obj.sortData = []
                         query(obj.box)
-                            .find(`#grid_${obj.name}_columns .w2ui-col-header`)
-                            .removeClass('w2ui-col-sorted')
+                            .find(`#grid_${obj.name}_columns .TsUi-col-header`)
+                            .removeClass('TsUi-col-sorted')
                         resetRowReorder()
                         obj.selectNone(true)
                         obj.select(mv.from)
@@ -7046,7 +7046,7 @@ class TsGrid extends TsBase {
                 }
             }
             delete obj.last.move
-            query(document).off('.w2ui-' + obj.name)
+            query(document).off('.TsUi-' + obj.name)
         }
 
         function resetRowReorder() {
@@ -7072,7 +7072,7 @@ class TsGrid extends TsBase {
         if (query(this.box).find(`#grid_${this.name}_body`).length > 0) {
             this.unmount()
         }
-        delete w2ui[this.name]
+        delete TsUi[this.name]
         // event after
         edata.finish()
     }
@@ -7102,15 +7102,15 @@ class TsGrid extends TsBase {
         // skip records
         if (this.show.skipRecords) {
             const skip = TsUtils.lang('Skip') +
-                `<input id="${this.name}_skip" type="text" class="w2ui-input w2ui-grid-skip" value="${this.offset}">` +
+                `<input id="${this.name}_skip" type="text" class="TsUi-input TsUi-grid-skip" value="${this.offset}">` +
                 TsUtils.lang('records')
-            items.push({ id: 'w2ui-skip', text: skip, group: false, icon: 'w2ui-icon-empty' })
+            items.push({ id: 'TsUi-skip', text: skip, group: false, icon: 'TsUi-icon-empty' })
         }
         // save/restore state
         if (this.show.saveRestoreState) {
             items.push(
-                { id: 'w2ui-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'w2ui-icon-empty', group: false },
-                { id: 'w2ui-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'w2ui-icon-empty', group: false }
+                { id: 'TsUi-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'TsUi-icon-empty', group: false },
+                { id: 'TsUi-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'TsUi-icon-empty', group: false }
             )
         }
         // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
@@ -7122,7 +7122,7 @@ class TsGrid extends TsBase {
             item.text = TsUtils.lang(item.text) // translate
             if (item.checked) selected.push(item.id)
         })
-        this.toolbar.set('w2ui-column-on-off', { selected, items })
+        this.toolbar.set('TsUi-column-on-off', { selected, items })
         return items
     }
 
@@ -7147,10 +7147,10 @@ class TsGrid extends TsBase {
         // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const hasInvalidClass = (target: any, lastColumn?: any) => {
-            const iClass = ['w2ui-col-number', 'w2ui-col-expand', 'w2ui-col-select']
-            if (lastColumn !== true) iClass.push('w2ui-head-last')
+            const iClass = ['TsUi-col-number', 'TsUi-col-expand', 'TsUi-col-select']
+            if (lastColumn !== true) iClass.push('TsUi-head-last')
             for (let i = 0; i < iClass.length; i++) {
-                if (query(target).closest('.w2ui-head').hasClass(iClass[i])) {
+                if (query(target).closest('.TsUi-head').hasClass(iClass[i])) {
                     return true
                 }
             }
@@ -7166,10 +7166,10 @@ class TsGrid extends TsBase {
         function dragColStart(event: any) { // any: DragEvent at runtime
             if (dragData.pressed || dragData['numberPreColumnsPresent'] === 0 || event.button !== 0) return
 
-            const preColHeadersSelector = '.w2ui-head.w2ui-col-number, .w2ui-head.w2ui-col-expand, .w2ui-head.w2ui-col-select'
+            const preColHeadersSelector = '.TsUi-head.TsUi-col-number, .TsUi-head.TsUi-col-expand, .TsUi-head.TsUi-col-select'
 
             // do nothing if it is not a header
-            if (!query(event.target).parents().hasClass('w2ui-head') || hasInvalidClass(event.target)) return
+            if (!query(event.target).parents().hasClass('TsUi-head') || hasInvalidClass(event.target)) return
 
             dragData.pressed = true
             dragData['initialX'] = event.pageX
@@ -7177,12 +7177,12 @@ class TsGrid extends TsBase {
             dragData['numberPreColumnsPresent'] = query(self.box).find(preColHeadersSelector).length
 
             // start event for drag start
-            const origColumn = dragData.columnHead = query(event.target).closest('.w2ui-head')
+            const origColumn = dragData.columnHead = query(event.target).closest('.TsUi-head')
             const origColumnNumber = dragData['originalPos'] = parseInt(origColumn.attr('col'), 10)
             const edata = self.trigger('columnDragStart', { originalEvent: event, origColumnNumber, target: origColumn[0] })
             if (edata.isCancelled === true) return false
 
-            const columns = dragData['columns'] = query(self.box).find('.w2ui-head:not(.w2ui-head-last)')
+            const columns = dragData['columns'] = query(self.box).find('.TsUi-head:not(.TsUi-head-last)')
 
             // add events
             query(document).on('mouseup.colDrag', dragColEnd)
@@ -7205,7 +7205,7 @@ class TsGrid extends TsBase {
                     position: 'fixed',
                     'z-index': 999999,
                 })
-                .addClass('.w2ui-grid-ghost')
+                .addClass('.TsUi-grid-ghost')
 
 
             // establish current offsets
@@ -7236,8 +7236,8 @@ class TsGrid extends TsBase {
 
             let target
             const finish = () => {
-                const ghosts = query(self.box).find('.w2ui-grid-ghost')
-                query(self.box).find('.w2ui-intersection-marker').hide()
+                const ghosts = query(self.box).find('.TsUi-grid-ghost')
+                query(self.box).find('.TsUi-intersection-marker').hide()
                 query(dragData['ghost']).remove()
                 ghosts.remove()
 
@@ -7279,12 +7279,12 @@ class TsGrid extends TsBase {
                 return
             }
             const td = query(event.target).closest('td')
-            const newPos = td.hasClass('w2ui-head-last') ? self.columns.length : parseInt(td.attr('col'))
+            const newPos = td.hasClass('TsUi-head-last') ? self.columns.length : parseInt(td.attr('col'))
             if (dragData.targetPos != newPos) {
                 // if mouse over invalid column
-                const rect1 = query(self.box).find('.w2ui-grid-body').get(0).getBoundingClientRect()
+                const rect1 = query(self.box).find('.TsUi-grid-body').get(0).getBoundingClientRect()
                 const rect2 = query(event.target).closest('td').get(0).getBoundingClientRect()
-                query(self.box).find('.w2ui-intersection-marker')
+                query(self.box).find('.TsUi-intersection-marker')
                     .show()
                     .css({
                         left: (rect2.left - rect1.left) + 'px',
@@ -7322,11 +7322,11 @@ class TsGrid extends TsBase {
         const edata = this.trigger('columnOnOff', { target: this.name, field: field, originalEvent: event })
         if (edata.isCancelled === true) return
         // collapse expanded rows
-        const rows = this.find({ 'w2ui.expanded': true }, true)
+        const rows = this.find({ 'TsUi.expanded': true }, true)
         for (let r = 0; r < rows.length; r++) {
-            const tmp = this.records[r]!.w2ui
+            const tmp = this.records[r]!.TsUi
             if (tmp && !Array.isArray(tmp.children)) {
-                this.records[r]!.w2ui!.expanded = false
+                this.records[r]!.TsUi!.expanded = false
             }
         }
         // show/hide
@@ -7361,25 +7361,25 @@ class TsGrid extends TsBase {
         }
         if (this.show.toolbarSearch) {
             const html =`
-                <div class="w2ui-grid-search-input">
+                <div class="TsUi-grid-search-input">
                     ${this.buttons['search'].html}
-                    <div id="grid_${this.name}_search_name" class="w2ui-grid-search-name">
-                        <span class="name-icon w2ui-icon-search"></span>
+                    <div id="grid_${this.name}_search_name" class="TsUi-grid-search-name">
+                        <span class="name-icon TsUi-icon-search"></span>
                         <span class="name-text"></span>
-                        <span class="name-cross w2ui-action" data-click="searchReset">x</span>
+                        <span class="name-cross TsUi-action" data-click="searchReset">x</span>
                     </div>
-                    <input type="text" id="grid_${this.name}_search_all" class="w2ui-search-all" tabindex="-1"
+                    <input type="text" id="grid_${this.name}_search_all" class="TsUi-search-all" tabindex="-1"
                         autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                         placeholder="${TsUtils.lang(this.last.label, true)}" value="${this.last.search}"
                         data-focus="searchSuggest" data-click="stop"
                     >
-                    <div class="w2ui-search-drop w2ui-action" data-click="searchOpen"
+                    <div class="TsUi-search-drop TsUi-action" data-click="searchOpen"
                             style="${this.multiSearch ? '' : 'display: none'}">
-                        <span class="w2ui-icon-drop"></span>
+                        <span class="TsUi-icon-drop"></span>
                     </div>
                 </div>`
             this.toolbar.items.push({
-                id: 'w2ui-search',
+                id: 'TsUi-search',
                 type: 'html',
                 html,
                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -7387,7 +7387,7 @@ class TsGrid extends TsBase {
                 onRefresh: async (event: any) => {
                     await event.complete
                     const input = query(this.box).find(`#grid_${this.name}_search_all`)
-                    TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .w2ui-action`), this)
+                    TsUtils.bindEvents(query(this.box).find(`#grid_${this.name}_search_all, .TsUi-action`), this)
                     // slow down live search calls
                     // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7416,7 +7416,7 @@ class TsGrid extends TsBase {
                                 }
                                 case 13: {
                                     // search on enter key
-                                    w2menu.hide(this.name + '-search-suggest')
+                                    TsMenu.hide(this.name + '-search-suggest')
                                     this.search(this.last.field, event.target.value)
                                     break
                                 }
@@ -7443,12 +7443,12 @@ class TsGrid extends TsBase {
             }
             if (this.show.toolbarSave && !ids.includes(this.buttons['save'].id)) {
                 if (this.show.toolbarAdd || this.show.toolbarDelete || this.show.toolbarEdit) {
-                    this.toolbar.items.push({ type: 'break', id: 'w2ui-break2' })
+                    this.toolbar.items.push({ type: 'break', id: 'TsUi-break2' })
                 }
                 this.toolbar.items.push(TsUtils.extend({}, this.buttons['save']))
             }
             // fill in overwritten items with default buttons
-            // ids are w2ui-* but in this.buttons the map is just [add, edit, delete]
+            // ids are TsUi-* but in this.buttons the map is just [add, edit, delete]
             // must specify at least {id, name} in this.toolbar.items if you want to keep order
             tb_items = tb_items.map(item => this.buttons[item.name]
                                             ? TsUtils.extend({}, this.buttons[item.name], item) : item)
@@ -7466,19 +7466,19 @@ class TsGrid extends TsBase {
             if (edata.isCancelled === true) return
             let edata2
             switch (event.detail.item.id) {
-                case 'w2ui-reload':
+                case 'TsUi-reload':
                     edata2 = this.trigger('reload', { target: this.name })
                     if (edata2.isCancelled === true) return false
                     this.reload()
                     edata2.finish()
                     break
-                case 'w2ui-column-on-off':
+                case 'TsUi-column-on-off':
                     // TODO: tap on columns will hide menu before opening, only in grid not in toolbar
                     if (event.detail.subItem) {
                         const id = event.detail.subItem.id
-                        if (['w2ui-stateSave', 'w2ui-stateReset'].includes(id)) {
+                        if (['TsUi-stateSave', 'TsUi-stateReset'].includes(id)) {
                             this[id.substring(5)]()
-                        } else if (id == 'w2ui-skip') {
+                        } else if (id == 'TsUi-skip') {
                             // empty
                         } else {
                             this.columnOnOff(event, event.detail.subItem.id)
@@ -7487,11 +7487,11 @@ class TsGrid extends TsBase {
                         this.initColumnOnOff()
                         // init input control with records to skip
                         setTimeout(() => {
-                            query(`#w2overlay-${this.name}_toolbar-drop .w2ui-grid-skip`)
-                                .off('.w2ui-grid')
+                            query(`#w2overlay-${this.name}_toolbar-drop .TsUi-grid-skip`)
+                                .off('.TsUi-grid')
                                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
                                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                                .on('click.w2ui-grid', (evt: any) => {
+                                .on('click.TsUi-grid', (evt: any) => {
                                     evt.stopPropagation()
                                 })
                                 // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
@@ -7499,19 +7499,19 @@ class TsGrid extends TsBase {
                                 .on('keypress', (evt: any) => {
                                     if (evt.keyCode == 13) {
                                         this.skip(evt.target.value)
-                                        this.toolbar.click('w2ui-column-on-off') // close menu
+                                        this.toolbar.click('TsUi-column-on-off') // close menu
                                     }
                                 })
                         }, 100)
                     }
                     break
-                case 'w2ui-add':
+                case 'TsUi-add':
                     // events
                     edata2 = this.trigger('add', { target: this.name, recid: null })
                     if (edata2.isCancelled === true) return false
                     edata2.finish()
                     break
-                case 'w2ui-edit': {
+                case 'TsUi-edit': {
                     const sel   = this.getSelection()
                     let recid = null
                     if (sel.length == 1) recid = sel[0]
@@ -7521,10 +7521,10 @@ class TsGrid extends TsBase {
                     edata2.finish()
                     break
                 }
-                case 'w2ui-delete':
+                case 'TsUi-delete':
                     this.delete()
                     break
-                case 'w2ui-save':
+                case 'TsUi-save':
                     this.save()
                     break
             }
@@ -7534,7 +7534,7 @@ class TsGrid extends TsBase {
         // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.toolbar.on('refresh', (event: any) => {
-            if (event.target == 'w2ui-search') {
+            if (event.target == 'TsUi-search') {
                 const sd = this.searchData
                 setTimeout(() => {
                     this.searchInitInput(this.last.field, (sd.length == 1 ? sd[0]!.value : null))
@@ -7546,7 +7546,7 @@ class TsGrid extends TsBase {
     initResize() {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
-        query(this.box).find('.w2ui-resizer')
+        query(this.box).find('.TsUi-resizer')
             .off('.grid-col-resize')
             .on('click.grid-col-resize', function(event: Event) {
                 event.stopPropagation()
@@ -7694,10 +7694,10 @@ class TsGrid extends TsBase {
         // eslint-disable-next-line @typescript-eslint/no-this-alias
         const obj = this
         // remove empty records
-        query(this.box).find('.w2ui-empty-record').remove()
+        query(this.box).find('.TsUi-empty-record').remove()
         // -- Calculate Column size in PX
         const box             = query(this.box)
-        const grid            = query(this.box).find(':scope > div.w2ui-grid-box')
+        const grid            = query(this.box).find(':scope > div.TsUi-grid-box')
         const header          = query(this.box).find(`#grid_${this.name}_header`)
         const toolbar         = query(this.box).find(`#grid_${this.name}_toolbar`)
         const summary         = query(this.box).find(`#grid_${this.name}_summary`)
@@ -7757,7 +7757,7 @@ class TsGrid extends TsBase {
         // apply overflow
         if (!this.fixedBody) { bodyOverflowY = false }
         if (bodyOverflowX || bodyOverflowY) {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last')
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last')
                 .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
             records.css({
@@ -7767,7 +7767,7 @@ class TsGrid extends TsBase {
                 'overflow-y': (bodyOverflowY ? 'auto' : 'hidden')
             })
         } else {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last').hide()
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last').hide()
             records.css({
                 top: ((this.columnGroups.length > 0 && this.show.columns ? 1 : 0) + (TsUtils.getSize(columns, 'height') as number)) +'px',
                 overflow: 'hidden'
@@ -7804,21 +7804,21 @@ class TsGrid extends TsBase {
             let html1 = ''
             let html2 = ''
             let htmlp = ''
-            html1    += '<tr class="'+ (row % 2 ? 'w2ui-even' : 'w2ui-odd') + ' w2ui-empty-record" recid="-none-" style="height: '+ height +'px">'
-            html2    += '<tr class="'+ (row % 2 ? 'w2ui-even' : 'w2ui-odd') + ' w2ui-empty-record" recid="-none-" style="height: '+ height +'px">'
-            if (grid.show.lineNumbers) html1 += '<td class="w2ui-col-number"></td>'
-            if (grid.show.selectColumn) html1 += '<td class="w2ui-grid-data w2ui-col-select"></td>'
-            if (grid.show.expandColumn) html1 += '<td class="w2ui-grid-data w2ui-col-expand"></td>'
-            html2 += '<td class="w2ui-grid-data-spacer" col="start" style="border-right: 0"></td>'
-            if (grid.reorderRows) html2 += '<td class="w2ui-grid-data w2ui-col-order" col="order"></td>'
+            html1    += '<tr class="'+ (row % 2 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-empty-record" recid="-none-" style="height: '+ height +'px">'
+            html2    += '<tr class="'+ (row % 2 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-empty-record" recid="-none-" style="height: '+ height +'px">'
+            if (grid.show.lineNumbers) html1 += '<td class="TsUi-col-number"></td>'
+            if (grid.show.selectColumn) html1 += '<td class="TsUi-grid-data TsUi-col-select"></td>'
+            if (grid.show.expandColumn) html1 += '<td class="TsUi-grid-data TsUi-col-expand"></td>'
+            html2 += '<td class="TsUi-grid-data-spacer" col="start" style="border-right: 0"></td>'
+            if (grid.reorderRows) html2 += '<td class="TsUi-grid-data TsUi-col-order" col="order"></td>'
             for (let j = 0; j < grid.columns.length; j++) {
                 const col = grid.columns[j]
                 if ((col.hidden || j < grid.last.vscroll.colIndStart || j > grid.last.vscroll.colIndEnd) && !col.frozen) continue
-                htmlp = '<td class="w2ui-grid-data" '+ (col.attr != null ? col.attr : '') +' col="'+ j +'"></td>'
+                htmlp = '<td class="TsUi-grid-data" '+ (col.attr != null ? col.attr : '') +' col="'+ j +'"></td>'
                 if (col.frozen) html1 += htmlp; else html2 += htmlp
             }
-            html1 += '<td class="w2ui-grid-data-last"></td> </tr>'
-            html2 += '<td class="w2ui-grid-data-last" col="end"></td> </tr>'
+            html1 += '<td class="TsUi-grid-data-last"></td> </tr>'
+            html2 += '<td class="TsUi-grid-data-last" col="end"></td> </tr>'
             query(grid.box).find('#grid_'+ grid.name +'_frecords > table').append(html1)
             query(grid.box).find('#grid_'+ grid.name +'_records > table').append(html2)
         }
@@ -7917,7 +7917,7 @@ class TsGrid extends TsBase {
                 i++
             }
         } else if (width_diff > 0) {
-            columns.find(':scope > table > tbody > tr:nth-child(1) td.w2ui-head-last')
+            columns.find(':scope > table > tbody > tr:nth-child(1) td.TsUi-head-last')
                 .css('width', TsUtils.scrollBarSize() + 'px')
                 .show()
         }
@@ -7951,7 +7951,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('w2ui-col-number')) {
+                if (query(el).hasClass('TsUi-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -7968,7 +7968,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '') // already has px
                 }
                 // last column
-                if (query(el).hasClass('w2ui-head-last')) {
+                if (query(el).hasClass('TsUi-head-last')) {
                     if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
                         let width = 0
                         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
@@ -7999,7 +7999,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('w2ui-col-number')) {
+                if (query(el).hasClass('TsUi-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -8016,7 +8016,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '')
                 }
                 // last column
-                if (query(el).hasClass('w2ui-grid-data-last') && query(el).parents('.w2ui-grid-frecords').length === 0) { // not in frecords
+                if (query(el).hasClass('TsUi-grid-data-last') && query(el).parents('.TsUi-grid-frecords').length === 0) { // not in frecords
                     if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
                         let width = 0
                         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
@@ -8036,7 +8036,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .each((el: any) => {
                 // line numbers
-                if (query(el).hasClass('w2ui-col-number')) {
+                if (query(el).hasClass('TsUi-col-number')) {
                     query(el).css('width', lineNumberWidth + 'px')
                 }
                 // records
@@ -8053,7 +8053,7 @@ class TsGrid extends TsBase {
                     if (obj.columns[ind]) query(el).css('width', obj.columns[ind]!.sizeCalculated ?? '')
                 }
                 // last column
-                if (query(el).hasClass('w2ui-grid-data-last') && query(el).parents('.w2ui-grid-frecords').length === 0) { // not in frecords
+                if (query(el).hasClass('TsUi-grid-data-last') && query(el).parents('.TsUi-grid-frecords').length === 0) { // not in frecords
                     query(el).css('width', (TsUtils.scrollBarSize() as number) + (width_diff > 0 && percent === 0 ? width_diff : 0) + 'px')
                 }
             })
@@ -8074,11 +8074,11 @@ class TsGrid extends TsBase {
             <div class="search-title">
                 ${TsUtils.lang('Advanced Search')}
                 ${this.savedSearches?.length > 0
-                    ? `<button class="w2ui-btn w2ui-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
+                    ? `<button class="TsUi-btn TsUi-saved-searches" data-click="searchSuggest|true|false|this">Saved Searches (${this.savedSearches?.length ?? 0})</button>`
                     : ''
                 }
                 <span class="search-logic" style="${this.show.searchLogic ? '' : 'display: none'}">
-                    <select id="grid_${this.name}_logic" class="w2ui-input">
+                    <select id="grid_${this.name}_logic" class="TsUi-input">
                         <option value="AND" ${this.last.logic == 'AND' ? 'selected' : ''}>${TsUtils.lang('All')}</option>
                         <option value="OR" ${this.last.logic == 'OR' ? 'selected' : ''}>${TsUtils.lang('Any')}</option>
                     </select>
@@ -8110,7 +8110,7 @@ class TsGrid extends TsBase {
                 s.label = s['caption']
             }
             const operator =`
-                <select id="grid_${this.name}_operator_${i}" class="w2ui-input" data-change="initOperator|${i}">
+                <select id="grid_${this.name}_operator_${i}" class="TsUi-input" data-change="initOperator|${i}">
                     ${this.getOperators(s.type, s.operators)}
                 </select>
             `
@@ -8131,7 +8131,7 @@ class TsGrid extends TsBase {
                     tmpStyle = 'width: 250px;'
                     if (['hex', 'color'].indexOf(s.type) != -1) tmpStyle = 'width: 90px;'
                     columns[col_ind] += `<input rel="search" type="text" id="grid_${this.name}_field_${i}" name="${s.field}"
-                               class="w2ui-input" style="${tmpStyle + s.style}" ${s.attr}>`
+                               class="TsUi-input" style="${tmpStyle + s.style}" ${s.attr}>`
                     break
 
                 case 'int':
@@ -8145,14 +8145,14 @@ class TsGrid extends TsBase {
                     tmpStyle = 'width: 90px;'
                     if (s.type == 'datetime') tmpStyle = 'width: 140px;'
                     columns[col_ind] += `<input id="grid_${this.name}_field_${i}" name="${s.field}" ${s.attr} rel="search" type="text"
-                                class="w2ui-input" style="${tmpStyle + s.style}">
+                                class="TsUi-input" style="${tmpStyle + s.style}">
                             <span id="grid_${this.name}_range_${i}" style="display: none">&#160;-&#160;&#160;
-                                <input rel="search" type="text" class="w2ui-input" style="${tmpStyle + s.style}" id="grid_${this.name}_field2_${i}" name="${s.field}" ${s.attr}>
+                                <input rel="search" type="text" class="TsUi-input" style="${tmpStyle + s.style}" id="grid_${this.name}_field2_${i}" name="${s.field}" ${s.attr}>
                             </span>`
                     break
 
                 case 'select':
-                    columns[col_ind] += `<select rel="search" class="w2ui-input" style="${s.style}" id="grid_${this.name}_field_${i}"
+                    columns[col_ind] += `<select rel="search" class="TsUi-input" style="${s.style}" id="grid_${this.name}_field_${i}"
                                 name="${s.field}" ${s.attr}></select>`
                     break
 
@@ -8168,10 +8168,10 @@ class TsGrid extends TsBase {
                 ${columns.join('')}
             </div>
             <div class="search-bottom actions">
-                <button type="button" class="w2ui-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
+                <button type="button" class="TsUi-btn close-btn" data-click="searchClose">${TsUtils.lang('Close')}</button>
                 <div style="float: right; display: inline">
-                    <button type="button" class="w2ui-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
-                    <button type="button" class="w2ui-btn w2ui-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
+                    <button type="button" class="TsUi-btn" data-click="searchReset">${TsUtils.lang('Reset')}</button>
+                    <button type="button" class="TsUi-btn TsUi-btn-blue" data-click="search">${TsUtils.lang('Search')}</button>
                 </div>
             </div>
         `
@@ -8425,7 +8425,7 @@ class TsGrid extends TsBase {
             }
         }
         // add on change event
-        overlay.find('.w2ui-grid-search-advanced *[rel=search]')
+        overlay.find('.TsUi-grid-search-advanced *[rel=search]')
             // any: callback parameter — caller signature varies; TsGrid record/cell shape is user-defined at runtime
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             .on('keypress', (evnt: any) => {
@@ -8469,24 +8469,24 @@ class TsGrid extends TsBase {
             if (self.columnGroups[self.columnGroups.length-1].text != '') self.columnGroups.push({ text: '' })
 
             if (self.show.lineNumbers) {
-                html1 += '<td class="w2ui-head w2ui-col-number" col="line-number">' +
+                html1 += '<td class="TsUi-head TsUi-col-number" col="line-number">' +
                          '    <div>&#160;</div>' +
                          '</td>'
             }
             if (self.show.selectColumn) {
-                html1 += '<td class="w2ui-head w2ui-col-select" col="select">' +
+                html1 += '<td class="TsUi-head TsUi-col-select" col="select">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
             if (self.show.expandColumn) {
-                html1 += '<td class="w2ui-head w2ui-col-expand" col="expand">' +
+                html1 += '<td class="TsUi-head TsUi-col-expand" col="expand">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
             let ii = 0
-            html2 += `<td id="grid_${self.name}_column_start" class="w2ui-head" col="start" style="border-right: 0"></td>`
+            html2 += `<td id="grid_${self.name}_column_start" class="TsUi-head" col="start" style="border-right: 0"></td>`
             if (self.reorderRows) {
-                html2 += '<td class="w2ui-head w2ui-col-order" col="order">' +
+                html2 += '<td class="TsUi-head TsUi-col-order" col="order">' +
                          '    <div style="height: 25px">&#160;</div>' +
                          '</td>'
             }
@@ -8514,33 +8514,33 @@ class TsGrid extends TsBase {
                     let sortStyle = ''
                     for (let si = 0; si < self.sortData.length; si++) {
                         if (self.sortData[si]!.field == col.field) {
-                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'w2ui-sort-up'
-                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'w2ui-sort-down'
+                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'TsUi-sort-up'
+                            if ((self.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'TsUi-sort-down'
                         }
                     }
                     let resizer = ''
                     if (col.resizable !== false) {
-                        resizer = `<div class="w2ui-resizer" name="${ii}"></div>`
+                        resizer = `<div class="TsUi-resizer" name="${ii}"></div>`
                     }
                     const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
-                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="w2ui-head ${sortStyle}" col="${ii}" `+
+                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="TsUi-head ${sortStyle}" col="${ii}" `+
                            `    rowspan="2" colspan="${colspan}">`+ resizer +
-                           `    <div class="w2ui-col-group w2ui-col-header ${sortStyle ? 'w2ui-col-sorted' : ''}">` +
+                           `    <div class="TsUi-col-group TsUi-col-header ${sortStyle ? 'TsUi-col-sorted' : ''}">` +
                            `        <div class="${sortStyle}"></div>` + (!text ? '&#160;' : text) +
                            '    </div>'+
                            '</td>'
                     if (col && col.frozen) html1 += tmpf; else html2 += tmpf
                 } else {
                     const gText = TsUtils.lang(typeof colg.text == 'function' ? colg.text(colg) : colg.text)
-                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="w2ui-head" col="${ii}" colspan="${colspan}">` +
-                           `    <div class="w2ui-col-group" style="${colg.style ?? ''}">${!gText ? '&#160;' : gText}</div>` +
+                    tmpf = `<td id="grid_${self.name}_column_${ii}" class="TsUi-head" col="${ii}" colspan="${colspan}">` +
+                           `    <div class="TsUi-col-group" style="${colg.style ?? ''}">${!gText ? '&#160;' : gText}</div>` +
                            '</td>'
                     if (col && col.frozen) html1 += tmpf; else html2 += tmpf
                 }
                 ii += colg.span
             }
             html1 += '<td></td></tr>' // need empty column for border-right
-            html2 += `<td id="grid_${self.name}_column_end" class="w2ui-head" col="end"></td></tr>`
+            html2 += `<td id="grid_${self.name}_column_end" class="TsUi-head" col="end"></td></tr>`
             return [html1, html2]
         }
 
@@ -8550,30 +8550,30 @@ class TsGrid extends TsBase {
             let html1 = '<tr>'
             let html2 = '<tr>'
             if (self.show.lineNumbers) {
-                html1 += '<td class="w2ui-head w2ui-col-number" col="line-number">' +
+                html1 += '<td class="TsUi-head TsUi-col-number" col="line-number">' +
                         '    <div>#</div>' +
                         '</td>'
             }
             if (self.show.selectColumn) {
-                html1 += '<td class="w2ui-head w2ui-col-select" col="select">' +
+                html1 += '<td class="TsUi-head TsUi-col-select" col="select">' +
                         '    <div>' +
-                        `        <input type="checkbox" id="grid_${self.name}_check_all" class="w2ui-select-all" tabindex="-1"` +
+                        `        <input type="checkbox" id="grid_${self.name}_check_all" class="TsUi-select-all" tabindex="-1"` +
                         `            style="${self.multiSelect == false ? 'display: none;' : ''}"` +
                         '        >' +
                         '    </div>' +
                         '</td>'
             }
             if (self.show.expandColumn) {
-                html1 += '<td class="w2ui-head w2ui-col-expand" col="expand">' +
+                html1 += '<td class="TsUi-head TsUi-col-expand" col="expand">' +
                         '    <div>&#160;</div>' +
                         '</td>'
             }
             let ii = 0
             let id = 0
             let colg
-            html2 += `<td id="grid_${self.name}_column_start" class="w2ui-head" col="start" style="border-right: 0"></td>`
+            html2 += `<td id="grid_${self.name}_column_start" class="TsUi-head" col="start" style="border-right: 0"></td>`
             if (self.reorderRows) {
-                html2 += '<td class="w2ui-head w2ui-col-order" col="order">'+
+                html2 += '<td class="TsUi-head TsUi-col-order" col="order">'+
                         '    <div>&#160;</div>'+
                         '</td>'
             }
@@ -8597,8 +8597,8 @@ class TsGrid extends TsBase {
                     if (col && col.frozen) html1 += colCellHTML; else html2 += colCellHTML
                 }
             }
-            html1 += '<td class="w2ui-head w2ui-head-last"><div>&#160;</div></td>'
-            html2 += '<td class="w2ui-head w2ui-head-last" col="end"><div>&#160;</div></td>'
+            html1 += '<td class="TsUi-head TsUi-head-last"><div>&#160;</div></td>'
+            html2 += '<td class="TsUi-head TsUi-head-last" col="end"><div>&#160;</div></td>'
             html1 += '</tr>'
             html2 += '</tr>'
             return [html1, html2]
@@ -8611,13 +8611,13 @@ class TsGrid extends TsBase {
         const col = this.columns[i]!
         if (col == null) return ''
         // reorder style
-        const reorderCols = (this.reorderColumns && (!this.columnGroups || !this.columnGroups.length)) ? ' w2ui-col-reorderable ' : ''
+        const reorderCols = (this.reorderColumns && (!this.columnGroups || !this.columnGroups.length)) ? ' TsUi-col-reorderable ' : ''
         // sort style
         let sortStyle = ''
         for (let si = 0; si < this.sortData.length; si++) {
             if (this.sortData[si]!.field == col.field) {
-                if ((this.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'w2ui-sort-up'
-                if ((this.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'w2ui-sort-down'
+                if ((this.sortData[si]!.direction || '').toLowerCase() === 'asc') sortStyle = 'TsUi-sort-up'
+                if ((this.sortData[si]!.direction || '').toLowerCase() === 'desc') sortStyle = 'TsUi-sort-down'
             }
         }
         // col selected
@@ -8629,9 +8629,9 @@ class TsGrid extends TsBase {
             }
         }
         const text = TsUtils.lang(typeof col.text == 'function' ? col.text(col) : col.text)
-        const html = '<td id="grid_'+ this.name + '_column_' + i +'" col="'+ i +'" class="w2ui-head '+ sortStyle + reorderCols + '">' +
-                         (col.resizable !== false ? '<div class="w2ui-resizer" name="'+ i +'"></div>' : '') +
-                    '    <div class="w2ui-col-header '+ (sortStyle ? 'w2ui-col-sorted' : '') +' '+ (selected ? 'w2ui-col-selected' : '') +'">'+
+        const html = '<td id="grid_'+ this.name + '_column_' + i +'" col="'+ i +'" class="TsUi-head '+ sortStyle + reorderCols + '">' +
+                         (col.resizable !== false ? '<div class="TsUi-resizer" name="'+ i +'"></div>' : '') +
+                    '    <div class="TsUi-col-header '+ (sortStyle ? 'TsUi-col-sorted' : '') +' '+ (selected ? 'TsUi-col-selected' : '') +'">'+
                     '        <div class="'+ sortStyle +'"></div>'+
                             (!text ? '&#160;' : text) +
                     '    </div>'+
@@ -8693,14 +8693,14 @@ class TsGrid extends TsBase {
                 '    <td colspan="2000" style="border: 0"></td>'+
                 '</tr>'+
                 '<tr id="grid_'+ this.name +'_frec_more" style="display: none; ">'+
-                '    <td colspan="2000" class="w2ui-load-more"></td>'+
+                '    <td colspan="2000" class="TsUi-load-more"></td>'+
                 '</tr>'+
                 '</tbody></table>'
         html2 += '<tr id="grid_' + this.name + '_rec_bottom" rec="bottom" line="bottom" style="height: ' + h2 + 'px; vertical-align: top">' +
                 '    <td colspan="2000" style="border: 0"></td>'+
                 '</tr>'+
                 '<tr id="grid_'+ this.name +'_rec_more" style="display: none">'+
-                '    <td colspan="2000" class="w2ui-load-more"></td>'+
+                '    <td colspan="2000" class="TsUi-load-more"></td>'+
                 '</tr>'+
                 '</tbody></table>'
         this.last.vscroll.recIndStart = 0
@@ -8781,12 +8781,12 @@ class TsGrid extends TsBase {
                 const deltaEnd   = Math.abs(colEnd - this.last.vscroll.colIndEnd)
                 // add/remove columns for small jumps
                 if (deltaStart < 5 && deltaEnd < 5) {
-                    const $cfirst = $box.find(`.w2ui-grid-columns #grid_${this.name}_column_start`)
-                    const $clast  = $box.find('.w2ui-grid-columns .w2ui-head-last')
-                    const $rfirst = $box.find(`#grid_${this.name}_records .w2ui-grid-data-spacer`)
-                    const $rlast  = $box.find(`#grid_${this.name}_records .w2ui-grid-data-last`)
-                    const $sfirst = $box.find(`#grid_${this.name}_summary .w2ui-grid-data-spacer`)
-                    const $slast  = $box.find(`#grid_${this.name}_summary .w2ui-grid-data-last`)
+                    const $cfirst = $box.find(`.TsUi-grid-columns #grid_${this.name}_column_start`)
+                    const $clast  = $box.find('.TsUi-grid-columns .TsUi-head-last')
+                    const $rfirst = $box.find(`#grid_${this.name}_records .TsUi-grid-data-spacer`)
+                    const $rlast  = $box.find(`#grid_${this.name}_records .TsUi-grid-data-last`)
+                    const $sfirst = $box.find(`#grid_${this.name}_summary .TsUi-grid-data-spacer`)
+                    const $slast  = $box.find(`#grid_${this.name}_summary .TsUi-grid-data-last`)
                     // remove on left
                     if (colStart > this.last.vscroll.colIndStart) {
                         for (let i = this.last.vscroll.colIndStart; i < colStart; i++) {
@@ -8813,7 +8813,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="w2ui-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, false)
                                 query(el).after(td)
                             })
@@ -8822,7 +8822,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $sfirst.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="w2ui-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, true)
                                 query(el).after(td)
                             })
@@ -8838,7 +8838,7 @@ class TsGrid extends TsBase {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
                             $rlast.each((el: any) => {
                                 const index = query(el).parent().attr('index')
-                                let td    = '<td class="w2ui-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
+                                let td    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px"></td>' // width column
                                 if (index != null) td = this.getCellHTML(parseInt(index), i, false)
                                 query(el).before(td)
                             })
@@ -8890,13 +8890,13 @@ class TsGrid extends TsBase {
         let t2 = t1 + (Math.round(records.prop('clientHeight') / this.recordHeight) - 1)
         if (t1 > buffered) t1 = buffered
         if (t2 >= buffered - 1) t2 = buffered
-        query(this.box).find('#grid_'+ this.name + '_footer .w2ui-footer-right').html(
+        query(this.box).find('#grid_'+ this.name + '_footer .TsUi-footer-right').html(
             (this.show.statusRange
                 ? TsUtils.formatNumber(this.offset + t1) + '-' + TsUtils.formatNumber(this.offset + t2) +
-                    (this.total != -1 ? ' ' + TsUtils.lang('of') + ' <span class="w2ui-total">' + TsUtils.formatNumber(this.total) + '</span>' : '')
+                    (this.total != -1 ? ' ' + TsUtils.lang('of') + ' <span class="TsUi-total">' + TsUtils.formatNumber(this.total) + '</span>' : '')
                     : '') +
-            (url && this.show.statusBuffered ? ' ('+ TsUtils.lang('buffered') + ' <span class="w2ui-buffered">'+ TsUtils.formatNumber(buffered) + '</span>' +
-                    (this.offset > 0 ? ', skip <span class="w2ui-skip">' + TsUtils.formatNumber(this.offset) : '') + '</span>)' : '')
+            (url && this.show.statusBuffered ? ' ('+ TsUtils.lang('buffered') + ' <span class="TsUi-buffered">'+ TsUtils.formatNumber(buffered) + '</span>' +
+                    (this.offset > 0 ? ', skip <span class="TsUi-skip">' + TsUtils.formatNumber(this.offset) : '') + '</span>)' : '')
         )
         // only for local data source, else no extra records loaded
         if (!url && (!this.fixedBody || (this.total != -1 && this.total <= this.vs_start))) return
@@ -8943,7 +8943,7 @@ class TsGrid extends TsBase {
             if (rec_start == 'top') rec_start = start
             for (let i = parseInt(rec_start) + 1; i <= end; i++) {
                 if (!this.records[i-1]) continue
-                tmp2 = this.records[i-1]!.w2ui
+                tmp2 = this.records[i-1]!.TsUi
                 if (tmp2 && !Array.isArray(tmp2.children)) {
                     tmp2.expanded = false
                 }
@@ -8973,7 +8973,7 @@ class TsGrid extends TsBase {
             if (rec_start == 'bottom') rec_start = end
             for (let i = parseInt(rec_start) - 1; i >= start; i--) {
                 if (!this.records[i-1]) continue
-                tmp2 = this.records[i-1]!.w2ui
+                tmp2 = this.records[i-1]!.TsUi
                 if (tmp2 && !Array.isArray(tmp2.children)) {
                     tmp2.expanded = false
                 }
@@ -9010,7 +9010,7 @@ class TsGrid extends TsBase {
                 .off('.load-more')
                 .on('click.load-more', function(this: Element) {
                     // show spinner
-                    query(this).find('td').html('<div><div style="width: 20px; height: 20px;" class="w2ui-spinner"></div></div>')
+                    query(this).find('td').html('<div><div style="width: 20px; height: 20px;" class="TsUi-spinner"></div></div>')
                     // load more
                     obj.last.vscroll.pull_more   = true
                     obj.last.fetch.offset = (obj.last.fetch.offset ?? 0) + obj.limit
@@ -9018,7 +9018,7 @@ class TsGrid extends TsBase {
                 })
                 .find('td')
                 .html(obj.autoLoad
-                    ? '<div><div style="width: 20px; height: 20px;" class="w2ui-spinner"></div></div>'
+                    ? '<div><div style="width: 20px; height: 20px;" class="TsUi-spinner"></div></div>'
                     : '<div style="padding-top: 15px">'+ TsUtils.lang('Load ${count} more...', { count: obj.limit }) + '</div>'
                 )
         }
@@ -9039,7 +9039,7 @@ class TsGrid extends TsBase {
                 }
                 if (search.length > 0) {
                     search.forEach((item) => {
-                        const el = query(obj.box).find('td[col="'+ item.col +'"]:not(.w2ui-head)')
+                        const el = query(obj.box).find('td[col="'+ item.col +'"]:not(.TsUi-head)')
                         TsUtils.marker(el, item.search)
                     })
                 }
@@ -9057,14 +9057,14 @@ class TsGrid extends TsBase {
         if (ind == -1) {
             rec_html1 += '<tr line="0">'
             rec_html2 += '<tr line="0">'
-            if (this.show.lineNumbers) rec_html1 += '<td class="w2ui-col-number" style="height: 0px"></td>'
-            if (this.show.selectColumn) rec_html1 += '<td class="w2ui-col-select" style="height: 0px"></td>'
-            if (this.show.expandColumn) rec_html1 += '<td class="w2ui-col-expand" style="height: 0px"></td>'
-            rec_html2 += '<td class="w2ui-grid-data w2ui-grid-data-spacer" col="start" style="height: 0px; width: 0px"></td>'
-            if (this.reorderRows) rec_html2 += '<td class="w2ui-col-order" style="height: 0px"></td>'
+            if (this.show.lineNumbers) rec_html1 += '<td class="TsUi-col-number" style="height: 0px"></td>'
+            if (this.show.selectColumn) rec_html1 += '<td class="TsUi-col-select" style="height: 0px"></td>'
+            if (this.show.expandColumn) rec_html1 += '<td class="TsUi-col-expand" style="height: 0px"></td>'
+            rec_html2 += '<td class="TsUi-grid-data TsUi-grid-data-spacer" col="start" style="height: 0px; width: 0px"></td>'
+            if (this.reorderRows) rec_html2 += '<td class="TsUi-col-order" style="height: 0px"></td>'
             for (let i = 0; i < this.columns.length; i++) {
                 const col = this.columns[i]!
-                tmph    = '<td class="w2ui-grid-data" col="'+ i +'" style="height: 0px;"></td>'
+                tmph    = '<td class="TsUi-grid-data" col="'+ i +'" style="height: 0px;"></td>'
                 if (col.frozen && !col.hidden) {
                     rec_html1 += tmph
                 } else {
@@ -9072,8 +9072,8 @@ class TsGrid extends TsBase {
                     rec_html2 += tmph
                 }
             }
-            rec_html1 += '<td class="w2ui-grid-data-last" style="height: 0px"></td>'
-            rec_html2 += '<td class="w2ui-grid-data-last" col="end" style="height: 0px"></td>'
+            rec_html1 += '<td class="TsUi-grid-data-last" style="height: 0px"></td>'
+            rec_html2 += '<td class="TsUi-grid-data-last" col="end" style="height: 0px"></td>'
             rec_html1 += '</tr>'
             rec_html2 += '</tr>'
             return [rec_html1, rec_html2]
@@ -9100,40 +9100,40 @@ class TsGrid extends TsBase {
         }
         let isRowSelected = false
         if (sel.indexes.indexOf(ind) != -1) isRowSelected = true
-        let rec_style = (record.w2ui ? record.w2ui['style'] : '')
+        let rec_style = (record.TsUi ? record.TsUi['style'] : '')
         if (rec_style == null || typeof rec_style != 'string') rec_style = ''
-        let rec_class = (record.w2ui ? record.w2ui['class'] : '')
+        let rec_class = (record.TsUi ? record.TsUi['class'] : '')
         if (rec_class == null || typeof rec_class != 'string') rec_class = ''
         // render TR
         rec_html1 += '<tr id="grid_'+ this.name +'_frec_'+ record.recid +'" recid="'+ record.recid +'" line="'+ lineNum +'" index="'+ ind +'" '+
-            ' class="'+ (lineNum % 2 === 0 ? 'w2ui-even' : 'w2ui-odd') + ' w2ui-record ' + rec_class +
-                (isRowSelected && this.selectType == 'row' ? ' w2ui-selected' : '') +
-                (record.w2ui && record.w2ui['editable'] === false ? ' w2ui-no-edit' : '') +
-                (record.w2ui && record.w2ui.expanded === true ? ' w2ui-expanded' : '') + '" ' +
+            ' class="'+ (lineNum % 2 === 0 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-record ' + rec_class +
+                (isRowSelected && this.selectType == 'row' ? ' TsUi-selected' : '') +
+                (record.TsUi && record.TsUi['editable'] === false ? ' TsUi-no-edit' : '') +
+                (record.TsUi && record.TsUi.expanded === true ? ' TsUi-expanded' : '') + '" ' +
             ' style="height: '+ this.recordHeight +'px; '+ (!isRowSelected && rec_style != '' ? rec_style : rec_style.replace('background-color', 'none')) +'" '+
                 (rec_style != '' ? 'custom_style="'+ rec_style +'"' : '') +
             '>'
         rec_html2 += '<tr id="grid_'+ this.name +'_rec_'+ record.recid +'" recid="'+ record.recid +'" line="'+ lineNum +'" index="'+ ind +'" '+
-            ' class="'+ (lineNum % 2 === 0 ? 'w2ui-even' : 'w2ui-odd') + ' w2ui-record ' + rec_class +
-                (isRowSelected && this.selectType == 'row' ? ' w2ui-selected' : '') +
-                (record.w2ui && record.w2ui['editable'] === false ? ' w2ui-no-edit' : '') +
-                (record.w2ui && record.w2ui.expanded === true ? ' w2ui-expanded' : '') + '" ' +
+            ' class="'+ (lineNum % 2 === 0 ? 'TsUi-even' : 'TsUi-odd') + ' TsUi-record ' + rec_class +
+                (isRowSelected && this.selectType == 'row' ? ' TsUi-selected' : '') +
+                (record.TsUi && record.TsUi['editable'] === false ? ' TsUi-no-edit' : '') +
+                (record.TsUi && record.TsUi.expanded === true ? ' TsUi-expanded' : '') + '" ' +
             ' style="height: '+ this.recordHeight +'px; '+ (!isRowSelected && rec_style != '' ? rec_style : rec_style.replace('background-color', 'none')) +'" '+
                 (rec_style != '' ? 'custom_style="'+ rec_style +'"' : '') +
             '>'
         if (this.show.lineNumbers) {
             rec_html1 += '<td id="grid_'+ this.name +'_cell_'+ ind +'_number' + (summary ? '_s' : '') + '" '+
-                        '   class="w2ui-col-number '+ (isRowSelected ? ' w2ui-row-selected' : '') +'"'+
+                        '   class="TsUi-col-number '+ (isRowSelected ? ' TsUi-row-selected' : '') +'"'+
                             (this.reorderRows ? ' style="cursor: move"' : '') + '>'+
                             (summary !== true ? this.getLineHTML(lineNum) : '') +
                         '</td>'
         }
         if (this.show.selectColumn) {
             rec_html1 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_select' + (summary ? '_s' : '') + '" class="w2ui-grid-data w2ui-col-select">'+
-                        (summary !== true && !(record.w2ui && record.w2ui['hideCheckBox'] === true) ?
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_select' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-select">'+
+                        (summary !== true && !(record.TsUi && record.TsUi['hideCheckBox'] === true) ?
                         '    <div>'+
-                        '        <input class="w2ui-grid-select-check" type="checkbox" tabindex="-1" '+
+                        '        <input class="TsUi-grid-select-check" type="checkbox" tabindex="-1" '+
                                     (isRowSelected ? 'checked="checked"' : '') + ' style="pointer-events: none"/>'+
                         '    </div>'
                         :
@@ -9142,21 +9142,21 @@ class TsGrid extends TsBase {
         }
         if (this.show.expandColumn) {
             let tmp_img = ''
-            if (record.w2ui?.expanded === true) tmp_img = '-'; else tmp_img = '+'
+            if (record.TsUi?.expanded === true) tmp_img = '-'; else tmp_img = '+'
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if (((record.w2ui?.expanded as any) == 'none' || !Array.isArray(record.w2ui?.children) || !record.w2ui?.children.length)) tmp_img = '+' // any: expanded is bool but runtime uses string
+            if (((record.TsUi?.expanded as any) == 'none' || !Array.isArray(record.TsUi?.children) || !record.TsUi?.children.length)) tmp_img = '+' // any: expanded is bool but runtime uses string
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            if ((record.w2ui?.expanded as any) == 'spinner') tmp_img = '<div class="w2ui-spinner" style="width: 16px; margin: -2px 2px;"></div>' // any: same
+            if ((record.TsUi?.expanded as any) == 'spinner') tmp_img = '<div class="TsUi-spinner" style="width: 16px; margin: -2px 2px;"></div>' // any: same
             rec_html1 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_expand' + (summary ? '_s' : '') + '" class="w2ui-grid-data w2ui-col-expand">'+
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_expand' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-expand">'+
                         (summary !== true ? `<div>${tmp_img}</div>` : '' ) +
                     '</td>'
         }
         // insert empty first column
-        rec_html2 += '<td class="w2ui-grid-data-spacer" col="start" style="border-right: 0"></td>'
+        rec_html2 += '<td class="TsUi-grid-data-spacer" col="start" style="border-right: 0"></td>'
         if (this.reorderRows) {
             rec_html2 +=
-                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_order' + (summary ? '_s' : '') + '" class="w2ui-grid-data w2ui-col-order" col="order">'+
+                    '<td id="grid_'+ this.name +'_cell_'+ ind +'_order' + (summary ? '_s' : '') + '" class="TsUi-grid-data TsUi-col-order" col="order">'+
                         (summary !== true ? '<div title="Drag to reorder">&nbsp;</div>' : '' ) +
                     '</td>'
         }
@@ -9174,11 +9174,11 @@ class TsGrid extends TsBase {
             if (col_skip > 0) {
                 col_ind++
                 if (this.columns[col_ind] == null) break
-                record.w2ui!['colspan'][this.columns[col_ind-1]!.field] = 0 // need it for other methods
+                record.TsUi!['colspan'][this.columns[col_ind-1]!.field] = 0 // need it for other methods
                 col_skip--
                 continue
-            } else if (record.w2ui) {
-                const tmp1 = record.w2ui['colspan']
+            } else if (record.TsUi) {
+                const tmp1 = record.TsUi['colspan']
                 const tmp2 = this.columns[col_ind]!.field
                 if (tmp1 && tmp1[tmp2] === 0) {
                     delete tmp1[tmp2] // if no longer colspan then remove 0
@@ -9189,9 +9189,9 @@ class TsGrid extends TsBase {
                 col_ind++
                 continue
             }
-            if (record.w2ui) {
-                if (typeof record.w2ui['colspan'] == 'object') {
-                    const span = parseInt(record.w2ui['colspan'][col.field]) || null
+            if (record.TsUi) {
+                if (typeof record.TsUi['colspan'] == 'object') {
+                    const span = parseInt(record.TsUi['colspan'][col.field]) || null
                     if (span != null && span > 1) {
                         // if there are hidden columns, then no colspan on them
                         let hcnt = 0
@@ -9208,8 +9208,8 @@ class TsGrid extends TsBase {
             if (col.frozen) rec_html1 += rec_cell; else rec_html2 += rec_cell
             col_ind++
         }
-        rec_html1 += '<td class="w2ui-grid-data-last"></td>'
-        rec_html2 += '<td class="w2ui-grid-data-last" col="end"></td>'
+        rec_html1 += '<td class="TsUi-grid-data-last"></td>'
+        rec_html2 += '<td class="TsUi-grid-data-last" col="end"></td>'
         rec_html1 += '</tr>'
         rec_html2 += '</tr>'
         return [rec_html1, rec_html2]
@@ -9230,26 +9230,26 @@ class TsGrid extends TsBase {
         let { value, style, className, attr, divAttr, title } = this.getCellValue(ind, col_ind, summary, true)
         const edit = (ind !== -1 ? this.getCellEditable(ind, col_ind) : '')
         let divStyle = 'max-height: '+ this.recordHeight +'px;' + (col.clipboardCopy ? 'margin-right: 20px' : '')
-        const isChanged = !summary && record?.w2ui?.['changes'] && record.w2ui['changes'][col.field] != null
+        const isChanged = !summary && record?.TsUi?.['changes'] && record.TsUi['changes'][col.field] != null
         const sel = this.last.selection
         let isRowSelected = false
         let infoBubble    = ''
         if (sel.indexes.indexOf(ind) != -1) isRowSelected = true
         if (col_span == null) {
-            if (record?.w2ui?.['colspan'] && record.w2ui['colspan'][col.field]) {
-                col_span = record.w2ui['colspan'][col.field]
+            if (record?.TsUi?.['colspan'] && record.TsUi['colspan'][col.field]) {
+                col_span = record.TsUi['colspan'][col.field]
             } else {
                 col_span = 1
             }
         }
         // expand icon
-        if (col_ind === this.hierarchyColumn && Array.isArray(record?.w2ui?.children)) {
+        if (col_ind === this.hierarchyColumn && Array.isArray(record?.TsUi?.children)) {
             let level  = 0
-            let subrec = record.w2ui.parent_recid != null ? this.get(record.w2ui.parent_recid, true) : null
+            let subrec = record.TsUi.parent_recid != null ? this.get(record.TsUi.parent_recid, true) : null
             while (true) {
                 if (subrec != null) {
                     level++
-                    const tmp = this.records[subrec]!.w2ui
+                    const tmp = this.records[subrec]!.TsUi
                     if (tmp != null && tmp.parent_recid != null) {
                         subrec = this.get(tmp.parent_recid, true)
                     } else {
@@ -9259,22 +9259,22 @@ class TsGrid extends TsBase {
                     break
                 }
             }
-            if (record.w2ui.parent_recid) {
+            if (record.TsUi.parent_recid) {
                 for (let i = 0; i < level; i++) {
-                    infoBubble += '<span class="w2ui-show-children w2ui-icon-empty"></span>'
+                    infoBubble += '<span class="TsUi-show-children TsUi-icon-empty"></span>'
                 }
             }
-            const className = record.w2ui?.children?.length > 0
-                ? (record.w2ui.expanded ? 'w2ui-icon-collapse' : 'w2ui-icon-expand')
-                : 'w2ui-icon-empty'
-            if (record.w2ui?.children?.length > 0) {
-                infoBubble += `<span class="w2ui-show-children ${className}"></span>`
+            const className = record.TsUi?.children?.length > 0
+                ? (record.TsUi.expanded ? 'TsUi-icon-collapse' : 'TsUi-icon-expand')
+                : 'TsUi-icon-empty'
+            if (record.TsUi?.children?.length > 0) {
+                infoBubble += `<span class="TsUi-show-children ${className}"></span>`
             }
         }
         // info bubble
         if (col['info'] === true) col['info'] = {}
         if (col['info'] != null) {
-            let infoIcon = 'w2ui-icon-info'
+            let infoIcon = 'TsUi-icon-info'
             if (typeof col['info'].icon == 'function') {
                 infoIcon = col['info'].icon(record, { self: this, index: ind, colIndex: col_ind, summary: !!summary })
             } else if (typeof col['info'].icon == 'object') {
@@ -9290,14 +9290,14 @@ class TsGrid extends TsBase {
             } else if (typeof col['info'].style == 'string') {
                 infoStyle = col['info'].style
             }
-            infoBubble += `<span class="w2ui-info ${infoIcon}" style="${infoStyle}"></span>`
+            infoBubble += `<span class="TsUi-info ${infoIcon}" style="${infoStyle}"></span>`
         }
         let data = value
         // if editable checkbox
         if (edit && ['checkbox', 'check'].indexOf(edit.type) != -1) {
             const changeInd = summary ? -(ind + 1) : ind
             divStyle += 'text-align: center;'
-            data  = `<input tabindex="-1" type="checkbox" class="w2ui-editable-checkbox"
+            data  = `<input tabindex="-1" type="checkbox" class="TsUi-editable-checkbox"
                             data-changeInd="${changeInd}" data-colInd="${col_ind}" ${data ? 'checked="checked"' : ''}>`
             infoBubble    = ''
         }
@@ -9311,17 +9311,17 @@ class TsGrid extends TsBase {
                 style += 'text-align: right;'
             }
         }
-        if (record?.w2ui) {
-            if (record.w2ui.styles == null) {
-                record.w2ui.styles = record.w2ui['style']
+        if (record?.TsUi) {
+            if (record.TsUi.styles == null) {
+                record.TsUi.styles = record.TsUi['style']
             }
-            if (typeof record.w2ui.styles == 'object') {
-                if (typeof record.w2ui.styles[col_ind] == 'string') style += record.w2ui.styles[col_ind] + ';'
-                if (typeof record.w2ui.styles[col.field] == 'string') style += record.w2ui.styles[col.field] + ';'
+            if (typeof record.TsUi.styles == 'object') {
+                if (typeof record.TsUi.styles[col_ind] == 'string') style += record.TsUi.styles[col_ind] + ';'
+                if (typeof record.TsUi.styles[col.field] == 'string') style += record.TsUi.styles[col.field] + ';'
             }
-            if (typeof record.w2ui['class'] == 'object') {
-                if (typeof record.w2ui['class'][col_ind] == 'string') className += record.w2ui['class'][col_ind] + ' '
-                if (typeof record.w2ui['class'][col.field] == 'string') className += record.w2ui['class'][col.field] + ' '
+            if (typeof record.TsUi['class'] == 'object') {
+                if (typeof record.TsUi['class'][col_ind] == 'string') className += record.TsUi['class'][col_ind] + ' '
+                if (typeof record.TsUi['class'][col.field] == 'string') className += record.TsUi['class'][col.field] + ' '
             }
         }
         let isCellSelected = false
@@ -9329,11 +9329,11 @@ class TsGrid extends TsBase {
         // clipboardCopy
         let clipboardIcon
         if (col.clipboardCopy){
-            clipboardIcon = '<span class="w2ui-clipboard-copy w2ui-icon-paste"></span>'
+            clipboardIcon = '<span class="TsUi-clipboard-copy TsUi-icon-paste"></span>'
         }
         // data
-        data = '<td class="w2ui-grid-data'+ (isCellSelected ? ' w2ui-selected' : '') + ' ' + className +
-                    (isChanged ? ' w2ui-changed' : '') + '" '+
+        data = '<td class="TsUi-grid-data'+ (isCellSelected ? ' TsUi-selected' : '') + ' ' + className +
+                    (isChanged ? ' TsUi-changed' : '') + '" '+
                 '   id="grid_'+ this.name +'_data_'+ ind +'_'+ col_ind +'" col="'+ col_ind +'" '+
                 '   style="'+ style + (col.style != null ? col.style : '') +'" '+
                     (col.attr != null ? col.attr : '') + attr +
@@ -9341,7 +9341,7 @@ class TsGrid extends TsBase {
                 '>' + data + (clipboardIcon && TsUtils.stripTags(data) ? clipboardIcon : '') +'</td>'
         // summary top row
         if (ind === -1 && summary === true) {
-            data = '<td class="w2ui-grid-data" col="'+ col_ind +'" style="height: 0px; '+ style + '" '+
+            data = '<td class="TsUi-grid-data" col="'+ col_ind +'" style="height: 0px; '+ style + '" '+
                         ((col_span ?? 0) > 1 ? 'colspan="'+ col_span + '"' : '') +
                     '></td>'
         }
@@ -9385,7 +9385,7 @@ class TsGrid extends TsBase {
         if (!info) return
         let html = ''
         const rec  = this.records[ind]
-        const el   = query(this.box).find(`${summary ? '.w2ui-grid-summary' : ''} #grid_${this.name}_data_${ind}_${col_ind} .w2ui-info`)
+        const el   = query(this.box).find(`${summary ? '.TsUi-grid-summary' : ''} #grid_${this.name}_data_${ind}_${col_ind} .TsUi-info`)
         if (this.last.bubbleEl) {
             TsTooltip.hide(this.name + '-bubble')
         }
@@ -9419,8 +9419,8 @@ class TsGrid extends TsBase {
                 if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as TsGridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
-                if (rec?.w2ui?.['changes']?.[col.field] != null) {
-                    val = rec.w2ui['changes'][col.field]
+                if (rec?.TsUi?.['changes']?.[col.field] != null) {
+                    val = rec.TsUi['changes'][col.field]
                 }
                 if (tmp.length > 1) {
                     if (TsUtils.formatters[tmp[1] ?? '']) {
@@ -9458,8 +9458,8 @@ class TsGrid extends TsBase {
                 if (col == null) col = { field: tmp[0] ?? '', text: tmp[0] ?? '', caption: tmp[0] } as TsGridColumn // if not found in columns
                 let val = (col ? this.parseField(rec, col.field) : '')
                 // if change by inline editing
-                if (rec?.w2ui?.['changes']?.[col.field] != null) {
-                    val = rec.w2ui['changes'][col.field]
+                if (rec?.TsUi?.['changes']?.[col.field] != null) {
+                    val = rec.TsUi['changes'][col.field]
                 }
                 if (tmp.length > 1) {
                     if (TsUtils.formatters[tmp[1] ?? '']) {
@@ -9492,7 +9492,7 @@ class TsGrid extends TsBase {
             html,
             anchor: el.get(0),
             position: 'top|bottom',
-            class: 'w2ui-info-bubble',
+            class: 'TsUi-info-bubble',
             style: '',
             hideOn: ['doc-click']
         }, info.options ?? {}))
@@ -9508,7 +9508,7 @@ class TsGrid extends TsBase {
         const col = this.columns[col_ind]
         const rec = this.records[ind]!
         if (!rec || !col) return null
-        let edit = (rec.w2ui ? rec.w2ui['editable'] : null)
+        let edit = (rec.TsUi ? rec.TsUi['editable'] : null)
         if (edit === false) return null
         if (edit == null || edit === true) {
             edit = (Object.keys(col['editable'] ?? {}).length > 0 ? col['editable'] : null)
@@ -9530,8 +9530,8 @@ class TsGrid extends TsBase {
         let className = '', style = '', attr = '', divAttr = ''
         let title
         // if change by inline editing
-        if (record?.w2ui?.['changes']?.[col.field] != null) {
-            value = record.w2ui['changes'][col.field]
+        if (record?.TsUi?.['changes']?.[col.field] != null) {
+            value = record.TsUi['changes'][col.field]
         }
         // if there is a cell renderer
         if (col.render != null && ind !== -1) {
@@ -9603,15 +9603,15 @@ class TsGrid extends TsBase {
 
     getFooterHTML() {
         return '<div>'+
-            '    <div class="w2ui-footer-left"></div>'+
-            '    <div class="w2ui-footer-right"></div>'+
-            '    <div class="w2ui-footer-center"></div>'+
+            '    <div class="TsUi-footer-left"></div>'+
+            '    <div class="TsUi-footer-right"></div>'+
+            '    <div class="TsUi-footer-center"></div>'+
             '</div>'
     }
 
     status(msg?: string) {
         if (msg != null) {
-            query(this.box).find(`#grid_${this.name}_footer`).find('.w2ui-footer-left').html(msg)
+            query(this.box).find(`#grid_${this.name}_footer`).find('.TsUi-footer-left').html(msg)
         } else {
             // show number of selected
             let msgLeft = ''
@@ -9628,7 +9628,7 @@ class TsGrid extends TsBase {
                     msgLeft = TsUtils.lang('Record ID') + ': '+ tmp + ' '
                 }
             }
-            query(this.box).find('#grid_'+ this.name +'_footer .w2ui-footer-left').html(msgLeft)
+            query(this.box).find('#grid_'+ this.name +'_footer .TsUi-footer-left').html(msgLeft)
         }
     }
 
@@ -9647,7 +9647,7 @@ class TsGrid extends TsBase {
     unlock(speed?: number) {
         setTimeout(() => {
             // do not unlock if there is a message
-            if (query(this.box).find('.w2ui-message').hasClass('w2ui-closing')) return
+            if (query(this.box).find('.TsUi-message').hasClass('TsUi-closing')) return
             TsUtils.unlock(this.box, speed)
         }, 25) // needed timer so if server fast, it will not flash
     }
@@ -9764,7 +9764,7 @@ class TsGrid extends TsBase {
                 this.last.vscroll.scrollLeft = sLeft
                 this.refresh()
             }, 1)
-            console.log(`INFO (w2ui): state restored for "${this.name}"`)
+            console.log(`INFO (TsUi): state restored for "${this.name}"`)
         }
         // event after
         edata.finish()
@@ -9835,10 +9835,10 @@ class TsGrid extends TsBase {
                 }
             }
 
-            if (rec.w2ui?.children && rec.w2ui?.expanded !== true) {
+            if (rec.TsUi?.children && rec.TsUi?.expanded !== true) {
                 // there are closed children, prepare them too.
-                for (let r = 0; r < rec.w2ui.children.length; r++) {
-                    const subRec = rec.w2ui.children[r]!
+                for (let r = 0; r < rec.TsUi.children.length; r++) {
+                    const subRec = rec.TsUi.children[r]!
                     prepareRecord(subRec)
                 }
             }
@@ -9851,7 +9851,7 @@ class TsGrid extends TsBase {
             const nextIdx = this.nextRow(index)
             return nextIdx == null ? null : this.nextCell(nextIdx, -1, editable)
         }
-        const tmp = this.records[index]?.w2ui
+        const tmp = this.records[index]?.TsUi
         const col = this.columns[check]
         const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
         if (col == null) return null
@@ -9872,7 +9872,7 @@ class TsGrid extends TsBase {
             return prevIdx == null ? null : this.prevCell(prevIdx, this.columns.length, editable)
         }
         if (check < 0) return null
-        const tmp = this.records[index]?.w2ui
+        const tmp = this.records[index]?.TsUi
         const col = this.columns[check]
         const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
         if (col == null) return null
@@ -9901,7 +9901,7 @@ class TsGrid extends TsBase {
                 ind += numRows
             }
             // colspan
-            const tmp  = this.records[ind]?.w2ui
+            const tmp  = this.records[ind]?.TsUi
             const col  = col_ind != null ? this.columns[col_ind] : undefined
             const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
             if (span === 0 || tmp?.selectable === false) {
@@ -9928,7 +9928,7 @@ class TsGrid extends TsBase {
                 ind -= numRows
             }
             // colspan
-            const tmp  = this.records[ind]?.w2ui
+            const tmp  = this.records[ind]?.TsUi
             const col  = col_ind != null ? this.columns[col_ind] : undefined
             const span = (tmp && tmp['colspan'] && col != null && !isNaN(tmp['colspan'][col.field]) ? parseInt(tmp['colspan'][col.field]) : 1)
             if (span === 0 || tmp?.selectable === false) {
@@ -9977,7 +9977,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
-            after: '.w2ui-grid-header'
+            after: '.TsUi-grid-header'
         }, options)
     }
 
@@ -9988,7 +9988,7 @@ class TsGrid extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: TsGrid.lock signature differs from owner.lock type
             box  : this.box,
-            after: '.w2ui-grid-header'
+            after: '.TsUi-grid-header'
         }, options)
     }
 }

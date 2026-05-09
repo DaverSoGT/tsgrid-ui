@@ -1,13 +1,13 @@
 // TsGrid UI 1.0 — Legacy IIFE barrel file (public API only)
-// This file is the entry point for dist/w2ui.js (tsup CJS build → wrap-legacy.mjs post-process).
+// This file is the entry point for dist/TsUi.js (tsup CJS build → wrap-legacy.mjs post-process).
 // Renamed to dist/tsgrid-ui.js in F11.
 // jQuery shim (w2compat) was removed in F4 — no side-effect imports here.
 
-export { w2ui, TsUtils, query } from './tsutils.js'
+export { TsUi, TsUtils, query } from './tsutils.js'
 export { TsLocale } from './tslocale.js'
 export { TsEvent, TsBase } from './tsbase.js'
-export { TsPopup, w2alert, w2confirm, w2prompt, Dialog } from './tspopup.js'
-export { TsTooltip, w2menu, w2color, w2date, Tooltip } from './tstooltip.js'
+export { TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog } from './tspopup.js'
+export { TsTooltip, TsMenu, TsColor, TsDate, Tooltip } from './tstooltip.js'
 export { TsToolbar } from './tstoolbar.js'
 export { TsSidebar } from './tssidebar.js'
 export { TsTabs } from './tstabs.js'

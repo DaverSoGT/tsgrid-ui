@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsTabs, TsToolbar, TsTooltip, TsField
  *
  * T4.2: Ported to TypeScript with aggressive typing per typing_policy.
@@ -40,7 +40,7 @@
  */
 
 import { TsBase } from './tsbase.js'
-import { w2ui, TsUtils } from './tsutils.js'
+import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { TsTabs } from './tstabs.js'
 import { TsToolbar } from './tstoolbar.js'
@@ -490,7 +490,7 @@ class TsForm extends TsBase {
         }
         // radio list
         if (['radio'].includes(field.type)) {
-            const selected = query(el).closest('.w2ui-field-group').find('input:checked').get(0)
+            const selected = query(el).closest('.TsUi-field-group').find('input:checked').get(0)
             if (selected) {
                 const item = field.options.items[query(selected).data('index') as number]
                 current = item.id
@@ -505,7 +505,7 @@ class TsForm extends TsBase {
         // check list
         if (['check', 'checks'].includes(field.type)) {
             current = []
-            const selected = query(el).closest('.w2ui-field-group').find('input:checked')
+            const selected = query(el).closest('.TsUi-field-group').find('input:checked')
             if (selected.length > 0) {
                 selected.each((node: Node) => {
                     const el = node as HTMLElement
@@ -538,9 +538,9 @@ class TsForm extends TsBase {
         // map, array
         if (['map', 'array'].includes(field.type)) {
             current = (field.type == 'map' ? {} : [])
-            field.$el.parent().find('.w2ui-map-field').each((div: HTMLElement, _ind: number) => {
-                const key = query(div).find('.w2ui-map.key').val() as string
-                const value = query(div).find('.w2ui-map.value').val()
+            field.$el.parent().find('.TsUi-map-field').each((div: HTMLElement, _ind: number) => {
+                const key = query(div).find('.TsUi-map.key').val() as string
+                const value = query(div).find('.TsUi-map.value').val()
                 if (typeof field.html?.render == 'function') {
                     current[_ind] ??= {}
                     query(div).find('input, textarea').each((node: Node) => {
@@ -578,7 +578,7 @@ class TsForm extends TsBase {
             }
             case 'radio': {
                 value = value?.id ?? value
-                const inputs = query(el).closest('.w2ui-field-group').find('input')
+                const inputs = query(el).closest('.TsUi-field-group').find('input')
                 const items  = field.options.items
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((it: any, ind: number) => { // any: item shapes vary by field
@@ -590,9 +590,9 @@ class TsForm extends TsBase {
                     }
                     // show or hide the whole line
                     if (it.hidden === true) {
-                        input.closest('.w2ui-field-item').hide()
+                        input.closest('.TsUi-field-item').hide()
                     } else {
-                        input.closest('.w2ui-field-item').show()
+                        input.closest('.TsUi-field-item').show()
                     }
                 })
                 break
@@ -608,7 +608,7 @@ class TsForm extends TsBase {
                 }
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 value = value.map((val: any) => val?.id ?? val) // any: val can be object or primitive
-                const inputs = query(el).closest('div.w2ui-field-group').find('input')
+                const inputs = query(el).closest('div.TsUi-field-group').find('input')
                 const items  = field.options.items
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 items.forEach((it: any, ind: number) => { // any: item shapes vary
@@ -616,9 +616,9 @@ class TsForm extends TsBase {
                     input.prop('checked', value.includes(it.id) ? true : false)
                     // show or hide the whole line
                     if (it.hidden === true) {
-                        input.closest('.w2ui-field-item').hide()
+                        input.closest('.TsUi-field-item').hide()
                     } else {
-                        input.closest('.w2ui-field-item').show()
+                        input.closest('.TsUi-field-item').show()
                     }
                 })
                 break
@@ -709,7 +709,7 @@ class TsForm extends TsBase {
                     this.setValue(field.field, [], true)
                     value = this.getValue(field.field)
                 }
-                const container = query(field.el).parent().find('.w2ui-map-container')
+                const container = query(field.el).parent().find('.TsUi-map-container')
                 field.el.mapRefresh(value, container)
                 break
             }
@@ -865,9 +865,9 @@ class TsForm extends TsBase {
 
     updateEmptyGroups(): void {
         // hide empty groups
-        query(this.box).find('.w2ui-group').each((node: Node) =>{
+        query(this.box).find('.TsUi-group').each((node: Node) =>{
             const group = node as HTMLElement
-            if (isHidden(query(group).find('.w2ui-field'))) {
+            if (isHidden(query(group).find('.TsUi-field'))) {
                 query(group).hide()
             } else {
                 query(group).show()
@@ -920,7 +920,7 @@ class TsForm extends TsBase {
      * When user clicks on group title, it will toggle the group (collapse or expand it).
      */
     toggleGroup(groupName: string, show?: boolean): void {
-        const el = query(this.box).find('.w2ui-group-title[data-group="' + TsUtils.base64encode(groupName) + '"]')
+        const el = query(this.box).find('.TsUi-group-title[data-group="' + TsUtils.base64encode(groupName) + '"]')
         if (el.length === 0) return
         const el_next = query(el.prop('nextElementSibling'))
         if (typeof show === 'undefined') {
@@ -928,10 +928,10 @@ class TsForm extends TsBase {
         }
         if (show) {
             el_next.show()
-            el.find('span').addClass('w2ui-icon-collapse').removeClass('w2ui-icon-expand')
+            el.find('span').addClass('TsUi-icon-collapse').removeClass('TsUi-icon-expand')
         } else {
             el_next.hide()
-            el.find('span').addClass('w2ui-icon-expand').removeClass('w2ui-icon-collapse')
+            el.find('span').addClass('TsUi-icon-expand').removeClass('TsUi-icon-collapse')
         }
     }
 
@@ -997,7 +997,7 @@ class TsForm extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: TsForm has [key:string]:any but TS can't verify lock/unlock signature match
             box  : this.box,
-            after: '.w2ui-form-header'
+            after: '.TsUi-form-header'
         }, options)
     }
 
@@ -1007,7 +1007,7 @@ class TsForm extends TsBase {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             owner: this as any, // any: same as message() above
             box  : this.box,
-            after: '.w2ui-form-header'
+            after: '.TsUi-form-header'
         }, options)
     }
 
@@ -1124,14 +1124,14 @@ class TsForm extends TsBase {
         if (errors.length <= 0) return
         // show errors
         this.goto(errors[0].field.page)
-        ;(query(errors[0].field.$el).parents('.w2ui-field').get(0) as Element).scrollIntoView({ block: 'nearest', inline: 'nearest' })
+        ;(query(errors[0].field.$el).parents('.TsUi-field').get(0) as Element).scrollIntoView({ block: 'nearest', inline: 'nearest' })
         // show errors
         // show only for visible controls
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         errors.forEach((error: any) => { // any: error shape varies
             const opt = TsUtils.extend({
-                anchorClass: 'w2ui-error',
-                class: 'w2ui-light',
+                anchorClass: 'TsUi-error',
+                class: 'TsUi-light',
                 position: 'right|left',
                 hideOn: ['input', 'tooltip-click']
             }, error.options)
@@ -1142,7 +1142,7 @@ class TsForm extends TsBase {
             } else if (['enum', 'file'].includes(error.field.type)) {
                 // TODO: check
                 // anchor = (error.field.el).data('TsField').helpers.multi
-                // $(fld).addClass('w2ui-error')
+                // $(fld).addClass('TsUi-error')
             }
             TsTooltip.show(TsUtils.extend({
                 anchor,
@@ -1152,7 +1152,7 @@ class TsForm extends TsBase {
         })
         // on scroll update errors so they will appear in correct places
         this.last.errorsShown = true
-        query(errors[0].field.$el).parents('.w2ui-page')
+        query(errors[0].field.$el).parents('.TsUi-page')
             .off('.hideErrors')
             .on('scroll.hideErrors', (_evt: Event) => {
                 if (this.last.errorsShown) {
@@ -1598,7 +1598,7 @@ class TsForm extends TsBase {
             if (page == null) page = field.html.page
             if (column == null) column = field.html.column
             // input control
-            let input = `<input id="${field.field}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" type="text" ${field.html.attr + tabindex_str}>`
+            let input = `<input id="${field.field}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" type="text" ${field.html.attr + tabindex_str}>`
             switch (field.type) {
                 case 'pass':
                 case 'password':
@@ -1606,8 +1606,8 @@ class TsForm extends TsBase {
                     break
                 case 'checkbox': {
                     input = `
-                        <label class="w2ui-box-label">
-                            <input id="${field.field}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" type="checkbox" ${field.html.attr + tabindex_str}>
+                        <label class="TsUi-box-label">
+                            <input id="${field.field}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" type="checkbox" ${field.html.attr + tabindex_str}>
                             <span>${field.html.label}</span>
                         </label>`
                     break
@@ -1616,7 +1616,7 @@ class TsForm extends TsBase {
                 case 'checks': {
                     if (field.options.items == null && field.html.items != null) field.options.items = field.html.items
                     let items = field.options.items
-                    input = `<div class="w2ui-field-group" ${field.html.attr}>`
+                    input = `<div class="TsUi-field-group" ${field.html.attr}>`
                     // normalized options
                     if (!Array.isArray(items)) items = []
                     if (items.length > 0) {
@@ -1625,9 +1625,9 @@ class TsForm extends TsBase {
                     // generate
                     for (let i = 0; i < items.length; i++) {
                         input += `
-                            <div class="w2ui-field-item">
-                                <label class="w2ui-box-label">
-                                    <input id="${field.field + i}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" type="checkbox"
+                            <div class="TsUi-field-item">
+                                <label class="TsUi-box-label">
+                                    <input id="${field.field + i}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" type="checkbox"
                                         ${tabindex_str} data-value="${items[i].id}" data-index="${i}">
                                     <span>&#160;${items[i].text}</span>
                                 </label>
@@ -1637,7 +1637,7 @@ class TsForm extends TsBase {
                     break
                 }
                 case 'radio': {
-                    input = `<div class="w2ui-field-group"${field.html.attr}>`
+                    input = `<div class="TsUi-field-group"${field.html.attr}>`
                     // normalized options
                     if (field.options.items == null && field.html.items != null) field.options.items = field.html.items
                     let items = field.options.items
@@ -1648,9 +1648,9 @@ class TsForm extends TsBase {
                     // generate
                     for (let i = 0; i < items.length; i++) {
                         input += `
-                            <div class="w2ui-field-item">
-                                <label class="w2ui-box-label">
-                                    <input id="${field.field + i}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" type="radio"
+                            <div class="TsUi-field-item">
+                                <label class="TsUi-box-label">
+                                    <input id="${field.field + i}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" type="radio"
                                         ${(i === 0 ? tabindex_str : '')}
                                         data-value="${items[i].id}" data-index="${i}">
                                     <span>&#160;${items[i].text}</span>
@@ -1661,7 +1661,7 @@ class TsForm extends TsBase {
                     break
                 }
                 case 'select': {
-                    input = `<select id="${field.field}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" ${field.html.attr + tabindex_str}>`
+                    input = `<select id="${field.field}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" ${field.html.attr + tabindex_str}>`
                     // normalized options
                     if (field.options.items == null && field.html.items != null) field.options.items = field.html.items
                     let items = field.options.items
@@ -1679,8 +1679,8 @@ class TsForm extends TsBase {
                 case 'switch': {
                     input = `
                         <div>
-                            <div id="${field.field}-tb" class="w2ui-form-switch ${field.html.class ?? ''}" ${field.html.attr}></div>
-                            <input id="${field.field}" name="${field.field}" ${tabindex_str} class="w2ui-input"
+                            <div id="${field.field}-tb" class="TsUi-form-switch ${field.html.class ?? ''}" ${field.html.attr}></div>
+                            <input id="${field.field}" name="${field.field}" ${tabindex_str} class="TsUi-input"
                                 style="position: absolute; right: 0px; margin-top: -30px; width: 1px; padding: 0; opacity: 0">
                             <span style="position: absolute; margin-top: -2px;">${field.html.text ?? ''}</span>
                         </div>
@@ -1688,10 +1688,10 @@ class TsForm extends TsBase {
                     break
                 }
                 case 'textarea':
-                    input = `<textarea id="${field.field}" name="${field.field}" class="w2ui-input ${field.html.class ?? ''}" ${field.html.attr + tabindex_str}></textarea>`
+                    input = `<textarea id="${field.field}" name="${field.field}" class="TsUi-input ${field.html.class ?? ''}" ${field.html.attr + tabindex_str}></textarea>`
                     break
                 case 'toggle':
-                    input = `<input id="${field.field}" name="${field.field}" class="w2ui-input w2ui-toggle  ${field.html.class ?? ''}"
+                    input = `<input id="${field.field}" name="${field.field}" class="TsUi-input TsUi-toggle  ${field.html.class ?? ''}"
                                 type="checkbox" ${field.html.attr + tabindex_str}>
                             <div><div></div></div>`
                     break
@@ -1703,17 +1703,17 @@ class TsForm extends TsBase {
                     field.html.tabindex_str = tabindex_str
                     input = '<span style="float: right">' + (field.html.text || '') + '</span>' +
                             '<input id="'+ field.field +'" name="'+ field.field +'" type="hidden" '+ field.html.attr + tabindex_str + '>'+
-                            '<div class="w2ui-map-container"></div>'
+                            '<div class="TsUi-map-container"></div>'
                     break
                 case 'div':
                 case 'custom':
-                    input = `<div id="${field.field}" name="${field.field}" ${field.html.attr + tabindex_str} class="w2ui-input ${field.html.class ?? ''}">`+
+                    input = `<div id="${field.field}" name="${field.field}" ${field.html.attr + tabindex_str} class="TsUi-input ${field.html.class ?? ''}">`+
                                 (field && field.html && field.html.html ? field.html.html : '') +
                             '</div>'
                     break
                 case 'html':
                 case 'empty':
-                    input = `<div id="${field.field}" name="${field.field}" ${field.html.attr + tabindex_str} class="w2ui-input ${field.html.class ?? ''}">`+
+                    input = `<div id="${field.field}" name="${field.field}" ${field.html.attr + tabindex_str} class="TsUi-input ${field.html.class ?? ''}">`+
                                 (field && field.html ? (field.html.html || '') + (field.html.text || '') : '') +
                             '</div>'
                     break
@@ -1727,10 +1727,10 @@ class TsForm extends TsBase {
             if (field.html.group && (group != field.html.group)) {
                 let collapsible = ''
                 if (field.html.groupCollapsible) {
-                    collapsible = '<span class="w2ui-icon-collapse" style="width: 15px; display: inline-block; position: relative; top: -2px;"></span>'
+                    collapsible = '<span class="TsUi-icon-collapse" style="width: 15px; display: inline-block; position: relative; top: -2px;"></span>'
                 }
-                html += '\n <div class="w2ui-group">'
-                    + '\n   <div class="w2ui-group-title w2ui-eaction" style="'+ (field.html.groupTitleStyle || '') + '; '
+                html += '\n <div class="TsUi-group">'
+                    + '\n   <div class="TsUi-group-title TsUi-eaction" style="'+ (field.html.groupTitleStyle || '') + '; '
                                     + (collapsible != '' ? 'cursor: pointer; user-select: none' : '') + '"'
                     + (collapsible != '' ? 'data-group="' + TsUtils.base64encode(field.html.group) + '"' : '')
                     + (collapsible != ''
@@ -1738,19 +1738,19 @@ class TsForm extends TsBase {
                         : '')
                     + '>'
                     + collapsible + TsUtils.lang(field.html.group) + '</div>\n'
-                    + '   <div class="w2ui-group-fields" style="'+ (field.html.groupStyle || '') +'">'
+                    + '   <div class="TsUi-group-fields" style="'+ (field.html.groupStyle || '') +'">'
                 group = field.html.group
             }
             if (field.type == 'columns') {
-                html += `<div class="w2ui-field-columns" style="${field.style ?? ''}">`
+                html += `<div class="TsUi-field-columns" style="${field.style ?? ''}">`
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 field.columns.forEach((col: any) => { // any: column definition varies
                     html += `<div style="${col.style}"> ${col.content} </div>`
                 })
                 html += '</div>'
             } else if (field.html.col_anchor != null) {
-                let span = (field.html.span != null ? 'w2ui-span'+ field.html.span : '')
-                if (field.html.span == -1) span = 'w2ui-span-none'
+                let span = (field.html.span != null ? 'TsUi-span'+ field.html.span : '')
+                if (field.html.span == -1) span = 'TsUi-span-none'
                 let label = `
                     <label ${span == 'none' ? ' style="display: none"' : ''}>
                         ${TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
@@ -1759,7 +1759,7 @@ class TsForm extends TsBase {
                 const text = (field.type != 'array' && field.type != 'map' ? TsUtils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
                 pages[field.html.page].anchors ??= {}
                 pages[field.html.page].anchors[field.html.col_anchor] =`
-                    <div class="w2ui-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
+                    <div class="TsUi-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
                         ${label}
                         ${['empty', 'switch', 'radio', 'check', 'checks'].includes(field.type)
                             ? input
@@ -1767,18 +1767,18 @@ class TsForm extends TsBase {
                         }
                     </div>`
             } else if (field.html.anchor != null) {
-                const span = (field.html.span != null ? 'w2ui-span'+ field.html.span : 'w2ui-span0')
+                const span = (field.html.span != null ? 'TsUi-span'+ field.html.span : 'TsUi-span0')
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 let label = TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text, true as any) // any: second arg is suppress-warning flag in runtime JS but typed as Record
                 const text = TsUtils.lang(field.type != 'checkbox' ? field.html.text : '')
                 if (field.html.span == -1) {
-                    label = `<span style="position: absolute"> <span class="w2ui-anchor-span-none w2ui-inline-label"> ${label} </span> </span>`
+                    label = `<span style="position: absolute"> <span class="TsUi-anchor-span-none TsUi-inline-label"> ${label} </span> </span>`
                 } else {
-                    label = `<span class="w2ui-inline-label"> ${label} </span>`
+                    label = `<span class="TsUi-inline-label"> ${label} </span>`
                 }
                 pages[field.html.page].anchors ??= {}
                 pages[field.html.page].anchors[field.html.anchor] = `
-                    <div class="w2ui-field w2ui-field-inline ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
+                    <div class="TsUi-field TsUi-field-inline ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
                         ${((field.type === 'empty' || field.type == 'switch')
                             ? input
                             : ` <div>
@@ -1787,8 +1787,8 @@ class TsForm extends TsBase {
     )}
                     </div>`
             } else {
-                let span = (field.html.span != null ? 'w2ui-span'+ field.html.span : '')
-                if (field.html.span == -1) span = 'w2ui-span-none'
+                let span = (field.html.span != null ? 'TsUi-span'+ field.html.span : '')
+                if (field.html.span == -1) span = 'TsUi-span-none'
                 let label = `
                     <label ${span == 'none' ? ' style="display: none"' : ''}>
                         ${TsUtils.lang(field.type != 'checkbox' ? field.html.label : field.html.text)}
@@ -1796,7 +1796,7 @@ class TsForm extends TsBase {
                 if (!field.html.label) label = ''
                 const text = (field.type != 'array' && field.type != 'map' ? TsUtils.lang(field.type != 'checkbox' ? field.html.text : '') : '')
                 html += `
-                    <div class="w2ui-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
+                    <div class="TsUi-field ${span}" style="${(field.hidden ? 'display: none;' : '') + field.html.style}">
                         ${label}
                         ${['empty', 'switch', 'radio', 'check', 'checks'].includes(field.type)
                             ? input
@@ -1817,7 +1817,7 @@ class TsForm extends TsBase {
         // buttons if any
         let buttons = ''
         if (Object.keys(this.actions).length > 0) {
-            buttons += '\n<div class="w2ui-buttons">'
+            buttons += '\n<div class="TsUi-buttons">'
             tabindex = this.tabindexBase + this.fields.length + 1
 
             for (const a in this.actions) { // it is an object
@@ -1833,9 +1833,9 @@ class TsForm extends TsBase {
                     if (act.class) info.class = act.class
                 } else {
                     info.text = a
-                    if (['save', 'update', 'create'].includes(a.toLowerCase())) info.class = 'w2ui-btn-blue'; else info.class = ''
+                    if (['save', 'update', 'create'].includes(a.toLowerCase())) info.class = 'TsUi-btn-blue'; else info.class = ''
                 }
-                buttons += '\n    <button name="'+ a +'" class="w2ui-btn '+ info.class +'" style="'+ info.style +'" tabindex="'+ tabindex +'">'+
+                buttons += '\n    <button name="'+ a +'" class="TsUi-btn '+ info.class +'" style="'+ info.style +'" tabindex="'+ tabindex +'">'+
                                         TsUtils.lang(info.text) +'</button>'
                 tabindex++
             }
@@ -1843,7 +1843,7 @@ class TsForm extends TsBase {
         }
         let html = ''
         for (let p = 0; p < pages.length; p++){
-            html += '<div class="w2ui-page page-'+ p +'" style="' + (p !== 0 ? 'display: none;' : '') + this.pageStyle + '">'
+            html += '<div class="TsUi-page page-'+ p +'" style="' + (p !== 0 ? 'display: none;' : '') + this.pageStyle + '">'
             if (!pages[p]) {
                 console.log(`ERROR: Page ${p} does not exist`)
                 return false
@@ -1851,10 +1851,10 @@ class TsForm extends TsBase {
             if (pages[p].before) {
                 html += pages[p].before
             }
-            html += '<div class="w2ui-column-container">'
+            html += '<div class="TsUi-column-container">'
             Object.keys(pages[p]).sort().forEach((c: string, _ind: number) => {
                 if (c == String(parseInt(c))) {
-                    html += '<div class="w2ui-column col-'+ c +'">' + (pages[p][c] || '') + '\n</div>'
+                    html += '<div class="TsUi-column col-'+ c +'">' + (pages[p][c] || '') + '\n</div>'
                 }
             })
             html += '\n</div>'
@@ -1888,7 +1888,7 @@ class TsForm extends TsBase {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getAction(action: string): any { // any: returns Query object
-        const ret = query(this.box).find('.w2ui-buttons button[name="' + action + '"]')
+        const ret = query(this.box).find('.TsUi-buttons button[name="' + action + '"]')
         if (ret.length === 0) {
             console.log('ERROR: Action "' + action + '" not found. Valid actions are: ' + Object.keys(this.actions).join(', '))
         }
@@ -1919,12 +1919,12 @@ class TsForm extends TsBase {
         if (edata.isCancelled === true) return
         // default behaviour
         if (this.box != null) {
-            const header  = query(this.box).find(':scope > div .w2ui-form-header')
-            const toolbar = query(this.box).find(':scope > div .w2ui-form-toolbar')
-            const tabs    = query(this.box).find(':scope > div .w2ui-form-tabs')
-            const page    = query(this.box).find(':scope > div .w2ui-page')
-            const dpage   = query(this.box).find(':scope > div .w2ui-page.page-'+ this.page + ' > div')
-            const buttons = query(this.box).find(':scope > div .w2ui-buttons')
+            const header  = query(this.box).find(':scope > div .TsUi-form-header')
+            const toolbar = query(this.box).find(':scope > div .TsUi-form-toolbar')
+            const tabs    = query(this.box).find(':scope > div .TsUi-form-tabs')
+            const page    = query(this.box).find(':scope > div .TsUi-page')
+            const dpage   = query(this.box).find(':scope > div .TsUi-page.page-'+ this.page + ' > div')
+            const buttons = query(this.box).find(':scope > div .TsUi-buttons')
             // if no height, calculate it
             const { headerHeight, tbHeight, tabsHeight } = resizeElements()
             if (this.autosize) { // we don't need autosize every time
@@ -2006,7 +2006,7 @@ class TsForm extends TsBase {
                 const field = this.get(name)
                 if (field) {
                     // find page
-                    const div = query(el).closest('.w2ui-page')
+                    const div = query(el).closest('.TsUi-page')
                     if (div.length > 0) {
                         for (let i = 0; i < 100; i++) {
                             if (div.hasClass('page-'+i)) { field.page = i; break }
@@ -2015,9 +2015,9 @@ class TsForm extends TsBase {
                 }
             })
             // default action
-            query(this.box).find('.w2ui-page').hide()
-            query(this.box).find('.w2ui-page.page-' + this.page).show()
-            query(this.box).find('.w2ui-form-header').html(TsUtils.lang(this.header))
+            query(this.box).find('.TsUi-page').hide()
+            query(this.box).find('.TsUi-page.page-' + this.page).show()
+            query(this.box).find('.TsUi-form-header').html(TsUtils.lang(this.header))
             // refresh tabs if needed
             if (typeof this.tabs === 'object' && Array.isArray(this.tabs.tabs) && this.tabs.tabs.length > 0) {
                 query(this.box).find('#form_'+ this.name +'_tabs').show()
@@ -2058,7 +2058,7 @@ class TsForm extends TsBase {
                     // clear error class
                     if (['enum', 'file'].includes(field.type)) {
                         const helper = field.TsField?.helpers?.multi
-                        query(helper).removeClass('w2ui-error')
+                        query(helper).removeClass('TsUi-error')
                     }
                     if (this._previous != null) {
                         value.previous = this._previous
@@ -2092,9 +2092,9 @@ class TsForm extends TsBase {
                 })
             // required
             if (field.required) {
-                field.$el.closest('.w2ui-field').addClass('w2ui-required')
+                field.$el.closest('.TsUi-field').addClass('TsUi-required')
             } else {
-                field.$el.closest('.w2ui-field').removeClass('w2ui-required')
+                field.$el.closest('.TsUi-field').removeClass('TsUi-required')
             }
             // disabled
             if (field.disabled != null) {
@@ -2105,23 +2105,23 @@ class TsForm extends TsBase {
                     field.$el
                         .prop('disabled', true)
                         .prop('tabIndex', -1)
-                        .closest('.w2ui-field')
-                        .addClass('w2ui-disabled')
+                        .closest('.TsUi-field')
+                        .addClass('TsUi-disabled')
                 } else {
                     field.$el
                         .prop('disabled', false)
                         .prop('tabIndex', field.$el.data('tabIndex') ?? field.$el.prop('tabIndex') ?? 0)
-                        .closest('.w2ui-field')
-                        .removeClass('w2ui-disabled')
+                        .closest('.TsUi-field')
+                        .removeClass('TsUi-disabled')
                 }
             }
             // hidden
             let tmp = field.el
             if (!tmp) tmp = query(this.box).find('#' + field.field)
             if (field.hidden) {
-                query(tmp).closest('.w2ui-field').hide()
+                query(tmp).closest('.TsUi-field').hide()
             } else {
-                query(tmp).closest('.w2ui-field').show()
+                query(tmp).closest('.TsUi-field').show()
             }
         }
         // attach actions on buttons
@@ -2141,7 +2141,7 @@ class TsForm extends TsBase {
             const field = this.fields[fieldIdx2]
             if (field == null) continue
             if (!field.el) continue
-            if (!field.$el.hasClass('w2ui-input')) field.$el.addClass('w2ui-input')
+            if (!field.$el.hasClass('TsUi-input')) field.$el.addClass('TsUi-input')
             field.type = String(field.type).toLowerCase()
             if (!field.options) field.options = {}
             // list type
@@ -2164,7 +2164,7 @@ class TsForm extends TsBase {
             if (field.type == 'switch') {
                 if (field.toolbar) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ;(w2ui[this.name + '_' + field.name + '_tb'] as any).destroy() // any: w2ui registry returns unknown
+                    ;(TsUi[this.name + '_' + field.name + '_tb'] as any).destroy() // any: TsUi registry returns unknown
                 }
                 // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2191,26 +2191,26 @@ class TsForm extends TsBase {
                         edata.finish()
                     }
                 })
-                field.$el.prev().addClass('w2ui-form-switch') // need to add this class, as toolbar render will remove all w2ui-* classes
+                field.$el.prev().addClass('TsUi-form-switch') // need to add this class, as toolbar render will remove all TsUi-* classes
                 field.toolbar.resize()
                 field.$el
                     .off('.form-input')
                     .on('focus.form-input', (event: FocusEvent) => {
                         const ind = field.toolbar.get(field.$el.val(), true)
                         query(event.target).prop('_index', ind)
-                        query(field.toolbar.box).addClass('w2ui-tb-focus')
+                        query(field.toolbar.box).addClass('TsUi-tb-focus')
                     })
                     .on('blur.form-input', (event: FocusEvent) => {
                         query(event.target).removeProp('_index')
-                        query(`#${field.name}-tb .w2ui-tb-button`).removeClass('over')
-                        query(field.toolbar.box).removeClass('w2ui-tb-focus')
+                        query(`#${field.name}-tb .TsUi-tb-button`).removeClass('over')
+                        query(field.toolbar.box).removeClass('TsUi-tb-focus')
                     })
                     .on('keydown.form-input', (event: KeyboardEvent) => {
                         let ind = query(event.target).prop('_index') as number // prop returns unknown; index is always number
                         switch (event.key) {
                             case 'ArrowLeft': {
                                 if (ind > 0) ind--
-                                query(`#${field.name}-tb .w2ui-tb-button`)
+                                query(`#${field.name}-tb .TsUi-tb-button`)
                                     .removeClass('over')
                                     .eq(ind)
                                     .addClass('over')
@@ -2219,7 +2219,7 @@ class TsForm extends TsBase {
                             }
                             case 'ArrowRight': {
                                 if (ind < field.toolbar.items.length -1) ind++
-                                query(`#${field.name}-tb .w2ui-tb-button`)
+                                query(`#${field.name}-tb .TsUi-tb-button`)
                                     .removeClass('over')
                                     .eq(ind)
                                     .addClass('over')
@@ -2243,7 +2243,7 @@ class TsForm extends TsBase {
                             self.record[field.name] = value.current
                             self.setFieldValue(field.name, value.current)
                             edata.finish()
-                            query(`#${field.name}-tb .w2ui-tb-button`).removeClass('over')
+                            query(`#${field.name}-tb .TsUi-tb-button`).removeClass('over')
                         }
                         // do not allow any input, besides a tab
                         if (!event.metaKey && !event.ctrlKey && event.keyCode != 9) {
@@ -2277,7 +2277,7 @@ class TsForm extends TsBase {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     field.el.mapAdd = function(field: any, div: any, cnt: number, empty?: boolean) { // any: field/div shapes
                         const attr = (field.disabled ? ' readOnly ' : '') + (field.html.tabindex_str || '')
-                        let html = `<input type="text" ${(field.html.value.attr ?? '') + attr} class="w2ui-input ${field.html.class ?? ''} w2ui-map value">`
+                        let html = `<input type="text" ${(field.html.value.attr ?? '') + attr} class="TsUi-input ${field.html.class ?? ''} TsUi-map value">`
                             + `${field.html.value.text || ''}`
 
                         if (typeof field.html.render == 'function') {
@@ -2298,11 +2298,11 @@ class TsForm extends TsBase {
                             }
                         } else if (field.type == 'map') {
                             // has key input in front
-                            html = `<input type="text" ${(field.html.key.attr ?? '') + attr} class="w2ui-input ${field.html.class ?? ''} w2ui-map key">
+                            html = `<input type="text" ${(field.html.key.attr ?? '') + attr} class="TsUi-input ${field.html.class ?? ''} TsUi-map key">
                                 ${field.html.key.text || ''}
                             ` + html
                         }
-                        div.append(`<div class="w2ui-map-field" style="margin-bottom: 5px" data-index="${cnt}">${html}</div>`)
+                        div.append(`<div class="TsUi-map-field" style="margin-bottom: 5px" data-index="${cnt}">${html}</div>`)
                         if (typeof field.html.render == 'function') {
                             const box = div.find(`[data-index="${cnt}"]`)
                             box.find('input, textarea').each((el: HTMLElement) => {
@@ -2333,7 +2333,7 @@ class TsForm extends TsBase {
                             keys = map.map((item: any, ind: number) => { return ind })
                         }
                         // delete fields (including empty one)
-                        div.find('.w2ui-map-field').remove()
+                        div.find('.TsUi-map-field').remove()
                         for (let ind = 0; ind < keys.length; ind++) {
                             const key = keys[ind]
                             let fld = div.find(`div[data-index='${ind}']`)
@@ -2357,8 +2357,8 @@ class TsForm extends TsBase {
                                     }
                                 })
                             } else {
-                                $k = fld.find('.w2ui-map.key')
-                                $v = fld.find('.w2ui-map.value')
+                                $k = fld.find('.TsUi-map.key')
+                                $v = fld.find('.TsUi-map.value')
                                 let val = map[key]
                                 if (field.type == 'array') {
                                     // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
@@ -2379,7 +2379,7 @@ class TsForm extends TsBase {
                             }
                         }
                         if (typeof field.html.render == 'function') {
-                            $v = div.find('.w2ui-map-field:last-child input:first-child')
+                            $v = div.find('.TsUi-map-field:last-child input:first-child')
                         }
                         const cnt = keys.length
                         const curr = div.find(`div[data-index='${cnt}']`)
@@ -2409,7 +2409,7 @@ class TsForm extends TsBase {
                             })
                             .on('keyup.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: Event) {
                                 const kbdEvent = event as KeyboardEvent
-                                const $div = query(kbdEvent.target).closest('.w2ui-map-field')
+                                const $div = query(kbdEvent.target).closest('.TsUi-map-field')
                                 const next = ($div.get(0) as Element).nextElementSibling
                                 const prev = ($div.get(0) as Element).previousElementSibling
                                 const className = query(kbdEvent.target).hasClass('key') ? 'key' : 'value'
@@ -2439,7 +2439,7 @@ class TsForm extends TsBase {
                                 }
                             })
                             .on('input.mapChange', { delegate: 'input, textarea' }, function(this: HTMLElement, event: Event) {
-                                const fld = query(event.target).closest('div.w2ui-map-field')
+                                const fld = query(event.target).closest('div.TsUi-map-field')
                                 const cnt = fld.data('index')
                                 const next = (fld.get(0) as Element).nextElementSibling
                                 // if last one, add new empty
@@ -2467,7 +2467,7 @@ class TsForm extends TsBase {
                                 if (_fieldValue == null) return
                                 // eslint-disable-next-line prefer-const
                                 let { current, previous, original } = _fieldValue
-                                const $cnt = query(event.target).closest('.w2ui-map-container')
+                                const $cnt = query(event.target).closest('.TsUi-map-container')
                                 // delete empty
                                 if (typeof field.html?.render == 'function') {
                                     // any: callback parameter — caller signature varies; TsForm field schema is user-defined at runtime
@@ -2480,7 +2480,7 @@ class TsForm extends TsBase {
                                     })
                                 } else if (field.type == 'map') {
                                     current._order = []
-                                    $cnt.find('.w2ui-map.key').each((node: Node) => { current._order.push((node as HTMLInputElement).value) })
+                                    $cnt.find('.TsUi-map.key').each((node: Node) => { current._order.push((node as HTMLInputElement).value) })
                                     current._order = current._order.filter((k: string) => k !== '')
                                     delete current['']
                                 } else if (field.type == 'array') {
@@ -2501,7 +2501,7 @@ class TsForm extends TsBase {
                                  */
                                 let index: number | undefined
                                 let className = ''
-                                const cnt = query(event.target).closest('.w2ui-map-container')
+                                const cnt = query(event.target).closest('.TsUi-map-container')
                                 if (field.type == 'array' || lastKey == 'tab') {
                                     cnt.find('input, textarea').each((node: Node, ind: number) => { if (node == event.target) index = ind })
                                 } else {
@@ -2564,17 +2564,17 @@ class TsForm extends TsBase {
         if (!this.isGenerated && !this.formHTML) return
         if (!this.box) return
         // render form
-        const html = '<div class="w2ui-form-box">' +
-                    (this.header !== '' ? '<div class="w2ui-form-header">' + TsUtils.lang(this.header) + '</div>' : '') +
-                    '    <div id="form_'+ this.name +'_toolbar" class="w2ui-form-toolbar" style="display: none"></div>' +
-                    '    <div id="form_'+ this.name +'_tabs" class="w2ui-form-tabs" style="display: none"></div>' +
+        const html = '<div class="TsUi-form-box">' +
+                    (this.header !== '' ? '<div class="TsUi-form-header">' + TsUtils.lang(this.header) + '</div>' : '') +
+                    '    <div id="form_'+ this.name +'_toolbar" class="TsUi-form-toolbar" style="display: none"></div>' +
+                    '    <div id="form_'+ this.name +'_tabs" class="TsUi-form-tabs" style="display: none"></div>' +
                         this.formHTML +
                     '</div>'
         query(this.box).attr('name', this.name)
-            .addClass('w2ui-reset w2ui-form')
+            .addClass('TsUi-reset TsUi-form')
             .html(html)
         if (query(this.box).length > 0) (query(this.box).get(0) as HTMLElement).style.cssText += this.style
-        TsUtils.bindEvents(query(this.box).find('.w2ui-eaction'), this)
+        TsUtils.bindEvents(query(this.box).find('.TsUi-eaction'), this)
 
         // init toolbar regardless it is defined or not
         if (typeof this.toolbar.render !== 'function') {
@@ -2651,7 +2651,7 @@ class TsForm extends TsBase {
             this.unmount()
         }
         this.last.observeResize?.disconnect()
-        delete w2ui[this.name]
+        delete TsUi[this.name]
         // event after
         edata.finish()
     }
@@ -2670,7 +2670,7 @@ class TsForm extends TsBase {
                 return
             }
             const inputs = query(this.box)
-                .find('div:not(.w2ui-field-helper) > input, select, textarea, div > label:nth-child(1) > [type=radio]')
+                .find('div:not(.TsUi-field-helper) > input, select, textarea, div > label:nth-child(1) > [type=radio]')
                 .filter(':not(.file-input)')
             // find visible (offsetParent == null for any element is not visible)
             while ((inputs.get(focus as number) as HTMLElement)?.offsetParent == null && inputs.length > (focus as number)) {

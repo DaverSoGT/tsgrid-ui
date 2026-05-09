@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: none
  *
  * These are the master locale settings that will be used by TsUtils
@@ -42,7 +42,7 @@ const TsLocale: TsLocaleSettings = {
     'shortdays'         : ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
     'fulldays'          : ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
     'weekStarts'        : 'S', // can be "M" for Monday or "S" for Sunday
-    // phrases used in w2ui, should be empty for original language
+    // phrases used in TsUi, should be empty for original language
     // keep these up-to-date and in sorted order
     // value = "---" to easier see what to translate
     'phrases': {

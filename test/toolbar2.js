@@ -182,6 +182,6 @@ let toolbar = new TsToolbar({
 toolbar.render(query('#toolbar')[0])
 
 function changeTab() {
-    w2ui.tabs.get('tab2').text = '<div style="width: 300px">new and long</div>';
-    w2ui.tabs.refresh();
+    TsUi.tabs.get('tab2').text = '<div style="width: 300px">new and long</div>';
+    TsUi.tabs.refresh();
 }

@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsTabs, TsToolbar
  *
  * T3.6: Ported to TypeScript with aggressive typing per typing_policy.
@@ -15,16 +15,16 @@
  */
 
 import { TsBase } from './tsbase.js'
-import { w2ui as _w2ui, TsUtils } from './tsutils.js'
+import { TsUi as _w2ui, TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { TsTabs } from './tstabs.js'
 import { TsToolbar } from './tstoolbar.js'
 
 // any: query() returns Query|void; cast once for clean selector usage
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
-// any: w2ui is a dynamic runtime registry; typed narrow for this file
+// any: TsUi is a dynamic runtime registry; typed narrow for this file
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const w2ui = _w2ui as Record<string, any> // any: values are w2 widget instances with dynamic methods
+const TsUi = _w2ui as Record<string, any> // any: values are w2 widget instances with dynamic methods
 
 // ---------------------------------------------------------------------------
 // Type definitions
@@ -106,7 +106,7 @@ class TsLayout extends TsBase {
     constructor(options: any) { // any: options bag — mixed type at construction time
         super(options.name)
         this.box            = null // DOM Element that holds the element
-        this.name           = '' // unique name for w2ui
+        this.name           = '' // unique name for TsUi
         this.panels         = []
         this.last           = {}
         this.padding        = 1 // panel padding
@@ -173,7 +173,7 @@ class TsLayout extends TsBase {
             // instantiate tabs
             if (Array.isArray(tabs)) tabs = { tabs: tabs }
             const name = object.name + '_' + (panel ?? '') + '_tabs'
-            if (w2ui[name]) w2ui[name].destroy() // destroy if existed
+            if (TsUi[name]) TsUi[name].destroy() // destroy if existed
             pan.tabs      = new TsTabs(TsUtils.extend({}, tabs, { owner: object, name: object.name + '_' + (panel ?? '') + '_tabs' }))
             pan.show.tabs = true
             return true
@@ -187,7 +187,7 @@ class TsLayout extends TsBase {
             // instantiate toolbar
             if (Array.isArray(toolbar)) toolbar = { items: toolbar }
             const name = object.name + '_' + (panel ?? '') + '_toolbar'
-            if (w2ui[name]) w2ui[name].destroy() // destroy if existed
+            if (TsUi[name]) TsUi[name].destroy() // destroy if existed
             pan.toolbar      = new TsToolbar(TsUtils.extend({}, toolbar, { owner: object, name: object.name + '_' + (panel ?? '') + '_toolbar' }))
             pan.show.toolbar = true
             return true
@@ -241,7 +241,7 @@ class TsLayout extends TsBase {
         }
         // clean up previous content
         if (typeof (p.html as { unmount?: unknown }).unmount == 'function') (p.html as { unmount: () => void }).unmount()
-        current.addClass('w2ui-panel-content')
+        current.addClass('TsUi-panel-content')
         current.removeAttr('style') // styles could have added manually, but all necessary will be added by resizeBoxes
         this.resizeBoxes(panel)
 
@@ -256,7 +256,7 @@ class TsLayout extends TsBase {
                     query(this.box).addClass('animating')
                     const div1 = query(this.box).find(pname + '> [data-role="panel-content"]')
                     // any: query()[0] returns Node; panel content div is HTMLElement
-                    div1.after('<div class="w2ui-panel-content new-panel" data-role="panel-content" style="'+ (div1[0] as HTMLElement).style.cssText +'"></div>')
+                    div1.after('<div class="TsUi-panel-content new-panel" data-role="panel-content" style="'+ (div1[0] as HTMLElement).style.cssText +'"></div>')
                     const div2 = query(this.box).find(pname + '> [data-role="panel-content"].new-panel')
                     div1.css('top', panelTop)
                     div2.css('top', panelTop)
@@ -345,7 +345,7 @@ class TsLayout extends TsBase {
             owner: this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box  : box.get(0) as HTMLElement,
-            after: '.w2ui-panel-title',
+            after: '.TsUi-panel-title',
             param: panel
         // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -368,7 +368,7 @@ class TsLayout extends TsBase {
             owner : this as unknown as { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void },
             // any: query().get(0) returns Node|Node[]; panel element is HTMLElement
             box   : box.get(0) as HTMLElement,
-            after : '.w2ui-panel-title',
+            after : '.TsUi-panel-title',
             param : panel
         // any: cast-to-any for dynamic dispatch; TsLayout panel shape is user-defined at runtime
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -400,12 +400,12 @@ class TsLayout extends TsBase {
         const pan = this.get(panel)
         if (pan == null) return false
         // resize
-        query(this.box).find(':scope > div > .w2ui-panel')
+        query(this.box).find(':scope > div > .TsUi-panel')
             .css('transition', (instant !== true ? '.2s' : '0s'))
         setTimeout(() => { this.set(panel, { size: size }) }, 1)
         // clean
         setTimeout(() => {
-            query(this.box).find(':scope > div > .w2ui-panel').css('transition', '0s')
+            query(this.box).find(':scope > div > .TsUi-panel').css('transition', '0s')
             this.resize()
         }, 300)
         return true
@@ -429,7 +429,7 @@ class TsLayout extends TsBase {
             query(this.box).addClass('animating')
             query(this.box).find('#layout_'+ this.name +'_panel_'+panel)
                 .css({ 'opacity': '0' })
-            query(this.box).find(':scope > div > .w2ui-panel')
+            query(this.box).find(':scope > div > .TsUi-panel')
                 .css('transition', '.2s')
             setTimeout(() => { this.resize() }, 1)
             // show
@@ -438,7 +438,7 @@ class TsLayout extends TsBase {
             }, 250)
             // clean
             setTimeout(() => {
-                query(this.box).find(':scope > div > .w2ui-panel')
+                query(this.box).find(':scope > div > .TsUi-panel')
                     .css('transition', '0s')
                 query(this.box).removeClass('animating')
                 edata.finish()
@@ -464,14 +464,14 @@ class TsLayout extends TsBase {
         } else {
             // hide
             query(this.box).addClass('animating')
-            query(this.box).find(':scope > div > .w2ui-panel')
+            query(this.box).find(':scope > div > .TsUi-panel')
                 .css('transition', '.2s')
             query(this.box).find('#layout_'+ this.name +'_panel_'+panel)
                 .css({ 'opacity': '0' })
             setTimeout(() => { this.resize() }, 1)
             // clean
             setTimeout(() => {
-                query(this.box).find(':scope > div > .w2ui-panel')
+                query(this.box).find(':scope > div > .TsUi-panel')
                     .css('transition', '0s')
                 query(this.box).removeClass('animating')
                 edata.finish()
@@ -541,7 +541,7 @@ class TsLayout extends TsBase {
     }
 
     assignToolbar(panel: string, toolbar: TsToolbar | string | null) {
-        if (typeof toolbar == 'string' && w2ui[toolbar] != null) toolbar = w2ui[toolbar]
+        if (typeof toolbar == 'string' && TsUi[toolbar] != null) toolbar = TsUi[toolbar]
         const pan = this.get(panel)
         pan.toolbar = toolbar
         // any: query().attr(name) returns string|undefined; used as selector fallback
@@ -585,7 +585,7 @@ class TsLayout extends TsBase {
     }
 
     assignTabs(panel: string, tabs: TsTabs | string | null) {
-        if (typeof tabs == 'string' && w2ui[tabs] != null) tabs = w2ui[tabs]
+        if (typeof tabs == 'string' && TsUi[tabs] != null) tabs = TsUi[tabs]
         const pan = this.get(panel)
         pan.tabs = tabs
         const tmp = query(this.box).find(panel +'> [data-role="panel-tabs"]')
@@ -624,7 +624,7 @@ class TsLayout extends TsBase {
         // any: .attr(name,val) overload returns string|Query; cast to Query for chaining
         ;(query(this.box)
             .attr('name', this.name) as unknown as Query)
-            .addClass('w2ui-layout')
+            .addClass('TsUi-layout')
             .html('<div></div>')
         if (query(this.box).length > 0) {
             // any: query()[0] returns Node; layout box is HTMLElement
@@ -632,13 +632,13 @@ class TsLayout extends TsBase {
         }
         // create all panels
         for (let p1 = 0; p1 < w2panels.length; p1++) {
-            const html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="w2ui-panel">'+
-                        '    <div class="w2ui-panel-title"></div>'+
-                        '    <div class="w2ui-panel-tabs" data-role="panel-tabs"></div>'+
-                        '    <div class="w2ui-panel-toolbar" data-role="panel-toolbar"></div>'+
-                        '    <div class="w2ui-panel-content" data-role="panel-content"></div>'+
+            const html = '<div id="layout_'+ this.name + '_panel_'+ w2panels[p1] +'" class="TsUi-panel">'+
+                        '    <div class="TsUi-panel-title"></div>'+
+                        '    <div class="TsUi-panel-tabs" data-role="panel-tabs"></div>'+
+                        '    <div class="TsUi-panel-toolbar" data-role="panel-toolbar"></div>'+
+                        '    <div class="TsUi-panel-content" data-role="panel-content"></div>'+
                         '</div>'+
-                        '<div id="layout_'+ this.name + '_resizer_'+ w2panels[p1] +'" class="w2ui-resizer"></div>'
+                        '<div id="layout_'+ this.name + '_resizer_'+ w2panels[p1] +'" class="TsUi-resizer"></div>'
             query(this.box).find(':scope > div').append(html)
         }
         query(this.box).find(':scope > div')
@@ -675,7 +675,7 @@ class TsLayout extends TsBase {
             }
             // lock all panels
             w2panels.forEach(panel => {
-                const $tmp = query(self.el(panel)).find('.w2ui-lock')
+                const $tmp = query(self.el(panel)).find('.TsUi-lock')
                 if ($tmp.length > 0) {
                     $tmp.data('locked', 'yes')
                 } else {
@@ -700,7 +700,7 @@ class TsLayout extends TsBase {
             if (self.last['resize'] == null) return
             // unlock all panels
             w2panels.forEach(panel => {
-                const $tmp = query(self.el(panel)).find('.w2ui-lock')
+                const $tmp = query(self.el(panel)).find('.TsUi-lock')
                 if ($tmp.data('locked') == 'yes') {
                     $tmp.removeData('locked')
                 } else {
@@ -876,7 +876,7 @@ class TsLayout extends TsBase {
         // event before
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
-        if (w2ui[this.name] == null) return false
+        if (TsUi[this.name] == null) return false
         // clean up
         this.panels.forEach(panel => {
             // any: tabs/toolbar may be TsTabs/TsToolbar or plain config object
@@ -889,7 +889,7 @@ class TsLayout extends TsBase {
         if (query(this.box).find('#layout_'+ this.name +'_panel_main').length > 0) {
             this.unmount()
         }
-        delete w2ui[this.name]
+        delete TsUi[this.name]
         // event after
         edata.finish()
         if (this.last['events'] && this.last['events'].resize) {
@@ -931,7 +931,7 @@ class TsLayout extends TsBase {
                         const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
                             .removeClass(null)
                             .removeAttr('name')
-                            .addClass('w2ui-panel-content')
+                            .addClass('TsUi-panel-content')
                         ;(($content.css('overflow', p.overflow) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                     }
                     if (p.html && typeof (p.html as { render?: unknown }).render == 'function') {
@@ -945,7 +945,7 @@ class TsLayout extends TsBase {
                     const $content = query(self.box).find(pname +'> [data-role="panel-content"]')
                         .removeClass(null)
                         .removeAttr('name')
-                        .addClass('w2ui-panel-content')
+                        .addClass('TsUi-panel-content')
                     ;(((($content.html(p.html as string) as unknown as Query)
                         .css('overflow', p.overflow)) as unknown as Query)[0] as HTMLElement).style.cssText += ';' + p.style
                 }
@@ -958,7 +958,7 @@ class TsLayout extends TsBase {
                 } else {
                     ;(p.tabs as TsTabs).refresh()
                 }
-                tmp.addClass('w2ui-panel-tabs')
+                tmp.addClass('TsUi-panel-tabs')
             } else {
                 // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
                 ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
@@ -972,7 +972,7 @@ class TsLayout extends TsBase {
                 } else {
                     ;(p.toolbar as TsToolbar).refresh()
                 }
-                tmp.addClass('w2ui-panel-toolbar')
+                tmp.addClass('TsUi-panel-toolbar')
             } else {
                 // any: html(val) return type is string|Query; cast needed to chain removeAttr/css
                 ;(tmp.html('') as unknown as Query).removeAttr('name').removeClass(null)
@@ -980,7 +980,7 @@ class TsLayout extends TsBase {
                 ;(tmp.css('display', 'none') as unknown as Query).hide()
             }
             // show title
-            tmp = query(self.box).find(pname +'> .w2ui-panel-title')
+            tmp = query(self.box).find(pname +'> .TsUi-panel-title')
             if (p.title) {
                 // any: html(val) return type is string|Query; cast needed to chain show/hide
                 ;(tmp.html(p.title) as unknown as Query).show()
@@ -1105,8 +1105,8 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'top', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        // any: w2ui registry value is dynamic; resize events dict accessed at runtime
-                        w2ui[self.name].last.events.resizeStart('top', event)
+                        // any: TsUi registry value is dynamic; resize events dict accessed at runtime
+                        TsUi[self.name].last.events.resizeStart('top', event)
                         // event after
                         edata.finish()
                         return false
@@ -1154,7 +1154,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'left', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        w2ui[self.name].last.events.resizeStart('left', event)
+                        TsUi[self.name].last.events.resizeStart('left', event)
                         // event after
                         edata.finish()
                         return false
@@ -1202,7 +1202,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'right', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        w2ui[self.name].last.events.resizeStart('right', event)
+                        TsUi[self.name].last.events.resizeStart('right', event)
                         // event after
                         edata.finish()
                         return false
@@ -1249,7 +1249,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'bottom', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        w2ui[self.name].last.events.resizeStart('bottom', event)
+                        TsUi[self.name].last.events.resizeStart('bottom', event)
                         // event after
                         edata.finish()
                         return false
@@ -1317,7 +1317,7 @@ class TsLayout extends TsBase {
                         const edata = self.trigger('resizerClick', { target: 'preview', originalEvent: event })
                         if (edata.isCancelled === true) return
                         // default action
-                        w2ui[self.name].last.events.resizeStart('preview', event)
+                        TsUi[self.name].last.events.resizeStart('preview', event)
                         // event after
                         edata.finish()
                         return false
@@ -1345,7 +1345,7 @@ class TsLayout extends TsBase {
             let topHeight = 0
             if (pan) {
                 if (pan.title) {
-                    const el = query(this.box).find(tmp2 + '.w2ui-panel-title').css({ top: topHeight + 'px', display: 'block' })
+                    const el = query(this.box).find(tmp2 + '.TsUi-panel-title').css({ top: topHeight + 'px', display: 'block' })
                     topHeight += TsUtils.getSize(el, 'height')
                 }
                 if (pan.show.tabs) {

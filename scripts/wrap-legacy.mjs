@@ -1,14 +1,14 @@
 /**
  * scripts/wrap-legacy.mjs
- * Post-process step for tsup CJS output → w2ui legacy IIFE bundle.
+ * Post-process step for tsup CJS output → TsUi legacy IIFE bundle.
  *
- * Reads dist/w2ui.js (CJS output from tsup), wraps it in the verbatim
- * legacy_code IIFE template from gulpfile.js, prepends the w2ui header
- * comment, and writes the result back to dist/w2ui.js (atomically via tmp).
+ * Reads dist/TsUi.js (CJS output from tsup), wraps it in the verbatim
+ * legacy_code IIFE template from gulpfile.js, prepends the TsUi header
+ * comment, and writes the result back to dist/TsUi.js (atomically via tmp).
  *
  * This reproduces what Gulp's pack/build tasks did with:
  *   .pipe(replace(legacy_replace, legacy_code))
- *   .pipe(header(comments.w2ui))
+ *   .pipe(header(comments.TsUi))
  *
  * Usage: node scripts/wrap-legacy.mjs
  */
@@ -23,48 +23,48 @@ const ROOT = path.resolve(__dirname, '..')
 // ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
-const DIST_JS        = path.join(ROOT, 'dist', 'w2ui.js')
-const DIST_JS_TMP    = path.join(ROOT, 'dist', 'w2ui.js.tmp')
+const DIST_JS        = path.join(ROOT, 'dist', 'TsUi.js')
+const DIST_JS_TMP    = path.join(ROOT, 'dist', 'TsUi.js.tmp')
 // Stale ESM artifact left over before T1.7 fixed outExtension().
-// tsup now emits dist/w2ui.es6.js (not .mjs). Remove idempotently on every run.
-const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'w2ui.es6.mjs')
+// tsup now emits dist/TsUi.es6.js (not .mjs). Remove idempotently on every run.
+const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'TsUi.es6.mjs')
 
 // ---------------------------------------------------------------------------
 // IIFE wrapper — verbatim from gulpfile.js lines 24–46
 // Note: the CJS output from tsup has no "export { ... }" block to replace.
 // Instead we APPEND the IIFE after the CJS module body, injecting the
-// 23 named symbols into it as the w2ui object literal.
+// 23 named symbols into it as the TsUi object literal.
 // ---------------------------------------------------------------------------
 const IIFE_WRAPPER = `
 // Compatibility with CommonJS and AMD modules
-!(function(global, w2ui) {
+!(function(global, TsUi) {
 if (typeof define == 'function' && define.amd) {
-    return define(() => w2ui)
+    return define(() => TsUi)
 }
 if (typeof exports != 'undefined') {
     if (typeof module != 'undefined' && module.exports) {
-        return exports = module.exports = w2ui
+        return exports = module.exports = TsUi
     }
     global = exports
 }
 if (global) {
-    Object.keys(w2ui).forEach(key => {
-        global[key] = w2ui[key]
+    Object.keys(TsUi).forEach(key => {
+        global[key] = TsUi[key]
     })
 }
 })(self, {
-    w2ui, TsUtils, query, TsLocale, TsEvent, TsBase,
-    TsPopup, w2alert, w2confirm, w2prompt, Dialog,
-    TsTooltip, w2menu, w2color, w2date, Tooltip,
+    TsUi, TsUtils, query, TsLocale, TsEvent, TsBase,
+    TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog,
+    TsTooltip, TsMenu, TsColor, TsDate, Tooltip,
     TsToolbar, TsSidebar, TsTabs, TsLayout, TsGrid, TsForm, TsField
 });`
 
 // ---------------------------------------------------------------------------
-// Header comment — same format as gulpfile.js comments.w2ui
+// Header comment — same format as gulpfile.js comments.TsUi
 // ---------------------------------------------------------------------------
 function buildHeader() {
     const ts = new Date().toLocaleString('en-us')
-    return `/* w2ui 2.0.x (nightly) (${ts}) (c) http://w2ui.com, vitmalina@gmail.com */\n`
+    return `/* TsUi 2.0.x (nightly) (${ts}) (c) http://TsUi.com, vitmalina@gmail.com */\n`
 }
 
 // ---------------------------------------------------------------------------
@@ -119,7 +119,7 @@ async function wrapFile(src, tmp) {
  * In a browser context `module` is not defined → immediate ReferenceError →
  * the entire script dies before any widget var-assignment can execute.
  * (Function declarations are fully hoisted and survive; var assignments are
- * not — this is why only the function-declared globals like w2alert pass.)
+ * not — this is why only the function-declared globals like TsAlert pass.)
  *
  * The IIFE wrapper that wrap-legacy.mjs appends owns the UMD/global export
  * surface (AMD, CJS, and browser-global paths), so the esbuild line is
@@ -149,7 +149,7 @@ function stripCjsArtifacts(code) {
         process.stderr.write(
             '[wrap-legacy] WARNING: expected `module.exports = __toCommonJS(...)` ' +
             'line not found — esbuild output shape may have changed. ' +
-            'Verify dist/w2ui.js loads correctly in browser.\n'
+            'Verify dist/TsUi.js loads correctly in browser.\n'
         )
     }
 
@@ -178,11 +178,11 @@ async function main() {
     // no-op on clean builds (idempotent).
     await rm(STALE_ES6_MJS, { force: true })
 
-    console.log('[wrap-legacy] Wrapping dist/w2ui.js with legacy IIFE...')
+    console.log('[wrap-legacy] Wrapping dist/TsUi.js with legacy IIFE...')
 
     try {
         await wrapFile(DIST_JS, DIST_JS_TMP)
-        console.log('[wrap-legacy] Done: dist/w2ui.js')
+        console.log('[wrap-legacy] Done: dist/TsUi.js')
     } catch (err) {
         console.error('[wrap-legacy] ERROR:', err.message)
         process.exit(1)

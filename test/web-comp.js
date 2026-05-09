@@ -15,7 +15,7 @@ class WebComp extends HTMLElement {
                 overflow: auto;
             }
             </style>
-            <link rel="stylesheet" type="text/css" media="screen" href="../dist/w2ui.css" />
+            <link rel="stylesheet" type="text/css" media="screen" href="../dist/TsUi.css" />
             <web-comp2></web-comp2>
             <div>
                 Some HTML
@@ -48,7 +48,7 @@ class WebComp extends HTMLElement {
             //         // maxWidth: 600,
             //         // maxHeight: 50,
             //         hideOnClick: true,
-            //         class: 'w2ui-light'
+            //         class: 'TsUi-light'
             //     })
             //     .show((tag) => {
             //         console.log('show', tag)

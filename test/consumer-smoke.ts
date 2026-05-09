@@ -1,11 +1,11 @@
 /**
  * Consumer smoke test — TypeScript type-check only (never executed at runtime).
  *
- * Purpose: verify the public API surface of w2ui is importable and correctly
+ * Purpose: verify the public API surface of TsUi is importable and correctly
  * typed from a TypeScript consumer's perspective. This file is compiled by
  * `npx tsc --noEmit --project test/tsconfig.json` (no build output).
  *
- * After `pnpm build`, this same file can be pointed at `dist/w2ui.d.ts` to
+ * After `pnpm build`, this same file can be pointed at `dist/TsUi.d.ts` to
  * validate the rolled-up declaration file.
  *
  * All assertions are pure type-level; no DOM APIs are invoked.
@@ -13,14 +13,14 @@
 
 // Import all 23 public names from the source barrel
 import {
-    w2ui,
+    TsUi,
     TsUtils,
     query,
     TsLocale,
     TsEvent,
     TsBase,
-    TsPopup, w2alert, w2confirm, w2prompt, Dialog,
-    TsTooltip, w2menu, w2color, w2date, Tooltip,
+    TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog,
+    TsTooltip, TsMenu, TsColor, TsDate, Tooltip,
     TsToolbar,
     TsSidebar,
     TsTabs,
@@ -41,8 +41,8 @@ import type { Brand, RecId, LayoutPanelId, FieldName } from '../src/types.js'
 // Utility: assert T is not `any` by checking it extends `never` in one branch
 type IsAny<T> = (T extends never ? true : false) extends (false extends true ? true : false) ? true : false
 
-// w2ui registry object
-const _w2ui: typeof w2ui = w2ui
+// TsUi registry object
+const _w2ui: typeof TsUi = TsUi
 void _w2ui
 
 // TsUtils namespace
@@ -66,23 +66,23 @@ void _base
 // Popup family
 const _popup: typeof TsPopup = TsPopup
 void _popup
-const _alert: typeof w2alert = w2alert
+const _alert: typeof TsAlert = TsAlert
 void _alert
-const _confirm: typeof w2confirm = w2confirm
+const _confirm: typeof TsConfirm = TsConfirm
 void _confirm
-const _prompt: typeof w2prompt = w2prompt
+const _prompt: typeof TsPrompt = TsPrompt
 void _prompt
-const _Dialog: typeof Dialog = Dialog
+const _Dialog: typeof TsDialog = TsDialog
 void _Dialog
 
 // Tooltip family
 const _tooltip: typeof TsTooltip = TsTooltip
 void _tooltip
-const _menu: typeof w2menu = w2menu
+const _menu: typeof TsMenu = TsMenu
 void _menu
-const _color: typeof w2color = w2color
+const _color: typeof TsColor = TsColor
 void _color
-const _date: typeof w2date = w2date
+const _date: typeof TsDate = TsDate
 void _date
 const _Tooltip: typeof Tooltip = Tooltip
 void _Tooltip

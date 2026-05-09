@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { TsBase, TsEvent } from '../../src/tsbase.js'
 
 // Tiny harness — give every test a fresh TsBase instance with a unique name
-// so the global w2ui registry stays uncluttered. The base class registers
+// so the global TsUi registry stays uncluttered. The base class registers
 // itself under `name` if provided; we pass undefined to skip registration.
 function makeBase(): TsBase {
     return new TsBase()

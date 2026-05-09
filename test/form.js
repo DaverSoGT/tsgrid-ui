@@ -1,10 +1,10 @@
 import { TsForm } from '../src/tsform.js'
-import { w2menu } from '../src/tstooltip.js'
-import { w2ui } from '../src/tsutils.js'
+import { TsMenu } from '../src/tstooltip.js'
+import { TsUi } from '../src/tsutils.js'
 
 // TOOD: remove
-window.w2ui = w2ui
-window.w2menu = w2menu
+window.TsUi = TsUi
+window.TsMenu = TsMenu
 
 let form = new TsForm({
     name      : 'form',
@@ -12,7 +12,7 @@ let form = new TsForm({
     postData: { some: "data" },
     url: { get: 'form.json?id=:id', save: 'form.json?id=:id' },
     httpHeaders: { header1: "header-data" },
-    // url: { get: 'http://w2ui.com', save: 'http://w2ui.com' },
+    // url: { get: 'http://TsUi.com', save: 'http://TsUi.com' },
     // page      : 2,
     // url       : 'form.php',
     // formURL   : 'form-template.html',
@@ -31,7 +31,7 @@ let form = new TsForm({
     },
     toolbar: {
         items: [
-            { type: 'button', id: 'button1', text: 'Button1', icon: 'w2ui-icon-search' },
+            { type: 'button', id: 'button1', text: 'Button1', icon: 'TsUi-icon-search' },
             { type: 'break' },
             { type: 'check', id: 'button2', text: 'Button2', img: 'icon-page' },
             { type: 'check', id: 'button3', text: 'Button3', img: 'icon-page' },
@@ -140,7 +140,7 @@ let form = new TsForm({
                 items: function (el) {
                     let items = []
                     for (let i = 1; i <= 20; i++) {
-                        items.push({ id: 'item'+i, icon: 'w2ui-icon-check', tooltip: 'Tooltip', text: 'ITEM ' + i})
+                        items.push({ id: 'item'+i, icon: 'TsUi-icon-check', tooltip: 'Tooltip', text: 'ITEM ' + i})
                     }
                     return items;
                 },
@@ -237,12 +237,12 @@ let form = new TsForm({
     }
 });
 form.render(document.querySelector('#form'))
-// w2ui.form.formHTML = w2ui.form.generateHTML()
-// w2ui.form.render();
+// TsUi.form.formHTML = TsUi.form.generateHTML()
+// TsUi.form.render();
 // all event listener
-// w2ui.form.on('change', function (event) {
+// TsUi.form.on('change', function (event) {
 //     event.onComplete = function () {
 //         console.log('--------');
-//         console.log('change2:', event, 'record:', w2ui.form.record);
+//         console.log('change2:', event, 'record:', TsUi.form.record);
 //     }
 // });

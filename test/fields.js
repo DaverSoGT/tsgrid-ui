@@ -34,7 +34,7 @@ jQuery(function () {
         filter: false,
         markSearch: true,
         // minLength: 1,
-        // url: 'http://w2ui.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"limit":100,"offset":0}',
+        // url: 'http://TsUi.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"limit":100,"offset":0}',
         recId: 'recid',
         recText(item) { return item.fname + ' ' + item.lname },
         items: function(el) {
@@ -67,7 +67,7 @@ jQuery(function () {
         match: 'contains',
         markSearch: true,
         minLength: 0,
-        // url: 'http://w2ui.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"limit":100,"offset":0}',
+        // url: 'http://TsUi.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"limit":100,"offset":0}',
         recId: 'recid',
         recText(item) { return item.fname + ' ' + item.lname },
         items: function(el) {
@@ -109,7 +109,7 @@ jQuery(function () {
 
     });
     jQuery('.enum').TsField('enum', {
-        // url: 'http://w2ui.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"search":"122",limit":100,"offset":0}',
+        // url: 'http://TsUi.com/web/pages/demo/infinite/index.php?request={"cmd":"get","selected":[],"search":"122",limit":100,"offset":0}',
         recId: 'recid',
         spinner: true,
         msgSearch: 'Type to search...',
@@ -242,7 +242,7 @@ jQuery(function () {
                 })
                 break
             case 9:
-                jQuery(this).w2menu({
+                jQuery(this).TsMenu({
                     type: 'normal',
                     html: '<div style="padding: 20px">Some tag</div>',
                     width: '300px',

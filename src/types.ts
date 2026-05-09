@@ -1,5 +1,5 @@
 /**
- * Shared branded primitive types for w2ui public API.
+ * Shared branded primitive types for TsUi public API.
  *
  * Branded types prevent accidental cross-assignment of semantically different
  * string/number values (e.g. passing a FieldName where a RecId is expected).

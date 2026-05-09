@@ -1,5 +1,5 @@
 /**
- * Part of w2ui 2.0 library
+ * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsLocale
  *
  * T2.5: @ts-nocheck removed; file typed aggressively per typing_policy.
@@ -25,7 +25,7 @@
  *  - TsUtils.getStrHeight
  *  - TsUtils.getStrDimentions
  *  - TsUtils.alrert() - same as TsUtils.message()
- *  - TsUtils.prompt() - similar to w2prompt
+ *  - TsUtils.prompt() - similar to TsPrompt
  *  - TsUtils.normMenu(..., options) got options parameter that can have itemMap
  *  - TsUtils.getNested()
  *  - TsUtils.wait() - async timer
@@ -39,8 +39,8 @@ import { query as _query, Query } from './query.js'
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
 const query = _query as (selector: unknown, context?: unknown) => Query
 
-// variable that holds all w2ui objects
-const w2ui: Record<string, unknown> = {}
+// variable that holds all TsUi objects
+const TsUi: Record<string, unknown> = {}
 
 // ---------------------------------------------------------------------------
 // Public interfaces — exported via TsUtils instance
@@ -1137,11 +1137,11 @@ class Utils {
             style = 'position: fixed; right: 0; bottom: 0;'
         }
         query(boxSel).prepend(
-            `<div class="w2ui-lock" style="${style}"></div>` +
-            '<div class="w2ui-lock-msg"></div>'
+            `<div class="TsUi-lock" style="${style}"></div>` +
+            '<div class="TsUi-lock-msg"></div>'
         )
-        const $lock = query(boxSel).find('.w2ui-lock')
-        const $mess = query(boxSel).find('.w2ui-lock-msg')
+        const $lock = query(boxSel).find('.TsUi-lock')
+        const $mess = query(boxSel).find('.TsUi-lock-msg')
         if (!opts.msg) {
             $mess.css({
                 'background-color': 'transparent',
@@ -1151,7 +1151,7 @@ class Utils {
             })
         }
         if (opts.spinner === true) {
-            opts.msg = `<div class="w2ui-spinner" ${(!opts.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
+            opts.msg = `<div class="TsUi-spinner" ${(!opts.msg ? 'style="width: 35px; height: 35px"' : '')}></div>`
                 + opts.msg
         }
         if (opts.msg) {
@@ -1207,7 +1207,7 @@ class Utils {
             boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
         }
         if (this.isInt(speed) && (speed ?? 0) > 0) {
-            query(boxSel).find('.w2ui-lock').css({
+            query(boxSel).find('.TsUi-lock').css({
                 transition: ((speed ?? 0)/1000) + 's',
                 opacity: 0,
             })
@@ -1215,12 +1215,12 @@ class Utils {
             const _box = query(boxSel).get(0) as unknown as Record<string, unknown>
             clearTimeout(_box['_prevUnlock'] as number)
             _box['_prevUnlock'] = setTimeout(() => {
-                query(boxSel).find('.w2ui-lock').remove()
+                query(boxSel).find('.TsUi-lock').remove()
             }, speed)
-            query(boxSel).find('.w2ui-lock-msg').remove()
+            query(boxSel).find('.TsUi-lock-msg').remove()
         } else {
-            query(boxSel).find('.w2ui-lock').remove()
-            query(boxSel).find('.w2ui-lock-msg').remove()
+            query(boxSel).find('.TsUi-lock').remove()
+            query(boxSel).find('.TsUi-lock-msg').remove()
         }
     }
 
@@ -1262,7 +1262,7 @@ class Utils {
         // any: msgBase is the live TsMessageOptions reference shared across all closures
         let msgBase: TsMessageOptions = {}
         const removeLast = () => {
-            const msgs = query(where?.box).find('.w2ui-message')
+            const msgs = query(where?.box).find('.TsUi-message')
             if (msgs.length == 0) return // no messages already
             // any: DOM element has _msg_options stored dynamically at open time
             msgBase = (msgs.get(0) as unknown as Record<string, unknown>)['_msg_options'] as TsMessageOptions || {}
@@ -1275,17 +1275,17 @@ class Utils {
             // any: DOM element has _msg_prevFocus stored dynamically at open time
             const msgBoxEl = options['box'] as Record<string, unknown> | null
             const focus = msgBoxEl?.['_msg_prevFocus'] as Element | undefined
-            if (query(where.box).find('.w2ui-message').length <= 1) {
+            if (query(where.box).find('.TsUi-message').length <= 1) {
                 if (where.owner) {
                     where.owner.unlock?.(where.param, 150)
                 } else {
                     this.unlock(where.box, 150)
                 }
             } else {
-                query(where.box).find(`#w2ui-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
+                query(where.box).find(`#TsUi-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
             }
             if (focus) {
-                const msg = query(focus).closest('.w2ui-message')
+                const msg = query(focus).closest('.TsUi-message')
                 if (msg.length > 0) {
                     // any: DOM element has _msg_options + setFocus stored dynamically at open time
                     const opt = (msg.get(0) as unknown as Record<string, unknown>)['_msg_options'] as Record<string, unknown>
@@ -1324,7 +1324,7 @@ class Utils {
             removeLast()
             return
         }
-        if (msgBase.text != null) msgBase.body = `<div class="w2ui-centered w2ui-msg-text">${msgBase.text}</div>`
+        if (msgBase.text != null) msgBase.body = `<div class="TsUi-centered TsUi-msg-text">${msgBase.text}</div>`
         if (msgBase.width == null) msgBase.width = 350
         if (msgBase.height == null) msgBase.height = 170
         if (msgBase.hideOn == null) msgBase.hideOn = ['esc']
@@ -1340,7 +1340,7 @@ class Utils {
         // any: at this point msgBase has both TsMessageOptions fields AND TsBase event methods (on/off/trigger)
         const msgOpts = msgBase as unknown as Record<string, unknown>
         ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open', (event: Record<string, unknown>) => {
-            TsUtils.bindEvents(query(msgOpts['box'] as unknown).find('.w2ui-eaction'), msgOpts) // msgOpts is TsBase object
+            TsUtils.bindEvents(query(msgOpts['box'] as unknown).find('.TsUi-eaction'), msgOpts) // msgOpts is TsBase object
             const detail = event['detail'] as Record<string, unknown>
             query(detail['box'] as unknown).find('button, input, textarea, [name=hidden-first]')
                 .off('.message')
@@ -1387,16 +1387,16 @@ class Utils {
                 const handler = msgBase.actions![action]
                 let btnAction: string = action
                 if (typeof handler == 'function') {
-                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
+                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
                 }
                 if (typeof handler == 'object' && handler !== null) {
                     const h = handler as Record<string, unknown>
-                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
+                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
                         style="${h['style'] ?? ''}" ${h['attrs'] ?? ''}>${h['text'] || action}</button>`
                     btnAction = Array.isArray(msgBase.actions) ? String(h['text']) : action
                 }
                 if (typeof handler == 'string') {
-                    msgBase.buttons += `<button class="w2ui-btn w2ui-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
+                    msgBase.buttons += `<button class="TsUi-btn TsUi-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
                     btnAction = handler
                 }
                 if (typeof btnAction == 'string') {
@@ -1419,8 +1419,8 @@ class Utils {
         })
         if (msgBase.body !== '' || msgBase.buttons !== '') {
             msgBase.html = `
-                <div class="w2ui-message-body">${msgBase.body || ''}</div>
-                <div class="w2ui-message-buttons">${msgBase.buttons || ''}</div>
+                <div class="TsUi-message-body">${msgBase.body || ''}</div>
+                <div class="TsUi-message-buttons">${msgBase.buttons || ''}</div>
             `
         }
         let styles  = getComputedStyle(query(where.box).get(0) as Element)
@@ -1453,7 +1453,7 @@ class Utils {
         if (msgBase.html === '' && msgBase.body === '' && msgBase.buttons === '') {
             removeLast()
         } else {
-            msgBase.msgIndex = query(where.box).find('.w2ui-message').length
+            msgBase.msgIndex = query(where.box).find('.TsUi-message').length
             if (msgBase.msgIndex === 0 && typeof this.lock == 'function') {
                 query(where.box).css('overflow', 'hidden')
                 if (where.owner) { // where.param is used in the panel
@@ -1465,11 +1465,11 @@ class Utils {
                 }
             }
             // send back previous messages
-            query(where.box).find('.w2ui-message').css('z-index', '1390')
+            query(where.box).find('.TsUi-message').css('z-index', '1390')
             head.css('z-index', '1501')
             // add message
             const content = `
-                <div id="w2ui-message-${where.owner?.name}-${msgBase.msgIndex}" class="w2ui-message" data-mousedown="stop"
+                <div id="TsUi-message-${where.owner?.name}-${msgBase.msgIndex}" class="TsUi-message" data-mousedown="stop"
                     style="z-index: 1500; left: ${((pWidth - (msgBase.width ?? 0)) / 2)}px; top: ${titleHeight}px;
                         width: ${msgBase.width}px; height: ${msgBase.height}px; transform: translateY(-${msgBase.height}px)"
                     ${(msgBase.hideOn ?? []).includes('click')
@@ -1487,7 +1487,7 @@ class Utils {
                 query(where.box).prepend(content)
             }
             // any: DOM elements get _msg_options + _msg_prevFocus dynamic properties at open time
-            msgBase.box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
+            msgBase.box = query(where.box).find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
             TsUtils.bindEvents(msgBase.box, this as unknown as Record<string, unknown>)
             query(msgBase.box)
                 .addClass('animating')
@@ -1501,7 +1501,7 @@ class Utils {
                 edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('open', { target: (this as unknown as Record<string, unknown>)['name'], box: msgBase.box, self: msgBase })
                 const edataR = edata as Record<string, unknown>
                 if (edataR['isCancelled'] === true) {
-                    query(where.box).find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
+                    query(where.box).find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
                     if (msgBase.msgIndex === 0) {
                         head.css('z-index', msgBase.tmp!.zIndex)
                         query(where.box).css('overflow', msgBase.tmp!.overflow)
@@ -1518,7 +1518,7 @@ class Utils {
             openTimer = setTimeout(() => {
                 // has to be on top of lock
                 query(where.box)
-                    .find(`#w2ui-message-${where.owner?.name}-${msgBase.msgIndex}`)
+                    .find(`#TsUi-message-${where.owner?.name}-${msgBase.msgIndex}`)
                     .removeClass('animating')
                     .css({ 'transition': '0s' })
                 // event after
@@ -1553,22 +1553,22 @@ class Utils {
             }
             // default behavior
             query(msgBase.box)
-                .addClass('w2ui-closing animating')
+                .addClass('TsUi-closing animating')
                 .css({
                     'transition': '0.15s',
                     'transform': 'translateY(-' + msgBase.height + 'px)'
                 })
             if ((msgBase.msgIndex ?? 0) !== 0) {
                 // previous message
-                query(where.box).find(`#w2ui-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
+                query(where.box).find(`#TsUi-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
             }
             closeTimer = setTimeout(() => { closeComplete(msgOpts) }, 150)
         }
         msgBase.setFocus = (focus: number | string | null | undefined) => {
             // in message or popup
-            const cnt = query(where.box).find('.w2ui-message').length - 1
-            const box = query(where.box).find(`#w2ui-message-${where.owner?.name}-${cnt}`)
-            const sel = 'input, button, select, textarea, [contentEditable], .w2ui-input'
+            const cnt = query(where.box).find('.TsUi-message').length - 1
+            const box = query(where.box).find(`#TsUi-message-${where.owner?.name}-${cnt}`)
+            const sel = 'input, button, select, textarea, [contentEditable], .TsUi-input'
             if (focus != null) {
                 // any: parameter typed any — runtime dispatch by call site; TsUtils helper accepts heterogeneous runtime input
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1584,7 +1584,7 @@ class Utils {
 
             // clear focus if there are other messages
             query(where.box)
-                .find('.w2ui-message')
+                .find('.TsUi-message')
                 .find(sel + ',[name=hidden-first],[name=hidden-last]')
                 .off('.keep-focus')
 
@@ -1623,7 +1623,7 @@ class Utils {
 
     /**
      * Shows a prompt as a context message. It will use same where: { box: ... } as TsUtils.message() function
-     * but it will have options similar to w2prompt dialog
+     * but it will have options similar to TsPrompt dialog
      *
      * Example:
      *  - TsUtils.conrirm({
@@ -1657,7 +1657,7 @@ class Utils {
 
     /**
      * Shows a prompt as a context message. It will use same where: { box: ... } as TsUtils.message() function
-     * but it will have options similar to w2prompt dialog
+     * but it will have options similar to TsPrompt dialog
      *
      * Example:
      *  - TsUtils.prompt({
@@ -1682,14 +1682,14 @@ class Utils {
         if (msgOpts['label']) {
             msgOpts['focus'] = 0 // the input should be in focus, which is first in the popup
             msgOpts['body'] = (msgOpts['textarea']
-                ? `<div class="w2ui-prompt textarea">
+                ? `<div class="TsUi-prompt textarea">
                      <div>${msgOpts['label']}</div>
-                     <textarea id="w2prompt" class="w2ui-input" ${msgOpts['attrs'] ?? ''}
+                     <textarea id="TsPrompt" class="TsUi-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event"></textarea>
                    </div>`
-                : `<div class="w2ui-prompt w2ui-centered">
+                : `<div class="TsUi-prompt TsUi-centered">
                      <label>${msgOpts['label']}&nbsp;</label>
-                     <input id="w2prompt" class="w2ui-input" ${msgOpts['attrs'] ?? ''}
+                     <input id="TsPrompt" class="TsUi-input" ${msgOpts['attrs'] ?? ''}
                         data-keydown="keydown|event" data-keyup="change|event">
                    </div>`
             )
@@ -1710,9 +1710,9 @@ class Utils {
                 })
                 .then((event: unknown) => {
                     const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
-                    ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#w2prompt').get(0)
+                    ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#TsPrompt').get(0)
                     query(d?.['box'])
-                        .find('#w2prompt')
+                        .find('#TsPrompt')
                         // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         .on('keydown', (evt: any) => {
@@ -1815,7 +1815,7 @@ class Utils {
             opts['timeout'] ??= 15_000 // 15 seconds or will be hidden on route change
             if (typeof this.tmp['notify_resolve'] == 'function') {
                 ;(this.tmp['notify_resolve'] as () => void)()
-                query(this.tmp['notify_where']).find('#w2ui-notify').remove()
+                query(this.tmp['notify_where']).find('#TsUi-notify').remove()
             }
             this.tmp['notify_resolve'] = resolve
             this.tmp['notify_where'] = opts['where']
@@ -1824,35 +1824,35 @@ class Utils {
                 if (typeof opts['actions'] == 'object') {
                     const actions: Record<string, string> = {}
                     Object.keys(opts['actions'] as Record<string, unknown>).forEach(action => {
-                        actions[action] = `<a class="w2ui-notify-link" value="${action}">${action}</a>`
+                        actions[action] = `<a class="TsUi-notify-link" value="${action}">${action}</a>`
                     })
                     textStr = this.execTemplate(textStr, actions)
                 }
                 const html = `
-                    <div id="w2ui-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
-                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'w2ui-notify-error' : ''} ${opts['success'] ? 'w2ui-notify-success' : ''}">
+                    <div id="TsUi-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
+                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'TsUi-notify-error' : ''} ${opts['success'] ? 'TsUi-notify-success' : ''}">
                             ${textStr}
-                            <span class="w2ui-notify-close w2ui-icon-cross"></span>
+                            <span class="TsUi-notify-close TsUi-icon-cross"></span>
                         </div>
                     </div>`
                 query(opts['where']).append(html)
-                query(opts['where']).find('#w2ui-notify').find('.w2ui-notify-close')
+                query(opts['where']).find('#TsUi-notify').find('.TsUi-notify-close')
                     .on('click', _event => {
-                        query(opts['where']).find('#w2ui-notify').remove()
+                        query(opts['where']).find('#TsUi-notify').remove()
                         resolve()
                     })
                 if (opts['actions']) {
-                    query(opts['where']).find('#w2ui-notify .w2ui-notify-link')
+                    query(opts['where']).find('#TsUi-notify .TsUi-notify-link')
                         .on('click', event => {
                             const value = query((event as Event).target).attr('value') ?? ''
                             ;((opts['actions'] as Record<string, unknown>)[value] as () => void)()
-                            query(opts['where']).find('#w2ui-notify').remove()
+                            query(opts['where']).find('#TsUi-notify').remove()
                             resolve()
                         })
                 }
                 if ((opts['timeout'] as number) > 0) {
                     this.tmp['notify_timer'] = setTimeout(() => {
-                        query(opts['where']).find('#w2ui-notify').remove()
+                        query(opts['where']).find('#TsUi-notify').remove()
                         resolve()
                     }, opts['timeout'] as number)
                 }
@@ -1933,7 +1933,7 @@ class Utils {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     marker(el: any, items: any, options: any = { onlyFirst: false, wholeWord: false, isRegex: false}) {
         options.tag ??= 'span'
-        options.class ??= 'w2ui-marker'
+        options.class ??= 'TsUi-marker'
         // any: matched is the regex capture group — dynamic string from DOM text
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         options.raplace = (matched: any) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`
@@ -2226,8 +2226,8 @@ class Utils {
             console.log('ERROR: Property "name" is required but not supplied.')
             return false
         }
-        if (w2ui[name] != null) {
-            console.log(`ERROR: Object named "${name}" is already registered as w2ui.${name}.`)
+        if (TsUi[name] != null) {
+            console.log(`ERROR: Object named "${name}" is already registered as TsUi.${name}.`)
             return false
         }
         if (!this.isAlphaNumeric(name)) {
@@ -2890,4 +2890,4 @@ class Utils {
     }
 }
 var TsUtils = new Utils() // eslint-disable-line -- needs to be functional/module scope variable
-export { w2ui, TsUtils, query }
+export { TsUi, TsUtils, query }
