@@ -84,7 +84,7 @@ interface TsFormatterExtra {
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string
 
 /** Options for TsUtils.lock() */
-interface TsLockOptions {
+export interface TsLockOptions {
     msg?: string | number
     spinner?: boolean
     opacity?: number
@@ -100,7 +100,7 @@ interface TsTimeResult {
 }
 
 /** RGB(A) color as returned by TsUtils.parseColor() */
-interface TsColorRgb {
+export interface TsColorRgb {
     r: number
     g: number
     b: number
@@ -130,7 +130,7 @@ interface _W2ParsedRoute {
 }
 
 /** A normalized menu item */
-interface TsMenuItem {
+export interface TsMenuItem {
     id: string | number | null
     text: string
     caption?: string
@@ -147,7 +147,7 @@ interface TsNormMenuOptions {
 }
 
 /** Options for TsUtils.clone() */
-interface TsCloneOptions {
+export interface TsCloneOptions {
     functions?: boolean
     elements?: boolean
     events?: boolean
@@ -167,7 +167,7 @@ export interface TsMessageProm {
 }
 
 /** Where-descriptor for TsUtils.message() */
-interface TsMessageWhere {
+export interface TsMessageWhere {
     box: string | Element | null
     after?: string | Element | null
     owner?: { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void }
@@ -175,7 +175,7 @@ interface TsMessageWhere {
 }
 
 /** Options for TsUtils.message() */
-interface TsMessageOptions {
+export interface TsMessageOptions {
     width?: number
     height?: number
     text?: string | null

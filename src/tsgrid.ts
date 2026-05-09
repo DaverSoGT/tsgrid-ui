@@ -87,7 +87,7 @@ const TsTooltip = _w2tooltip as any // any: tooltip with flexible option shapes
 // ---------------------------------------------------------------------------
 
 /** A single data record stored in the grid */
-interface TsGridRecord {
+export interface TsGridRecord {
     recid: string | number
     TsUi?: {
         summary?: boolean
@@ -104,7 +104,7 @@ interface TsGridRecord {
 }
 
 /** Sort descriptor used in grid.sortData */
-interface TsGridSortData {
+export interface TsGridSortData {
     field: string
     direction: 'asc' | 'desc'
     field_?: string // any: runtime-computed cached field name for date/time render types (localSort internal)
@@ -138,7 +138,7 @@ interface TsGridFetch {
 }
 
 /** Column definition — T5.2 */
-interface TsGridColumn {
+export interface TsGridColumn {
     field: string
     text: string | ((col: TsGridColumn) => string)
     size?: string | number        // CSS size e.g. '100px' or '20%'
@@ -171,7 +171,7 @@ interface TsGridColumn {
 }
 
 /** Search field definition — T5.2 */
-interface TsGridSearch {
+export interface TsGridSearch {
     field: string
     label?: string
     caption?: string              // deprecated alias for label
@@ -249,20 +249,20 @@ export interface TsGridCellSelection {
 }
 
 /** Selection state — T5.4 */
-interface TsGridSelection {
+export interface TsGridSelection {
     indexes: number[]
     columns: Record<string | number, number[]>
 }
 
 /** Range endpoint (used in addRange / refreshRanges) */
-interface TsGridRangeEndpoint {
+export interface TsGridRangeEndpoint {
     recid: string | number
     column: number
     index?: number  // runtime index (added by refreshRanges)
 }
 
 /** Range descriptor for addRange / refreshRanges */
-interface TsGridRange {
+export interface TsGridRange {
     name: string
     range: TsGridRangeEndpoint[]  // [start, end] — 2-element in practice
     style?: string
@@ -288,7 +288,7 @@ interface TsGridSearchFilter {
 }
 
 /** GroupBy configuration object */
-interface TsGridGroupBy {
+export interface TsGridGroupBy {
     field: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [key: string]: any // any: user can attach extra groupBy metadata

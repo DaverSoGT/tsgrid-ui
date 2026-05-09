@@ -56,7 +56,7 @@ const TsTooltip = _w2tooltip as any // any: tooltip manager with .show()/.hide()
 // ---------------------------------------------------------------------------
 
 /** Shared numeric-field options (int, float, money, currency, percent, alphanumeric, bin, hex, text) */
-interface TsFieldNumericOptions {
+export interface TsFieldNumericOptions {
     type?: string
     min?: number | null
     max?: number | null
@@ -84,7 +84,7 @@ interface TsFieldNumericOptions {
 }
 
 /** Color-field options */
-interface TsFieldColorOptions {
+export interface TsFieldColorOptions {
     type?: string
     prefix?: string
     suffix?: string
@@ -96,7 +96,7 @@ interface TsFieldColorOptions {
 }
 
 /** Date-field options */
-interface TsFieldDateOptions {
+export interface TsFieldDateOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -112,7 +112,7 @@ interface TsFieldDateOptions {
 }
 
 /** Time-field options */
-interface TsFieldTimeOptions {
+export interface TsFieldTimeOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -126,7 +126,7 @@ interface TsFieldTimeOptions {
 }
 
 /** DateTime-field options */
-interface TsFieldDateTimeOptions {
+export interface TsFieldDateTimeOptions {
     type?: string
     format?: string
     keyboard?: boolean
@@ -145,7 +145,7 @@ interface TsFieldDateTimeOptions {
 }
 
 /** List/combo-field options */
-interface TsFieldListOptions {
+export interface TsFieldListOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
@@ -198,7 +198,7 @@ interface TsFieldListOptions {
 }
 
 /** Enum-field options */
-interface TsFieldEnumOptions {
+export interface TsFieldEnumOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     items?: any[] // any: items can be strings, objects, or a function
@@ -264,7 +264,7 @@ interface TsFieldEnumOptions {
 }
 
 /** File-field options */
-interface TsFieldFileOptions {
+export interface TsFieldFileOptions {
     type?: string
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     selected?: any[] // any: array of file objects
@@ -296,7 +296,7 @@ interface TsFieldFileOptions {
 }
 
 /** Discriminated union: all possible options for a TsField instance */
-type TsFieldOptions =
+export type TsFieldOptions =
     | TsFieldNumericOptions
     | TsFieldColorOptions
     | TsFieldDateOptions
@@ -375,7 +375,7 @@ declare global {
 }
 
 // TsField only supports INPUT and TEXTAREA elements (validated in init())
-type TsFieldElement = HTMLInputElement | HTMLTextAreaElement
+export type TsFieldElement = HTMLInputElement | HTMLTextAreaElement
 
 class TsField extends TsBase {
     el: TsFieldElement | null

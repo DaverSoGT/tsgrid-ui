@@ -65,6 +65,19 @@ var TsEvent = class {
     this.isStopped = true;
   }
 };
+function toSafeEvent(event2) {
+  if (typeof event2 !== "object" || event2 === null) {
+    return { type: null, phase: "before", detail: {}, isStopped: false, isCancelled: false };
+  }
+  const ev = event2;
+  return {
+    type: typeof ev["type"] === "string" ? ev["type"] : null,
+    phase: typeof ev["phase"] === "string" ? ev["phase"] : "before",
+    detail: ev["detail"] ?? {},
+    isStopped: ev["isStopped"] === true,
+    isCancelled: ev["isCancelled"] === true
+  };
+}
 var TsBase = class {
   activeEvents = [];
   listeners = [];
@@ -24232,5 +24245,6 @@ export {
   TsTooltip,
   TsUi,
   TsUtils,
-  query
+  query,
+  toSafeEvent
 };

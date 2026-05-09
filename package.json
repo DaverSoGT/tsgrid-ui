@@ -1,6 +1,10 @@
 {
   "name": "tsgrid-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
+  "sideEffects": [
+    "./dist/tsgrid-ui.css",
+    "./dist/tsgrid-ui.min.css"
+  ],
   "title": "TsGrid UI: TypeScript-native UI component library",
   "description": "TypeScript-native UI components: data grid, forms, fields, layout, sidebar, tabs, toolbar, popup, tooltip. ESM + CJS dual bundle, .d.ts rollup, zero runtime dependencies.",
   "license": "MIT",

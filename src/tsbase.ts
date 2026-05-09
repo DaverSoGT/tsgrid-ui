@@ -16,7 +16,36 @@ import { TsUtils, query, TsUi } from './tsutils.js'
 // hoisted-undefined, and widget registration silently writes to undefined.
 // Always read TsUi at call time inside class methods (post-init).
 
-interface TsEventData {
+/**
+ * Payload object passed to handlers registered via `.on(eventName, handler)`.
+ *
+ * IMPORTANT — circular references:
+ *   `event.owner` points back to the widget that triggered the event, and that
+ *   widget keeps `activeEvents: TsEvent[]` referencing this same payload.
+ *   Calling `JSON.stringify(event)` will throw "Converting circular structure
+ *   to JSON". Use `toSafeEvent(event)` from `tsgrid-ui` to extract a
+ *   serializable subset before storing in reactive state (Angular signals,
+ *   React state, Pinia/Redux stores, etc.).
+ *
+ * Note: the per-class declarations like `onSelect: (event: CustomEvent) => void`
+ * in TsGrid/TsForm/etc. are historical noise — the runtime always passes a
+ * `TsEventPayload`, never a DOM `CustomEvent`. This will be corrected in v2.0.
+ */
+export interface TsEventPayload<TDetail = unknown> {
+    type: string | null
+    phase: 'before' | 'after' | string
+    detail: TDetail & TsEventData
+    target: unknown
+    object: unknown
+    isStopped: boolean
+    isCancelled: boolean
+    /** Reference to the widget that triggered this event. CIRCULAR — do not serialize. */
+    owner: unknown
+    /** @internal — Promise resolved when listeners settle; do not depend on shape. */
+    complete?: Promise<unknown>
+}
+
+export interface TsEventData {
     type?: string | null
     target?: unknown
     phase?: string
@@ -97,6 +126,37 @@ class TsEvent {
 
     stopPropagation(): void {
         this.isStopped = true
+    }
+}
+
+/**
+ * Extract a JSON-serializable subset of a TsEvent payload, dropping the
+ * circular `owner` and `complete` references. Use before storing in
+ * Angular signals, React state, Pinia/Redux stores, or any DevTools that
+ * snapshots state via JSON.
+ *
+ * @example
+ *   grid.on('select', (event) => {
+ *     this.lastSelection.set(toSafeEvent(event))
+ *   })
+ */
+export function toSafeEvent<TDetail = unknown>(event: unknown): {
+    type: string | null
+    phase: string
+    detail: TDetail & TsEventData
+    isStopped: boolean
+    isCancelled: boolean
+} {
+    if (typeof event !== 'object' || event === null) {
+        return { type: null, phase: 'before', detail: {} as TDetail & TsEventData, isStopped: false, isCancelled: false }
+    }
+    const ev = event as Record<string, unknown>
+    return {
+        type: typeof ev['type'] === 'string' ? (ev['type'] as string) : null,
+        phase: typeof ev['phase'] === 'string' ? (ev['phase'] as string) : 'before',
+        detail: (ev['detail'] ?? {}) as TDetail & TsEventData,
+        isStopped: ev['isStopped'] === true,
+        isCancelled: ev['isCancelled'] === true,
     }
 }
 
@@ -374,4 +434,4 @@ class TsBase {
     }
 }
 export { TsEvent, TsBase }
-export type { TsEventData, TsEventListener }
+export type { TsEventListener }

@@ -36,12 +36,12 @@ const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 // ---------------------------------------------------------------------------
 
 /** Options accepted by refresh() */
-interface TsSidebarRefreshOptions {
+export interface TsSidebarRefreshOptions {
     recursive?: boolean
 }
 
 /** Options accepted by update() — mirrors node property names that can be updated in-place */
-interface TsSidebarUpdateOptions {
+export interface TsSidebarUpdateOptions {
     icon?: string | ((nd: unknown, level: number) => string) | null
     class?: string | null
     style?: string | null
@@ -51,21 +51,21 @@ interface TsSidebarUpdateOptions {
 }
 
 /** Options accepted by setCount() */
-interface TsSidebarSetCountOptions {
+export interface TsSidebarSetCountOptions {
     className?: string
     style?: string
     noRepeat?: boolean
 }
 
 /** Options for find() */
-interface TsSidebarFindOptions {
+export interface TsSidebarFindOptions {
     returnDisabled?: boolean
     returnGroups?: boolean
     [key: string]: unknown
 }
 
 /** Options for sort() */
-interface TsSidebarSortOptions {
+export interface TsSidebarSortOptions {
     foldersFirst?: boolean
     caseSensitive?: boolean
     reverse?: boolean

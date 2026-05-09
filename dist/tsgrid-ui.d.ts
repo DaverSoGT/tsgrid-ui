@@ -8,6 +8,34 @@
  * - added unmount that cleans up the box
  *
  */
+/**
+ * Payload object passed to handlers registered via `.on(eventName, handler)`.
+ *
+ * IMPORTANT — circular references:
+ *   `event.owner` points back to the widget that triggered the event, and that
+ *   widget keeps `activeEvents: TsEvent[]` referencing this same payload.
+ *   Calling `JSON.stringify(event)` will throw "Converting circular structure
+ *   to JSON". Use `toSafeEvent(event)` from `tsgrid-ui` to extract a
+ *   serializable subset before storing in reactive state (Angular signals,
+ *   React state, Pinia/Redux stores, etc.).
+ *
+ * Note: the per-class declarations like `onSelect: (event: CustomEvent) => void`
+ * in TsGrid/TsForm/etc. are historical noise — the runtime always passes a
+ * `TsEventPayload`, never a DOM `CustomEvent`. This will be corrected in v2.0.
+ */
+interface TsEventPayload<TDetail = unknown> {
+    type: string | null;
+    phase: 'before' | 'after' | string;
+    detail: TDetail & TsEventData;
+    target: unknown;
+    object: unknown;
+    isStopped: boolean;
+    isCancelled: boolean;
+    /** Reference to the widget that triggered this event. CIRCULAR — do not serialize. */
+    owner: unknown;
+    /** @internal — Promise resolved when listeners settle; do not depend on shape. */
+    complete?: Promise<unknown>;
+}
 interface TsEventData {
     type?: string | null;
     target?: unknown;
@@ -48,6 +76,24 @@ declare class TsEvent {
     preventDefault(): void;
     stopPropagation(): void;
 }
+/**
+ * Extract a JSON-serializable subset of a TsEvent payload, dropping the
+ * circular `owner` and `complete` references. Use before storing in
+ * Angular signals, React state, Pinia/Redux stores, or any DevTools that
+ * snapshots state via JSON.
+ *
+ * @example
+ *   grid.on('select', (event) => {
+ *     this.lastSelection.set(toSafeEvent(event))
+ *   })
+ */
+declare function toSafeEvent<TDetail = unknown>(event: unknown): {
+    type: string | null;
+    phase: string;
+    detail: TDetail & TsEventData;
+    isStopped: boolean;
+    isCancelled: boolean;
+};
 declare class TsBase {
     activeEvents: TsEvent[];
     listeners: TsEventListener[];
@@ -2429,4 +2475,4 @@ declare class TsField extends TsBase {
     moveCaret2end(): void;
 }
 
-export { Tooltip, TsAlert, TsBase, TsColor, TsConfirm, TsDate, TsDialog, TsEvent, TsField, TsForm, TsGrid, TsLayout, TsLocale, TsMenu, TsPopup, TsPrompt, TsSidebar, TsTabs, TsToolbar, TsTooltip, TsUi, TsUtils, query };
+export { type RecId, Tooltip, TsAlert, TsBase, type TsCloneOptions, TsColor, type TsColorRgb, TsConfirm, TsDate, TsDialog, TsEvent, type TsEventData, type TsEventPayload, TsField, type TsFieldColorOptions, type TsFieldDateOptions, type TsFieldDateTimeOptions, type TsFieldElement, type TsFieldEnumOptions, type TsFieldFileOptions, type TsFieldListOptions, type TsFieldNumericOptions, type TsFieldOptions, type TsFieldTimeOptions, TsForm, TsGrid, type TsGridCellSelection, type TsGridColumn, type TsGridGroupBy, type TsGridRange, type TsGridRangeEndpoint, type TsGridRecord, type TsGridSearch, type TsGridSelection, type TsGridSortData, TsLayout, type TsLayoutPanel, TsLocale, type TsLocaleSettings, type TsLockOptions, TsMenu, type TsMenuItem, type TsMessageOptions, type TsMessageProm, type TsMessageWhere, type TsPanelContent, type TsPanelType, TsPopup, TsPrompt, TsSidebar, type TsSidebarFindOptions, type TsSidebarRefreshOptions, type TsSidebarSetCountOptions, type TsSidebarSortOptions, type TsSidebarUpdateOptions, TsTabs, TsToolbar, TsTooltip, TsUi, TsUtils, query, toSafeEvent };

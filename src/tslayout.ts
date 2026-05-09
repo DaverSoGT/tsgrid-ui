@@ -35,15 +35,15 @@ const _TsUiRegistry = (): Record<string, any> => TsUi as Record<string, any>
 // ---------------------------------------------------------------------------
 
 /** Valid panel type names in a layout */
-type TsPanelType = 'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'
+export type TsPanelType = 'top' | 'left' | 'main' | 'preview' | 'right' | 'bottom'
 
 /** Content that can be placed in a layout panel */
-type TsPanelContent =
+export type TsPanelContent =
     | string
     | { render: (box?: HTMLElement) => void; unmount?: () => void; box?: HTMLElement | null; [key: string]: unknown }
 
 /** Individual panel configuration and runtime state */
-interface TsLayoutPanel {
+export interface TsLayoutPanel {
     type: TsPanelType | null
     title: string
     size: number | string
