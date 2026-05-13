@@ -1,6 +1,6 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css"
@@ -47,7 +47,8 @@
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
-    "MIGRATION-FROM-W2UI.md"
+    "MIGRATION-FROM-W2UI.md",
+    "MIGRATION_v2.md"
   ],
   "scripts": {
     "start": "run-script-os",

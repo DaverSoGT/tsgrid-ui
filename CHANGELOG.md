@@ -2,6 +2,12 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.0.1 — 2026-05-13
+
+### Fixed
+
+- **`MIGRATION_v2.md` now included in the published npm tarball.** v2.0.0 omitted this file from `package.json` `files`, so `CHANGELOG.md` and `README.md` links pointing to `MIGRATION_v2.md` (codemod, bundle measurement, release checklist) broke on npmjs.com. No source code changes — package metadata only.
+
 ## v2.0.0 — 2026-05-09
 
 ### Breaking changes
