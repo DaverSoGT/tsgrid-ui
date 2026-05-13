@@ -463,3 +463,12 @@ describe('TsUtils.colorContrast', () => {
         expect(parseFloat(ratio)).toBe(1)
     })
 })
+
+describe('TsUtils.isBin', () => {
+    it('returns true for binary strings', () => {
+        expect(TsUtils.isBin('1010')).toBe(true)
+    })
+    it('returns false for non-binary strings', () => {
+        expect(TsUtils.isBin('102')).toBe(false)
+    })
+})

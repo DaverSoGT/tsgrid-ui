@@ -34,6 +34,7 @@
 import { TsBase } from './tsbase.js'
 import { TsLocale } from './tslocale.js'
 import { query as _query, Query } from './query.js'
+import { isInt as _isInt, isHex as _isHex, isAlphaNumeric as _isAlphaNumeric, isEmail as _isEmail, isIpAddress as _isIpAddress, isPlainObject as _isPlainObject, isBin as _isBin, isFloat as _isFloat, isMoney as _isMoney } from './tsutils-type-guards.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -47,7 +48,7 @@ const TsUi: Record<string, unknown> = {}
 // ---------------------------------------------------------------------------
 
 /** Settings object merged from TsLocale + user locale overrides */
-interface TsUISettings {
+export interface TsUISettings {
     dataType: string
     dateFormat: string
     timeFormat: string
@@ -395,59 +396,21 @@ class Utils {
         }
     }
 
-    isBin(val: unknown): boolean {
-        const re = /^[0-1]+$/
-        return re.test(String(val))
-    }
+    isBin(val: unknown): boolean { return _isBin(val) }
 
-    isInt(val: unknown): boolean {
-        const re = /^[-+]?[0-9]+$/
-        return re.test(String(val))
-    }
+    isInt(val: unknown): boolean { return _isInt(val) }
 
-    isFloat(val: unknown): boolean {
-        if (typeof val === 'string') {
-            val = val.replace(new RegExp(this.settings.groupSymbol, 'g'), '')
-                .replace(this.settings.decimalSymbol, '.')
-        }
-        return (typeof val === 'number' || (typeof val === 'string' && val !== '')) && !isNaN(Number(val))
-    }
+    isFloat(val: unknown): boolean { return _isFloat(val, this.settings) }
 
-    isMoney(val: unknown): boolean {
-        if (typeof val === 'object' || val === '') return false
-        if (this.isFloat(val)) return true
-        const se = this.settings
-        const re = new RegExp('^'+ (se.currencyPrefix ? '\\' + se.currencyPrefix + '?' : '') +
-                            '[-+]?'+ (se.currencyPrefix ? '\\' + se.currencyPrefix + '?' : '') +
-                            '[0-9]*[\\'+ se.decimalSymbol +']?[0-9]+'+ (se.currencySuffix ? '\\' + se.currencySuffix + '?' : '') +'$', 'i')
-        if (typeof val === 'string') {
-            val = val.replace(new RegExp(se.groupSymbol, 'g'), '')
-        }
-        return re.test(String(val))
-    }
+    isMoney(val: unknown): boolean { return _isMoney(val, this.settings) }
 
-    isHex(val: unknown): boolean {
-        const re = /^(0x)?[0-9a-fA-F]+$/
-        return re.test(String(val))
-    }
+    isHex(val: unknown): boolean { return _isHex(val) }
 
-    isAlphaNumeric(val: unknown): boolean {
-        const re = /^[a-zA-Z0-9_-]+$/
-        return re.test(String(val))
-    }
+    isAlphaNumeric(val: unknown): boolean { return _isAlphaNumeric(val) }
 
-    isEmail(val: unknown): boolean {
-        const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/
-        return email.test(String(val))
-    }
+    isEmail(val: unknown): boolean { return _isEmail(val) }
 
-    isIpAddress(val: unknown): boolean {
-        const re = new RegExp('^' +
-            '((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}' +
-            '(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' +
-            '$')
-        return re.test(String(val))
-    }
+    isIpAddress(val: unknown): boolean { return _isIpAddress(val) }
 
     isDate(val: unknown, format?: string | null, retDate?: boolean): boolean | Date {
         if (!val) return false
@@ -2515,19 +2478,7 @@ class Utils {
     }
 
     // determins if it is plain Object, not DOM element, nor a function, event, etc.
-    isPlainObject(value: unknown): boolean {
-        if (value == null) { // null or undefined
-            return false
-        }
-        if (Object.prototype.toString.call(value) !== '[object Object]') {
-            return false
-        }
-        if (value.constructor === undefined) {
-            return true
-        }
-        const proto = Object.getPrototypeOf(value)
-        return proto === null || proto === Object.prototype
-    }
+    isPlainObject(value: unknown): boolean { return _isPlainObject(value) }
 
     /**
      * Deep copy of an object or an array. Function, events and HTML elements will not be cloned,
