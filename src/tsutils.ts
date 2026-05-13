@@ -37,6 +37,8 @@ import { query as _query, Query } from './query.js'
 import { isInt as _isInt, isHex as _isHex, isAlphaNumeric as _isAlphaNumeric, isEmail as _isEmail, isIpAddress as _isIpAddress, isPlainObject as _isPlainObject, isBin as _isBin, isFloat as _isFloat, isMoney as _isMoney } from './tsutils-type-guards.js'
 import { parseColor as _parseColor, colorContrast as _colorContrast, hsv2rgb as _hsv2rgb, rgb2hsv as _rgb2hsv } from './tsutils-color.js'
 import type { TsColorRgb } from './tsutils-color.js'
+import { clone as _clone, extend as _extend } from './tsutils-data.js'
+import type { TsCloneOptions } from './tsutils-data.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -105,6 +107,9 @@ interface TsTimeResult {
 /** RGB(A) color as returned by TsUtils.parseColor() — defined in tsutils-color, re-exported here for barrel compatibility */
 export type { TsColorRgb } from './tsutils-color.js'
 
+/** Options for TsUtils.clone() — defined in tsutils-data, re-exported here for barrel compatibility */
+export type { TsCloneOptions } from './tsutils-data.js'
+
 /** Options for TsUtils.marker() */
 interface _W2MarkerOptions {
     onlyFirst?: boolean
@@ -142,15 +147,6 @@ export interface TsMenuItem {
 interface TsNormMenuOptions {
     itemMap?: { id: string; text: string }
     [key: string]: unknown
-}
-
-/** Options for TsUtils.clone() */
-export interface TsCloneOptions {
-    functions?: boolean
-    elements?: boolean
-    events?: boolean
-    exclude?: string[] | ((key: string, ctx: { obj: unknown; parent: string }) => boolean)
-    parent?: string
 }
 
 /** Promise-chain handle returned by TsUtils.message() / .confirm() / .prompt() */
@@ -2372,92 +2368,14 @@ class Utils {
      */
     // any: return type any — caller narrows by code path; TsUtils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    clone(obj: unknown, options?: Partial<TsCloneOptions>): any {
-        const opts: Required<TsCloneOptions> = Object.assign({ functions: true, elements: true, events: true, exclude: [] as TsCloneOptions['exclude'], parent: '' }, options ?? {}) as Required<TsCloneOptions>
-        if (Array.isArray(obj)) {
-            const arr: unknown[] = Array.from(obj)
-            arr.forEach((value, ind) => {
-                arr[ind] = this.clone(value, { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: (opts.parent) + '[]' })
-            })
-            return arr
-        } else if (this.isPlainObject(obj)) {
-            const ret: Record<string, unknown> = {}
-            Object.assign(ret, obj)
-            // delete excluded keys
-            if (Array.isArray(opts.exclude)) {
-                opts.exclude.forEach((key: string) => { delete ret[key] })
-            }
-            Object.keys(ret).forEach(key => {
-                if (typeof opts.exclude == 'function' && opts.exclude(key, { obj, parent: opts.parent })) {
-                    ret[key] = undefined
-                } else {
-                    ret[key] = this.clone(ret[key], { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + (opts.parent ? '.' : '') + key })
-                }
-                if (ret[key] === undefined) delete ret[key] // do not include undefined elements
-            })
-            return ret
-        } else {
-            if ((obj instanceof Function && !opts.functions)
-                    || (obj instanceof Node && !opts.elements)
-                    || (obj instanceof Event && !opts.events)
-            ) {
-                // do not include these objects, otherwise include them uncloned
-                return undefined
-            } else {
-                // primitive variable or function, event, dom element, etc, -  all these are not cloned
-                return obj
-            }
-        }
-    }
+    clone(obj: unknown, options?: Partial<TsCloneOptions>): any { return _clone(obj, options) }
 
     /**
      * Deep extend an object, if an array, it overwrrites it, cloning objects in the process
      * target, source1, source2, ...
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    extend(target: any, source: any, ...rest: unknown[]): any { // any: generic deep-extend; arbitrary object shapes at runtime
-        if (Array.isArray(target)) {
-            if (Array.isArray(source)) {
-                target.splice(0, target.length) // empty array but keep the reference
-                source.forEach(s => { target.push(this.clone(s)) })
-            } else {
-                throw new Error('Arrays can be extended with arrays only')
-            }
-        } else if (target instanceof Node || target instanceof Event) {
-            throw new Error('HTML elmenents and events cannot be extended')
-        } else if (target && typeof target == 'object' && source != null) {
-            if (typeof source != 'object') {
-                throw new Error('Object can be extended with other objects only.')
-            }
-            Object.keys(source).forEach(key => {
-                if (target[key] != null && typeof target[key] == 'object'
-                        && source[key] != null && typeof source[key] == 'object') {
-                    const src = this.clone(source[key])
-                    // do not extend HTML elements and events, but overwrite them
-                    if (target[key] instanceof Node || target[key] instanceof Event) {
-                        target[key] = src
-                    } else {
-                        // if an array needs to be extended with an object, then convert it to empty object
-                        if (Array.isArray(target[key]) && this.isPlainObject(src)) {
-                            target[key] = {}
-                        }
-                        this.extend(target[key], src)
-                    }
-                } else {
-                    target[key] = this.clone(source[key])
-                }
-            })
-        } else if (source != null) {
-            throw new Error('Object is not extendable, only {} or [] can be extended.')
-        }
-        // other arguments
-        if (rest.length > 0) {
-            for (let i = 0; i < rest.length; i++) {
-                this.extend(target, rest[i])
-            }
-        }
-        return target
-    }
+    extend(target: any, source: any, ...rest: unknown[]): any { return _extend(target, source, ...rest) } // any: generic deep-extend; arbitrary object shapes at runtime
 
     /*
      * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
