@@ -516,3 +516,18 @@ describe('TsUtils.normMenu', () => {
         expect(result[0]).toMatchObject({ id: '1', text: 'Foo' })
     })
 })
+
+describe('TsUtils.decodeTags', () => {
+    it('decodes basic HTML entities', () => {
+        // Test the round-trip with encodeTags
+        const original = '<b>hi</b>'
+        const encoded = TsUtils.encodeTags(original)
+        expect(TsUtils.decodeTags(encoded)).toBe(original)
+    })
+})
+
+describe('TsUtils.execTemplate', () => {
+    it('substitutes named placeholders', () => {
+        expect(TsUtils.execTemplate('Hello ${name}', { name: 'World' })).toBe('Hello World')
+    })
+})
