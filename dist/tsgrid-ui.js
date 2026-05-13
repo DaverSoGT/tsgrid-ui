@@ -1,4 +1,4 @@
-/* tsgrid-ui 1.0.x (nightly) (5/9/2026, 12:14:26 PM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 1.0.x (nightly) (5/13/2026, 3:29:14 PM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -572,26 +572,26 @@ var Query = class _Query {
     if (len < 1) return this;
     if (typeof html == "string") {
       this.each((node) => {
-        const clone = _Query._fragment(html);
-        nodes.push(...clone.childNodes);
-        node[method]?.(clone);
+        const clone2 = _Query._fragment(html);
+        nodes.push(...clone2.childNodes);
+        node[method]?.(clone2);
       });
     } else if (html instanceof _Query) {
       const single = len == 1;
       html.each((el) => {
         this.each((node) => {
-          const clone = single ? el : el.cloneNode(true);
-          nodes.push(clone);
-          node[method]?.(clone);
-          _Query._scriptConvert(clone);
+          const clone2 = single ? el : el.cloneNode(true);
+          nodes.push(clone2);
+          node[method]?.(clone2);
+          _Query._scriptConvert(clone2);
         });
       });
       if (!single) html.remove();
     } else if (html instanceof Node) {
       this.each((node) => {
-        const clone = len === 1 ? html : _Query._fragment(html.outerHTML);
-        nodes.push(...len === 1 ? [html] : clone.childNodes);
-        node[method]?.(clone);
+        const clone2 = len === 1 ? html : _Query._fragment(html.outerHTML);
+        nodes.push(...len === 1 ? [html] : clone2.childNodes);
+        node[method]?.(clone2);
       });
       if (len > 1) html.remove();
     } else {
@@ -1078,6 +1078,748 @@ query2.html = (str) => {
 };
 query2.version = Query.version;
 
+// src/tsutils-type-guards.ts
+function isBin(val) {
+  const re = /^[0-1]+$/;
+  return re.test(String(val));
+}
+function isInt(val) {
+  const re = /^[-+]?[0-9]+$/;
+  return re.test(String(val));
+}
+function isFloat(val, settings) {
+  if (typeof val === "string") {
+    val = val.replace(new RegExp(settings.groupSymbol, "g"), "").replace(settings.decimalSymbol, ".");
+  }
+  return (typeof val === "number" || typeof val === "string" && val !== "") && !isNaN(Number(val));
+}
+function isMoney(val, settings) {
+  if (typeof val === "object" || val === "") return false;
+  if (isFloat(val, settings)) return true;
+  const se = settings;
+  const re = new RegExp("^" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[-+]?" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[0-9]*[\\" + se.decimalSymbol + "]?[0-9]+" + (se.currencySuffix ? "\\" + se.currencySuffix + "?" : "") + "$", "i");
+  if (typeof val === "string") {
+    val = val.replace(new RegExp(se.groupSymbol, "g"), "");
+  }
+  return re.test(String(val));
+}
+function isHex(val) {
+  const re = /^(0x)?[0-9a-fA-F]+$/;
+  return re.test(String(val));
+}
+function isAlphaNumeric(val) {
+  const re = /^[a-zA-Z0-9_-]+$/;
+  return re.test(String(val));
+}
+function isEmail(val) {
+  const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/;
+  return email.test(String(val));
+}
+function isIpAddress(val) {
+  const re = new RegExp("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
+  return re.test(String(val));
+}
+function isPlainObject(value) {
+  if (value == null) {
+    return false;
+  }
+  if (Object.prototype.toString.call(value) !== "[object Object]") {
+    return false;
+  }
+  if (value.constructor === void 0) {
+    return true;
+  }
+  const proto = Object.getPrototypeOf(value);
+  return proto === null || proto === Object.prototype;
+}
+
+// src/tsutils-color.ts
+function parseColor(str) {
+  if (typeof str !== "string") return null;
+  else str = str.trim().toUpperCase();
+  if (str[0] === "#") str = str.substr(1);
+  let color = { r: 0, g: 0, b: 0, a: 1 };
+  if (str.length === 3) {
+    const s0 = str[0] ?? "0", s1 = str[1] ?? "0", s2 = str[2] ?? "0";
+    color = {
+      r: parseInt(s0 + s0, 16),
+      g: parseInt(s1 + s1, 16),
+      b: parseInt(s2 + s2, 16),
+      a: 1
+    };
+  } else if (str.length === 6) {
+    color = {
+      r: parseInt(str.substr(0, 2), 16),
+      g: parseInt(str.substr(2, 2), 16),
+      b: parseInt(str.substr(4, 2), 16),
+      a: 1
+    };
+  } else if (str.length === 8) {
+    color = {
+      r: parseInt(str.substr(0, 2), 16),
+      g: parseInt(str.substr(2, 2), 16),
+      b: parseInt(str.substr(4, 2), 16),
+      a: Math.round(parseInt(str.substr(6, 2), 16) / 255 * 100) / 100
+      // alpha channel 0-1
+    };
+  } else if (str.length > 4 && str.substr(0, 4) === "RGB(") {
+    const tmp = str.replace("RGB", "").replace(/\(/g, "").replace(/\)/g, "").split(",");
+    color = {
+      r: parseInt(tmp[0] ?? "0", 10),
+      g: parseInt(tmp[1] ?? "0", 10),
+      b: parseInt(tmp[2] ?? "0", 10),
+      a: 1
+    };
+  } else if (str.length > 5 && str.substr(0, 5) === "RGBA(") {
+    const tmp = str.replace("RGBA", "").replace(/\(/g, "").replace(/\)/g, "").split(",");
+    color = {
+      r: parseInt(tmp[0] ?? "0", 10),
+      g: parseInt(tmp[1] ?? "0", 10),
+      b: parseInt(tmp[2] ?? "0", 10),
+      a: parseFloat(tmp[3] ?? "1")
+    };
+  } else {
+    return null;
+  }
+  return color;
+}
+function colorContrast(color1, color2) {
+  const lum1 = calcLumens(color1);
+  const lum2 = calcLumens(color2);
+  const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
+  return ratio.toFixed(2);
+  function calcLumens(color) {
+    const { r, g, b } = parseColor(color) ?? { r: 0, g: 0, b: 0, a: 1 };
+    const gamma = 2.2;
+    const normR = r / 255;
+    const normG = g / 255;
+    const normB = b / 255;
+    const sR = normR <= 0.03928 ? normR / 12.92 : Math.pow((normR + 0.055) / 1.055, gamma);
+    const sG = normG <= 0.03928 ? normG / 12.92 : Math.pow((normG + 0.055) / 1.055, gamma);
+    const sB = normB <= 0.03928 ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma);
+    return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
+  }
+}
+function hsv2rgb(h, s, v, a) {
+  let r, g, b;
+  if (typeof h === "object" && h !== null) {
+    s = h.s;
+    v = h.v;
+    a = h.a;
+    h = h.h;
+  }
+  h = h / 360;
+  s = s / 100;
+  v = v / 100;
+  const i = Math.floor(h * 6);
+  const f = h * 6 - i;
+  const p = v * (1 - s);
+  const q = v * (1 - f * s);
+  const t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+    case 0:
+      r = v, g = t, b = p;
+      break;
+    case 1:
+      r = q, g = v, b = p;
+      break;
+    case 2:
+      r = p, g = v, b = t;
+      break;
+    case 3:
+      r = p, g = q, b = v;
+      break;
+    case 4:
+      r = t, g = p, b = v;
+      break;
+    case 5:
+      r = v, g = p, b = q;
+      break;
+  }
+  return {
+    r: Math.round((r ?? 0) * 255),
+    g: Math.round((g ?? 0) * 255),
+    b: Math.round((b ?? 0) * 255),
+    a: a != null ? a : 1
+  };
+}
+function rgb2hsv(r, g, b, a) {
+  if (typeof r === "object" && r !== null) {
+    g = r.g;
+    b = r.b;
+    a = r.a;
+    r = r.r;
+  }
+  const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+  let h;
+  const s = max === 0 ? 0 : d / max, v = max / 255;
+  switch (max) {
+    case min:
+      h = 0;
+      break;
+    case r:
+      h = g - b + d * (g < b ? 6 : 0);
+      h /= 6 * d;
+      break;
+    case g:
+      h = b - r + d * 2;
+      h /= 6 * d;
+      break;
+    case b:
+      h = r - g + d * 4;
+      h /= 6 * d;
+      break;
+  }
+  return {
+    h: Math.round((h ?? 0) * 360),
+    s: Math.round(s * 100),
+    v: Math.round(v * 100),
+    a: a != null ? a : 1
+  };
+}
+
+// src/tsutils-data.ts
+function clone(obj, options) {
+  const opts = Object.assign(
+    { functions: true, elements: true, events: true, exclude: [], parent: "" },
+    options ?? {}
+  );
+  if (Array.isArray(obj)) {
+    const arr = Array.from(obj);
+    arr.forEach((value, ind) => {
+      arr[ind] = clone(value, { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + "[]" });
+    });
+    return arr;
+  } else if (isPlainObject(obj)) {
+    const ret = {};
+    Object.assign(ret, obj);
+    if (Array.isArray(opts.exclude)) {
+      opts.exclude.forEach((key) => {
+        delete ret[key];
+      });
+    }
+    Object.keys(ret).forEach((key) => {
+      if (typeof opts.exclude == "function" && opts.exclude(key, { obj, parent: opts.parent })) {
+        ret[key] = void 0;
+      } else {
+        ret[key] = clone(ret[key], { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + (opts.parent ? "." : "") + key });
+      }
+      if (ret[key] === void 0) delete ret[key];
+    });
+    return ret;
+  } else {
+    if (obj instanceof Function && !opts.functions || obj instanceof Node && !opts.elements || obj instanceof Event && !opts.events) {
+      return void 0;
+    } else {
+      return obj;
+    }
+  }
+}
+function extend(target, source, ...rest) {
+  if (Array.isArray(target)) {
+    if (Array.isArray(source)) {
+      target.splice(0, target.length);
+      source.forEach((s) => {
+        target.push(clone(s));
+      });
+    } else {
+      throw new Error("Arrays can be extended with arrays only");
+    }
+  } else if (target instanceof Node || target instanceof Event) {
+    throw new Error("HTML elmenents and events cannot be extended");
+  } else if (target && typeof target == "object" && source != null) {
+    if (typeof source != "object") {
+      throw new Error("Object can be extended with other objects only.");
+    }
+    Object.keys(source).forEach((key) => {
+      if (target[key] != null && typeof target[key] == "object" && source[key] != null && typeof source[key] == "object") {
+        const src = clone(source[key]);
+        if (target[key] instanceof Node || target[key] instanceof Event) {
+          target[key] = src;
+        } else {
+          if (Array.isArray(target[key]) && isPlainObject(src)) {
+            target[key] = {};
+          }
+          extend(target[key], src);
+        }
+      } else {
+        target[key] = clone(source[key]);
+      }
+    });
+  } else if (source != null) {
+    throw new Error("Object is not extendable, only {} or [] can be extended.");
+  }
+  if (rest.length > 0) {
+    for (let i = 0; i < rest.length; i++) {
+      extend(target, rest[i]);
+    }
+  }
+  return target;
+}
+function naturalCompare(a, b) {
+  let i = 0, codeA = 0, codeB = 1, posA = 0, posB = 0;
+  const alphabet = String["alphabet"];
+  function getCode(str, pos, code) {
+    if (code) {
+      for (i = pos; code = getCode(str, i), code < 76 && code > 65; ) ++i;
+      return +str.slice(pos - 1, i);
+    }
+    let c = alphabet ? alphabet.indexOf(str.charAt(pos)) : -1;
+    return c > -1 ? c + 76 : (c = str.charCodeAt(pos) || 0, c < 45 || c > 127) ? c : c < 46 ? 65 : c < 48 ? c - 1 : c < 58 ? c + 18 : c < 65 ? c - 11 : c < 91 ? c + 11 : c < 97 ? c - 37 : c < 123 ? c + 5 : c - 63;
+  }
+  const aStr = "" + a, bStr = "" + b;
+  if (aStr != bStr) for (; codeB; ) {
+    codeA = getCode(aStr, posA++);
+    codeB = getCode(bStr, posB++);
+    if (codeA < 76 && codeB < 76 && codeA > 66 && codeB > 66) {
+      codeA = getCode(aStr, posA, posA);
+      codeB = getCode(bStr, posB, posA = i);
+      posB = i;
+    }
+    if (codeA != codeB) return codeA < codeB ? -1 : 1;
+  }
+  return 0;
+}
+function getNested(obj, prop) {
+  let val;
+  try {
+    val = obj;
+    const tmp = String(prop).split(".");
+    for (let i = 0; i < tmp.length; i++) {
+      val = val[tmp[i] ?? ""];
+    }
+  } catch (event2) {
+    val = void 0;
+  }
+  return val;
+}
+function normMenu(menu, options = {}) {
+  if (Array.isArray(menu)) {
+    menu.forEach((it, m) => {
+      if (typeof it === "string" || typeof it === "number") {
+        menu[m] = { id: it, text: String(it) };
+      } else if (it != null) {
+        if (options.itemMap != null) {
+          let val = getNested(it, options.itemMap.id);
+          if (options.itemMap.id != null && val != null) {
+            it.id = val;
+          }
+          val = getNested(it, options.itemMap.text);
+          if (options.itemMap.text != null && val) {
+            it.text = val;
+          }
+        }
+        if (it.caption != null && it.text == null) it.text = it.caption;
+        if (it.text != null && it.id == null) it.id = it.text;
+        if (it.text == null && it.id != null) it.text = it.id;
+      } else {
+        menu[m] = { id: null, text: "null" };
+      }
+    });
+    return menu;
+  } else if (typeof menu === "function") {
+    const newMenu = menu(menu, options);
+    return normMenu(newMenu, options);
+  } else if (typeof menu === "object" && menu !== null) {
+    const menuObj = menu;
+    return Object.keys(menuObj).map((key) => {
+      return { id: key, text: String(menuObj[key] ?? "") };
+    });
+  }
+}
+function encodeParams(obj, prefix = "") {
+  let str = "";
+  Object.keys(obj).forEach((key) => {
+    if (str != "") str += "&";
+    if (typeof obj[key] == "object") {
+      str += encodeParams(obj[key], prefix + key + (prefix ? "]" : "") + "[");
+    } else {
+      str += `${prefix}${key}${prefix ? "]" : ""}=${obj[key]}`;
+    }
+  });
+  return str;
+}
+function prepareParams(url, fetchOptions, options, defaultDataType) {
+  const dataType = options?.["dataType"] ?? defaultDataType;
+  let postParams = fetchOptions["body"];
+  fetchOptions["method"] = String(fetchOptions["method"]).toUpperCase();
+  switch (dataType) {
+    /**
+     * Will submit GET, POST, PUT, DELETE
+     * - if GET - it will be in URL
+     * - if POST, PUT, DELETE it will be JSON encoded
+     */
+    case "RESTFULL":
+    case "RESTFULJSON": {
+      if (["POST", "PUT", "DELETE"].includes(String(fetchOptions["method"]))) {
+        ;
+        fetchOptions["headers"]["Content-Type"] = "application/json";
+      }
+      if (String(fetchOptions["method"]) == "GET") {
+        if (dataType == "RESTFULLJSON") {
+          postParams = { request: postParams };
+        }
+        body2params();
+      }
+      break;
+    }
+    /**
+     * Will submit either GET or POST and
+     * - if POST it will be JSON encoded
+     * - if GET it will be in URL
+     * - if HTTPJSON and GET then it will be JSON encoded
+     */
+    case "HTTP":
+    case "HTTPJSON":
+    case "JSON": {
+      if (String(fetchOptions["method"]) == "GET") {
+        if (dataType == "JSON" || dataType === "HTTPJSON") {
+          postParams = { request: postParams };
+        }
+        body2params();
+      } else {
+        ;
+        fetchOptions["headers"]["Content-Type"] = "application/json";
+        fetchOptions["method"] = "POST";
+      }
+      break;
+    }
+    default: {
+      if (typeof dataType == "function") {
+        fetchOptions = dataType(url, fetchOptions, options);
+      } else {
+        console.log(`ERROR: Unsupported dataType "${dataType}". Supported types are JSON (default), HTTP, RESTFULL. For backward compatibility HTTPJSON is same as JSON. RESTULFLJSON will encode GET request as JSON.`);
+      }
+    }
+  }
+  if (fetchOptions["body"] != null) {
+    fetchOptions["body"] = typeof fetchOptions["body"] == "string" ? fetchOptions["body"] : JSON.stringify(fetchOptions["body"]);
+  }
+  return fetchOptions;
+  function body2params() {
+    const pp = postParams;
+    Object.keys(pp).forEach((key) => {
+      let param = pp[key];
+      if (typeof param == "object") param = JSON.stringify(param);
+      url.searchParams.append(key, String(param ?? ""));
+    });
+    delete fetchOptions["body"];
+  }
+}
+function parseRoute(route) {
+  const keys = [];
+  const path = route.replace(/\/\(/g, "(?:/").replace(/\+/g, "__plus__").replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_, slash, format, key, capture, optional) => {
+    keys.push({ name: key, optional: !!optional });
+    slash = slash || "";
+    return "" + (optional ? "" : slash) + "(?:" + (optional ? slash : "") + (format || "") + (capture || (format && "([^/.]+?)" || "([^/]+?)")) + ")" + (optional || "");
+  }).replace(/([\/.])/g, "\\$1").replace(/__plus__/g, "(.+)").replace(/\*/g, "(.*)");
+  return {
+    path: new RegExp("^" + path + "$", "i"),
+    keys
+  };
+}
+function debounce(func, wait2 = 250) {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+      func(...args);
+    }, wait2);
+  };
+}
+async function wait(time = 0) {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(), time);
+  });
+}
+
+// src/tsutils-string.ts
+function stripSpaces(html) {
+  if (html == null) return html;
+  switch (typeof html) {
+    case "number":
+      break;
+    case "string":
+      html = String(html).replace(/(?:\r\n|\r|\n)/g, " ").replace(/\s\s+/g, " ").trim();
+      break;
+    case "object":
+      if (Array.isArray(html)) {
+        const arr = extend([], html);
+        arr.forEach((key, ind) => {
+          arr[ind] = stripSpaces(key);
+        });
+        return arr;
+      } else {
+        const obj = extend({}, html);
+        Object.keys(obj).forEach((key) => {
+          obj[key] = stripSpaces(obj[key]);
+        });
+        return obj;
+      }
+  }
+  return html;
+}
+function stripTags(html) {
+  if (html == null) return html;
+  switch (typeof html) {
+    case "number":
+      break;
+    case "string":
+      html = String(html).replace(/<(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*>/ig, "");
+      break;
+    case "object":
+      if (Array.isArray(html)) {
+        const arr = extend([], html);
+        arr.forEach((key, ind) => {
+          arr[ind] = stripTags(key);
+        });
+        return arr;
+      } else {
+        const obj = extend({}, html);
+        Object.keys(obj).forEach((key) => {
+          obj[key] = stripTags(obj[key]);
+        });
+        return obj;
+      }
+  }
+  return html;
+}
+function encodeTags(html) {
+  if (html == null) return html;
+  switch (typeof html) {
+    case "number":
+      break;
+    case "string":
+      html = String(html).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+      break;
+    case "object":
+      if (Array.isArray(html)) {
+        const arr = extend([], html);
+        arr.forEach((key, ind) => {
+          arr[ind] = encodeTags(key);
+        });
+        return arr;
+      } else {
+        const obj = extend({}, html);
+        Object.keys(obj).forEach((key) => {
+          obj[key] = encodeTags(obj[key]);
+        });
+        return obj;
+      }
+  }
+  return html;
+}
+function decodeTags(html) {
+  if (html == null) return html;
+  switch (typeof html) {
+    case "number":
+      break;
+    case "string":
+      html = String(html).replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
+      break;
+    case "object":
+      if (Array.isArray(html)) {
+        const arr = extend([], html);
+        arr.forEach((key, ind) => {
+          arr[ind] = decodeTags(key);
+        });
+        return arr;
+      } else {
+        const obj = extend({}, html);
+        Object.keys(obj).forEach((key) => {
+          obj[key] = decodeTags(obj[key]);
+        });
+        return obj;
+      }
+  }
+  return html;
+}
+function escapeId(id) {
+  if (id === "" || id == null) return "";
+  const re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-￿\w-]/g;
+  return (id + "").replace(re, (ch, asCodePoint) => {
+    if (asCodePoint) {
+      if (ch === "\0") return "\uFFFD";
+      return ch.slice(0, -1) + "\\" + ch.charCodeAt(ch.length - 1).toString(16) + " ";
+    }
+    return "\\" + ch;
+  });
+}
+function unescapeId(id) {
+  if (id === "" || id == null) return "";
+  const re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g;
+  return id.replace(re, (escape, nonHex) => {
+    const high = parseInt("0x" + escape.slice(1), 16) - 65536;
+    return nonHex ? nonHex : high < 0 ? String.fromCharCode(high + 65536) : String.fromCharCode(high >> 10 | 55296, high & 1023 | 56320);
+  });
+}
+function base64encode(str) {
+  const utf8Bytes = new TextEncoder().encode(str);
+  let binaryString = "";
+  for (const byte of utf8Bytes) {
+    binaryString += String.fromCharCode(byte);
+  }
+  return btoa(binaryString);
+}
+function base64decode(encodedStr) {
+  const binaryString = atob(encodedStr);
+  const utf8Bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    utf8Bytes[i] = binaryString.charCodeAt(i);
+  }
+  return new TextDecoder().decode(utf8Bytes);
+}
+async function sha256(str) {
+  const utf8 = new TextEncoder().encode(str);
+  return crypto.subtle.digest("SHA-256", utf8).then((hashBuffer) => {
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map((bytes) => bytes.toString(16).padStart(2, "0")).join("");
+  });
+}
+function execTemplate(str, replace_obj) {
+  if (typeof str !== "string" || !replace_obj || typeof replace_obj !== "object") {
+    return str;
+  }
+  return str.replace(/\${([^}]+)?}/g, function(_$1, $2) {
+    return replace_obj[$2] || $2;
+  });
+}
+
+// src/tsutils-marker.ts
+var query3 = query2;
+function _clearMarkers(el, options) {
+  const markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class.replace(/-/g, "\\-")}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, "ig");
+  if (typeof el == "string") {
+    while (el.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
+      el = el.replace(markerRE, "$1");
+    }
+  } else {
+    while (el.innerHTML.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
+      el.innerHTML = el.innerHTML.replace(markerRE, "$1");
+    }
+  }
+}
+function _replace(html, term, replaceWith, options) {
+  const ww = options.wholeWord;
+  if (typeof term !== "string") term = String(term);
+  term = term.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&").replace(/&/g, "&amp;").replace(/</g, "&gt;").replace(/>/g, "&lt;");
+  const regex = new RegExp((ww ? "\\b" : "") + term + (ww ? "\\b" : "") + "(?![^<]*>)", "i" + (!options.onlyFirst ? "g" : ""));
+  return html = html.replace(regex, replaceWith);
+}
+function marker(el, items, options = { onlyFirst: false, wholeWord: false, isRegex: false }) {
+  options.tag ??= "span";
+  options.class ??= "tsg-marker";
+  options.raplace = (matched) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`;
+  const isRegexSearch = options.isRegex || false;
+  if (!Array.isArray(items)) {
+    if (items != null && items !== "") {
+      items = [items];
+    } else {
+      items = [];
+    }
+  }
+  if (typeof el == "string") {
+    _clearMarkers(el, options);
+    items.forEach((item) => {
+      if (isRegexSearch) {
+        try {
+          const flags = "i" + (!options.onlyFirst ? "g" : "");
+          const regex = new RegExp(item, flags);
+          el = el.replace(regex, options.raplace);
+        } catch (e) {
+          console.error("Invalid regular expression:", e);
+          el = _replace(el, item, options.raplace, options);
+        }
+      } else {
+        el = _replace(el, item, options.raplace, options);
+      }
+    });
+  } else {
+    query3(el).each((el2) => {
+      _clearMarkers(el2, options);
+      if (isRegexSearch) {
+        items.forEach((pattern) => {
+          try {
+            let getTextNodes2 = function(node) {
+              if (node.nodeType === 3) {
+                textNodes.push(node);
+              } else if (node.nodeType === 1) {
+                if (node.tagName !== "SCRIPT" && node.tagName !== "STYLE") {
+                  for (let i = 0; i < node.childNodes.length; i++) {
+                    getTextNodes2(node.childNodes[i]);
+                  }
+                }
+              }
+            };
+            var getTextNodes = getTextNodes2;
+            let flags = "i";
+            if (!options.onlyFirst) {
+              flags += "g";
+            }
+            if (options.wholeWord) {
+              pattern = "\b" + pattern + "\b";
+            }
+            const regex = new RegExp(pattern, flags);
+            const textNodes = [];
+            getTextNodes2(el2);
+            textNodes.forEach((textNode) => {
+              const text = textNode.nodeValue;
+              const matches = [];
+              let match;
+              if (options.onlyFirst) {
+                match = regex.exec(text);
+                if (match) matches.push({
+                  index: match.index,
+                  text: match[0]
+                });
+              } else {
+                while ((match = regex.exec(text)) !== null) {
+                  matches.push({
+                    index: match.index,
+                    text: match[0]
+                  });
+                }
+              }
+              if (matches.length > 0) {
+                const parent = textNode.parentNode;
+                const fragment = document.createDocumentFragment();
+                let lastIndex = 0;
+                matches.forEach((match2) => {
+                  if (match2.index > lastIndex) {
+                    fragment.appendChild(document.createTextNode(
+                      text.substring(lastIndex, match2.index)
+                    ));
+                  }
+                  const span = document.createElement(options.tag);
+                  span.className = options.class;
+                  span.appendChild(document.createTextNode(match2.text));
+                  fragment.appendChild(span);
+                  lastIndex = match2.index + match2.text.length;
+                });
+                if (lastIndex < text.length) {
+                  fragment.appendChild(document.createTextNode(
+                    text.substring(lastIndex)
+                  ));
+                }
+                parent.replaceChild(fragment, textNode);
+              }
+            });
+          } catch (e) {
+            console.error("Invalid regular expression:", e);
+            el2.innerHTML = _replace(el2.innerHTML, pattern, options.raplace, options);
+          }
+        });
+      } else {
+        items.forEach((item) => {
+          ;
+          el2.innerHTML = _replace(el2.innerHTML, item, options.raplace, options);
+        });
+      }
+    });
+  }
+  return el;
+}
+
 // src/tsutils.ts
 var query = query2;
 var TsUi = {};
@@ -1255,44 +1997,28 @@ var Utils = class {
     }
   }
   isBin(val) {
-    const re = /^[0-1]+$/;
-    return re.test(String(val));
+    return isBin(val);
   }
   isInt(val) {
-    const re = /^[-+]?[0-9]+$/;
-    return re.test(String(val));
+    return isInt(val);
   }
   isFloat(val) {
-    if (typeof val === "string") {
-      val = val.replace(new RegExp(this.settings.groupSymbol, "g"), "").replace(this.settings.decimalSymbol, ".");
-    }
-    return (typeof val === "number" || typeof val === "string" && val !== "") && !isNaN(Number(val));
+    return isFloat(val, this.settings);
   }
   isMoney(val) {
-    if (typeof val === "object" || val === "") return false;
-    if (this.isFloat(val)) return true;
-    const se = this.settings;
-    const re = new RegExp("^" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[-+]?" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[0-9]*[\\" + se.decimalSymbol + "]?[0-9]+" + (se.currencySuffix ? "\\" + se.currencySuffix + "?" : "") + "$", "i");
-    if (typeof val === "string") {
-      val = val.replace(new RegExp(se.groupSymbol, "g"), "");
-    }
-    return re.test(String(val));
+    return isMoney(val, this.settings);
   }
   isHex(val) {
-    const re = /^(0x)?[0-9a-fA-F]+$/;
-    return re.test(String(val));
+    return isHex(val);
   }
   isAlphaNumeric(val) {
-    const re = /^[a-zA-Z0-9_-]+$/;
-    return re.test(String(val));
+    return isAlphaNumeric(val);
   }
   isEmail(val) {
-    const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/;
-    return email.test(String(val));
+    return isEmail(val);
   }
   isIpAddress(val) {
-    const re = new RegExp("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
-    return re.test(String(val));
+    return isIpAddress(val);
   }
   isDate(val, format, retDate) {
     if (!val) return false;
@@ -1662,146 +2388,31 @@ var Utils = class {
     return this.formatDate(dateStr, fmt[0]) + " " + this.formatTime(dateStr, fmt[1]);
   }
   stripSpaces(html) {
-    if (html == null) return html;
-    switch (typeof html) {
-      case "number":
-        break;
-      case "string":
-        html = String(html).replace(/(?:\r\n|\r|\n)/g, " ").replace(/\s\s+/g, " ").trim();
-        break;
-      case "object":
-        if (Array.isArray(html)) {
-          const arr = this.extend([], html);
-          arr.forEach((key, ind) => {
-            arr[ind] = this.stripSpaces(key);
-          });
-          return arr;
-        } else {
-          const obj = this.extend({}, html);
-          Object.keys(obj).forEach((key) => {
-            obj[key] = this.stripSpaces(obj[key]);
-          });
-          return obj;
-        }
-    }
-    return html;
+    return stripSpaces(html);
   }
   stripTags(html) {
-    if (html == null) return html;
-    switch (typeof html) {
-      case "number":
-        break;
-      case "string":
-        html = String(html).replace(/<(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*>/ig, "");
-        break;
-      case "object":
-        if (Array.isArray(html)) {
-          const arr = this.extend([], html);
-          arr.forEach((key, ind) => {
-            arr[ind] = this.stripTags(key);
-          });
-          return arr;
-        } else {
-          const obj = this.extend({}, html);
-          Object.keys(obj).forEach((key) => {
-            obj[key] = this.stripTags(obj[key]);
-          });
-          return obj;
-        }
-    }
-    return html;
+    return stripTags(html);
   }
   encodeTags(html) {
-    if (html == null) return html;
-    switch (typeof html) {
-      case "number":
-        break;
-      case "string":
-        html = String(html).replace(/&/g, "&amp;").replace(/>/g, "&gt;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
-        break;
-      case "object":
-        if (Array.isArray(html)) {
-          const arr = this.extend([], html);
-          arr.forEach((key, ind) => {
-            arr[ind] = this.encodeTags(key);
-          });
-          return arr;
-        } else {
-          const obj = this.extend({}, html);
-          Object.keys(obj).forEach((key) => {
-            obj[key] = this.encodeTags(obj[key]);
-          });
-          return obj;
-        }
-    }
-    return html;
+    return encodeTags(html);
   }
   decodeTags(html) {
-    if (html == null) return html;
-    switch (typeof html) {
-      case "number":
-        break;
-      case "string":
-        html = String(html).replace(/&gt;/g, ">").replace(/&lt;/g, "<").replace(/&quot;/g, '"').replace(/&amp;/g, "&");
-        break;
-      case "object":
-        if (Array.isArray(html)) {
-          const arr = this.extend([], html);
-          arr.forEach((key, ind) => {
-            arr[ind] = this.decodeTags(key);
-          });
-          return arr;
-        } else {
-          const obj = this.extend({}, html);
-          Object.keys(obj).forEach((key) => {
-            obj[key] = this.decodeTags(obj[key]);
-          });
-          return obj;
-        }
-    }
-    return html;
+    return decodeTags(html);
   }
   escapeId(id) {
-    if (id === "" || id == null) return "";
-    const re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g;
-    return (id + "").replace(re, (ch, asCodePoint) => {
-      if (asCodePoint) {
-        if (ch === "\0") return "\uFFFD";
-        return ch.slice(0, -1) + "\\" + ch.charCodeAt(ch.length - 1).toString(16) + " ";
-      }
-      return "\\" + ch;
-    });
+    return escapeId(id);
   }
   unescapeId(id) {
-    if (id === "" || id == null) return "";
-    const re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g;
-    return id.replace(re, (escape, nonHex) => {
-      const high = parseInt("0x" + escape.slice(1), 16) - 65536;
-      return nonHex ? nonHex : high < 0 ? String.fromCharCode(high + 65536) : String.fromCharCode(high >> 10 | 55296, high & 1023 | 56320);
-    });
+    return unescapeId(id);
   }
   base64encode(str) {
-    const utf8Bytes = new TextEncoder().encode(str);
-    let binaryString = "";
-    for (const byte of utf8Bytes) {
-      binaryString += String.fromCharCode(byte);
-    }
-    return btoa(binaryString);
+    return base64encode(str);
   }
   base64decode(encodedStr) {
-    const binaryString = atob(encodedStr);
-    const utf8Bytes = new Uint8Array(binaryString.length);
-    for (let i = 0; i < binaryString.length; i++) {
-      utf8Bytes[i] = binaryString.charCodeAt(i);
-    }
-    return new TextDecoder().decode(utf8Bytes);
+    return base64decode(encodedStr);
   }
-  async sha256(str) {
-    const utf8 = new TextEncoder().encode(str);
-    return crypto.subtle.digest("SHA-256", utf8).then((hashBuffer) => {
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((bytes) => bytes.toString(16).padStart(2, "0")).join("");
-    });
+  sha256(str) {
+    return sha256(str);
   }
   transition(div_old, div_new, type, callBack) {
     return new Promise((resolve, _reject) => {
@@ -2641,147 +3252,15 @@ var Utils = class {
   getStrHeight(str, styles, raw) {
     return this.getStrDimentions(str, styles, raw).height;
   }
+  // any: targeted-any per typing_policy; TsUtils helper accepts heterogeneous runtime input
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   execTemplate(str, replace_obj) {
-    if (typeof str !== "string" || !replace_obj || typeof replace_obj !== "object") {
-      return str;
-    }
-    return str.replace(/\${([^}]+)?}/g, function(_$1, $2) {
-      return replace_obj[$2] || $2;
-    });
+    return execTemplate(str, replace_obj);
   }
   // any: parameter typed any — runtime dispatch by call site; TsUtils helper accepts heterogeneous runtime input
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  marker(el, items, options = { onlyFirst: false, wholeWord: false, isRegex: false }) {
-    options.tag ??= "span";
-    options.class ??= "tsg-marker";
-    options.raplace = (matched) => `<${options.tag} class="${options.class}">${matched}</${options.tag}>`;
-    const isRegexSearch = options.isRegex || false;
-    if (!Array.isArray(items)) {
-      if (items != null && items !== "") {
-        items = [items];
-      } else {
-        items = [];
-      }
-    }
-    if (typeof el == "string") {
-      _clearMerkers(el);
-      items.forEach((item) => {
-        if (isRegexSearch) {
-          try {
-            const flags = "i" + (!options.onlyFirst ? "g" : "");
-            const regex = new RegExp(item, flags);
-            el = el.replace(regex, options.raplace);
-          } catch (e) {
-            console.error("Invalid regular expression:", e);
-            el = _replace(el, item, options.raplace);
-          }
-        } else {
-          el = _replace(el, item, options.raplace);
-        }
-      });
-    } else {
-      query(el).each((el2) => {
-        _clearMerkers(el2);
-        if (isRegexSearch) {
-          items.forEach((pattern) => {
-            try {
-              let getTextNodes2 = function(node) {
-                if (node.nodeType === 3) {
-                  textNodes.push(node);
-                } else if (node.nodeType === 1) {
-                  if (node.tagName !== "SCRIPT" && node.tagName !== "STYLE") {
-                    for (let i = 0; i < node.childNodes.length; i++) {
-                      getTextNodes2(node.childNodes[i]);
-                    }
-                  }
-                }
-              };
-              var getTextNodes = getTextNodes2;
-              let flags = "i";
-              if (!options.onlyFirst) {
-                flags += "g";
-              }
-              if (options.wholeWord) {
-                pattern = "\b" + pattern + "\b";
-              }
-              const regex = new RegExp(pattern, flags);
-              const textNodes = [];
-              getTextNodes2(el2);
-              textNodes.forEach((textNode) => {
-                const text = textNode.nodeValue;
-                const matches = [];
-                let match;
-                if (options.onlyFirst) {
-                  match = regex.exec(text);
-                  if (match) matches.push({
-                    index: match.index,
-                    text: match[0]
-                  });
-                } else {
-                  while ((match = regex.exec(text)) !== null) {
-                    matches.push({
-                      index: match.index,
-                      text: match[0]
-                    });
-                  }
-                }
-                if (matches.length > 0) {
-                  const parent = textNode.parentNode;
-                  const fragment = document.createDocumentFragment();
-                  let lastIndex = 0;
-                  matches.forEach((match2) => {
-                    if (match2.index > lastIndex) {
-                      fragment.appendChild(document.createTextNode(
-                        text.substring(lastIndex, match2.index)
-                      ));
-                    }
-                    const span = document.createElement(options.tag);
-                    span.className = options.class;
-                    span.appendChild(document.createTextNode(match2.text));
-                    fragment.appendChild(span);
-                    lastIndex = match2.index + match2.text.length;
-                  });
-                  if (lastIndex < text.length) {
-                    fragment.appendChild(document.createTextNode(
-                      text.substring(lastIndex)
-                    ));
-                  }
-                  parent.replaceChild(fragment, textNode);
-                }
-              });
-            } catch (e) {
-              console.error("Invalid regular expression:", e);
-              el2.innerHTML = _replace(el2.innerHTML, pattern, options.raplace);
-            }
-          });
-        } else {
-          items.forEach((item) => {
-            ;
-            el2.innerHTML = _replace(el2.innerHTML, item, options.raplace);
-          });
-        }
-      });
-    }
-    return el;
-    function _replace(html, term, replaceWith) {
-      const ww = options.wholeWord;
-      if (typeof term !== "string") term = String(term);
-      term = term.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&").replace(/&/g, "&amp;").replace(/</g, "&gt;").replace(/>/g, "&lt;");
-      const regex = new RegExp((ww ? "\\b" : "") + term + (ww ? "\\b" : "") + "(?![^<]*>)", "i" + (!options.onlyFirst ? "g" : ""));
-      return html = html.replace(regex, replaceWith);
-    }
-    function _clearMerkers(el2) {
-      const markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class.replace(/-/g, "\\-")}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, "ig");
-      if (typeof el2 == "string") {
-        while (el2.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
-          el2 = el2.replace(markerRE, "$1");
-        }
-      } else {
-        while (el2.innerHTML.indexOf(`<${options.tag} class="${options.class}"`) !== -1) {
-          el2.innerHTML = el2.innerHTML.replace(markerRE, "$1");
-        }
-      }
-    }
+  marker(el, items, options) {
+    return marker(el, items, options);
   }
   lang(phrase, params) {
     if (!phrase || this.settings.phrases == null || typeof phrase !== "string" || "<=>=".includes(phrase)) {
@@ -2908,28 +3387,10 @@ var Utils = class {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   encodeParams(obj, prefix = "") {
-    let str = "";
-    Object.keys(obj).forEach((key) => {
-      if (str != "") str += "&";
-      if (typeof obj[key] == "object") {
-        str += this.encodeParams(obj[key], prefix + key + (prefix ? "]" : "") + "[");
-      } else {
-        str += `${prefix}${key}${prefix ? "]" : ""}=${obj[key]}`;
-      }
-    });
-    return str;
+    return encodeParams(obj, prefix);
   }
   parseRoute(route) {
-    const keys = [];
-    const path = route.replace(/\/\(/g, "(?:/").replace(/\+/g, "__plus__").replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_, slash, format, key, capture, optional) => {
-      keys.push({ name: key, optional: !!optional });
-      slash = slash || "";
-      return "" + (optional ? "" : slash) + "(?:" + (optional ? slash : "") + (format || "") + (capture || (format && "([^/.]+?)" || "([^/]+?)")) + ")" + (optional || "");
-    }).replace(/([\/.])/g, "\\$1").replace(/__plus__/g, "(.+)").replace(/\*/g, "(.*)");
-    return {
-      path: new RegExp("^" + path + "$", "i"),
-      keys
-    };
+    return parseRoute(route);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getCursorPosition(input) {
@@ -2998,152 +3459,23 @@ var Utils = class {
     }
   }
   parseColor(str) {
-    if (typeof str !== "string") return null;
-    else str = str.trim().toUpperCase();
-    if (str[0] === "#") str = str.substr(1);
-    let color = { r: 0, g: 0, b: 0, a: 1 };
-    if (str.length === 3) {
-      const s0 = str[0] ?? "0", s1 = str[1] ?? "0", s2 = str[2] ?? "0";
-      color = {
-        r: parseInt(s0 + s0, 16),
-        g: parseInt(s1 + s1, 16),
-        b: parseInt(s2 + s2, 16),
-        a: 1
-      };
-    } else if (str.length === 6) {
-      color = {
-        r: parseInt(str.substr(0, 2), 16),
-        g: parseInt(str.substr(2, 2), 16),
-        b: parseInt(str.substr(4, 2), 16),
-        a: 1
-      };
-    } else if (str.length === 8) {
-      color = {
-        r: parseInt(str.substr(0, 2), 16),
-        g: parseInt(str.substr(2, 2), 16),
-        b: parseInt(str.substr(4, 2), 16),
-        a: Math.round(parseInt(str.substr(6, 2), 16) / 255 * 100) / 100
-        // alpha channel 0-1
-      };
-    } else if (str.length > 4 && str.substr(0, 4) === "RGB(") {
-      const tmp = str.replace("RGB", "").replace(/\(/g, "").replace(/\)/g, "").split(",");
-      color = {
-        r: parseInt(tmp[0] ?? "0", 10),
-        g: parseInt(tmp[1] ?? "0", 10),
-        b: parseInt(tmp[2] ?? "0", 10),
-        a: 1
-      };
-    } else if (str.length > 5 && str.substr(0, 5) === "RGBA(") {
-      const tmp = str.replace("RGBA", "").replace(/\(/g, "").replace(/\)/g, "").split(",");
-      color = {
-        r: parseInt(tmp[0] ?? "0", 10),
-        g: parseInt(tmp[1] ?? "0", 10),
-        b: parseInt(tmp[2] ?? "0", 10),
-        a: parseFloat(tmp[3] ?? "1")
-      };
-    } else {
-      return null;
-    }
-    return color;
+    return parseColor(str);
   }
   colorContrast(color1, color2) {
-    const lum1 = calcLumens(color1);
-    const lum2 = calcLumens(color2);
-    const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
-    return ratio.toFixed(2);
-    function calcLumens(color) {
-      const { r, g, b } = TsUtils.parseColor(color) ?? { r: 0, g: 0, b: 0, a: 1 };
-      const gamma = 2.2;
-      const normR = r / 255;
-      const normG = g / 255;
-      const normB = b / 255;
-      const sR = normR <= 0.03928 ? normR / 12.92 : Math.pow((normR + 0.055) / 1.055, gamma);
-      const sG = normG <= 0.03928 ? normG / 12.92 : Math.pow((normG + 0.055) / 1.055, gamma);
-      const sB = normB <= 0.03928 ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma);
-      return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
-    }
+    return colorContrast(color1, color2);
   }
   // h=0..360, s=0..100, v=0..100
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   hsv2rgb(h, s, v, a) {
-    let r, g, b;
-    if (arguments.length === 1) {
-      s = h.s;
-      v = h.v;
-      a = h.a;
-      h = h.h;
-    }
-    h = h / 360;
-    s = s / 100;
-    v = v / 100;
-    const i = Math.floor(h * 6);
-    const f = h * 6 - i;
-    const p = v * (1 - s);
-    const q = v * (1 - f * s);
-    const t = v * (1 - (1 - f) * s);
-    switch (i % 6) {
-      case 0:
-        r = v, g = t, b = p;
-        break;
-      case 1:
-        r = q, g = v, b = p;
-        break;
-      case 2:
-        r = p, g = v, b = t;
-        break;
-      case 3:
-        r = p, g = q, b = v;
-        break;
-      case 4:
-        r = t, g = p, b = v;
-        break;
-      case 5:
-        r = v, g = p, b = q;
-        break;
-    }
-    return {
-      r: Math.round((r ?? 0) * 255),
-      g: Math.round((g ?? 0) * 255),
-      b: Math.round((b ?? 0) * 255),
-      a: a != null ? a : 1
-    };
+    return hsv2rgb(h, s, v, a);
   }
+  // any: overloaded dual-form delegator
   // r=0..255, g=0..255, b=0..255
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   rgb2hsv(r, g, b, a) {
-    if (arguments.length === 1) {
-      g = r.g;
-      b = r.b;
-      a = r.a;
-      r = r.r;
-    }
-    const max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
-    let h;
-    const s = max === 0 ? 0 : d / max, v = max / 255;
-    switch (max) {
-      case min:
-        h = 0;
-        break;
-      case r:
-        h = g - b + d * (g < b ? 6 : 0);
-        h /= 6 * d;
-        break;
-      case g:
-        h = b - r + d * 2;
-        h /= 6 * d;
-        break;
-      case b:
-        h = r - g + d * 4;
-        h /= 6 * d;
-        break;
-    }
-    return {
-      h: Math.round((h ?? 0) * 360),
-      s: Math.round(s * 100),
-      v: Math.round(v * 100),
-      a: a != null ? a : 1
-    };
+    return rgb2hsv(r, g, b, a);
   }
+  // any: overloaded dual-form delegator
   tooltip(html, options) {
     let showOn = "mouseenter";
     let hideOn = "mouseleave";
@@ -3168,17 +3500,7 @@ var Utils = class {
   }
   // determins if it is plain Object, not DOM element, nor a function, event, etc.
   isPlainObject(value) {
-    if (value == null) {
-      return false;
-    }
-    if (Object.prototype.toString.call(value) !== "[object Object]") {
-      return false;
-    }
-    if (value.constructor === void 0) {
-      return true;
-    }
-    const proto = Object.getPrototypeOf(value);
-    return proto === null || proto === Object.prototype;
+    return isPlainObject(value);
   }
   /**
    * Deep copy of an object or an array. Function, events and HTML elements will not be cloned,
@@ -3188,37 +3510,7 @@ var Utils = class {
   // any: return type any — caller narrows by code path; TsUtils helper accepts heterogeneous runtime input
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   clone(obj, options) {
-    const opts = Object.assign({ functions: true, elements: true, events: true, exclude: [], parent: "" }, options ?? {});
-    if (Array.isArray(obj)) {
-      const arr = Array.from(obj);
-      arr.forEach((value, ind) => {
-        arr[ind] = this.clone(value, { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + "[]" });
-      });
-      return arr;
-    } else if (this.isPlainObject(obj)) {
-      const ret = {};
-      Object.assign(ret, obj);
-      if (Array.isArray(opts.exclude)) {
-        opts.exclude.forEach((key) => {
-          delete ret[key];
-        });
-      }
-      Object.keys(ret).forEach((key) => {
-        if (typeof opts.exclude == "function" && opts.exclude(key, { obj, parent: opts.parent })) {
-          ret[key] = void 0;
-        } else {
-          ret[key] = this.clone(ret[key], { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + (opts.parent ? "." : "") + key });
-        }
-        if (ret[key] === void 0) delete ret[key];
-      });
-      return ret;
-    } else {
-      if (obj instanceof Function && !opts.functions || obj instanceof Node && !opts.elements || obj instanceof Event && !opts.events) {
-        return void 0;
-      } else {
-        return obj;
-      }
-    }
+    return clone(obj, options);
   }
   /**
    * Deep extend an object, if an array, it overwrrites it, cloning objects in the process
@@ -3226,73 +3518,15 @@ var Utils = class {
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extend(target, source, ...rest) {
-    if (Array.isArray(target)) {
-      if (Array.isArray(source)) {
-        target.splice(0, target.length);
-        source.forEach((s) => {
-          target.push(this.clone(s));
-        });
-      } else {
-        throw new Error("Arrays can be extended with arrays only");
-      }
-    } else if (target instanceof Node || target instanceof Event) {
-      throw new Error("HTML elmenents and events cannot be extended");
-    } else if (target && typeof target == "object" && source != null) {
-      if (typeof source != "object") {
-        throw new Error("Object can be extended with other objects only.");
-      }
-      Object.keys(source).forEach((key) => {
-        if (target[key] != null && typeof target[key] == "object" && source[key] != null && typeof source[key] == "object") {
-          const src = this.clone(source[key]);
-          if (target[key] instanceof Node || target[key] instanceof Event) {
-            target[key] = src;
-          } else {
-            if (Array.isArray(target[key]) && this.isPlainObject(src)) {
-              target[key] = {};
-            }
-            this.extend(target[key], src);
-          }
-        } else {
-          target[key] = this.clone(source[key]);
-        }
-      });
-    } else if (source != null) {
-      throw new Error("Object is not extendable, only {} or [] can be extended.");
-    }
-    if (rest.length > 0) {
-      for (let i = 0; i < rest.length; i++) {
-        this.extend(target, rest[i]);
-      }
-    }
-    return target;
+    return extend(target, source, ...rest);
   }
+  // any: generic deep-extend; arbitrary object shapes at runtime
   /*
    * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
    * @license    MIT License
    */
   naturalCompare(a, b) {
-    let i = 0, codeA = 0, codeB = 1, posA = 0, posB = 0;
-    const alphabet = String["alphabet"];
-    function getCode(str, pos, code) {
-      if (code) {
-        for (i = pos; code = getCode(str, i), code < 76 && code > 65; ) ++i;
-        return +str.slice(pos - 1, i);
-      }
-      let c = alphabet ? alphabet.indexOf(str.charAt(pos)) : -1;
-      return c > -1 ? c + 76 : (c = str.charCodeAt(pos) || 0, c < 45 || c > 127) ? c : c < 46 ? 65 : c < 48 ? c - 1 : c < 58 ? c + 18 : c < 65 ? c - 11 : c < 91 ? c + 11 : c < 97 ? c - 37 : c < 123 ? c + 5 : c - 63;
-    }
-    const aStr = "" + a, bStr = "" + b;
-    if (aStr != bStr) for (; codeB; ) {
-      codeA = getCode(aStr, posA++);
-      codeB = getCode(bStr, posB++);
-      if (codeA < 76 && codeB < 76 && codeA > 66 && codeB > 66) {
-        codeA = getCode(aStr, posA, posA);
-        codeB = getCode(bStr, posB, posA = i);
-        posB = i;
-      }
-      if (codeA != codeB) return codeA < codeB ? -1 : 1;
-    }
-    return 0;
+    return naturalCompare(a, b);
   }
   /**
    * Takes a menu (used in drop downs, context menu, field: list/combo/enum) and normalizes it to the common structure, which
@@ -3300,109 +3534,14 @@ var Utils = class {
    * to find out id and text fields.
    */
   normMenu(menu, options = {}) {
-    if (Array.isArray(menu)) {
-      menu.forEach((it, m) => {
-        if (typeof it === "string" || typeof it === "number") {
-          menu[m] = { id: it, text: String(it) };
-        } else if (it != null) {
-          if (options.itemMap != null) {
-            let val = TsUtils.getNested(it, options.itemMap.id);
-            if (options.itemMap.id != null && val != null) {
-              it.id = val;
-            }
-            val = TsUtils.getNested(it, options.itemMap.text);
-            if (options.itemMap.text != null && val) {
-              it.text = val;
-            }
-          }
-          if (it.caption != null && it.text == null) it.text = it.caption;
-          if (it.text != null && it.id == null) it.id = it.text;
-          if (it.text == null && it.id != null) it.text = it.id;
-        } else {
-          menu[m] = { id: null, text: "null" };
-        }
-      });
-      return menu;
-    } else if (typeof menu === "function") {
-      const newMenu = menu.call(this, menu, options);
-      return TsUtils.normMenu.call(this, newMenu, options);
-    } else if (typeof menu === "object" && menu !== null) {
-      const menuObj = menu;
-      return Object.keys(menuObj).map((key) => {
-        return { id: key, text: String(menuObj[key] ?? "") };
-      });
-    }
+    return normMenu(menu, options);
   }
   /**
    * Takes Url object and fetchOptions and changes it in place applying selected user dataType. Since
    * dataType is in TsUtils. This method is used in grid, form and tooltip to prepare fetch parameters
    */
   prepareParams(url, fetchOptions, options = {}) {
-    const dataType = options?.["dataType"] ?? TsUtils.settings.dataType;
-    let postParams = fetchOptions["body"];
-    fetchOptions["method"] = String(fetchOptions["method"]).toUpperCase();
-    switch (dataType) {
-      /**
-       * Will submit GET, POST, PUT, DELETE
-       * - if GET - it will be in URL
-       * - if POST, PUT, DELETE it will be JSON encoded
-       */
-      case "RESTFULL":
-      case "RESTFULJSON": {
-        if (["POST", "PUT", "DELETE"].includes(String(fetchOptions["method"]))) {
-          ;
-          fetchOptions["headers"]["Content-Type"] = "application/json";
-        }
-        if (String(fetchOptions["method"]) == "GET") {
-          if (dataType == "RESTFULLJSON") {
-            postParams = { request: postParams };
-          }
-          body2params();
-        }
-        break;
-      }
-      /**
-       * Will submit either GET or POST and
-       * - if POST it will be JSON encoded
-       * - if GET it will be in URL
-       * - if HTTPJSON and GET then it will be JSON encoded
-       */
-      case "HTTP":
-      case "HTTPJSON":
-      case "JSON": {
-        if (String(fetchOptions["method"]) == "GET") {
-          if (dataType == "JSON" || dataType === "HTTPJSON") {
-            postParams = { request: postParams };
-          }
-          body2params();
-        } else {
-          ;
-          fetchOptions["headers"]["Content-Type"] = "application/json";
-          fetchOptions["method"] = "POST";
-        }
-        break;
-      }
-      default: {
-        if (typeof dataType == "function") {
-          fetchOptions = dataType(url, fetchOptions, options);
-        } else {
-          console.log(`ERROR: Unsupported dataType "${dataType}". Supported types are JSON (default), HTTP, RESTFULL. For backward compatibility HTTPJSON is same as JSON. RESTULFLJSON will encode GET request as JSON.`);
-        }
-      }
-    }
-    if (fetchOptions["body"] != null) {
-      fetchOptions["body"] = typeof fetchOptions["body"] == "string" ? fetchOptions["body"] : JSON.stringify(fetchOptions["body"]);
-    }
-    return fetchOptions;
-    function body2params() {
-      const pp = postParams;
-      Object.keys(pp).forEach((key) => {
-        let param = pp[key];
-        if (typeof param == "object") param = JSON.stringify(param);
-        url.searchParams.append(key, String(param ?? ""));
-      });
-      delete fetchOptions["body"];
-    }
+    return prepareParams(url, fetchOptions, options, TsUtils.settings.dataType);
   }
   bindEvents(selector, subject) {
     const selectorR = selector;
@@ -3494,39 +3633,21 @@ var Utils = class {
     });
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  debounce(func, wait = 250) {
-    let timeout;
-    return (...args) => {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => {
-        func(...args);
-      }, wait);
-    };
+  debounce(func, wait2 = 250) {
+    return debounce(func, wait2);
   }
   async wait(time = 0) {
-    return new Promise((resolve) => {
-      setTimeout(() => resolve(), time);
-    });
+    return wait(time);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getNested(obj, prop) {
-    let val;
-    try {
-      val = obj;
-      const tmp = String(prop).split(".");
-      for (let i = 0; i < tmp.length; i++) {
-        val = val[tmp[i] ?? ""];
-      }
-    } catch (event2) {
-      val = void 0;
-    }
-    return val;
+    return getNested(obj, prop);
   }
 };
 var TsUtils = new Utils();
 
 // src/tspopup.ts
-var query3 = query2;
+var query4 = query2;
 var TsDialog = class extends TsBase {
   defaults;
   options;
@@ -3598,7 +3719,7 @@ var TsDialog = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   open(options, extraOptions) {
     const self = this;
-    if (this.status == "closing" || query3("#tsg-popup").hasClass("animating")) {
+    if (this.status == "closing" || query4("#tsg-popup").hasClass("animating")) {
       this.close(true);
     }
     const old_options = this.options;
@@ -3615,7 +3736,7 @@ var TsDialog = class extends TsBase {
     if (options.text != null) options.body = `<div class="tsg-centered tsg-msg-text">${options.text}</div>`;
     options = Object.assign({}, this.defaults, old_options, { title: "", body: "" }, options, { maximized: false });
     this.options = options;
-    if (query3("#tsg-popup").length === 0) {
+    if (query4("#tsg-popup").length === 0) {
       this.off("*");
       Object.keys(this).forEach((key) => {
         if (key.startsWith("on") && key != "on") this[key] = null;
@@ -3695,7 +3816,7 @@ var TsDialog = class extends TsBase {
                         <span class="tsg-icon tsg-icon-box tsg-eaction" data-mousedown="stop" data-click="toggle"></span>
                     </div>`;
     }
-    if (query3("#tsg-popup").length === 0) {
+    if (query4("#tsg-popup").length === 0) {
       edata = this.trigger("open", { target: "popup", present: false });
       if (edata.isCancelled === true) return;
       this.status = "opening";
@@ -3715,8 +3836,8 @@ var TsDialog = class extends TsBase {
                 transition: ${options.speed}s
             `;
       msg = `<div id="tsg-popup" class="tsg-popup tsg-anim-open animating ${!options.blockPage ? "tsg-non-blocking" : ""}" style="${TsUtils.stripSpaces(styles)}"></div>`;
-      query3("body").append(msg);
-      query3("#tsg-popup")[0]._w2popup = {
+      query4("body").append(msg);
+      query4("#tsg-popup")[0]._w2popup = {
         self: this,
         created: new Promise((resolve) => {
           this._promCreated = resolve;
@@ -3745,15 +3866,15 @@ var TsDialog = class extends TsBase {
                 <div class="tsg-popup-resizer resize-point resize-icon"></div>
                 <span name="hidden-last" tabindex="0" style="position: absolute; top: -100px"></span>
             `;
-      query3("#tsg-popup").html(msg);
-      if (options.title) query3("#tsg-popup .tsg-popup-title").append(TsUtils.lang(options.title));
-      if (options.buttons) query3("#tsg-popup .tsg-popup-buttons").append(options.buttons);
-      if (options.body) query3("#tsg-popup .tsg-popup-body").append(options.body);
+      query4("#tsg-popup").html(msg);
+      if (options.title) query4("#tsg-popup .tsg-popup-title").append(TsUtils.lang(options.title));
+      if (options.buttons) query4("#tsg-popup .tsg-popup-buttons").append(options.buttons);
+      if (options.body) query4("#tsg-popup .tsg-popup-body").append(options.body);
       setTimeout(() => {
         ;
-        query3("#tsg-popup").css("transition", options.speed + "s").removeClass("tsg-anim-open");
+        query4("#tsg-popup").css("transition", options.speed + "s").removeClass("tsg-anim-open");
         TsUtils.bindEvents("#tsg-popup .tsg-eaction", this);
-        query3("#tsg-popup").find(".tsg-popup-body").show();
+        query4("#tsg-popup").find(".tsg-popup-body").show();
         this._promCreated();
       }, 1);
       clearTimeout(this._timer);
@@ -3762,7 +3883,7 @@ var TsDialog = class extends TsBase {
         self.setFocus(options.focus);
         edata.finish();
         this._promOpened();
-        query3("#tsg-popup").removeClass("animating");
+        query4("#tsg-popup").removeClass("animating");
       }, options.speed * 1e3);
     } else {
       edata = this.trigger("open", { target: "popup", present: true });
@@ -3775,86 +3896,86 @@ var TsDialog = class extends TsBase {
         options.prevSize = options.width + "px:" + options.height + "px";
         options.maximized = old_options.maximized;
       }
-      const cloned = query3("#tsg-popup .tsg-box").get(0).cloneNode(true);
-      query3(cloned).removeClass("tsg-box").addClass("tsg-box-temp").find(".tsg-popup-body").empty().append(options.body);
-      query3("#tsg-popup .tsg-box").after(cloned);
+      const cloned = query4("#tsg-popup .tsg-box").get(0).cloneNode(true);
+      query4(cloned).removeClass("tsg-box").addClass("tsg-box-temp").find(".tsg-popup-body").empty().append(options.body);
+      query4("#tsg-popup .tsg-box").after(cloned);
       if (options.buttons) {
         ;
-        query3("#tsg-popup .tsg-popup-buttons").show().html("").append(options.buttons);
-        query3("#tsg-popup .tsg-popup-body").removeClass("tsg-popup-no-buttons");
-        query3("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("bottom", "");
+        query4("#tsg-popup .tsg-popup-buttons").show().html("").append(options.buttons);
+        query4("#tsg-popup .tsg-popup-body").removeClass("tsg-popup-no-buttons");
+        query4("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("bottom", "");
       } else {
-        query3("#tsg-popup .tsg-popup-buttons").hide().html("");
-        query3("#tsg-popup .tsg-popup-body").addClass("tsg-popup-no-buttons");
-        query3("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("bottom", "0px");
+        query4("#tsg-popup .tsg-popup-buttons").hide().html("");
+        query4("#tsg-popup .tsg-popup-body").addClass("tsg-popup-no-buttons");
+        query4("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("bottom", "0px");
       }
       if (options.title) {
-        query3("#tsg-popup .tsg-popup-title").show().html(TsUtils.lang(options.title));
-        query3("#tsg-popup .tsg-popup-body").removeClass("tsg-popup-no-title");
-        query3("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("top", "");
+        query4("#tsg-popup .tsg-popup-title").show().html(TsUtils.lang(options.title));
+        query4("#tsg-popup .tsg-popup-body").removeClass("tsg-popup-no-title");
+        query4("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("top", "");
       } else {
-        query3("#tsg-popup .tsg-popup-title").hide().html("");
-        query3("#tsg-popup .tsg-popup-body").addClass("tsg-popup-no-title");
-        query3("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("top", "0px");
+        query4("#tsg-popup .tsg-popup-title").hide().html("");
+        query4("#tsg-popup .tsg-popup-body").addClass("tsg-popup-no-title");
+        query4("#tsg-popup .tsg-box, #tsg-popup .tsg-box-temp").css("top", "0px");
       }
       if (titleBtns) {
-        query3("#tsg-popup .tsg-popup-title-btns").show().html(titleBtns);
+        query4("#tsg-popup .tsg-popup-title-btns").show().html(titleBtns);
       } else {
-        query3("#tsg-popup .tsg-popup-title-btns").hide();
+        query4("#tsg-popup .tsg-popup-title-btns").hide();
       }
-      const div_old = query3("#tsg-popup .tsg-box")[0];
-      const div_new = query3("#tsg-popup .tsg-box-temp")[0];
-      query3("#tsg-popup").addClass("animating");
+      const div_old = query4("#tsg-popup .tsg-box")[0];
+      const div_new = query4("#tsg-popup .tsg-box-temp")[0];
+      query4("#tsg-popup").addClass("animating");
       TsUtils.transition(div_old, div_new, options.transition, () => {
-        query3(div_old).remove();
-        query3(div_new).removeClass("tsg-box-temp").addClass("tsg-box");
-        const $body = query3(div_new).find(".tsg-popup-body");
+        query4(div_old).remove();
+        query4(div_new).removeClass("tsg-box-temp").addClass("tsg-box");
+        const $body = query4(div_new).find(".tsg-popup-body");
         if ($body.length == 1) {
           $body[0].style.cssText = options.style;
           $body.show();
         }
         self.setFocus(options.focus);
-        query3("#tsg-popup").removeClass("animating");
+        query4("#tsg-popup").removeClass("animating");
       });
       this.status = "open";
       edata.finish();
       TsUtils.bindEvents("#tsg-popup .tsg-eaction", this);
-      query3("#tsg-popup").find(".tsg-popup-body").show();
+      query4("#tsg-popup").find(".tsg-popup-body").show();
     }
     if (options.openMaximized) {
       this.max();
     }
     options._last_focus = document.activeElement;
     if (options.keyboard) {
-      query3(document.body).off(".TsPopup").on("keydown.TsPopup", (event2) => {
+      query4(document.body).off(".TsPopup").on("keydown.TsPopup", (event2) => {
         this.keydown(event2);
       });
     }
-    query3(window).on("resize", this.handleResize);
+    query4(window).on("resize", this.handleResize);
     const tmp = {
       changing: false,
       mvMove,
       mvStop
     };
-    query3("#tsg-popup .tsg-popup-title").off("mousedown").on("mousedown", function(event2) {
+    query4("#tsg-popup .tsg-popup-title").off("mousedown").on("mousedown", function(event2) {
       if (!self.options.maximized) mvStart(event2);
     });
     if (options.resizable) {
-      query3("#tsg-popup .tsg-popup-resizer").show();
-      query3("#tsg-popup .tsg-popup-resizer").off("mousedown").on("mousedown", (event2) => {
+      query4("#tsg-popup .tsg-popup-resizer").show();
+      query4("#tsg-popup .tsg-popup-resizer").off("mousedown").on("mousedown", (event2) => {
         mvStart(event2, true);
       });
     } else {
-      query3("#tsg-popup .tsg-popup-resizer").hide();
+      query4("#tsg-popup .tsg-popup-resizer").hide();
     }
     return prom;
     function mvStart(evt, resizer) {
       if (!evt) evt = window.event;
       self.status = resizer ? "resizing" : "moving";
-      const rect = query3("#tsg-popup").get(0).getBoundingClientRect();
+      const rect = query4("#tsg-popup").get(0).getBoundingClientRect();
       Object.assign(tmp, {
         changing: true,
-        isLocked: query3("#tsg-popup > .tsg-lock").length == 1 ? true : false,
+        isLocked: query4("#tsg-popup > .tsg-lock").length == 1 ? true : false,
         x: evt.screenX,
         y: evt.screenY,
         pos_x: rect.x,
@@ -3863,7 +3984,7 @@ var TsDialog = class extends TsBase {
         height: rect.height
       });
       if (!tmp.isLocked) self.lock({ opacity: 0 });
-      query3(document.body).on("mousemove.tsg-popup", tmp.mvMove).on("mouseup.tsg-popup", tmp.mvStop);
+      query4(document.body).on("mousemove.tsg-popup", tmp.mvMove).on("mouseup.tsg-popup", tmp.mvStop);
       if (evt.stopPropagation) evt.stopPropagation();
       else evt.cancelBubble = true;
       if (evt.preventDefault) evt.preventDefault();
@@ -3877,13 +3998,13 @@ var TsDialog = class extends TsBase {
       const edata2 = self.trigger("move", { target: "popup", div_x: tmp.div_x, div_y: tmp.div_y, originalEvent: evt });
       if (edata2.isCancelled === true) return;
       if (self.status == "moving") {
-        query3("#tsg-popup").css({
+        query4("#tsg-popup").css({
           "transition": "none",
           "transform": "translate3d(" + tmp.div_x + "px, " + tmp.div_y + "px, 0px)"
         });
         self.options.moved = true;
       } else {
-        query3("#tsg-popup").css({
+        query4("#tsg-popup").css({
           transition: "none",
           width: tmp.width + tmp.div_x + "px",
           height: tmp.height + tmp.div_y + "px"
@@ -3898,7 +4019,7 @@ var TsDialog = class extends TsBase {
       tmp.div_y = evt.screenY - tmp.y;
       if (self.status == "moving") {
         ;
-        query3("#tsg-popup").css({
+        query4("#tsg-popup").css({
           "left": tmp.pos_x + tmp.div_x + "px",
           "top": tmp.pos_y + tmp.div_y + "px"
         }).css({
@@ -3906,7 +4027,7 @@ var TsDialog = class extends TsBase {
           "transform": "translate3d(0px, 0px, 0px)"
         });
       } else {
-        query3("#tsg-popup").css({
+        query4("#tsg-popup").css({
           transition: "none",
           width: tmp.width + tmp.div_x + "px",
           height: tmp.height + tmp.div_y + "px"
@@ -3915,7 +4036,7 @@ var TsDialog = class extends TsBase {
       }
       tmp.changing = false;
       self.status = "open";
-      query3(document.body).off(".tsg-popup");
+      query4(document.body).off(".tsg-popup");
       if (!tmp.isLocked) self.unlock();
     }
   }
@@ -3945,18 +4066,18 @@ var TsDialog = class extends TsBase {
   template(data, id, options = {}) {
     let html;
     try {
-      html = query3(data);
+      html = query4(data);
     } catch (e) {
       html = query2.html(data);
     }
     if (id) html = html.filter("#" + id);
     Object.assign(options, {
-      width: parseInt(query3(html).css("width")),
-      height: parseInt(query3(html).css("height")),
-      title: query3(html).find("[rel=title]").html(),
-      body: query3(html).find("[rel=body]").html(),
-      buttons: query3(html).find("[rel=buttons]").html(),
-      style: query3(html).find("[rel=body]").get(0).style.cssText
+      width: parseInt(query4(html).css("width")),
+      height: parseInt(query4(html).css("height")),
+      title: query4(html).find("[rel=title]").html(),
+      body: query4(html).find("[rel=body]").html(),
+      buttons: query4(html).find("[rel=buttons]").html(),
+      style: query4(html).find("[rel=body]").get(0).style.cssText
     });
     return this.open(options);
   }
@@ -3987,7 +4108,7 @@ var TsDialog = class extends TsBase {
     switch (event2.keyCode) {
       case 27:
         event2.preventDefault();
-        if (query3("#tsg-popup .tsg-message").length == 0) {
+        if (query4("#tsg-popup .tsg-message").length == 0) {
           if (this.options.cancelAction) {
             this.action(this.options.cancelAction);
           } else {
@@ -4004,14 +4125,14 @@ var TsDialog = class extends TsBase {
     const edata = this.trigger("close", { target: "popup" });
     if (edata.isCancelled === true) return;
     const cleanUp = () => {
-      query3("#tsg-popup").remove();
+      query4("#tsg-popup").remove();
       if (this.options._last_focus) this.options._last_focus.focus();
       this.status = "closed";
       this.options = {};
       edata.finish();
       this._promClosed();
     };
-    if (query3("#tsg-popup").length === 0 || this.status == "closed") {
+    if (query4("#tsg-popup").length === 0 || this.status == "closed") {
       return;
     }
     if (this.status == "opening") {
@@ -4024,7 +4145,7 @@ var TsDialog = class extends TsBase {
       return;
     }
     this.status = "closing";
-    query3("#tsg-popup").css("transition", this.options.speed + "s").addClass("tsg-anim-close animating");
+    query4("#tsg-popup").css("transition", this.options.speed + "s").addClass("tsg-anim-close animating");
     TsUtils.unlock(document.body, 300);
     this._promClosing();
     if (immediate) {
@@ -4033,9 +4154,9 @@ var TsDialog = class extends TsBase {
       this.tmp["closingTimer"] = setTimeout(cleanUp, (this.options.speed ?? 0.3) * 1e3);
     }
     if (this.options.keyboard) {
-      query3(document.body).off("keydown", this.keydown);
+      query4(document.body).off("keydown", this.keydown);
     }
-    query3(window).off("resize", this.handleResize);
+    query4(window).off("resize", this.handleResize);
   }
   toggle() {
     const edata = this.trigger("toggle", { target: "popup" });
@@ -4051,7 +4172,7 @@ var TsDialog = class extends TsBase {
     const edata = this.trigger("max", { target: "popup" });
     if (edata.isCancelled === true) return;
     this.status = "resizing";
-    const rect = query3("#tsg-popup").get(0).getBoundingClientRect();
+    const rect = query4("#tsg-popup").get(0).getBoundingClientRect();
     this.options.prevSize = rect.width + ":" + rect.height;
     this.resize(1e4, 1e4, () => {
       this.status = "open";
@@ -4073,9 +4194,9 @@ var TsDialog = class extends TsBase {
     });
   }
   clear() {
-    query3("#tsg-popup .tsg-popup-title").html("");
-    query3("#tsg-popup .tsg-popup-body").html("");
-    query3("#tsg-popup .tsg-popup-buttons").html("");
+    query4("#tsg-popup .tsg-popup-title").html("");
+    query4("#tsg-popup .tsg-popup-body").html("");
+    query4("#tsg-popup .tsg-popup-buttons").html("");
   }
   reset() {
     this.open(this.defaults);
@@ -4085,7 +4206,7 @@ var TsDialog = class extends TsBase {
   message(options) {
     return TsUtils.message({
       owner: this,
-      box: query3("#tsg-popup").get(0),
+      box: query4("#tsg-popup").get(0),
       after: ".tsg-popup-title"
     }, options);
   }
@@ -4094,14 +4215,14 @@ var TsDialog = class extends TsBase {
   confirm(options) {
     return TsUtils.confirm({
       owner: this,
-      box: query3("#tsg-popup").get(0),
+      box: query4("#tsg-popup").get(0),
       after: ".tsg-popup-title"
     }, options);
   }
   // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setFocus(focus2) {
-    const box = query3("#tsg-popup");
+    const box = query4("#tsg-popup");
     const sel = "input, button, select, textarea, [contentEditable], [tabindex], .tsg-input";
     if (focus2 != null) {
       const el = isNaN(focus2) ? box.find(sel).filter(focus2).filter(":not([name=hidden-first])").get(0) : box.find(sel).filter(":not([name=hidden-first])").get(focus2);
@@ -4110,19 +4231,19 @@ var TsDialog = class extends TsBase {
       const el = box.find("[name=hidden-first]").get(0);
       if (el) el.focus();
     }
-    query3(box).find(sel).off(".keep-focus").on("blur.keep-focus", function(_event) {
+    query4(box).find(sel).off(".keep-focus").on("blur.keep-focus", function(_event) {
       setTimeout(() => {
         const focus3 = document.activeElement;
-        const inside = query3(box).find(sel).filter(focus3).length > 0;
-        const name = query3(focus3).attr("name");
+        const inside = query4(box).find(sel).filter(focus3).length > 0;
+        const name = query4(focus3).attr("name");
         if (!inside && focus3 && focus3 !== document.body) {
-          query3(box).find(sel).get(0)?.focus();
+          query4(box).find(sel).get(0)?.focus();
         }
         if (name == "hidden-last") {
-          query3(box).find(sel).get(1)?.focus();
+          query4(box).find(sel).get(1)?.focus();
         }
         if (name == "hidden-first") {
-          query3(box).find(sel).get(-2)?.focus();
+          query4(box).find(sel).get(-2)?.focus();
         }
       }, 1);
     });
@@ -4130,12 +4251,12 @@ var TsDialog = class extends TsBase {
   // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   lock(msg, showSpinner) {
-    TsUtils.lock(query3("#tsg-popup"), msg, showSpinner);
+    TsUtils.lock(query4("#tsg-popup"), msg, showSpinner);
   }
   // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unlock(speed) {
-    TsUtils.unlock(query3("#tsg-popup"), speed);
+    TsUtils.unlock(query4("#tsg-popup"), speed);
   }
   // any: callback parameter — caller signature varies; TsPopup options accept untyped user payloads at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4159,7 +4280,7 @@ var TsDialog = class extends TsBase {
     const top = (maxH - height) / 3;
     const left = (maxW - width) / 2;
     if (force) {
-      query3("#tsg-popup").css({
+      query4("#tsg-popup").css({
         "transition": "none",
         "top": top + "px",
         "left": left + "px",
@@ -4178,7 +4299,7 @@ var TsDialog = class extends TsBase {
       if (this.options.speed == null) this.options.speed = 0;
       const { top, left, width, height } = this.center(newWidth, newHeight);
       const speed = this.options.speed;
-      query3("#tsg-popup").css({
+      query4("#tsg-popup").css({
         "transition": `${speed}s width, ${speed}s height, ${speed}s left, ${speed}s top`,
         "top": top + "px",
         "left": left + "px",
@@ -4198,10 +4319,10 @@ var TsDialog = class extends TsBase {
   }
   // internal function
   resizeMessages() {
-    query3("#tsg-popup .tsg-message").each((node) => {
+    query4("#tsg-popup .tsg-message").each((node) => {
       const msg = node;
       const mopt = msg._msg_options;
-      const popup = query3("#tsg-popup");
+      const popup = query4("#tsg-popup");
       if (parseInt(mopt.width) < 10) mopt.width = 10;
       if (parseInt(mopt.height) < 10) mopt.height = 10;
       const rect = popup[0].getBoundingClientRect();
@@ -4218,7 +4339,7 @@ var TsDialog = class extends TsBase {
       }
       if (mopt.originalHeight < 0) mopt.height = pHeight + mopt.originalHeight - titleHeight;
       if (mopt.originalWidth < 0) mopt.width = pWidth + mopt.originalWidth * 2;
-      query3(msg).css({
+      query4(msg).css({
         left: (pWidth - mopt.width) / 2 + "px",
         width: mopt.width + "px",
         height: mopt.height + "px"
@@ -4235,7 +4356,7 @@ function TsAlert(msg, title, callBack) {
     actions: { ok: TsUtils.lang("Ok") },
     cancelAction: "ok"
   };
-  if (query3("#tsg-popup").length > 0 && TsPopup.status != "closing") {
+  if (query4("#tsg-popup").length > 0 && TsPopup.status != "closing") {
     prom = TsPopup.message(options);
   } else {
     prom = TsPopup.open(options);
@@ -4271,7 +4392,7 @@ function TsConfirm(msg, title, callBack) {
     callBack = options.callBack;
   }
   TsUtils.normButtons(options, { yes: TsUtils.lang("Yes"), no: TsUtils.lang("No") });
-  if (query3("#tsg-popup").length > 0 && TsPopup.status != "closing") {
+  if (query4("#tsg-popup").length > 0 && TsPopup.status != "closing") {
     prom = TsPopup.message(options);
   } else {
     prom = TsPopup.open(options);
@@ -4309,15 +4430,15 @@ function TsPrompt(label, title, callBack) {
     cancelAction: "cancel"
   });
   TsUtils.normButtons(options, { ok: TsUtils.lang("Ok"), cancel: TsUtils.lang("Cancel") });
-  if (query3("#tsg-popup").length > 0 && TsPopup.status != "closing") {
+  if (query4("#tsg-popup").length > 0 && TsPopup.status != "closing") {
     prom = TsPopup.message(options);
   } else {
     prom = TsPopup.open(options);
   }
   if (prom.self.box) {
-    prom.self["input"] = query3(prom.self.box).find("#TsPrompt").get(0);
+    prom.self["input"] = query4(prom.self.box).find("#TsPrompt").get(0);
   } else {
-    prom.self["input"] = query3("#tsg-popup .tsg-popup-body #TsPrompt").get(0);
+    prom.self["input"] = query4("#tsg-popup .tsg-popup-body #TsPrompt").get(0);
   }
   if (options.value != null) {
     prom.self["input"].value = options.value;
@@ -4328,8 +4449,8 @@ function TsPrompt(label, title, callBack) {
     return this;
   };
   prom.self.off(".prompt").on("open:after.prompt", (event2) => {
-    const box = event2.detail.box ? event2.detail.box : query3("#tsg-popup .tsg-popup-body").get(0);
-    TsUtils.bindEvents(query3(box).find("#TsPrompt"), {
+    const box = event2.detail.box ? event2.detail.box : query4("#tsg-popup .tsg-popup-body").get(0);
+    TsUtils.bindEvents(query4(box).find("#TsPrompt"), {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       keydown(evt) {
         if (evt.keyCode == 27) evt.stopPropagation();
@@ -4347,7 +4468,7 @@ function TsPrompt(label, title, callBack) {
         edata.finish();
       }
     });
-    query3(box).find(".tsg-eaction").trigger("keyup");
+    query4(box).find(".tsg-eaction").trigger("keyup");
   }).on("action:after.prompt", (event2) => {
     if (typeof event2.detail.self?.close == "function") {
       event2.detail.self.close();
@@ -4359,7 +4480,7 @@ function TsPrompt(label, title, callBack) {
 var TsPopup = new TsDialog();
 
 // src/tstooltip.ts
-var query4 = query2;
+var query5 = query2;
 var Tooltip = class _Tooltip {
   // no need to extend TsBase, as each individual tooltip extends it
   static active = {};
@@ -4570,7 +4691,7 @@ var Tooltip = class _Tooltip {
     }
     if (options.autoShowOn) {
       const scope = "autoShow-" + overlay.name;
-      query4(anchor).off(`.${scope}`).on(`${options.autoShowOn}.${scope}`, (event2) => {
+      query5(anchor).off(`.${scope}`).on(`${options.autoShowOn}.${scope}`, (event2) => {
         self.show(overlay.name);
         event2.stopPropagation();
       });
@@ -4579,7 +4700,7 @@ var Tooltip = class _Tooltip {
     }
     if (options.autoHideOn) {
       const scope = "autoHide-" + overlay.name;
-      query4(anchor).off(`.${scope}`).on(`${options.autoHideOn}.${scope}`, (event2) => {
+      query5(anchor).off(`.${scope}`).on(`${options.autoHideOn}.${scope}`, (event2) => {
         self.hide(overlay.name);
         event2.stopPropagation();
       });
@@ -4646,7 +4767,7 @@ var Tooltip = class _Tooltip {
       }
       const ret = this.attach(options2);
       ret.overlay.tmp.hidden = false;
-      query4(ret.overlay.anchor).off(".autoShow-" + ret.overlay.name).off(".autoHide-" + ret.overlay.name);
+      query5(ret.overlay.anchor).off(".autoShow-" + ret.overlay.name).off(".autoHide-" + ret.overlay.name);
       setTimeout(() => {
         if (!ret.overlay.tmp.hidden) {
           this.show(ret.overlay.name);
@@ -4688,12 +4809,12 @@ var Tooltip = class _Tooltip {
         }
         return;
       }
-      query4(overlay.box).find(".tsg-overlay-body").attr("style", (options.style || "") + "; " + overlayStyles).removeClass(null).addClass("tsg-overlay-body " + options.class + (options.draggable ? " tsg-draggable" : "")).html(options.html);
+      query5(overlay.box).find(".tsg-overlay-body").attr("style", (options.style || "") + "; " + overlayStyles).removeClass(null).addClass("tsg-overlay-body " + options.class + (options.draggable ? " tsg-draggable" : "")).html(options.html);
       this.resize(overlay.name);
     } else {
       edata = this.trigger("show", { target: name, overlay });
       if (edata.isCancelled === true) return;
-      query4("body").append(
+      query5("body").append(
         // pointer-events will be re-enabled leter
         `<div id="${overlay.id}" name="${name}" style="display: none; pointer-events: none" class="tsg-overlay"
                         data-click="stop" data-focusin="stop">
@@ -4704,15 +4825,15 @@ var Tooltip = class _Tooltip {
                     </div>
                 </div>`
       );
-      overlay.box = query4("#" + TsUtils.escapeId(overlay.id))[0];
+      overlay.box = query5("#" + TsUtils.escapeId(overlay.id))[0];
       overlay.displayed = true;
-      const names = query4(overlay.anchor).data("tooltipName") ?? [];
+      const names = query5(overlay.anchor).data("tooltipName") ?? [];
       names.push(name);
-      query4(overlay.anchor).data("tooltipName", names);
+      query5(overlay.anchor).data("tooltipName", names);
       TsUtils.bindEvents(overlay.box, {});
       overlay.tmp.originalCSS = "";
-      if (query4(overlay.anchor).length > 0) {
-        overlay.tmp.originalCSS = query4(overlay.anchor)[0].style.cssText;
+      if (query5(overlay.anchor).length > 0) {
+        overlay.tmp.originalCSS = query5(overlay.anchor)[0].style.cssText;
       }
       this.resize(overlay.name);
     }
@@ -4721,7 +4842,7 @@ var Tooltip = class _Tooltip {
     }
     if (options.anchorClass) {
       if (!(options.anchorClass == "tsg-focus" && overlay.anchor == document.body)) {
-        query4(overlay.anchor).addClass(options.anchorClass);
+        query5(overlay.anchor).addClass(options.anchorClass);
       }
     }
     if (typeof options.hideOn == "string") options.hideOn = [options.hideOn];
@@ -4732,19 +4853,19 @@ var Tooltip = class _Tooltip {
     });
     addHideEvents();
     addWatchEvents(document.body);
-    query4(overlay.box).show();
+    query5(overlay.box).show();
     overlay.tmp.observeTooltipResize.observe(overlay.box);
     overlay.tmp.observeAnchorResize.observe(overlay.anchor);
     overlay.tmp.observeAnchorMove.observe(overlay.anchor, { attributes: true });
     _Tooltip.observeRemove.observe(document.body, { subtree: true, childList: true });
-    query4(overlay.box).css("opacity", 1).find(".tsg-overlay-body").html(options.html);
+    query5(overlay.box).css("opacity", 1).find(".tsg-overlay-body").html(options.html);
     setTimeout(() => {
-      query4(overlay.box).css({ "pointer-events": "auto" }).data("ready", "yes");
+      query5(overlay.box).css({ "pointer-events": "auto" }).data("ready", "yes");
     }, 100);
-    TsUtils.bindEvents(query4(overlay.box).find(".tsg-eaction"), this);
+    TsUtils.bindEvents(query5(overlay.box).find(".tsg-eaction"), this);
     delete overlay.needsUpdate;
     overlay.box.overlay = overlay;
-    query4(overlay.box).off("mousedown.tsg-bringfront").on("mousedown.tsg-bringfront", () => {
+    query5(overlay.box).off("mousedown.tsg-bringfront").on("mousedown.tsg-bringfront", () => {
       self.bringOverlayToFront(overlay);
     });
     if (edata) edata.finish();
@@ -4755,7 +4876,7 @@ var Tooltip = class _Tooltip {
       if (el.tagName == "BODY") {
         queryEl = el.ownerDocument;
       }
-      query4(queryEl).off(`.${scope}`).on(`scroll.${scope}`, (_event) => {
+      query5(queryEl).off(`.${scope}`).on(`scroll.${scope}`, (_event) => {
         Object.assign(overlay.tmp, {
           scrollLeft: el.scrollLeft,
           scrollTop: el.scrollTop
@@ -4767,22 +4888,22 @@ var Tooltip = class _Tooltip {
       const hide = (_event) => {
         self.hide(overlay.name);
       };
-      const $anchor = query4(overlay.anchor);
+      const $anchor = query5(overlay.anchor);
       const scope = "tooltip-" + overlay.name;
-      query4("html").off(`.${scope}`);
+      query5("html").off(`.${scope}`);
       if (options.hideOn.includes("doc-click")) {
         if (["INPUT", "TEXTAREA"].includes(overlay.anchor.tagName)) {
           $anchor.off(`.${scope}-doc`).on(`click.${scope}-doc`, (event2) => {
             event2.stopPropagation();
           });
         }
-        query4("html").on(`click.${scope}`, hide);
+        query5("html").on(`click.${scope}`, hide);
       }
       if (options.hideOn.includes("tooltip-click")) {
-        query4(overlay.box).off(`click.${scope}`).on(`click.${scope}`, hide);
+        query5(overlay.box).off(`click.${scope}`).on(`click.${scope}`, hide);
       }
       if (options.hideOn.includes("focus-change") || options.hideOn.includes("blur")) {
-        query4("html").on(`focusin.${scope}`, (_e) => {
+        query5("html").on(`focusin.${scope}`, (_e) => {
           if (document.activeElement != overlay.anchor) {
             self.hide(overlay.name);
           }
@@ -4807,7 +4928,7 @@ var Tooltip = class _Tooltip {
       return;
     }
     if (name instanceof HTMLElement) {
-      const names2 = query4(name).data("tooltipName") ?? [];
+      const names2 = query5(name).data("tooltipName") ?? [];
       names2.forEach((name2) => {
         this.hide(name2);
       });
@@ -4836,23 +4957,23 @@ var Tooltip = class _Tooltip {
     if (cnt == 0) {
       _Tooltip.observeRemove.disconnect();
     }
-    query4("html").off(`.${scope}`);
-    query4(document).off(`.${scope}`);
+    query5("html").off(`.${scope}`);
+    query5(document).off(`.${scope}`);
     overlay.box?.remove();
     overlay.box = null;
     overlay.displayed = false;
-    const names = query4(overlay.anchor).data("tooltipName") ?? [];
+    const names = query5(overlay.anchor).data("tooltipName") ?? [];
     const ind = names.indexOf(overlay.name);
     if (ind != -1) names.splice(names.indexOf(overlay.name), 1);
     if (names.length == 0) {
-      query4(overlay.anchor).removeData("tooltipName");
+      query5(overlay.anchor).removeData("tooltipName");
     } else {
-      query4(overlay.anchor).data("tooltipName", names);
+      query5(overlay.anchor).data("tooltipName", names);
     }
     if (overlay.options.anchorStyle) {
       overlay.anchor.style.cssText = overlay.tmp.originalCSS;
     }
-    query4(overlay.anchor).off(`.${scope}`).removeClass(overlay.options.anchorClass);
+    query5(overlay.anchor).off(`.${scope}`).removeClass(overlay.options.anchorClass);
     if (overlay.options.url) {
       overlay.options.items.splice(0);
       overlay.tmp.remote.hasMore = true;
@@ -4882,7 +5003,7 @@ var Tooltip = class _Tooltip {
       edata2 = this.trigger("resize", { target: name, overlay, pos });
       state.moved = true;
     }
-    const qBox = query4(overlay.box).css({
+    const qBox = query5(overlay.box).css({
       left: pos.left + "px",
       top: pos.top + "px"
     });
@@ -4912,7 +5033,7 @@ var Tooltip = class _Tooltip {
     }
     const options = overlay.options;
     if (overlay.tmp.resizedY || overlay.tmp.resizedX) {
-      query4(overlay.box).css({ width: "", height: "", scroll: "auto" });
+      query5(overlay.box).css({ width: "", height: "", scroll: "auto" });
     }
     const scrollSize = TsUtils.scrollBarSize();
     const hasScrollBarX = !(document.body.scrollWidth == document.body.clientWidth);
@@ -5144,7 +5265,7 @@ var Tooltip = class _Tooltip {
     if (event2.preventDefault) {
       event2.preventDefault();
     }
-    const el = query4(event2.target).closest(".tsg-overlay");
+    const el = query5(event2.target).closest(".tsg-overlay");
     const overlay = el[0]?.overlay;
     if (overlay) {
       this.bringOverlayToFront(overlay);
@@ -5159,13 +5280,13 @@ var Tooltip = class _Tooltip {
       moved: false,
       _removed: false
     };
-    query4(document).off(".tsg-drag").on("selectstart.tsg-drag, dragstart.tsg-drag", (e) => e.preventDefault()).find("body").addClass("tsg-overlay-dragging");
-    query4("html").off(".TsColor").on("mousemove.TsColor", mouseMove).on("mouseup.TsColor", mouseUp);
+    query5(document).off(".tsg-drag").on("selectstart.tsg-drag, dragstart.tsg-drag", (e) => e.preventDefault()).find("body").addClass("tsg-overlay-dragging");
+    query5("html").off(".TsColor").on("mousemove.TsColor", mouseMove).on("mouseup.TsColor", mouseUp);
     function mouseUp(_event) {
-      query4("html").off(".TsColor");
-      query4(document).off("selectstart.tsg-drag");
-      query4(document).off("dragstart.tsg-drag");
-      query4(document.body).removeClass("tsg-overlay-dragging");
+      query5("html").off(".TsColor");
+      query5(document).off("selectstart.tsg-drag");
+      query5(document).off("dragstart.tsg-drag");
+      query5(document.body).removeClass("tsg-overlay-dragging");
       if (initial["moved"]) {
         const ov = initial.el[0] && initial.el[0].overlay;
         if (ov) {
@@ -5272,14 +5393,14 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     });
     overlay.on("show:after.attach", (_event) => {
       if (ret.overlay?.box) {
-        const actions = query4(ret.overlay.box).find(".tsg-eaction");
+        const actions = query5(ret.overlay.box).find(".tsg-eaction");
         TsUtils.bindEvents(actions, this);
         this.initControls(ret.overlay);
       }
     });
     overlay.on("update:after.attach", (_event) => {
       if (ret.overlay?.box) {
-        const actions = query4(ret.overlay.box).find(".tsg-eaction");
+        const actions = query5(ret.overlay.box).find(".tsg-eaction");
         TsUtils.bindEvents(actions, this);
         this.initControls(ret.overlay);
       }
@@ -5318,19 +5439,19 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     this.index = [-1, -1];
     if (typeof name != "string") {
       target = name.target;
-      this.index = (query4(target).attr("index") ?? "").split(":").map(Number);
-      name = query4(target).closest(".tsg-overlay").attr("name");
+      this.index = (query5(target).attr("index") ?? "").split(":").map(Number);
+      name = query5(target).closest(".tsg-overlay").attr("name");
     }
     const overlay = this.get(name);
     const edata = this.trigger("liveUpdate", { color, target: name, overlay, param: name });
     if (edata.isCancelled === true) return;
     if (["INPUT", "TEXTAREA"].includes(overlay.anchor.tagName) && overlay.options.updateInput) {
-      query4(overlay.anchor).val(color);
+      query5(overlay.anchor).val(color);
     }
     overlay.newColor = color;
-    query4(overlay.box).find(".tsg-color.tsg-selected").removeClass("tsg-selected");
+    query5(overlay.box).find(".tsg-color.tsg-selected").removeClass("tsg-selected");
     if (target) {
-      query4(target).addClass("tsg-selected");
+      query5(target).addClass("tsg-selected");
     }
     edata.finish();
   }
@@ -5360,13 +5481,13 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tabClick(index, name) {
     if (typeof name != "string") {
-      name = query4(name.target).closest(".tsg-overlay").attr("name");
+      name = query5(name.target).closest(".tsg-overlay").attr("name");
     }
     const overlay = this.get(name);
-    const tab = query4(overlay.box).find(`.tsg-color-tab:nth-child(${index})`);
-    query4(overlay.box).find(".tsg-color-tab").removeClass("tsg-selected");
-    query4(tab).addClass("tsg-selected");
-    query4(overlay.box).find(".tsg-tab-content").hide().closest(".tsg-colors").find(".tab-" + index).show();
+    const tab = query5(overlay.box).find(`.tsg-color-tab:nth-child(${index})`);
+    query5(overlay.box).find(".tsg-color-tab").removeClass("tsg-selected");
+    query5(tab).addClass("tsg-selected");
+    query5(overlay.box).find(".tsg-tab-content").hide().closest(".tsg-colors").find(".tab-" + index).show();
   }
   // generate HTML with color pallent and controls
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -5482,10 +5603,10 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       this.tabClick(2, overlay.name);
     }
     setColor(hsv, true, color ?? "");
-    query4(overlay.box).off(".TsColor").on("contextmenu.TsColor", (event2) => {
+    query5(overlay.box).off(".TsColor").on("contextmenu.TsColor", (event2) => {
       event2.preventDefault();
     }).find("input").off(".TsColor").on("change.TsColor", (event2) => {
-      const el = query4(event2.target);
+      const el = query5(event2.target);
       let val = parseFloat(el.val());
       const max = parseFloat(el.attr("max"));
       if (isNaN(val)) {
@@ -5511,8 +5632,8 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       }
       setColor(color2, true);
     });
-    query4(overlay.box).find(".color-original").off(".TsColor").on("click.TsColor", (event2) => {
-      const tmp = TsUtils.parseColor(query4(event2.target).css("background-color"));
+    query5(overlay.box).find(".color-original").off(".TsColor").on("click.TsColor", (event2) => {
+      const tmp = TsUtils.parseColor(query5(event2.target).css("background-color"));
       if (tmp != null) {
         rgb = tmp;
         hsv = TsUtils.rgb2hsv(rgb);
@@ -5522,7 +5643,7 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     const mDown = `${!TsUtils.isMobile ? "mousedown" : "touchstart"}.TsColor`;
     const mUp = `${!TsUtils.isMobile ? "mouseup" : "touchend"}.TsColor`;
     const mMove = `${!TsUtils.isMobile ? "mousemove" : "touchmove"}.TsColor`;
-    query4(overlay.box).find(".palette, .rainbow, .alpha").off(".TsColor").on(`${mDown}.TsColor`, mouseDown);
+    query5(overlay.box).find(".palette, .rainbow, .alpha").off(".TsColor").on(`${mDown}.TsColor`, mouseDown);
     this.setColor = setColor;
     return;
     function setColor(color2, fullUpdate, initial2) {
@@ -5548,8 +5669,8 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       if (rgb.a === 1) {
         newColor = cl[0] + cl[1] + cl[2];
       }
-      query4(overlay.box).find(".color-preview").css("background-color", "#" + newColor);
-      query4(overlay.box).find("input").each((el) => {
+      query5(overlay.box).find(".color-preview").css("background-color", "#" + newColor);
+      query5(overlay.box).find("input").each((el) => {
         if (el.name) {
           if (rgb[el.name] != null) el.value = String(rgb[el.name]);
           if (hsv[el.name] != null) el.value = String(hsv[el.name]);
@@ -5560,9 +5681,9 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       });
       if (initial2 != null) {
         const color3 = overlay.tmp["initColor"] || newColor;
-        query4(overlay.box).find(".color-original").css("background-color", "#" + color3);
-        query4(overlay.box).find(".tsg-color.tsg-selected").removeClass("tsg-selected");
-        query4(overlay.box).find(`.tsg-colors [name="${color3}"], .tsg-colors [name="${initial2}"]`).addClass("tsg-selected");
+        query5(overlay.box).find(".color-original").css("background-color", "#" + color3);
+        query5(overlay.box).find(".tsg-color.tsg-selected").removeClass("tsg-selected");
+        query5(overlay.box).find(`.tsg-colors [name="${color3}"], .tsg-colors [name="${initial2}"]`).addClass("tsg-selected");
         if (newColor.length == 8) {
           self.tabClick(2, overlay.name);
         }
@@ -5575,9 +5696,9 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       }
     }
     function updateSliders() {
-      const el1 = query4(overlay.box).find(".palette .value1");
-      const el2 = query4(overlay.box).find(".rainbow .value2");
-      const el3 = query4(overlay.box).find(".alpha .value2");
+      const el1 = query5(overlay.box).find(".palette .value1");
+      const el2 = query5(overlay.box).find(".rainbow .value2");
+      const el3 = query5(overlay.box).find(".alpha .value2");
       if (!el1[0] || !el2[0] || !el3[0]) return;
       const offset1 = el1[0].clientWidth / 2;
       const offset2 = el2[0].clientWidth / 2;
@@ -5591,10 +5712,10 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     function refreshPalette() {
       const cl = TsUtils.hsv2rgb(hsv.h, 100, 100);
       const rgb2 = `${cl.r},${cl.g},${cl.b}`;
-      query4(overlay.box).find(".palette").css("background-image", `linear-gradient(90deg, rgba(${rgb2},0) 0%, rgba(${rgb2},1) 100%)`);
+      query5(overlay.box).find(".palette").css("background-image", `linear-gradient(90deg, rgba(${rgb2},0) 0%, rgba(${rgb2},1) 100%)`);
     }
     function mouseDown(event2) {
-      const el = query4(this).find(".value1, .value2");
+      const el = query5(this).find(".value1, .value2");
       const offset = el.prop("clientWidth") / 2;
       if (el.hasClass("move-x")) el.css({ left: event2.offsetX - offset + "px" });
       if (el.hasClass("move-y")) el.css({ top: event2.offsetY - offset + "px" });
@@ -5608,10 +5729,10 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
         top: parseInt(el.css("top"))
       };
       mouseMove(event2);
-      query4("html").off(".TsColor").on(mMove, mouseMove).on(mUp, mouseUp);
+      query5("html").off(".TsColor").on(mMove, mouseMove).on(mUp, mouseUp);
     }
     function mouseUp(_event) {
-      query4("html").off(".TsColor");
+      query5("html").off(".TsColor");
     }
     function mouseMove(event2) {
       const el = initial.el;
@@ -5626,7 +5747,7 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
       if (newY > initial.height - offset) newY = initial.height - offset;
       if (el.hasClass("move-x")) el.css({ left: newX + "px" });
       if (el.hasClass("move-y")) el.css({ top: newY + "px" });
-      const name = query4(el.get(0).parentNode).attr("name");
+      const name = query5(el.get(0).parentNode).attr("name");
       const x = parseInt(el.css("left")) + offset;
       const y = parseInt(el.css("top")) + offset;
       if (name === "palette") {
@@ -5666,7 +5787,7 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     const color = await this.pickColor();
     if (typeof color == "string" && color.substr(0, 1) == "#" && [7, 9].includes(color.length)) {
       this.addCustomColor(color, name);
-      const cnt = query4(event2.target).closest(".tsg-colors-custom");
+      const cnt = query5(event2.target).closest(".tsg-colors-custom");
       cnt.html(this.getCustomColorsHTML(name));
       TsUtils.bindEvents(cnt.find(".tsg-eaction"), this);
       this.select(color.substr(1), name);
@@ -5774,12 +5895,12 @@ var MenuTooltip = class extends Tooltip {
             }
           }
         }
-        const actions = query4(ret.overlay.box).find(".tsg-eaction");
+        const actions = query5(ret.overlay.box).find(".tsg-eaction");
         if (["INPUT", "TEXTAREA"].includes(overlay.anchor.tagName)) {
           overlay.tmp._new_search = false;
-          query4(overlay.anchor).on("input.search-trigger", () => {
+          query5(overlay.anchor).on("input.search-trigger", () => {
             overlay.tmp._new_search = true;
-            query4(overlay.anchor).off("input.search-trigger");
+            query5(overlay.anchor).off("input.search-trigger");
           });
         }
         TsUtils.bindEvents(actions, this);
@@ -5834,7 +5955,7 @@ var MenuTooltip = class extends Tooltip {
       this.showTooltip(overlay.name);
     };
     overlay.click = () => {
-      query4(overlay.box).find(".tsg-selected").each((el) => {
+      query5(overlay.box).find(".tsg-selected").each((el) => {
         el.click();
       });
     };
@@ -5888,18 +6009,18 @@ var MenuTooltip = class extends Tooltip {
       mdown = "touchstart";
       mclick = "touchend";
     }
-    query4(overlay.box).find(".tsg-menu:not(.tsg-sub-menu)").off(".TsMenu").on("contextmenu.TsMenu", (event2) => {
+    query5(overlay.box).find(".tsg-menu:not(.tsg-sub-menu)").off(".TsMenu").on("contextmenu.TsMenu", (event2) => {
       event2.preventDefault();
     }).on(`${mdown}.TsMenu`, { delegate: ".tsg-menu-item" }, (event2) => {
       const dt = event2.delegate.dataset;
-      const parents = query4(event2.delegate).closest(".tsg-menu").data("parents");
+      const parents = query5(event2.delegate).closest(".tsg-menu").data("parents");
       this.menuDown(overlay, event2, dt.index, parents);
       if (TsUtils.isMobile) {
         event2.preventDefault();
       }
     }).on(`${mclick}.TsMenu`, { delegate: ".tsg-menu-item" }, (event2) => {
       const dt = event2.delegate.dataset;
-      const parents = query4(event2.delegate).closest(".tsg-menu").data("parents");
+      const parents = query5(event2.delegate).closest(".tsg-menu").data("parents");
       this.menuClick(overlay, event2, parseInt(dt["index"] ?? "0"), parents);
     }).find(".tsg-menu-item").off(".TsMenu").on("mouseEnter.TsMenu", (event2) => {
       const dt = event2.target.dataset;
@@ -5912,7 +6033,7 @@ var MenuTooltip = class extends Tooltip {
       if (tooltip && dt["hassubmenu"] != "yes") {
         this.showTooltip(overlay.name, { tooltip, anchor: event2.target });
       }
-      const _menu = query4(event2.target).closest(".tsg-menu").get(0);
+      const _menu = query5(event2.target).closest(".tsg-menu").get(0);
       if (_menu._evt && _menu._evt.target != event2.target) {
         this.closeSubMenu(_menu._evt);
       }
@@ -5954,14 +6075,14 @@ var MenuTooltip = class extends Tooltip {
       TsTooltip.hide(overlay.name + "-help-tp");
     });
     if (["INPUT", "TEXTAREA"].includes(overlay.anchor.tagName)) {
-      query4(overlay.anchor).off(".TsMenu").on("input.TsMenu", (_event) => {
+      query5(overlay.anchor).off(".TsMenu").on("input.TsMenu", (_event) => {
       }).on("keyup.TsMenu", (event2) => {
         event2._searchType = "filter";
         this.keyUp(overlay, event2);
       });
     }
     if (overlay.options.search) {
-      query4(overlay.box).find("#menu-search").off(".TsMenu").on("keyup.TsMenu", (event2) => {
+      query5(overlay.box).find("#menu-search").off(".TsMenu").on("keyup.TsMenu", (event2) => {
         event2._searchType = "search";
         this.keyUp(overlay, event2);
       });
@@ -6109,7 +6230,7 @@ var MenuTooltip = class extends Tooltip {
   // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   openSubMenu(event2) {
-    const anchor = query4(event2.originalEvent.target).get(0);
+    const anchor = query5(event2.originalEvent.target).get(0);
     const { overlay } = event2;
     const { items } = overlay.options;
     const mitem = items[event2.index];
@@ -6123,7 +6244,7 @@ var MenuTooltip = class extends Tooltip {
     if (prev) {
       prev.hide();
     }
-    query4(event2.target).addClass("expanded");
+    query5(event2.target).addClass("expanded");
     TsMenu.show({
       name: overlay.name + "-submenu",
       anchor,
@@ -6138,10 +6259,10 @@ var MenuTooltip = class extends Tooltip {
       // any: cast-to-any for dynamic dispatch; TsTooltip overlay options merge from multiple user sources at runtime
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     }).hide((_evt) => {
-      query4(event2.target).removeClass("expanded");
+      query5(event2.target).removeClass("expanded");
     });
     setTimeout(() => {
-      query4("#w2overlay-" + overlay.name + "-submenu").on("mouseenter", (event3) => {
+      query5("#w2overlay-" + overlay.name + "-submenu").on("mouseenter", (event3) => {
         event3.target._keepSubOpen = true;
       }).on("mouseleave", (event3) => {
         event3.target._keepSubOpen = false;
@@ -6166,10 +6287,10 @@ var MenuTooltip = class extends Tooltip {
     if (!overlay.displayed) {
       this.show(overlay.name);
     }
-    const view = query4(overlay.box).find(".tsg-overlay-body").get(0);
-    const search2 = query4(overlay.box).find(".tsg-menu-search, .tsg-menu-top").get(0);
-    query4(overlay.box).find(".tsg-menu-item.tsg-selected").removeClass("tsg-selected");
-    const el = query4(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`).addClass("tsg-selected").get(0);
+    const view = query5(overlay.box).find(".tsg-overlay-body").get(0);
+    const search2 = query5(overlay.box).find(".tsg-menu-search, .tsg-menu-top").get(0);
+    query5(overlay.box).find(".tsg-menu-item.tsg-selected").removeClass("tsg-selected");
+    const el = query5(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`).addClass("tsg-selected").get(0);
     if (el) {
       if (el.offsetTop + el.clientHeight > view.clientHeight + view.scrollTop) {
         el.scrollIntoView({
@@ -6193,7 +6314,7 @@ var MenuTooltip = class extends Tooltip {
   showTooltip(name, options) {
     const overlay = Tooltip.active[name.replace(/[\s\.#]/g, "_")];
     if (!overlay || !overlay.displayed) return;
-    const anchor = options?.anchor ?? query4(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`).get(0);
+    const anchor = options?.anchor ?? query5(overlay.box).find(`.tsg-menu-item[index="${overlay.selected}"]`).get(0);
     const tooltip = options?.tooltip ?? (overlay.selected != null ? overlay.options.items?.[overlay.selected]?.tooltip : void 0);
     if (tooltip) {
       const html = tooltip.html ?? tooltip;
@@ -6222,40 +6343,40 @@ var MenuTooltip = class extends Tooltip {
       this.show(overlay.name);
     }
     TsTooltip.hide(overlay.name + "-tooltip");
-    query4(overlay.box).find(".tsg-no-items").hide();
-    query4(overlay.box).find(".tsg-menu-item, .tsg-menu-divider").each((el) => {
+    query5(overlay.box).find(".tsg-no-items").hide();
+    query5(overlay.box).find(".tsg-menu-item, .tsg-menu-divider").each((el) => {
       const cur = this.getCurrent(name, el.getAttribute("index"));
       if (cur.item?.hidden) {
-        query4(el).hide();
+        query5(el).hide();
       } else {
         const search2 = overlay.tmp?.["search"];
         if (overlay.options.markSearch) {
           TsUtils.marker(el, search2, { onlyFirst: overlay.options.match == "begins" });
         }
-        query4(el).show();
+        query5(el).show();
       }
     });
-    query4(overlay.box).find(".tsg-sub-menu").each((sub) => {
-      const hasItems = query4(sub).find(".tsg-menu-item").get().some((el) => {
+    query5(overlay.box).find(".tsg-sub-menu").each((sub) => {
+      const hasItems = query5(sub).find(".tsg-menu-item").get().some((el) => {
         return el.style.display != "none" ? true : false;
       });
       const parent = this.getCurrent(name, sub.dataset?.parent);
       if (parent.item.expanded) {
         if (!hasItems) {
-          query4(sub).parent().hide();
+          query5(sub).parent().hide();
         } else {
-          query4(sub).parent().show();
+          query5(sub).parent().show();
         }
       }
     });
     if (overlay.tmp["searchCount"] == 0 || (overlay.options?.items?.length ?? 0) == 0) {
-      if (query4(overlay.box).find(".tsg-no-items").length == 0) {
-        query4(overlay.box).find(".tsg-menu:not(.tsg-sub-menu)").append(`
+      if (query5(overlay.box).find(".tsg-no-items").length == 0) {
+        query5(overlay.box).find(".tsg-menu:not(.tsg-sub-menu)").append(`
                     <div class="tsg-no-items">
                         ${TsUtils.lang(overlay.options.msgNoItems)}
                     </div>`);
       }
-      query4(overlay.box).find(".tsg-no-items").show();
+      query5(overlay.box).find(".tsg-no-items").show();
     }
   }
   /**
@@ -6264,7 +6385,7 @@ var MenuTooltip = class extends Tooltip {
    */
   // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  applyFilter(name, items, search2, debounce) {
+  applyFilter(name, items, search2, debounce2) {
     let count = 0;
     const overlay = Tooltip.active[name.replace(/[\s\.#]/g, "_")];
     const options = overlay.options;
@@ -6318,12 +6439,12 @@ var MenuTooltip = class extends Tooltip {
           this.applyFilter(name, null, search2);
         }
       }
-      query4(overlay.box).find(".tsg-no-items").html(msg);
+      query5(overlay.box).find(".tsg-no-items").html(msg);
       remote.search = search2;
       options.items = [];
       overlay.tmp["remote"] = remote;
       if (proceed) {
-        this.request(overlay, search2, debounce).then((remoteItems) => {
+        this.request(overlay, search2, debounce2).then((remoteItems) => {
           overlay.tmp["_skip_filter"] = true;
           this.update(name, remoteItems);
           delete overlay.tmp["_skip_filter"];
@@ -6410,7 +6531,7 @@ var MenuTooltip = class extends Tooltip {
     return prom;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  request(overlay, search2, debounce) {
+  request(overlay, search2, debounce2) {
     const options = overlay.options;
     const remote = overlay.tmp["remote"];
     let resolve, reject;
@@ -6523,7 +6644,7 @@ var MenuTooltip = class extends Tooltip {
           reject();
         });
         edata.finish();
-      }, debounce ? options.debounce ?? 350 : 0);
+      }, debounce2 ? options.debounce ?? 350 : 0);
     }
     return new Promise((res, rej) => {
       resolve = res;
@@ -6562,8 +6683,8 @@ var MenuTooltip = class extends Tooltip {
   menuDown(overlay, event2, index, parents) {
     const options = overlay.options;
     let items = options.items;
-    const icon = query4(event2.delegate).find(".tsg-icon");
-    const menu = query4(event2.target).closest(".tsg-menu:not(.tsg-sub-menu)");
+    const icon = query5(event2.delegate).find(".tsg-icon");
+    const menu = query5(event2.target).closest(".tsg-menu:not(.tsg-sub-menu)");
     if (typeof items == "function") {
       items = items({ overlay, index, parents, event: event2 });
     }
@@ -6583,11 +6704,11 @@ var MenuTooltip = class extends Tooltip {
         }
       });
     };
-    if ((options.type === "check" || options.type === "radio") && item.group !== false && !query4(event2.target).hasClass("menu-remove") && !query4(event2.target).hasClass("menu-help") && !query4(event2.target).closest(".tsg-menu-item").hasClass("has-sub-menu")) {
+    if ((options.type === "check" || options.type === "radio") && item.group !== false && !query5(event2.target).hasClass("menu-remove") && !query5(event2.target).hasClass("menu-help") && !query5(event2.target).closest(".tsg-menu-item").hasClass("has-sub-menu")) {
       item.checked = options.type == "radio" ? true : !item.checked;
       if (item.checked) {
         if (options.type === "radio") {
-          query4(event2.target).closest(".tsg-menu").find(".tsg-icon").removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+          query5(event2.target).closest(".tsg-menu").find(".tsg-icon").removeClass("tsg-icon-check").addClass("tsg-icon-empty");
         }
         if (options.type === "check" && item.group != null) {
           uncheck(options.items);
@@ -6597,10 +6718,10 @@ var MenuTooltip = class extends Tooltip {
         icon.removeClass("tsg-icon-check").addClass("tsg-icon-empty");
       }
     }
-    if (!query4(event2.target).hasClass("menu-remove") && !query4(event2.target).hasClass("menu-help")) {
+    if (!query5(event2.target).hasClass("menu-remove") && !query5(event2.target).hasClass("menu-help")) {
       menu.find(".tsg-menu-item").removeClass("tsg-selected");
-      if (!query4(event2.delegate).hasClass("has-sub-menu")) {
-        query4(event2.delegate).addClass("tsg-selected");
+      if (!query5(event2.delegate).hasClass("has-sub-menu")) {
+        query5(event2.delegate).addClass("tsg-selected");
       }
     }
   }
@@ -6609,7 +6730,7 @@ var MenuTooltip = class extends Tooltip {
   menuClick(overlay, event2, index, parents) {
     const options = overlay.options;
     let items = options.items;
-    const $item = query4(event2.delegate).closest(".tsg-menu-item");
+    const $item = query5(event2.delegate).closest(".tsg-menu-item");
     let keepOpen = options.hideOn.includes("select") ? false : true;
     if (event2.shiftKey || event2.metaKey || event2.ctrlKey) {
       keepOpen = true;
@@ -6618,7 +6739,7 @@ var MenuTooltip = class extends Tooltip {
       items = items({ overlay, index, parents, event: event2 });
     }
     const item = items[index];
-    if (!item || item.disabled && !query4(event2.target).hasClass("menu-remove")) {
+    if (!item || item.disabled && !query5(event2.target).hasClass("menu-remove")) {
       return;
     }
     let edata;
@@ -6630,7 +6751,7 @@ var MenuTooltip = class extends Tooltip {
       parentOverlay ??= topOverlay;
       overlays.push(topOverlay);
     }
-    if (query4(event2.target).hasClass("menu-remove")) {
+    if (query5(event2.target).hasClass("menu-remove")) {
       edata = topOverlay.trigger("remove", {
         originalEvent: event2,
         target: overlay.name,
@@ -6737,7 +6858,7 @@ var MenuTooltip = class extends Tooltip {
       case 13: {
         if (!overlay.displayed || !overlay.selected) return;
         const { index, parents } = this.getCurrent(overlay.name);
-        event2.delegate = query4(overlay.box).find(".tsg-selected").get(0);
+        event2.delegate = query5(overlay.box).find(".tsg-selected").get(0);
         this.menuClick(overlay, event2, parseInt(String(index)), parents);
         filter = false;
         break;
@@ -6766,7 +6887,7 @@ var MenuTooltip = class extends Tooltip {
           refreshIndex = true;
         }
         if (Array.isArray(item?.items) && item.items.length > 0 && item.expanded) {
-          event2.delegate = query4(overlay.box).find(`.tsg-menu-item[index="${index}"]`).get(0);
+          event2.delegate = query5(overlay.box).find(`.tsg-menu-item[index="${index}"]`).get(0);
           overlay.selected = index;
           this.menuClick(overlay, event2, parseInt(String(index)), parents);
         }
@@ -6777,7 +6898,7 @@ var MenuTooltip = class extends Tooltip {
         if (!overlay.displayed) return;
         const { item, index, parents } = this.getCurrent(overlay.name);
         if (Array.isArray(item?.items) && item.items.length > 0 && !item.expanded) {
-          event2.delegate = query4(overlay.box).find(".tsg-selected").get(0);
+          event2.delegate = query5(overlay.box).find(".tsg-selected").get(0);
           this.menuClick(overlay, event2, parseInt(String(index)), parents);
         }
         filter = false;
@@ -6941,12 +7062,12 @@ var DateTooltip = class extends Tooltip {
       }
       const cal = this.getMonthHTML(options, month, year);
       Object.assign(overlay.tmp, cal);
-      query4(overlay.box).find(".tsg-overlay-body").html(cal.html);
+      query5(overlay.box).find(".tsg-overlay-body").html(cal.html);
       this.initControls(overlay);
     };
     const checkJump = (event2, dblclick) => {
-      query4(event2.target).parent().find(".tsg-jump-month, .tsg-jump-year").removeClass("tsg-selected");
-      query4(event2.target).addClass("tsg-selected");
+      query5(event2.target).parent().find(".tsg-jump-month, .tsg-jump-year").removeClass("tsg-selected");
+      query5(event2.target).addClass("tsg-selected");
       const dt = /* @__PURE__ */ new Date();
       let { jumpMonth, jumpYear } = overlay.tmp;
       if (dblclick) {
@@ -6956,12 +7077,12 @@ var DateTooltip = class extends Tooltip {
       if (jumpMonth && jumpYear) {
         const cal = this.getMonthHTML(options, jumpMonth, jumpYear);
         Object.assign(overlay.tmp, cal);
-        query4(overlay.box).find(".tsg-overlay-body").html(cal.html);
+        query5(overlay.box).find(".tsg-overlay-body").html(cal.html);
         overlay.tmp.jump = false;
         this.initControls(overlay);
       }
     };
-    query4(overlay.box).find(".tsg-cal-title").off(".calendar").on("click.calendar", (event2) => {
+    query5(overlay.box).find(".tsg-cal-title").off(".calendar").on("click.calendar", (event2) => {
       if (options.draggable && overlay.tmp?.moved) {
         event2.stopPropagation();
         return;
@@ -6970,11 +7091,11 @@ var DateTooltip = class extends Tooltip {
       if (overlay.tmp.jump) {
         const { month, year } = overlay.tmp;
         const cal = this.getMonthHTML(options, month, year);
-        query4(overlay.box).find(".tsg-overlay-body").html(cal.html);
+        query5(overlay.box).find(".tsg-overlay-body").html(cal.html);
         overlay.tmp.jump = false;
       } else {
-        query4(overlay.box).find(".tsg-overlay-body .tsg-cal-days").replace(this.getYearHTML());
-        const el = query4(overlay.box).find(`[name="${overlay.tmp.year}"]`).get(0);
+        query5(overlay.box).find(".tsg-overlay-body .tsg-cal-days").replace(this.getYearHTML());
+        const el = query5(overlay.box).find(`[name="${overlay.tmp.year}"]`).get(0);
         if (el) el.scrollIntoView(true);
         overlay.tmp.jump = true;
       }
@@ -6987,7 +7108,7 @@ var DateTooltip = class extends Tooltip {
       moveMonth(1);
       event2.stopPropagation();
     });
-    query4(overlay.box).find(".tsg-cal-now").off(".calendar").on("click.calendar", (_event) => {
+    query5(overlay.box).find(".tsg-cal-now").off(".calendar").on("click.calendar", (_event) => {
       if (options.type == "datetime") {
         if (overlay.newDate) {
           overlay.newValue = TsUtils.formatTime(/* @__PURE__ */ new Date(), options.format.split("|")[1]);
@@ -7001,31 +7122,31 @@ var DateTooltip = class extends Tooltip {
       }
       this.hide(overlay.name);
     });
-    query4(overlay.box).off(".calendar").on("contextmenu.calendar", (event2) => {
+    query5(overlay.box).off(".calendar").on("contextmenu.calendar", (event2) => {
       event2.preventDefault();
     }).on("click.calendar", { delegate: ".tsg-day.tsg-date" }, (event2) => {
       if (options.type == "datetime") {
-        overlay.newDate = query4(event2.target).attr("date");
-        query4(overlay.box).find(".tsg-overlay-body").html(this.getHourHTML(overlay.options).html);
+        overlay.newDate = query5(event2.target).attr("date");
+        query5(overlay.box).find(".tsg-overlay-body").html(this.getHourHTML(overlay.options).html);
         this.initControls(overlay);
       } else {
-        overlay.newValue = query4(event2.target).attr("date");
+        overlay.newValue = query5(event2.target).attr("date");
         this.hide(overlay.name);
       }
     }).on("click.calendar", { delegate: ".tsg-jump-month" }, (event2) => {
-      overlay.tmp.jumpMonth = parseInt(query4(event2.target).attr("name") ?? "0");
+      overlay.tmp.jumpMonth = parseInt(query5(event2.target).attr("name") ?? "0");
       checkJump(event2);
     }).on("dblclick.calendar", { delegate: ".tsg-jump-month" }, (event2) => {
-      overlay.tmp.jumpMonth = parseInt(query4(event2.target).attr("name") ?? "0");
+      overlay.tmp.jumpMonth = parseInt(query5(event2.target).attr("name") ?? "0");
       checkJump(event2, true);
     }).on("click.calendar", { delegate: ".tsg-jump-year" }, (event2) => {
-      overlay.tmp.jumpYear = parseInt(query4(event2.target).attr("name") ?? "0");
+      overlay.tmp.jumpYear = parseInt(query5(event2.target).attr("name") ?? "0");
       checkJump(event2);
     }).on("dblclick.calendar", { delegate: ".tsg-jump-year" }, (event2) => {
-      overlay.tmp.jumpYear = parseInt(query4(event2.target).attr("name") ?? "0");
+      overlay.tmp.jumpYear = parseInt(query5(event2.target).attr("name") ?? "0");
       checkJump(event2, true);
     }).on("click.calendar", { delegate: ".tsg-time.hour" }, (event2) => {
-      const hour = Number(query4(event2.target).attr("hour"));
+      const hour = Number(query5(event2.target).attr("hour"));
       let min = (this.str2min(options.value) ?? 0) % 60;
       if (overlay.tmp.initValue && !options.value) {
         min = (this.str2min(overlay.tmp.initValue) ?? 0) % 60;
@@ -7036,16 +7157,16 @@ var DateTooltip = class extends Tooltip {
       } else {
         overlay.newValue = hour + ":" + min;
         const html = this.getMinHTML(hour, options).html;
-        query4(overlay.box).find(".tsg-overlay-body").html(html);
+        query5(overlay.box).find(".tsg-overlay-body").html(html);
         this.initControls(overlay);
       }
     }).on("click.calendar", { delegate: ".tsg-time.min" }, (event2) => {
       const hour = Math.floor((this.str2min(overlay.newValue) ?? 0) / 60);
-      const time = hour * 60 + parseInt(query4(event2.target).attr("min"));
+      const time = hour * 60 + parseInt(query5(event2.target).attr("min"));
       overlay.newValue = this.min2str(time, options.format);
       this.hide(overlay.name);
     });
-    TsUtils.bindEvents(query4(overlay.box).find(".tsg-eaction"), this);
+    TsUtils.bindEvents(query5(overlay.box).find(".tsg-eaction"), this);
   }
   // any: callback parameter — caller signature varies; TsTooltip overlay options merge from multiple user sources at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7238,8 +7359,8 @@ var DateTooltip = class extends Tooltip {
       const dt = TsUtils.isDate(str, options.format, true);
       if (dt) {
         if (options.start || options.end) {
-          const st = typeof options.start === "string" ? options.start : query4(options.start).val();
-          const en = typeof options.end === "string" ? options.end : query4(options.end).val();
+          const st = typeof options.start === "string" ? options.start : query5(options.start).val();
+          const en = typeof options.end === "string" ? options.end : query5(options.end).val();
           let start = TsUtils.isDate(st, options.format, true);
           let end = TsUtils.isDate(en, options.format, true);
           const dtDate = dt instanceof Date ? dt : /* @__PURE__ */ new Date();
@@ -7323,7 +7444,7 @@ var TsColor = new ColorTooltip();
 var TsDate = new DateTooltip();
 
 // src/tstoolbar.ts
-var query5 = query2;
+var query6 = query2;
 var TsToolbar = class extends TsBase {
   routeData;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7423,7 +7544,7 @@ var TsToolbar = class extends TsBase {
     Object.assign(this, options);
     if (Array.isArray(items)) this.add(items, true);
     options.items = items;
-    if (typeof this.box == "string") this.box = query5(this.box).get(0);
+    if (typeof this.box == "string") this.box = query6(this.box).get(0);
     if (this.box) this.render(this.box);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -7518,7 +7639,7 @@ var TsToolbar = class extends TsBase {
       const it = this.get(item);
       if (!it || String(item).indexOf(":") != -1) return;
       effected++;
-      query5(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id)).remove();
+      query6(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id)).remove();
       const ind = this.get(it.id, true);
       if (ind != null) this.items.splice(ind, 1);
     });
@@ -7583,7 +7704,7 @@ var TsToolbar = class extends TsBase {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   setCount(id, count, className, style) {
-    const btn = query5(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`);
+    const btn = query6(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`);
     if (btn.length > 0) {
       btn.removeClass(null).addClass(className ?? "").text(count);
       btn.get(0).style.cssText = style ?? "";
@@ -7723,7 +7844,7 @@ var TsToolbar = class extends TsBase {
       if (edata.isCancelled === true) return;
       items = it && it.items ? TsUtils.normMenu.call(this, it.items, it) : [];
       const btn = "#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id);
-      query5(this.box).find(btn).removeClass("down");
+      query6(this.box).find(btn).removeClass("down");
       if (it.type == "radio") {
         for (let i = 0; i < this.items.length; i++) {
           const itt = this.items[i];
@@ -7744,7 +7865,7 @@ var TsToolbar = class extends TsBase {
           }
         }
         it.checked = true;
-        query5(this.box).find(btn).addClass("checked");
+        query6(this.box).find(btn).addClass("checked");
       }
       if (["menu", "menu-radio", "menu-check", "drop", "color", "text-color"].includes(it.type)) {
         this.tooltipHide(id);
@@ -7761,7 +7882,7 @@ var TsToolbar = class extends TsBase {
                 this.set(id2, { checked: false });
               };
             };
-            const el = query5(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id));
+            const el = query6(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id));
             if (!TsUtils.isPlainObject(it.overlay)) it.overlay = {};
             if (it.type == "drop") {
               ;
@@ -7848,9 +7969,9 @@ var TsToolbar = class extends TsBase {
       if (["check", "menu", "menu-radio", "menu-check", "drop", "color", "text-color"].includes(it.type)) {
         it.checked = !it.checked;
         if (it.checked) {
-          query5(this.box).find(btn).addClass("checked");
+          query6(this.box).find(btn).addClass("checked");
         } else {
-          query5(this.box).find(btn).removeClass("checked");
+          query6(this.box).find(btn).removeClass("checked");
         }
       }
       if (it.route) {
@@ -7875,7 +7996,7 @@ var TsToolbar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scroll(direction, line, instant) {
     return new Promise((resolve, _reject) => {
-      const scrollBox = query5(this.box).find(`.tsg-tb-line:nth-child(${line}) .tsg-scroll-wrapper`);
+      const scrollBox = query6(this.box).find(`.tsg-tb-line:nth-child(${line}) .tsg-scroll-wrapper`);
       const scrollBoxEl = scrollBox.get(0);
       const scrollLeft = scrollBoxEl.scrollLeft;
       const right = scrollBox.find(".tsg-tb-right").get(0);
@@ -7905,7 +8026,7 @@ var TsToolbar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render(box) {
     const time = Date.now();
-    if (typeof box == "string") box = query5(box).get(0);
+    if (typeof box == "string") box = query6(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -7942,11 +8063,11 @@ var TsToolbar = class extends TsBase {
       }
       it.line = line;
     }
-    query5(this.box).attr("name", this.name).addClass("tsg-reset tsg-toolbar").html(html);
-    if (query5(this.box).length > 0) {
-      query5(this.box)[0].style.cssText += this["style"];
+    query6(this.box).attr("name", this.name).addClass("tsg-reset tsg-toolbar").html(html);
+    if (query6(this.box).length > 0) {
+      query6(this.box)[0].style.cssText += this["style"];
     }
-    TsUtils.bindEvents(query5(this.box).find(".tsg-tb-line .tsg-eaction"), this);
+    TsUtils.bindEvents(query6(this.box).find(".tsg-tb-line .tsg-eaction"), this);
     this.last.observeResize = new ResizeObserver(() => {
       this.resize();
     });
@@ -7978,24 +8099,24 @@ var TsToolbar = class extends TsBase {
       if (edata2.isCancelled === true) return;
     }
     const selector = `#tb_${this.name}_item_${TsUtils.escapeId(it.id)}`;
-    const btn = query5(this.box).find(selector);
+    const btn = query6(this.box).find(selector);
     const html = this.getItemHTML(it);
     this.tooltipHide(id);
     if (it.type == "spacer") {
-      query5(this.box).find(`.tsg-tb-line:nth-child(${it.line ?? 1})`).find(".tsg-tb-right").css("width", "auto");
+      query6(this.box).find(`.tsg-tb-line:nth-child(${it.line ?? 1})`).find(".tsg-tb-right").css("width", "auto");
     }
     if (btn.length === 0) {
       const next = parseInt(this.get(id, true)) + 1;
-      let $next = query5(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : "--")}`);
+      let $next = query6(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : "--")}`);
       if ($next.length == 0) {
-        $next = query5(this.box).find(`.tsg-tb-line:nth-child(${it.line}`).find(".tsg-tb-right").before(html);
+        $next = query6(this.box).find(`.tsg-tb-line:nth-child(${it.line}`).find(".tsg-tb-right").before(html);
       } else {
         $next.after(html);
       }
-      TsUtils.bindEvents(query5(this.box).find(`${selector}, ${selector} .tsg-eaction`), this);
+      TsUtils.bindEvents(query6(this.box).find(`${selector}, ${selector} .tsg-eaction`), this);
     } else {
-      query5(this.box).find(selector).replace(query2.html(html));
-      const newBtn = query5(this.box).find(selector);
+      query6(this.box).find(selector).replace(query2.html(html));
+      const newBtn = query6(this.box).find(selector);
       TsUtils.bindEvents(newBtn, this);
       TsUtils.bindEvents(newBtn.find(".tsg-eaction"), this);
       const overlays = TsTooltip.get(true);
@@ -8024,8 +8145,8 @@ var TsToolbar = class extends TsBase {
     const time = Date.now();
     const edata = this.trigger("resize", { target: this.name });
     if (edata.isCancelled === true) return;
-    query5(this.box).find(".tsg-tb-line").each((el) => {
-      const box = query5(el);
+    query6(this.box).find(".tsg-tb-line").each((el) => {
+      const box = query6(el);
       box.find(".tsg-scroll-left, .tsg-scroll-right").hide();
       const scrollBox = box.find(".tsg-scroll-wrapper").get(0);
       const $right = box.find(".tsg-tb-right");
@@ -8046,7 +8167,7 @@ var TsToolbar = class extends TsBase {
   destroy() {
     const edata = this.trigger("destroy", { target: this.name });
     if (edata.isCancelled === true) return;
-    if (query5(this.box).find(".tsg-scroll-wrapper").length > 0) {
+    if (query6(this.box).find(".tsg-scroll-wrapper").length > 0) {
       this.unmount();
     }
     delete TsUi[this.name];
@@ -8252,7 +8373,7 @@ var TsToolbar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   change(id, value, dynamic) {
     const it = this.get(id);
-    const input = query5(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(id)).find("input.tsg-toolbar-input");
+    const input = query6(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(id)).find("input.tsg-toolbar-input");
     if (value instanceof HTMLInputElement) {
       value = value.value;
     }
@@ -8290,7 +8411,7 @@ var TsToolbar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tooltipShow(id) {
     if (this.tooltip == null) return;
-    const el = query5(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(id)).get(0);
+    const el = query6(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(id)).get(0);
     const item = this.get(id);
     const overlay = typeof this.tooltip == "string" ? { position: this.tooltip } : this.tooltip;
     let txt = item.tooltip;
@@ -8412,24 +8533,24 @@ var TsToolbar = class extends TsBase {
     switch (action) {
       case "Enter":
         if (!["label", "input"].includes(btn.type)) {
-          query5(target).addClass("over");
+          query6(target).addClass("over");
         }
         this.tooltipShow(id);
         break;
       case "Leave":
         if (!["label", "input"].includes(btn.type)) {
-          query5(target).removeClass("over down");
+          query6(target).removeClass("over down");
         }
         this.tooltipHide(id);
         break;
       case "Down":
         if (!["label", "input"].includes(btn.type)) {
-          query5(target).addClass("down");
+          query6(target).addClass("down");
         }
         break;
       case "Up":
         if (!["label", "input"].includes(btn.type)) {
-          query5(target).removeClass("down");
+          query6(target).removeClass("down");
         }
         break;
     }
@@ -8438,7 +8559,7 @@ var TsToolbar = class extends TsBase {
 };
 
 // src/tssidebar.ts
-var query6 = query2;
+var query7 = query2;
 var TsSidebar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   nodes;
@@ -8561,7 +8682,7 @@ var TsSidebar = class extends TsBase {
     Object.assign(this, options);
     if (Array.isArray(nodes)) this.add(nodes);
     options.nodes = nodes;
-    if (typeof this.box == "string") this.box = query6(this.box).get(0);
+    if (typeof this.box == "string") this.box = query7(this.box).get(0);
     if (this.box) this.render(this.box);
   }
   // any: callback parameter — caller signature varies; TsSidebar node tree shape is user-defined at runtime
@@ -8738,7 +8859,7 @@ var TsSidebar = class extends TsBase {
       className: options.className ?? "",
       style: options.style ?? ""
     };
-    const btn = query6(this.box).find(`#node_${TsUtils.escapeId(id)} .tsg-node-badge`);
+    const btn = query7(this.box).find(`#node_${TsUtils.escapeId(id)} .tsg-node-badge`);
     if (btn.length > 0) {
       const $cnt = btn.removeClass(null).addClass(`tsg-node-badge ${options.className ?? "tsg-node-count"}`).text(count);
       $cnt.get(0).style.cssText = options.style || "";
@@ -8927,7 +9048,7 @@ var TsSidebar = class extends TsBase {
     } else {
       this.find({ selected: true }).forEach((nd) => nd.selected = false);
     }
-    const $el = query6(this.box).find("#node_" + TsUtils.escapeId(id));
+    const $el = query7(this.box).find("#node_" + TsUtils.escapeId(id));
     $el.addClass("tsg-selected").find(".tsg-icon").addClass("tsg-icon-selected");
     if ($el.length > 0) {
       if (!this.inView(id)) this.scrollIntoView(id);
@@ -8960,7 +9081,7 @@ var TsSidebar = class extends TsBase {
       return true;
     }
     current.selected = false;
-    query6(this.box).find("#node_" + TsUtils.escapeId(id)).removeClass("tsg-selected").find(".tsg-icon").removeClass("tsg-icon-selected");
+    query7(this.box).find("#node_" + TsUtils.escapeId(id)).removeClass("tsg-selected").find(".tsg-icon").removeClass("tsg-icon-selected");
     if (typeof this.selected == "string" && this.selected == id) {
       this.selected = null;
     }
@@ -8992,8 +9113,8 @@ var TsSidebar = class extends TsBase {
     if (nd == null) return false;
     const edata = this.trigger("collapse", { target: id, object: nd, node: nd });
     if (edata.isCancelled === true) return;
-    query6(this.box).find("#node_" + TsUtils.escapeId(id) + "_sub").hide();
-    query6(this.box).find("#node_" + TsUtils.escapeId(id) + " .tsg-expanded").removeClass("tsg-expanded").addClass("tsg-collapsed");
+    query7(this.box).find("#node_" + TsUtils.escapeId(id) + "_sub").hide();
+    query7(this.box).find("#node_" + TsUtils.escapeId(id) + " .tsg-expanded").removeClass("tsg-expanded").addClass("tsg-collapsed");
     nd.expanded = false;
     edata.finish();
     this.refresh(id);
@@ -9004,8 +9125,8 @@ var TsSidebar = class extends TsBase {
     const nd = this.get(id);
     const edata = this.trigger("expand", { target: id, object: nd, node: nd });
     if (edata.isCancelled === true) return;
-    query6(this.box).find("#node_" + TsUtils.escapeId(id) + "_sub").show();
-    query6(this.box).find("#node_" + TsUtils.escapeId(id) + " .tsg-collapsed").removeClass("tsg-collapsed").addClass("tsg-expanded");
+    query7(this.box).find("#node_" + TsUtils.escapeId(id) + "_sub").show();
+    query7(this.box).find("#node_" + TsUtils.escapeId(id) + " .tsg-collapsed").removeClass("tsg-collapsed").addClass("tsg-expanded");
     nd.expanded = true;
     edata.finish();
     this.refresh(id);
@@ -9058,7 +9179,7 @@ var TsSidebar = class extends TsBase {
       edata.finish();
       return;
     }
-    const newNode = query6(this.box).find("#node_" + TsUtils.escapeId(id));
+    const newNode = query7(this.box).find("#node_" + TsUtils.escapeId(id));
     newNode.addClass("tsg-selected").find(".tsg-icon").addClass("tsg-icon-selected");
     setTimeout(() => {
       const edata = this.trigger("click", { target: id, originalEvent: event2, node: nd, object: nd });
@@ -9136,7 +9257,7 @@ var TsSidebar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   flatMenu(el, items) {
     const self = this;
-    const $el = query6(el).find(".tsg-node-data");
+    const $el = query7(el).find(".tsg-node-data");
     TsMenu.show({
       // any: query().get(0) returns Node|Node[]; anchor is always HTMLElement in flat menu context
       anchor: $el.get(0),
@@ -9160,9 +9281,9 @@ var TsSidebar = class extends TsBase {
     const edata = this.trigger("focus", { target: this.name, originalEvent: event2 });
     if (edata.isCancelled === true) return false;
     this.hasFocus = true;
-    query6(this.box).find(".tsg-sidebar-body").addClass("tsg-focus");
+    query7(this.box).find(".tsg-sidebar-body").addClass("tsg-focus");
     setTimeout(() => {
-      const input = query6(this.box).find("#sidebar_" + this.name + "_focus").get(0);
+      const input = query7(this.box).find("#sidebar_" + this.name + "_focus").get(0);
       if (document.activeElement != input) input.focus();
     }, 10);
     edata.finish();
@@ -9172,7 +9293,7 @@ var TsSidebar = class extends TsBase {
     const edata = this.trigger("blur", { target: this.name, originalEvent: event2 });
     if (edata.isCancelled === true) return false;
     this.hasFocus = false;
-    query6(this.box).find(".tsg-sidebar-body").removeClass("tsg-focus");
+    query7(this.box).find(".tsg-sidebar-body").removeClass("tsg-focus");
     edata.finish();
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -9308,11 +9429,11 @@ var TsSidebar = class extends TsBase {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   inView(id) {
-    const item = query6(this.box).find("#node_" + TsUtils.escapeId(id)).get(0);
+    const item = query7(this.box).find("#node_" + TsUtils.escapeId(id)).get(0);
     if (!item) {
       return false;
     }
-    const div = query6(this.box).find(".tsg-sidebar-body").get(0);
+    const div = query7(this.box).find(".tsg-sidebar-body").get(0);
     if (!div) return false;
     if (item.offsetTop < div.scrollTop || item.offsetTop + item.clientHeight > div.clientHeight + div.scrollTop) {
       return false;
@@ -9325,7 +9446,7 @@ var TsSidebar = class extends TsBase {
       if (id == null) id = Array.isArray(this.selected) ? this.selected[0] : this.selected;
       const nd = this.get(id);
       if (nd == null) return;
-      const item = query6(this.box).find("#node_" + TsUtils.escapeId(id)).get(0);
+      const item = query7(this.box).find("#node_" + TsUtils.escapeId(id)).get(0);
       if (item) item.scrollIntoView({ block: "center", inline: "center", behavior: instant ? "auto" : "smooth" });
       setTimeout(() => {
         this.resize();
@@ -9361,19 +9482,19 @@ var TsSidebar = class extends TsBase {
         moved: false
       };
       const mv = this.last.move;
-      const body = query6(this.box).find(".tsg-sidebar-body");
+      const body = query7(this.box).find(".tsg-sidebar-body");
       if (!mv.ghost) {
-        const node = query6(this.box).find(`#node_${TsUtils.escapeId(id)}`);
+        const node = query7(this.box).find(`#node_${TsUtils.escapeId(id)}`);
         mv.offsetY = event2.offsetY;
         mv.target = id;
         const nodeEl = node.get(0);
         mv.pos = { top: nodeEl.offsetTop - 1, left: nodeEl.offsetLeft };
-        const clone = query6(node.find(".tsg-node-data").get(0).cloneNode(true));
+        const clone2 = query7(node.find(".tsg-node-data").get(0).cloneNode(true));
         mv.node = node;
         mv.nodeSub = node.next();
         body.append('<div id="sidebar_' + this.name + '_ghost" class="tsg-node tsg-ghost"></div>');
-        query6(this.box).find("#sidebar_" + this.name + "_ghost").append(clone);
-        mv.ghost = query6(this.box).find("#sidebar_" + this.name + "_ghost");
+        query7(this.box).find("#sidebar_" + this.name + "_ghost").append(clone2);
+        mv.ghost = query7(this.box).find("#sidebar_" + this.name + "_ghost");
         mv.ghost.css({ display: "none" });
         mv.restore = () => {
           mv.resetReorder();
@@ -9381,11 +9502,11 @@ var TsSidebar = class extends TsBase {
         };
         mv.resetReorder = () => {
           this.last.move = null;
-          query6(this.box).find(`#sidebar_${this.name}_ghost`).remove();
-          query6(document).off(`.tsg-${this.name}-reorder`);
+          query7(this.box).find(`#sidebar_${this.name}_ghost`).remove();
+          query7(document).off(`.tsg-${this.name}-reorder`);
         };
       }
-      query6(document).on(`mousemove.tsg-${this.name}-reorder`, _mouseMove).on(`mouseup.tsg-${this.name}-reorder`, _mouseStop);
+      query7(document).on(`mousemove.tsg-${this.name}-reorder`, _mouseMove).on(`mouseup.tsg-${this.name}-reorder`, _mouseStop);
     }
     function _mouseMove(event3) {
       if (!event3.target.tagName) {
@@ -9415,9 +9536,9 @@ var TsSidebar = class extends TsBase {
         top: mv.pos.top + mv.divY + "px",
         left: 0
       });
-      const over = query6(event3.target).closest(".tsg-node, .tsg-node-group");
+      const over = query7(event3.target).closest(".tsg-node, .tsg-node-group");
       const id2 = over.attr("data-id");
-      if (query6(event3.target).hasClass("tsg-sidebar-body") && event3.layerY > 5 && !mv.append) {
+      if (query7(event3.target).hasClass("tsg-sidebar-body") && event3.layerY > 5 && !mv.append) {
         const edata = self.trigger("dragOver", { target: mv.target, append: true, mv, originalEvent: event3 });
         if (edata.isCancelled === true) {
           return;
@@ -9434,7 +9555,7 @@ var TsSidebar = class extends TsBase {
         if (edata.isCancelled === true) {
           return;
         }
-        const el = query6(self.box).find(`#node_${TsUtils.escapeId(id2)}`);
+        const el = query7(self.box).find(`#node_${TsUtils.escapeId(id2)}`);
         el.before(mv.node);
         el.before(mv.nodeSub);
         edata.finish();
@@ -9473,7 +9594,7 @@ var TsSidebar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   edit(id) {
     const self = this;
-    const node = query6(this.box).find("#node_" + TsUtils.escapeId(id));
+    const node = query7(this.box).find("#node_" + TsUtils.escapeId(id));
     const text = node.find(".tsg-node-text");
     const edata = this.trigger("edit", { target: id, el: node, textEl: text });
     if (edata.isCancelled === true) {
@@ -9576,7 +9697,7 @@ var TsSidebar = class extends TsBase {
   render(box) {
     const time = Date.now();
     const obj = this;
-    if (typeof box == "string") box = query6(box).get(0);
+    if (typeof box == "string") box = query7(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -9584,7 +9705,7 @@ var TsSidebar = class extends TsBase {
       this.box = box;
     }
     if (!this.box) return;
-    query6(this.box).attr("name", this.name).addClass("tsg-reset tsg-sidebar").html(`<div>
+    query7(this.box).attr("name", this.name).addClass("tsg-reset tsg-sidebar").html(`<div>
                 <div class="tsg-sidebar-top"></div>
                 <input id="sidebar_${this.name}_focus" ${this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : ""}
                     style="position: absolute; top: 0; right: 1px; width: 1px; z-index: -1; opacity: 0"
@@ -9592,15 +9713,15 @@ var TsSidebar = class extends TsBase {
                 <div class="tsg-sidebar-body"></div>
                 <div class="tsg-sidebar-bottom"></div>
             </div>`);
-    const boxEl3 = query6(this.box).get(0);
+    const boxEl3 = query7(this.box).get(0);
     const rect = boxEl3.getBoundingClientRect();
-    query6(this.box).find(":scope > div").css({
+    query7(this.box).find(":scope > div").css({
       width: rect.width + "px",
       height: rect.height + "px"
     });
     boxEl3.style.cssText += this.style;
     let kbd_timer;
-    query6(this.box).find("#sidebar_" + this.name + "_focus").on("focus", function(event2) {
+    query7(this.box).find("#sidebar_" + this.name + "_focus").on("focus", function(event2) {
       clearTimeout(kbd_timer);
       if (!obj.hasFocus) obj.focus(event2);
     }).on("blur", function(event2) {
@@ -9613,10 +9734,10 @@ var TsSidebar = class extends TsBase {
       const w2obj = TsUi[obj.name];
       w2obj?.keydown?.call(w2obj, event2);
     });
-    query6(this.box).off("mousedown").on("mousedown", function(event2) {
+    query7(this.box).off("mousedown").on("mousedown", function(event2) {
       setTimeout(() => {
         if (["INPUT", "TEXTAREA", "SELECT"].indexOf(event2.target?.tagName?.toUpperCase()) == -1) {
-          const $input = query6(obj.box).find("#sidebar_" + obj.name + "_focus");
+          const $input = query7(obj.box).find("#sidebar_" + obj.name + "_focus");
           const inputEl = $input.get(0);
           if (document.activeElement != inputEl && $input.length > 0) {
             inputEl?.focus();
@@ -9626,15 +9747,15 @@ var TsSidebar = class extends TsBase {
     });
     const flatHTML = `<div class="tsg-flat tsg-flat-${this.flat ? "right" : "left"}" ${this.flatButton == false ? 'style="display: none"' : ""}></div>`;
     if (this["topHTML"] !== "" || flatHTML !== "") {
-      query6(this.box).find(".tsg-sidebar-top").html(this["topHTML"] + flatHTML);
-      query6(this.box).find(".tsg-sidebar-body").css("top", query6(this.box).find(".tsg-sidebar-top").get(0)?.clientHeight + "px");
-      query6(this.box).find(".tsg-flat").off("click").on("click", (_event) => {
+      query7(this.box).find(".tsg-sidebar-top").html(this["topHTML"] + flatHTML);
+      query7(this.box).find(".tsg-sidebar-body").css("top", query7(this.box).find(".tsg-sidebar-top").get(0)?.clientHeight + "px");
+      query7(this.box).find(".tsg-flat").off("click").on("click", (_event) => {
         this.goFlat();
       });
     }
     if (this["bottomHTML"] !== "") {
-      query6(this.box).find(".tsg-sidebar-bottom").html(this["bottomHTML"]);
-      query6(this.box).find(".tsg-sidebar-body").css("bottom", query6(this.box).find(".tsg-sidebar-bottom").get(0)?.clientHeight + "px");
+      query7(this.box).find(".tsg-sidebar-bottom").html(this["bottomHTML"]);
+      query7(this.box).find(".tsg-sidebar-body").css("bottom", query7(this.box).find(".tsg-sidebar-bottom").get(0)?.clientHeight + "px");
     }
     this.last.observeResize = new ResizeObserver(() => {
       this.resize();
@@ -9649,7 +9770,7 @@ var TsSidebar = class extends TsBase {
     const nd = this.get(id);
     let level;
     if (nd) {
-      const $el = query6(this.box).find("#node_" + TsUtils.escapeId(nd.id));
+      const $el = query7(this.box).find("#node_" + TsUtils.escapeId(nd.id));
       if (nd.group) {
         if (options.text) {
           nd.text = options.text;
@@ -9710,7 +9831,7 @@ var TsSidebar = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   refresh(id, options = {}) {
     if (this.box == null) return;
-    const body = query6(this.box).find(":scope > div > .tsg-sidebar-body").get(0);
+    const body = query7(this.box).find(":scope > div > .tsg-sidebar-body").get(0);
     const { scrollTop, scrollLeft } = body ?? {};
     const time = Date.now();
     const edata = this.trigger("refresh", {
@@ -9720,12 +9841,12 @@ var TsSidebar = class extends TsBase {
     });
     if (edata.isCancelled === true) return;
     if (this.flatButton == true) {
-      query6(this.box).find(".tsg-sidebar-top .tsg-flat").show().removeClass("tsg-flat-left tsg-flat-right").addClass(` tsg-flat-${this.flat ? "right" : "left"}`);
+      query7(this.box).find(".tsg-sidebar-top .tsg-flat").show().removeClass("tsg-flat-left tsg-flat-right").addClass(` tsg-flat-${this.flat ? "right" : "left"}`);
     } else {
-      query6(this.box).find(".tsg-sidebar-top .tsg-flat").hide();
+      query7(this.box).find(".tsg-sidebar-top .tsg-flat").hide();
     }
-    const boxEl2 = query6(this.box).get(0);
-    query6(this.box).find(":scope > div").removeClass("tsg-sidebar-flat").addClass(this.flat ? "tsg-sidebar-flat" : "").css({
+    const boxEl2 = query7(this.box).get(0);
+    query7(this.box).find(":scope > div").removeClass("tsg-sidebar-flat").addClass(this.flat ? "tsg-sidebar-flat" : "").css({
       width: (boxEl2?.clientWidth ?? 0) + "px",
       height: (boxEl2?.clientHeight ?? 0) + "px"
     });
@@ -9749,18 +9870,18 @@ var TsSidebar = class extends TsBase {
     let nodeHTML;
     if (node !== this) {
       nodeHTML = getNodeHTML(node);
-      query6(this.box).find(nodeId).before('<div id="sidebar_' + this.name + '_tmp"></div>');
-      query6(this.box).find(nodeId).remove();
-      query6(this.box).find(nodeSubId).remove();
-      query6(this.box).find("#sidebar_" + this.name + "_tmp").before(nodeHTML);
-      query6(this.box).find("#sidebar_" + this.name + "_tmp").remove();
+      query7(this.box).find(nodeId).before('<div id="sidebar_' + this.name + '_tmp"></div>');
+      query7(this.box).find(nodeId).remove();
+      query7(this.box).find(nodeSubId).remove();
+      query7(this.box).find("#sidebar_" + this.name + "_tmp").before(nodeHTML);
+      query7(this.box).find("#sidebar_" + this.name + "_tmp").remove();
     }
-    const div = query6(this.box).find(":scope > div").get(0);
+    const div = query7(this.box).find(":scope > div").get(0);
     const scroll2 = {
       top: div?.scrollTop,
       left: div?.scrollLeft
     };
-    const cnt = node == this ? query6(this.box).find(":scope > div > .tsg-sidebar-body") : query6(body).find(nodeSubId);
+    const cnt = node == this ? query7(this.box).find(":scope > div > .tsg-sidebar-body") : query7(body).find(nodeSubId);
     cnt.html("");
     for (let i = 0; i < node.nodes.length; i++) {
       const subNode = node.nodes[i];
@@ -9779,9 +9900,9 @@ var TsSidebar = class extends TsBase {
       div.scrollLeft = scroll2.left ?? 0;
     }
     if (!options.recursive) {
-      const els = query6(this.box).find(`${nodeId}, ${nodeId} .tsg-eaction, ${nodeSubId} .tsg-eaction`);
+      const els = query7(this.box).find(`${nodeId}, ${nodeId} .tsg-eaction, ${nodeSubId} .tsg-eaction`);
       TsUtils.bindEvents(els, this);
-      query6(body).prop({ scrollLeft, scrollTop });
+      query7(body).prop({ scrollLeft, scrollTop });
     }
     edata.finish();
     return Date.now() - time;
@@ -9988,7 +10109,7 @@ var TsSidebar = class extends TsBase {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tooltip(el, text) {
-    const $el = query6(el).find(".tsg-node-data");
+    const $el = query7(el).find(".tsg-node-data");
     if (text !== "") {
       TsTooltip.show({
         // any: query().get(0) returns Node|Node[]; sidebar node-data element is always HTMLElement
@@ -10016,17 +10137,17 @@ var TsSidebar = class extends TsBase {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   showPlus(el, color) {
-    query6(el).find("span:nth-child(1)").css("color", color);
+    query7(el).find("span:nth-child(1)").css("color", color);
   }
   resize() {
     const time = Date.now();
     const edata = this.trigger("resize", { target: this.name });
     if (edata.isCancelled === true) return;
     if (this.box != null) {
-      const boxEl = query6(this.box).get(0);
+      const boxEl = query7(this.box).get(0);
       const rect = boxEl.getBoundingClientRect();
-      query6(this.box).css("overflow", "hidden");
-      query6(this.box).find(":scope > div").css({
+      query7(this.box).css("overflow", "hidden");
+      query7(this.box).find(":scope > div").css({
         width: rect.width + "px",
         height: rect.height + "px"
       });
@@ -10037,7 +10158,7 @@ var TsSidebar = class extends TsBase {
   destroy() {
     const edata = this.trigger("destroy", { target: this.name });
     if (edata.isCancelled === true) return;
-    if (query6(this.box).find(".tsg-sidebar-body").length > 0) {
+    if (query7(this.box).find(".tsg-sidebar-body").length > 0) {
       this.unmount();
     }
     delete TsUi[this.name];
@@ -10059,7 +10180,7 @@ var TsSidebar = class extends TsBase {
 };
 
 // src/tstabs.ts
-var query7 = query2;
+var query8 = query2;
 var TsTabs = class extends TsBase {
   // any: targeted-any per typing_policy; TsTabs tab item shape is user-defined at runtime
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10120,7 +10241,7 @@ var TsTabs = class extends TsBase {
     Object.assign(this, options);
     if (Array.isArray(tabs)) this.add(tabs);
     options.tabs = tabs;
-    if (typeof this.box == "string") this.box = query7(this.box).get(0);
+    if (typeof this.box == "string") this.box = query8(this.box).get(0);
     if (this.box) this.render(this.box);
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -10159,7 +10280,7 @@ var TsTabs = class extends TsBase {
       if (!tab) return;
       effected++;
       this.tabs.splice(this.get(tab.id, true), 1);
-      query7(this.box).find(`#tabs_${this.name}_tab_${TsUtils.escapeId(tab.id)}`).remove();
+      query8(this.box).find(`#tabs_${this.name}_tab_${TsUtils.escapeId(tab.id)}`).remove();
     });
     this.resize();
     return effected;
@@ -10276,9 +10397,9 @@ var TsTabs = class extends TsBase {
     const tab = this.tabs[info.index];
     const next = _find(info.index, 1);
     const prev = _find(info.index, -1);
-    const $el = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(tab.id));
+    const $el = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(tab.id));
     if (info.divX > 0 && next) {
-      const $nextEl = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(next.id));
+      const $nextEl = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(next.id));
       let width1 = $el.get(0).clientWidth;
       let width2 = $nextEl.get(0).clientWidth;
       if (width1 < width2) {
@@ -10303,7 +10424,7 @@ var TsTabs = class extends TsBase {
       }
     }
     if (info.divX < 0 && prev) {
-      const $prevEl = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(prev.id));
+      const $prevEl = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(prev.id));
       let width1 = $el.get(0).clientWidth;
       let width2 = $prevEl.get(0).clientWidth;
       if (width1 < width2) {
@@ -10359,7 +10480,7 @@ var TsTabs = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   tooltipShow(id) {
     const tab = this.get(id);
-    const el = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id)).get(0);
+    const el = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id)).get(0);
     if (this.tooltip == null || tab?.disabled || this.last.reordering) {
       return;
     }
@@ -10427,9 +10548,9 @@ var TsTabs = class extends TsBase {
   refresh(id) {
     const time = Date.now();
     if (this.flow == "up") {
-      query7(this.box).addClass("tsg-tabs-up");
+      query8(this.box).addClass("tsg-tabs-up");
     } else {
-      query7(this.box).removeClass("tsg-tabs-up");
+      query8(this.box).removeClass("tsg-tabs-up");
     }
     const edata = this.trigger("refresh", { target: id != null ? id : this.name, object: this.get(id) });
     if (edata.isCancelled === true) return;
@@ -10439,18 +10560,18 @@ var TsTabs = class extends TsBase {
       }
     } else {
       const selector = "#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id);
-      const $tab = query7(this.box).find(selector);
+      const $tab = query8(this.box).find(selector);
       const tabHTML = this.getTabHTML(id);
       if ($tab.length === 0) {
-        if (tabHTML) query7(this.box).find("#tabs_" + this.name + "_right").before(tabHTML);
+        if (tabHTML) query8(this.box).find("#tabs_" + this.name + "_right").before(tabHTML);
       } else {
-        if (query7(this.box).find(".tab-animate-insert").length == 0) {
+        if (query8(this.box).find(".tab-animate-insert").length == 0) {
           if (tabHTML) $tab.replace(tabHTML);
         }
       }
-      TsUtils.bindEvents(query7(this.box).find(`${selector}, ${selector} .tsg-eaction`), this);
+      TsUtils.bindEvents(query8(this.box).find(`${selector}, ${selector} .tsg-eaction`), this);
     }
-    query7(this.box).find("#tabs_" + this.name + "_right").html(this.right);
+    query8(this.box).find("#tabs_" + this.name + "_right").html(this.right);
     edata.finish();
     return Date.now() - time;
   }
@@ -10458,7 +10579,7 @@ var TsTabs = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render(box) {
     const time = Date.now();
-    if (typeof box == "string") box = query7(box).get(0);
+    if (typeof box == "string") box = query8(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -10473,11 +10594,11 @@ var TsTabs = class extends TsBase {
             </div>
             <div class="tsg-scroll-left tsg-eaction" data-click='["scroll","left"]'></div>
             <div class="tsg-scroll-right tsg-eaction" data-click='["scroll","right"]'></div>`;
-    query7(this.box).attr("name", this.name).addClass("tsg-reset tsg-tabs").html(html);
-    if (query7(this.box).length > 0) {
-      query7(this.box)[0].style.cssText += this.style;
+    query8(this.box).attr("name", this.name).addClass("tsg-reset tsg-tabs").html(html);
+    if (query8(this.box).length > 0) {
+      query8(this.box)[0].style.cssText += this.style;
     }
-    TsUtils.bindEvents(query7(this.box).find(".tsg-eaction"), this);
+    TsUtils.bindEvents(query8(this.box).find(".tsg-eaction"), this);
     this.last.observeResize = new ResizeObserver(() => {
       this.resize();
     });
@@ -10491,9 +10612,9 @@ var TsTabs = class extends TsBase {
   initReorder(id, event2) {
     if (!this.reorder) return;
     const self = this;
-    const $tab = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
+    const $tab = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
     const tabIndex = this.get(id, true);
-    const $ghost = query7($tab.get(0).cloneNode(true));
+    const $ghost = query8($tab.get(0).cloneNode(true));
     let edata;
     $ghost.attr("id", "#tabs_" + this.name + "_tab_ghost");
     this.last.moving = {
@@ -10503,11 +10624,11 @@ var TsTabs = class extends TsBase {
       $ghost,
       divX: 0,
       left: $tab.get(0).getBoundingClientRect().left,
-      parentX: query7(this.box).get(0).getBoundingClientRect().left,
+      parentX: query8(this.box).get(0).getBoundingClientRect().left,
       x: event2.pageX,
       opacity: $tab.css("opacity")
     };
-    query7(document).off(".w2uiTabReorder").on("mousemove.w2uiTabReorder", function(event3) {
+    query8(document).off(".w2uiTabReorder").on("mousemove.w2uiTabReorder", function(event3) {
       const mouseEvent = event3;
       if (!self.last.reordering) {
         edata = self.trigger("reorder", { target: self.tabs[tabIndex].id, indexFrom: tabIndex, tab: self.tabs[tabIndex] });
@@ -10521,19 +10642,19 @@ var TsTabs = class extends TsBase {
           "left": $tab.get(0).getBoundingClientRect().left
         });
         $tab.css("opacity", 0);
-        query7(self.box).find(".tsg-scroll-wrapper").append($ghost.get(0));
-        query7(self.box).find(".tsg-tab-close").hide();
+        query8(self.box).find(".tsg-scroll-wrapper").append($ghost.get(0));
+        query8(self.box).find(".tsg-tab-close").hide();
       }
       self.last.moving.divX = mouseEvent.pageX - self.last.moving.x;
       $ghost.css("left", self.last.moving.left - self.last.moving.parentX + self.last.moving.divX + "px");
       self.dragMove(mouseEvent);
     }).on("mouseup.w2uiTabReorder", function() {
-      query7(document).off(".w2uiTabReorder");
+      query8(document).off(".w2uiTabReorder");
       $ghost.css({
         "transition": "0.1s",
         "left": self.last.moving.$tab.get(0).getBoundingClientRect().left - self.last.moving.parentX
       });
-      query7(self.box).find(".tsg-tab-close").show();
+      query8(self.box).find(".tsg-tab-close").show();
       $ghost.remove();
       $tab.css({ opacity: self.last.moving.opacity });
       if (self.last.reordering) {
@@ -10546,7 +10667,7 @@ var TsTabs = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   scroll(direction, instant) {
     return new Promise((resolve, _reject) => {
-      const scrollBox = query7(this.box).find(".tsg-scroll-wrapper");
+      const scrollBox = query8(this.box).find(".tsg-scroll-wrapper");
       const scrollBoxEl = scrollBox.get(0);
       const scrollLeft = scrollBoxEl.scrollLeft;
       const right = scrollBox.find(".tsg-tabs-right").get(0);
@@ -10579,7 +10700,7 @@ var TsTabs = class extends TsBase {
       if (id == null) id = this.active;
       const tab = this.get(id);
       if (tab == null) return;
-      const tabEl = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id)).get(0);
+      const tabEl = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id)).get(0);
       tabEl.scrollIntoView({ block: "start", inline: "center", behavior: instant ? "auto" : "smooth" });
       setTimeout(() => {
         this.resize();
@@ -10593,7 +10714,7 @@ var TsTabs = class extends TsBase {
     const edata = this.trigger("resize", { target: this.name });
     if (edata.isCancelled === true) return;
     if (this.box != null) {
-      const box = query7(this.box);
+      const box = query8(this.box);
       box.find(".tsg-scroll-left, .tsg-scroll-right").hide();
       const scrollBox = box.find(".tsg-scroll-wrapper").get(0);
       const $right = box.find(".tsg-tabs-right");
@@ -10614,7 +10735,7 @@ var TsTabs = class extends TsBase {
   destroy() {
     const edata = this.trigger("destroy", { target: this.name });
     if (edata.isCancelled === true) return;
-    if (query7(this.box).find("#tabs_" + this.name + "_right").length > 0) {
+    if (query8(this.box).find("#tabs_" + this.name + "_right").length > 0) {
       this.unmount();
     }
     delete TsUi[this.name];
@@ -10628,16 +10749,16 @@ var TsTabs = class extends TsBase {
   // -- Internal Event Handlers
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   click(id, event2) {
-    if (event2 && query7(event2.target).hasClass("tsg-tab-close")) {
+    if (event2 && query8(event2.target).hasClass("tsg-tab-close")) {
       return;
     }
     const tab = this.get(id);
     if (tab == null || tab.disabled || this.last.reordering) return false;
     const edata = this.trigger("click", { target: id, tab, object: tab, originalEvent: event2 });
     if (edata.isCancelled === true) return;
-    query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(this.active)).removeClass("active");
+    query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(this.active)).removeClass("active");
     this.active = tab.id;
-    query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(this.active)).addClass("active");
+    query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(this.active)).addClass("active");
     if (typeof tab.route == "string") {
       let route = tab.route !== "" ? String("/" + tab.route).replace(/\/{2,}/g, "/") : "";
       const info = TsUtils.parseRoute(route);
@@ -10671,7 +10792,7 @@ var TsTabs = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animateClose(id) {
     return new Promise((resolve, _reject) => {
-      const $tab = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
+      const $tab = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
       const width = $tab.get(0).clientWidth || 0;
       const anim = `<div class="tab-animate-close" style="display: inline-block; flex-shrink: 0; width: ${width}px; transition: width 0.25s"></div>`;
       const $anim = $tab.replace(anim);
@@ -10688,17 +10809,17 @@ var TsTabs = class extends TsBase {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   animateInsert(id, tab) {
     return new Promise((resolve, _reject) => {
-      let $before = query7(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
+      let $before = query8(this.box).find("#tabs_" + this.name + "_tab_" + TsUtils.escapeId(id));
       const tabHTML = this.getTabHTML(tab.id);
       const $tab = query2.html(tabHTML);
       if ($before.length == 0) {
-        $before = query7(this.box).find("#tabs_tabs_right");
+        $before = query8(this.box).find("#tabs_tabs_right");
         $before.before($tab);
         this.resize();
       } else {
         $tab.css({ opacity: 0 });
-        query7(this.box).find("#tabs_tabs_right").before($tab.get(0));
-        const $tmp = query7(this.box).find("#" + $tab.attr("id"));
+        query8(this.box).find("#tabs_tabs_right").before($tab.get(0));
+        const $tmp = query8(this.box).find("#" + $tab.attr("id"));
         const width = $tmp.get(0)?.clientWidth ?? 0;
         const $anim = query2.html('<div class="tab-animate-insert" style="flex-shrink: 0; width: 0; transition: width 0.25s"></div>');
         $before.before($anim);
@@ -10720,7 +10841,7 @@ var TsTabs = class extends TsBase {
 };
 
 // src/tslayout.ts
-var query8 = query2;
+var query9 = query2;
 var _TsUiRegistry = () => TsUi;
 var w2panels = ["top", "left", "main", "preview", "right", "bottom"];
 var TsLayout = class extends TsBase {
@@ -10802,7 +10923,7 @@ var TsLayout = class extends TsBase {
       if (this.get(tab) != null) return;
       this.panels.push(TsUtils.extend({}, this.panel_template, { type: tab, hidden: tab !== "main", size: 50 }));
     });
-    if (typeof this.box == "string") this.box = query8(this.box).get(0);
+    if (typeof this.box == "string") this.box = query9(this.box).get(0);
     if (this.box) this.render(this.box);
     function initTabs(object, panel, tabs) {
       const pan = panel != null ? object.get(panel) : null;
@@ -10845,7 +10966,7 @@ var TsLayout = class extends TsBase {
       p.removed = null;
     }
     if (panel == "css") {
-      query8(this.box).find("#layout_" + this.name + "_panel_css").html("<style>" + data + "</style>");
+      query9(this.box).find("#layout_" + this.name + "_panel_css").html("<style>" + data + "</style>");
       promise.status = true;
       return promise;
     }
@@ -10863,12 +10984,12 @@ var TsLayout = class extends TsBase {
       return promise;
     }
     const pname = "#layout_" + this.name + "_panel_" + p.type;
-    const current = query8(this.box).find(pname + '> [data-role="panel-content"]');
+    const current = query9(this.box).find(pname + '> [data-role="panel-content"]');
     let panelTop = 0;
     if (current.length > 0) {
       ;
-      query8(this.box).find(pname).get(0).scrollTop = 0;
-      panelTop = query8(current).css("top");
+      query9(this.box).find(pname).get(0).scrollTop = 0;
+      panelTop = query9(current).css("top");
     }
     if (typeof p.html.unmount == "function") p.html.unmount();
     current.addClass("tsg-panel-content");
@@ -10881,10 +11002,10 @@ var TsLayout = class extends TsBase {
       p.html = data;
       if (!p.hidden) {
         if (transition != null && transition !== "") {
-          query8(this.box).addClass("animating");
-          const div1 = query8(this.box).find(pname + '> [data-role="panel-content"]');
+          query9(this.box).addClass("animating");
+          const div1 = query9(this.box).find(pname + '> [data-role="panel-content"]');
           div1.after('<div class="tsg-panel-content new-panel" data-role="panel-content" style="' + div1[0].style.cssText + '"></div>');
-          const div2 = query8(this.box).find(pname + '> [data-role="panel-content"].new-panel');
+          const div2 = query9(this.box).find(pname + '> [data-role="panel-content"].new-panel');
           div1.css("top", panelTop);
           div2.css("top", panelTop);
           if (typeof data == "object") {
@@ -10896,19 +11017,19 @@ var TsLayout = class extends TsBase {
           let style1, style2;
           switch (transition) {
             case "slide-left":
-              style1 = "left: -" + TsUtils.getSize(query8(this.box), "width") + "px";
+              style1 = "left: -" + TsUtils.getSize(query9(this.box), "width") + "px";
               style2 = "left: 0px";
               break;
             case "slide-right":
-              style1 = "left: " + TsUtils.getSize(query8(this.box), "width") + "px";
+              style1 = "left: " + TsUtils.getSize(query9(this.box), "width") + "px";
               style2 = "left: 0px";
               break;
             case "slide-down":
-              style1 = "top: -" + TsUtils.getSize(query8(this.box), "height") + "px";
+              style1 = "top: -" + TsUtils.getSize(query9(this.box), "height") + "px";
               style2 = "top: " + panelTop + "px";
               break;
             case "slide-up":
-              style1 = "top: " + TsUtils.getSize(query8(this.box), "height") + "px";
+              style1 = "top: " + TsUtils.getSize(query9(this.box), "height") + "px";
               style2 = "top: " + panelTop + "px";
               break;
             case "flip-left":
@@ -10942,10 +11063,10 @@ var TsLayout = class extends TsBase {
           div1.addClass("previous").css({ "cssText": "transition: .5s; " + style1 });
           div2.addClass("current").css({ "cssText": "transition: .5s; " + style2 });
           setTimeout(() => {
-            query8(this.box).removeClass("animating");
+            query9(this.box).removeClass("animating");
             div1.remove();
             div2.removeClass("new-panel current");
-            query8(this.box).find(pname + '> [data-role="panel-content"]').css({ "cssText": "" });
+            query9(this.box).find(pname + '> [data-role="panel-content"]').css({ "cssText": "" });
             edata.finish();
           }, 500);
         } else {
@@ -10960,7 +11081,7 @@ var TsLayout = class extends TsBase {
   }
   message(panel, options) {
     const p = this.get(panel);
-    const box = query8(this.box).find("#layout_" + this.name + "_panel_" + p.type);
+    const box = query9(this.box).find("#layout_" + this.name + "_panel_" + p.type);
     const oldOverflow = box.css("overflow");
     box.css("overflow", "hidden");
     const prom = TsUtils.message({
@@ -10981,7 +11102,7 @@ var TsLayout = class extends TsBase {
   }
   confirm(panel, options) {
     const p = this.get(panel);
-    const box = query8(this.box).find("#layout_" + this.name + "_panel_" + p.type);
+    const box = query9(this.box).find("#layout_" + this.name + "_panel_" + p.type);
     const oldOverflow = box.css("overflow");
     box.css("overflow", "hidden");
     const prom = TsUtils.confirm({
@@ -11015,12 +11136,12 @@ var TsLayout = class extends TsBase {
   sizeTo(panel, size, instant) {
     const pan = this.get(panel);
     if (pan == null) return false;
-    query8(this.box).find(":scope > div > .tsg-panel").css("transition", instant !== true ? ".2s" : "0s");
+    query9(this.box).find(":scope > div > .tsg-panel").css("transition", instant !== true ? ".2s" : "0s");
     setTimeout(() => {
       this.set(panel, { size });
     }, 1);
     setTimeout(() => {
-      query8(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
+      query9(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
       this.resize();
     }, 300);
     return true;
@@ -11032,22 +11153,22 @@ var TsLayout = class extends TsBase {
     if (p == null) return false;
     p.hidden = false;
     if (immediate === true) {
-      query8(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "1" });
+      query9(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "1" });
       edata.finish();
       this.resize();
     } else {
-      query8(this.box).addClass("animating");
-      query8(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
-      query8(this.box).find(":scope > div > .tsg-panel").css("transition", ".2s");
+      query9(this.box).addClass("animating");
+      query9(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
+      query9(this.box).find(":scope > div > .tsg-panel").css("transition", ".2s");
       setTimeout(() => {
         this.resize();
       }, 1);
       setTimeout(() => {
-        query8(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "1" });
+        query9(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "1" });
       }, 250);
       setTimeout(() => {
-        query8(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
-        query8(this.box).removeClass("animating");
+        query9(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
+        query9(this.box).removeClass("animating");
         edata.finish();
         this.resize();
       }, 300);
@@ -11061,19 +11182,19 @@ var TsLayout = class extends TsBase {
     if (p == null) return false;
     p.hidden = true;
     if (immediate === true) {
-      query8(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
+      query9(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
       edata.finish();
       this.resize();
     } else {
-      query8(this.box).addClass("animating");
-      query8(this.box).find(":scope > div > .tsg-panel").css("transition", ".2s");
-      query8(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
+      query9(this.box).addClass("animating");
+      query9(this.box).find(":scope > div > .tsg-panel").css("transition", ".2s");
+      query9(this.box).find("#layout_" + this.name + "_panel_" + panel).css({ "opacity": "0" });
       setTimeout(() => {
         this.resize();
       }, 1);
       setTimeout(() => {
-        query8(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
-        query8(this.box).removeClass("animating");
+        query9(this.box).find(":scope > div > .tsg-panel").css("transition", "0s");
+        query9(this.box).removeClass("animating");
         edata.finish();
         this.resize();
       }, 300);
@@ -11108,7 +11229,7 @@ var TsLayout = class extends TsBase {
     return null;
   }
   el(panel) {
-    const el = query8(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-content"]');
+    const el = query9(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-content"]');
     if (el.length != 1) return null;
     return el[0];
   }
@@ -11116,14 +11237,14 @@ var TsLayout = class extends TsBase {
     const pan = this.get(panel);
     if (!pan) return;
     pan.show.toolbar = false;
-    query8(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).hide();
+    query9(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).hide();
     this.resize();
   }
   showToolbar(panel) {
     const pan = this.get(panel);
     if (!pan) return;
     pan.show.toolbar = true;
-    query8(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).show();
+    query9(this.box).find(`#layout_${this.name}_panel_${panel} > [data-role="panel-toolbar"]`).show();
     this.resize();
   }
   toggleToolbar(panel) {
@@ -11136,7 +11257,7 @@ var TsLayout = class extends TsBase {
     if (typeof toolbar == "string" && _TsUiRegistry()[toolbar] != null) toolbar = _TsUiRegistry()[toolbar];
     const pan = this.get(panel);
     pan.toolbar = toolbar;
-    const tmp = query8(this.box).find(panel + '> [data-role="panel-toolbar"]');
+    const tmp = query9(this.box).find(panel + '> [data-role="panel-toolbar"]');
     if (pan.toolbar != null) {
       if (tmp.attr("name") != pan.toolbar.name) {
         ;
@@ -11157,14 +11278,14 @@ var TsLayout = class extends TsBase {
     const pan = this.get(panel);
     if (!pan) return;
     pan.show.tabs = false;
-    query8(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-tabs"]').hide();
+    query9(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-tabs"]').hide();
     this.resize();
   }
   showTabs(panel) {
     const pan = this.get(panel);
     if (!pan) return;
     pan.show.tabs = true;
-    query8(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-tabs"]').show();
+    query9(this.box).find("#layout_" + this.name + "_panel_" + panel + '> [data-role="panel-tabs"]').show();
     this.resize();
   }
   toggleTabs(panel) {
@@ -11177,7 +11298,7 @@ var TsLayout = class extends TsBase {
     if (typeof tabs == "string" && _TsUiRegistry()[tabs] != null) tabs = _TsUiRegistry()[tabs];
     const pan = this.get(panel);
     pan.tabs = tabs;
-    const tmp = query8(this.box).find(panel + '> [data-role="panel-tabs"]');
+    const tmp = query9(this.box).find(panel + '> [data-role="panel-tabs"]');
     if (pan.tabs != null) {
       if (tmp.attr("name") != pan.tabs.name) {
         ;
@@ -11197,7 +11318,7 @@ var TsLayout = class extends TsBase {
   render(box) {
     const time = Date.now();
     const self = this;
-    if (typeof box == "string") box = query8(box).get(0);
+    if (typeof box == "string") box = query9(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -11205,16 +11326,16 @@ var TsLayout = class extends TsBase {
       this.box = box;
     }
     if (!this.box) return false;
-    query8(this.box).attr("name", this.name).addClass("tsg-layout").html("<div></div>");
-    if (query8(this.box).length > 0) {
+    query9(this.box).attr("name", this.name).addClass("tsg-layout").html("<div></div>");
+    if (query9(this.box).length > 0) {
       ;
-      query8(this.box)[0].style.cssText += this.style;
+      query9(this.box)[0].style.cssText += this.style;
     }
     for (let p1 = 0; p1 < w2panels.length; p1++) {
       const html = '<div id="layout_' + this.name + "_panel_" + w2panels[p1] + '" class="tsg-panel">    <div class="tsg-panel-title"></div>    <div class="tsg-panel-tabs" data-role="panel-tabs"></div>    <div class="tsg-panel-toolbar" data-role="panel-toolbar"></div>    <div class="tsg-panel-content" data-role="panel-content"></div></div><div id="layout_' + this.name + "_resizer_" + w2panels[p1] + '" class="tsg-resizer"></div>';
-      query8(this.box).find(":scope > div").append(html);
+      query9(this.box).find(":scope > div").append(html);
     }
-    query8(this.box).find(":scope > div").append('<div id="layout_' + this.name + '_panel_css" style="position: absolute; top: 10000px;"></div>');
+    query9(this.box).find(":scope > div").append('<div id="layout_' + this.name + '_panel_css" style="position: absolute; top: 10000px;"></div>');
     this.refresh();
     this.last["observeResize"] = new ResizeObserver(() => {
       this.resize();
@@ -11229,8 +11350,8 @@ var TsLayout = class extends TsBase {
     function resizeStart(type, evnt) {
       if (!self.box) return;
       if (!evnt) evnt = window.event;
-      query8(document).off("mousemove", self.last["events"].mouseMove).on("mousemove", self.last["events"].mouseMove);
-      query8(document).off("mouseup", self.last["events"].mouseUp).on("mouseup", self.last["events"].mouseUp);
+      query9(document).off("mousemove", self.last["events"].mouseMove).on("mousemove", self.last["events"].mouseMove);
+      query9(document).off("mouseup", self.last["events"].mouseUp).on("mouseup", self.last["events"].mouseUp);
       self.last["resize"] = {
         type,
         x: evnt.screenX,
@@ -11240,14 +11361,14 @@ var TsLayout = class extends TsBase {
         value: 0
       };
       w2panels.forEach((panel) => {
-        const $tmp = query8(self.el(panel)).find(".tsg-lock");
+        const $tmp = query9(self.el(panel)).find(".tsg-lock");
         if ($tmp.length > 0) {
           $tmp.data("locked", "yes");
         } else {
           self.lock(panel, { opacity: 0 });
         }
       });
-      const el = query8(self.box).find("#layout_" + self.name + "_resizer_" + type).get(0);
+      const el = query9(self.box).find("#layout_" + self.name + "_resizer_" + type).get(0);
       if (type == "left" || type == "right") {
         self.last["resize"].value = parseInt(el.style.left);
       }
@@ -11258,11 +11379,11 @@ var TsLayout = class extends TsBase {
     function mouseUp(evnt) {
       if (!self.box) return;
       if (!evnt) evnt = window.event;
-      query8(document).off("mousemove", self.last["events"].mouseMove);
-      query8(document).off("mouseup", self.last["events"].mouseUp);
+      query9(document).off("mousemove", self.last["events"].mouseMove);
+      query9(document).off("mouseup", self.last["events"].mouseUp);
       if (self.last["resize"] == null) return;
       w2panels.forEach((panel) => {
-        const $tmp = query8(self.el(panel)).find(".tsg-lock");
+        const $tmp = query9(self.el(panel)).find(".tsg-lock");
         if ($tmp.data("locked") == "yes") {
           $tmp.removeData("locked");
         } else {
@@ -11273,8 +11394,8 @@ var TsLayout = class extends TsBase {
         const ptop = self.get("top");
         const pbottom = self.get("bottom");
         const panel = self.get(self.last["resize"].type);
-        const width = TsUtils.getSize(query8(self.box), "width");
-        const height = TsUtils.getSize(query8(self.box), "height");
+        const width = TsUtils.getSize(query9(self.box), "width");
+        const height = TsUtils.getSize(query9(self.box), "height");
         const str = String(panel.size);
         let ns, nd;
         switch (self.last["resize"].type) {
@@ -11313,8 +11434,8 @@ var TsLayout = class extends TsBase {
         }
         self.resize();
       }
-      query8(self.box).find("#layout_" + self.name + "_resizer_" + self.last["resize"].type).removeClass(null).addClass("active");
-      query8(self.box).find("#layout_" + self.name + "_resizer_" + self.last["resize"].type).removeClass("active");
+      query9(self.box).find("#layout_" + self.name + "_resizer_" + self.last["resize"].type).removeClass(null).addClass("active");
+      query9(self.box).find("#layout_" + self.name + "_resizer_" + self.last["resize"].type).removeClass("active");
       delete self.last["resize"];
     }
     function mouseMove(evnt) {
@@ -11332,7 +11453,7 @@ var TsLayout = class extends TsBase {
         diff_y: tmp ? tmp.diff_y : 0
       });
       if (edata2.isCancelled === true) return;
-      const p = query8(self.box).find("#layout_" + self.name + "_resizer_" + tmp.type);
+      const p = query9(self.box).find("#layout_" + self.name + "_resizer_" + tmp.type);
       const resize_x = evnt.screenX - tmp.x;
       const resize_y = evnt.screenY - tmp.y;
       const mainPanel = self.get("main");
@@ -11422,13 +11543,13 @@ var TsLayout = class extends TsBase {
       panel.tabs?.destroy?.();
       panel.toolbar?.destroy?.();
     });
-    if (query8(this.box).find("#layout_" + this.name + "_panel_main").length > 0) {
+    if (query9(this.box).find("#layout_" + this.name + "_panel_main").length > 0) {
       this.unmount();
     }
     delete _TsUiRegistry()[this.name];
     edata.finish();
     if (this.last["events"] && this.last["events"].resize) {
-      query8(window).off("resize", this.last["events"].resize);
+      query9(window).off("resize", this.last["events"].resize);
     }
     return true;
   }
@@ -11442,18 +11563,18 @@ var TsLayout = class extends TsBase {
       if (p == null) return;
       const pname = "#layout_" + self.name + "_panel_" + p.type;
       const rname = "#layout_" + self.name + "_resizer_" + p.type;
-      query8(self.box).find(pname).css({ display: p.hidden ? "none" : "block" });
+      query9(self.box).find(pname).css({ display: p.hidden ? "none" : "block" });
       if (p.resizable) {
-        query8(self.box).find(rname).show();
+        query9(self.box).find(rname).show();
       } else {
-        query8(self.box).find(rname).hide();
+        query9(self.box).find(rname).hide();
       }
       if (typeof p.html == "object" && typeof p.html.render === "function") {
         ;
-        p.html.box = query8(self.box).find(pname + '> [data-role="panel-content"]')[0];
+        p.html.box = query9(self.box).find(pname + '> [data-role="panel-content"]')[0];
         setTimeout(() => {
-          if (query8(self.box).find(pname + '> [data-role="panel-content"]').length > 0) {
-            const $content = query8(self.box).find(pname + '> [data-role="panel-content"]').removeClass(null).removeAttr("name").addClass("tsg-panel-content");
+          if (query9(self.box).find(pname + '> [data-role="panel-content"]').length > 0) {
+            const $content = query9(self.box).find(pname + '> [data-role="panel-content"]').removeClass(null).removeAttr("name").addClass("tsg-panel-content");
             $content.css("overflow", p.overflow)[0].style.cssText += ";" + p.style;
           }
           if (p.html && typeof p.html.render == "function") {
@@ -11462,12 +11583,12 @@ var TsLayout = class extends TsBase {
           }
         }, 1);
       } else {
-        if (query8(self.box).find(pname + '> [data-role="panel-content"]').length > 0) {
-          const $content = query8(self.box).find(pname + '> [data-role="panel-content"]').removeClass(null).removeAttr("name").addClass("tsg-panel-content");
+        if (query9(self.box).find(pname + '> [data-role="panel-content"]').length > 0) {
+          const $content = query9(self.box).find(pname + '> [data-role="panel-content"]').removeClass(null).removeAttr("name").addClass("tsg-panel-content");
           $content.html(p.html).css("overflow", p.overflow)[0].style.cssText += ";" + p.style;
         }
       }
-      let tmp = query8(self.box).find(pname + '> [data-role="panel-tabs"]');
+      let tmp = query9(self.box).find(pname + '> [data-role="panel-tabs"]');
       if (p.show.tabs) {
         if (tmp.attr("name") != p.tabs?.name && p.tabs != null) {
           ;
@@ -11482,7 +11603,7 @@ var TsLayout = class extends TsBase {
         tmp.html("").removeAttr("name").removeClass(null);
         tmp.css("display", "none").hide();
       }
-      tmp = query8(self.box).find(pname + '> [data-role="panel-toolbar"]');
+      tmp = query9(self.box).find(pname + '> [data-role="panel-toolbar"]');
       if (p.show.toolbar) {
         if (tmp.attr("name") != p.toolbar?.name && p.toolbar != null) {
           ;
@@ -11497,7 +11618,7 @@ var TsLayout = class extends TsBase {
         tmp.html("").removeAttr("name").removeClass(null);
         tmp.css("display", "none").hide();
       }
-      tmp = query8(self.box).find(pname + "> .tsg-panel-title");
+      tmp = query9(self.box).find(pname + "> .tsg-panel-title");
       if (p.title) {
         ;
         tmp.html(p.title).show();
@@ -11506,7 +11627,7 @@ var TsLayout = class extends TsBase {
         tmp.html("").hide();
       }
     } else {
-      if (query8(self.box).find("#layout_" + self.name + "_panel_main").length === 0) {
+      if (query9(self.box).find("#layout_" + self.name + "_panel_main").length === 0) {
         self.render();
         return;
       }
@@ -11531,8 +11652,8 @@ var TsLayout = class extends TsBase {
     });
     if (edata.isCancelled === true) return;
     if (this.padding < 0) this.padding = 0;
-    const width = TsUtils.getSize(query8(this.box), "width");
-    const height = TsUtils.getSize(query8(this.box), "height");
+    const width = TsUtils.getSize(query9(this.box), "width");
+    const height = TsUtils.getSize(query9(this.box), "height");
     const self = this;
     const pmain = this.get("main");
     const pprev = this.get("preview");
@@ -11586,7 +11707,7 @@ var TsLayout = class extends TsBase {
       t = 0;
       w = width;
       h = ptop.sizeCalculated;
-      query8(this.box).find("#layout_" + this.name + "_panel_top").css({
+      query9(this.box).find("#layout_" + this.name + "_panel_top").css({
         "display": "block",
         "left": l + "px",
         "top": t + "px",
@@ -11598,7 +11719,7 @@ var TsLayout = class extends TsBase {
       if (ptop.resizable) {
         t = ptop.sizeCalculated - (this.padding === 0 ? this.resizer : 0);
         h = this.resizer > this.padding ? this.resizer : this.padding;
-        query8(this.box).find("#layout_" + this.name + "_resizer_top").css({
+        query9(this.box).find("#layout_" + this.name + "_resizer_top").css({
           "display": "block",
           "left": l + "px",
           "top": t + "px",
@@ -11615,15 +11736,15 @@ var TsLayout = class extends TsBase {
         });
       }
     } else {
-      query8(this.box).find("#layout_" + this.name + "_panel_top").hide();
-      query8(this.box).find("#layout_" + this.name + "_resizer_top").hide();
+      query9(this.box).find("#layout_" + this.name + "_panel_top").hide();
+      query9(this.box).find("#layout_" + this.name + "_resizer_top").hide();
     }
     if (pleft != null && pleft.hidden !== true) {
       l = 0;
       t = 0 + (stop ? ptop.sizeCalculated + this.padding : 0);
       w = pleft.sizeCalculated;
       h = height - (stop ? ptop.sizeCalculated + this.padding : 0) - (sbottom ? pbottom.sizeCalculated + this.padding : 0);
-      query8(this.box).find("#layout_" + this.name + "_panel_left").css({
+      query9(this.box).find("#layout_" + this.name + "_panel_left").css({
         "display": "block",
         "left": l + "px",
         "top": t + "px",
@@ -11635,7 +11756,7 @@ var TsLayout = class extends TsBase {
       if (pleft.resizable) {
         l = pleft.sizeCalculated - (this.padding === 0 ? this.resizer : 0);
         w = this.resizer > this.padding ? this.resizer : this.padding;
-        query8(this.box).find("#layout_" + this.name + "_resizer_left").css({
+        query9(this.box).find("#layout_" + this.name + "_resizer_left").css({
           "display": "block",
           "left": l + "px",
           "top": t + "px",
@@ -11652,15 +11773,15 @@ var TsLayout = class extends TsBase {
         });
       }
     } else {
-      query8(this.box).find("#layout_" + this.name + "_panel_left").hide();
-      query8(this.box).find("#layout_" + this.name + "_resizer_left").hide();
+      query9(this.box).find("#layout_" + this.name + "_panel_left").hide();
+      query9(this.box).find("#layout_" + this.name + "_resizer_left").hide();
     }
     if (pright != null && pright.hidden !== true) {
       l = width - pright.sizeCalculated;
       t = 0 + (stop ? ptop.sizeCalculated + this.padding : 0);
       w = pright.sizeCalculated;
       h = height - (stop ? ptop.sizeCalculated + this.padding : 0) - (sbottom ? pbottom.sizeCalculated + this.padding : 0);
-      query8(this.box).find("#layout_" + this.name + "_panel_right").css({
+      query9(this.box).find("#layout_" + this.name + "_panel_right").css({
         "display": "block",
         "left": l + "px",
         "top": t + "px",
@@ -11672,7 +11793,7 @@ var TsLayout = class extends TsBase {
       if (pright.resizable) {
         l = l - this.padding;
         w = this.resizer > this.padding ? this.resizer : this.padding;
-        query8(this.box).find("#layout_" + this.name + "_resizer_right").css({
+        query9(this.box).find("#layout_" + this.name + "_resizer_right").css({
           "display": "block",
           "left": l + "px",
           "top": t + "px",
@@ -11689,15 +11810,15 @@ var TsLayout = class extends TsBase {
         });
       }
     } else {
-      query8(this.box).find("#layout_" + this.name + "_panel_right").hide();
-      query8(this.box).find("#layout_" + this.name + "_resizer_right").hide();
+      query9(this.box).find("#layout_" + this.name + "_panel_right").hide();
+      query9(this.box).find("#layout_" + this.name + "_resizer_right").hide();
     }
     if (pbottom != null && pbottom.hidden !== true) {
       l = 0;
       t = height - pbottom.sizeCalculated;
       w = width;
       h = pbottom.sizeCalculated;
-      query8(this.box).find("#layout_" + this.name + "_panel_bottom").css({
+      query9(this.box).find("#layout_" + this.name + "_panel_bottom").css({
         "display": "block",
         "left": l + "px",
         "top": t + "px",
@@ -11709,7 +11830,7 @@ var TsLayout = class extends TsBase {
       if (pbottom.resizable) {
         t = t - (this.padding === 0 ? 0 : this.padding);
         h = this.resizer > this.padding ? this.resizer : this.padding;
-        query8(this.box).find("#layout_" + this.name + "_resizer_bottom").css({
+        query9(this.box).find("#layout_" + this.name + "_resizer_bottom").css({
           "display": "block",
           "left": l + "px",
           "top": t + "px",
@@ -11726,14 +11847,14 @@ var TsLayout = class extends TsBase {
         });
       }
     } else {
-      query8(this.box).find("#layout_" + this.name + "_panel_bottom").hide();
-      query8(this.box).find("#layout_" + this.name + "_resizer_bottom").hide();
+      query9(this.box).find("#layout_" + this.name + "_panel_bottom").hide();
+      query9(this.box).find("#layout_" + this.name + "_resizer_bottom").hide();
     }
     l = 0 + (sleft ? pleft.sizeCalculated + this.padding : 0);
     t = 0 + (stop ? ptop.sizeCalculated + this.padding : 0);
     w = width - (sleft ? pleft.sizeCalculated + this.padding : 0) - (sright ? pright.sizeCalculated + this.padding : 0);
     h = height - (stop ? ptop.sizeCalculated + this.padding : 0) - (sbottom ? pbottom.sizeCalculated + this.padding : 0) - (sprev ? pprev.sizeCalculated + this.padding : 0);
-    query8(this.box).find("#layout_" + this.name + "_panel_main").css({
+    query9(this.box).find("#layout_" + this.name + "_panel_main").css({
       "display": "block",
       "left": l + "px",
       "top": t + "px",
@@ -11747,7 +11868,7 @@ var TsLayout = class extends TsBase {
       t = height - (sbottom ? pbottom.sizeCalculated + this.padding : 0) - pprev.sizeCalculated;
       w = width - (sleft ? pleft.sizeCalculated + this.padding : 0) - (sright ? pright.sizeCalculated + this.padding : 0);
       h = pprev.sizeCalculated;
-      query8(this.box).find("#layout_" + this.name + "_panel_preview").css({
+      query9(this.box).find("#layout_" + this.name + "_panel_preview").css({
         "display": "block",
         "left": l + "px",
         "top": t + "px",
@@ -11759,7 +11880,7 @@ var TsLayout = class extends TsBase {
       if (pprev.resizable) {
         t = t - (this.padding === 0 ? 0 : this.padding);
         h = this.resizer > this.padding ? this.resizer : this.padding;
-        query8(this.box).find("#layout_" + this.name + "_resizer_preview").css({
+        query9(this.box).find("#layout_" + this.name + "_resizer_preview").css({
           "display": "block",
           "left": l + "px",
           "top": t + "px",
@@ -11776,8 +11897,8 @@ var TsLayout = class extends TsBase {
         });
       }
     } else {
-      query8(this.box).find("#layout_" + this.name + "_panel_preview").hide();
-      query8(this.box).find("#layout_" + this.name + "_resizer_preview").hide();
+      query9(this.box).find("#layout_" + this.name + "_panel_preview").hide();
+      query9(this.box).find("#layout_" + this.name + "_resizer_preview").hide();
     }
     this.resizeBoxes();
     edata.finish();
@@ -11792,19 +11913,19 @@ var TsLayout = class extends TsBase {
       let topHeight = 0;
       if (pan) {
         if (pan.title) {
-          const el = query8(this.box).find(tmp2 + ".tsg-panel-title").css({ top: topHeight + "px", display: "block" });
+          const el = query9(this.box).find(tmp2 + ".tsg-panel-title").css({ top: topHeight + "px", display: "block" });
           topHeight += TsUtils.getSize(el, "height");
         }
         if (pan.show.tabs) {
-          const el = query8(this.box).find(tmp2 + '[data-role="panel-tabs"]').css({ top: topHeight + "px", display: "block" });
+          const el = query9(this.box).find(tmp2 + '[data-role="panel-tabs"]').css({ top: topHeight + "px", display: "block" });
           topHeight += TsUtils.getSize(el, "height");
         }
         if (pan.show.toolbar) {
-          const el = query8(this.box).find(tmp2 + '[data-role="panel-toolbar"]').css({ top: topHeight + "px", display: "block" });
+          const el = query9(this.box).find(tmp2 + '[data-role="panel-toolbar"]').css({ top: topHeight + "px", display: "block" });
           topHeight += TsUtils.getSize(el, "height");
         }
       }
-      query8(this.box).find(tmp2 + '[data-role="panel-content"]').css({
+      query9(this.box).find(tmp2 + '[data-role="panel-content"]').css({
         display: "block",
         top: topHeight + "px"
       });
@@ -11920,10 +12041,10 @@ function hideColumn(grid, ...fields) {
 }
 
 // src/grid-state.ts
-var query9 = query2;
+var query10 = query2;
 function status(grid, msg) {
   if (msg != null) {
-    query9(grid.box).find(`#grid_${grid.name}_footer`).find(".tsg-footer-left").html(msg);
+    query10(grid.box).find(`#grid_${grid.name}_footer`).find(".tsg-footer-left").html(msg);
   } else {
     let msgLeft = "";
     const sel = grid.getSelection();
@@ -11937,19 +12058,19 @@ function status(grid, msg) {
         msgLeft = TsUtils.lang("Record ID") + ": " + tmp + " ";
       }
     }
-    query9(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-left").html(msgLeft);
+    query10(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-left").html(msgLeft);
   }
 }
 function lock(grid, msg, showSpinner) {
   const args = [grid.box, msg, showSpinner];
   setTimeout(() => {
-    query9(grid.box).find("#grid_" + grid.name + "_empty_msg").remove();
+    query10(grid.box).find("#grid_" + grid.name + "_empty_msg").remove();
     TsUtils.lock(...args);
   }, 10);
 }
 function unlock(grid, speed) {
   setTimeout(() => {
-    if (query9(grid.box).find(".tsg-message").hasClass("tsg-closing")) return;
+    if (query10(grid.box).find(".tsg-message").hasClass("tsg-closing")) return;
     TsUtils.unlock(grid.box, speed);
   }, 25);
 }
@@ -12233,7 +12354,7 @@ function confirm(grid, options) {
 }
 
 // src/grid-data.ts
-var query10 = query2;
+var query11 = query2;
 function add(grid, record, first) {
   if (!Array.isArray(record)) record = [record];
   let added = 0;
@@ -12266,7 +12387,7 @@ function add(grid, record, first) {
     if ((grid.last.vscroll.recIndStart ?? 0) <= indEnd && (grid.last.vscroll.recIndEnd ?? 0) >= indStart) {
       grid.refresh();
     } else {
-      query10(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-right .tsg-total").html(TsUtils.formatNumber(grid.total));
+      query11(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-right .tsg-total").html(TsUtils.formatNumber(grid.total));
     }
   } else {
     grid.refresh();
@@ -12907,8 +13028,8 @@ function removeRange(grid, ...names) {
   let removed = 0;
   for (let a = 0; a < names.length; a++) {
     const name = names[a];
-    query10(grid.box).find("#grid_" + grid.name + "_" + name).remove();
-    query10(grid.box).find("#grid_" + grid.name + "_f" + name).remove();
+    query11(grid.box).find("#grid_" + grid.name + "_" + name).remove();
+    query11(grid.box).find("#grid_" + grid.name + "_f" + name).remove();
     for (let r = grid.ranges.length - 1; r >= 0; r--) {
       if (grid.ranges[r].name == name) {
         grid.ranges.splice(r, 1);
@@ -12923,8 +13044,8 @@ function refreshRanges(grid) {
   const self = grid;
   let range;
   const time = Date.now();
-  const rec1 = query10(grid.box).find(`#grid_${grid.name}_frecords`);
-  const rec2 = query10(grid.box).find(`#grid_${grid.name}_records`);
+  const rec1 = query11(grid.box).find(`#grid_${grid.name}_frecords`);
+  const rec2 = query11(grid.box).find(`#grid_${grid.name}_records`);
   for (let i = 0; i < grid.ranges.length; i++) {
     const rg = grid.ranges[i];
     let first = rg.range[0];
@@ -12942,52 +13063,52 @@ function refreshRanges(grid) {
       first = last;
       last = tmp3;
     }
-    let td1 = query10(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + ' td[col="' + first.column + '"]');
-    let td2 = query10(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(last.recid) + ' td[col="' + last.column + '"]');
-    let td1f = query10(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(first.recid) + ' td[col="' + first.column + '"]');
-    let td2f = query10(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(last.recid) + ' td[col="' + last.column + '"]');
+    let td1 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + ' td[col="' + first.column + '"]');
+    let td2 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(last.recid) + ' td[col="' + last.column + '"]');
+    let td1f = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(first.recid) + ' td[col="' + first.column + '"]');
+    let td2f = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(last.recid) + ' td[col="' + last.column + '"]');
     let _lastColumn = last.column;
     if (first.column < grid.last.vscroll.colIndStart && last.column > grid.last.vscroll.colIndStart) {
-      td1 = query10(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + ' td[col="start"]');
+      td1 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + ' td[col="start"]');
     }
     if (first.column < grid.last.vscroll.colIndEnd && last.column > grid.last.vscroll.colIndEnd) {
-      td2 = query10(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(last.recid) + ' td[col="end"]');
+      td2 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(last.recid) + ' td[col="end"]');
       _lastColumn = "end";
     }
-    const index_top = parseInt(query10(grid.box).find("#grid_" + grid.name + "_rec_top").next().attr("index"));
-    const index_bottom = parseInt(query10(grid.box).find("#grid_" + grid.name + "_rec_bottom").prev().attr("index"));
-    const index_ftop = parseInt(query10(grid.box).find("#grid_" + grid.name + "_frec_top").next().attr("index"));
-    const index_fbottom = parseInt(query10(grid.box).find("#grid_" + grid.name + "_frec_bottom").prev().attr("index"));
+    const index_top = parseInt(query11(grid.box).find("#grid_" + grid.name + "_rec_top").next().attr("index"));
+    const index_bottom = parseInt(query11(grid.box).find("#grid_" + grid.name + "_rec_bottom").prev().attr("index"));
+    const index_ftop = parseInt(query11(grid.box).find("#grid_" + grid.name + "_frec_top").next().attr("index"));
+    const index_fbottom = parseInt(query11(grid.box).find("#grid_" + grid.name + "_frec_bottom").prev().attr("index"));
     if (td1.length === 0 && first.index < index_top && last.index > index_top) {
-      td1 = query10(grid.box).find("#grid_" + grid.name + "_rec_top").next().find('td[col="' + first.column + '"]');
+      td1 = query11(grid.box).find("#grid_" + grid.name + "_rec_top").next().find('td[col="' + first.column + '"]');
     }
     if (td2.length === 0 && last.index > index_bottom && first.index < index_bottom) {
-      td2 = query10(grid.box).find("#grid_" + grid.name + "_rec_bottom").prev().find('td[col="' + _lastColumn + '"]');
+      td2 = query11(grid.box).find("#grid_" + grid.name + "_rec_bottom").prev().find('td[col="' + _lastColumn + '"]');
     }
     if (td1f.length === 0 && first.index < index_ftop && last.index > index_ftop) {
-      td1f = query10(grid.box).find("#grid_" + grid.name + "_frec_top").next().find('td[col="' + first.column + '"]');
+      td1f = query11(grid.box).find("#grid_" + grid.name + "_frec_top").next().find('td[col="' + first.column + '"]');
     }
     if (td2f.length === 0 && last.index > index_fbottom && first.index < index_fbottom) {
-      td2f = query10(grid.box).find("#grid_" + grid.name + "_frec_bottom").prev().find('td[col="' + last.column + '"]');
+      td2f = query11(grid.box).find("#grid_" + grid.name + "_frec_bottom").prev().find('td[col="' + last.column + '"]');
     }
-    const edit = query10(grid.box).find("#grid_" + grid.name + "_editable");
+    const edit = query11(grid.box).find("#grid_" + grid.name + "_editable");
     const tmp = edit.find(".tsg-input");
     const tmp_ind = tmp.attr("index");
     const tmp1 = grid.records[tmp_ind]?.recid;
     const tmp2 = tmp.attr("column");
     if (rg.name == "selection" && rg.range[0].recid == tmp1 && rg.range[0].column == tmp2) continue;
-    range = query10(grid.box).find("#grid_" + grid.name + "_f" + rg.name);
+    range = query11(grid.box).find("#grid_" + grid.name + "_f" + rg.name);
     if (td1f.length > 0 || td2f.length > 0) {
       if (range.length === 0) {
         rec1.append('<div id="grid_' + grid.name + "_f" + rg.name + '" class="tsg-selection" style="' + rg.style + '">' + (rg.name == "selection" && grid.show.selectionResizer ? '<div id="grid_' + grid.name + '_resizer" class="tsg-selection-resizer"></div>' : "") + "</div>");
-        range = query10(grid.box).find("#grid_" + grid.name + "_f" + rg.name);
+        range = query11(grid.box).find("#grid_" + grid.name + "_f" + rg.name);
       } else {
         range.attr("style", rg.style);
         range.find(".tsg-selection-resizer").show();
       }
       if (td2f.length === 0) {
-        td2f = query10(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(last.recid) + " td:last-child");
-        if (td2f.length === 0) td2f = query10(grid.box).find("#grid_" + grid.name + "_frec_bottom td:first-child");
+        td2f = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(last.recid) + " td:last-child");
+        if (td2f.length === 0) td2f = query11(grid.box).find("#grid_" + grid.name + "_frec_bottom td:first-child");
         range.css("border-right", "0px");
         range.find(".tsg-selection-resizer").hide();
       }
@@ -13009,7 +13130,7 @@ function refreshRanges(grid) {
     } else {
       range.hide();
     }
-    range = query10(grid.box).find("#grid_" + grid.name + "_" + rg.name);
+    range = query11(grid.box).find("#grid_" + grid.name + "_" + rg.name);
     if (td1.length > 0 || td2.length > 0) {
       if (range.length === 0) {
         rec2.append(`
@@ -13017,13 +13138,13 @@ function refreshRanges(grid) {
                         ${rg.name == "selection" && grid.show.selectionResizer ? `<div id="grid_${grid.name}_resizer" class="tsg-selection-resizer"></div>` : ""}
                     </div>
                 `);
-        range = query10(grid.box).find("#grid_" + grid.name + "_" + rg.name);
+        range = query11(grid.box).find("#grid_" + grid.name + "_" + rg.name);
       } else {
         range.attr("style", rg.style);
       }
       if (td1.length === 0) {
-        td1 = query10(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + " td:first-child");
-        if (td1.length === 0) td1 = query10(grid.box).find("#grid_" + grid.name + "_rec_top td:first-child");
+        td1 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(first.recid) + " td:first-child");
+        if (td1.length === 0) td1 = query11(grid.box).find("#grid_" + grid.name + "_rec_top td:first-child");
       }
       if (td2f.length !== 0) {
         range.css("border-left", "0px");
@@ -13047,7 +13168,7 @@ function refreshRanges(grid) {
       range.hide();
     }
   }
-  query10(grid.box).find(".tsg-selection-resizer").off(".resizer").on("mousedown.resizer", mouseStart).on("dblclick.resizer", (event2) => {
+  query11(grid.box).find(".tsg-selection-resizer").off(".resizer").on("mousedown.resizer", mouseStart).on("dblclick.resizer", (event2) => {
     const edata2 = self.trigger("resizerDblClick", { target: self.name, originalEvent: event2 });
     if (edata2.isCancelled === true) return;
     edata2.finish();
@@ -13075,7 +13196,7 @@ function refreshRanges(grid) {
     };
     detail.originalName = self.last.move.name;
     detail.originalRange = self.last.move.originalRange;
-    query10("body").off(".tsg-" + self.name).on("mousemove.tsg-" + self.name, mouseMove).on("mouseup.tsg-" + self.name, mouseStop);
+    query11("body").off(".tsg-" + self.name).on("mousemove.tsg-" + self.name, mouseMove).on("mouseup.tsg-" + self.name, mouseStop);
     event2.preventDefault();
   }
   function mouseMove(event2) {
@@ -13085,13 +13206,13 @@ function refreshRanges(grid) {
     mv.divY = event2.screenY - mv.y;
     let column;
     let tmp = event2.target;
-    if (tmp.tagName.toUpperCase() != "TD") tmp = query10(tmp).closest("td")[0];
-    if (query10(tmp).attr("col") != null) column = parseInt(query10(tmp).attr("col"));
+    if (tmp.tagName.toUpperCase() != "TD") tmp = query11(tmp).closest("td")[0];
+    if (query11(tmp).attr("col") != null) column = parseInt(query11(tmp).attr("col"));
     if (column == null) {
       return;
     }
-    tmp = query10(tmp).closest("tr")[0];
-    const index = parseInt(query10(tmp).attr("index"));
+    tmp = query11(tmp).closest("tr")[0];
+    const index = parseInt(query11(tmp).attr("index"));
     const recid = self.records[index]?.recid;
     if (mv.newRange[1].recid == recid && mv.newRange[1].column == column) {
       return;
@@ -13115,7 +13236,7 @@ function refreshRanges(grid) {
   }
   function mouseStop(_event) {
     self.removeRange("selection-expand");
-    query10("body").off(".tsg-" + self.name);
+    query11("body").off(".tsg-" + self.name);
     if (self.last.move?.type == "expand" && edata.finish) {
       edata.finish();
     }
@@ -13138,7 +13259,7 @@ function reset(grid, noRefresh) {
   grid.last.vscroll.scrollLeft = 0;
   grid.last.vscroll.recIndStart = null;
   grid.last.vscroll.recIndEnd = null;
-  query10(grid.box).find(`#grid_${grid.name}_records`).prop("scrollTop", 0);
+  query11(grid.box).find(`#grid_${grid.name}_records`).prop("scrollTop", 0);
   if (!noRefresh) grid.refresh();
 }
 function load(grid, url, callBack) {
@@ -13342,7 +13463,7 @@ function save(grid, callBack) {
 }
 
 // src/grid-selection.ts
-var query11 = query2;
+var query12 = query2;
 function select(grid, ...selectArgs) {
   if (selectArgs.length === 0) return 0;
   let selected = 0;
@@ -13390,8 +13511,8 @@ function select(grid, ...selectArgs) {
       let recEl1 = null;
       let recEl2 = null;
       if (grid.searchData.length !== 0 || index + 1 >= (grid.last.vscroll.recIndStart ?? 0) && index + 1 <= (grid.last.vscroll.recIndEnd ?? 0)) {
-        recEl1 = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
-        recEl2 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
+        recEl1 = query12(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
+        recEl2 = query12(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
       }
       if (grid.selectType == "row") {
         if (sel.indexes.indexOf(index) != -1) continue;
@@ -13428,8 +13549,8 @@ function select(grid, ...selectArgs) {
       let recEl1 = null;
       let recEl2 = null;
       if (index + 1 >= (grid.last.vscroll.recIndStart ?? 0) && index + 1 <= (grid.last.vscroll.recIndEnd ?? 0)) {
-        recEl1 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
-        recEl2 = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
+        recEl1 = query12(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
+        recEl2 = query12(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
       }
       const s = sel.columns[index] || [];
       if (sel.indexes.indexOf(index) == -1) {
@@ -13460,7 +13581,7 @@ function select(grid, ...selectArgs) {
       sel.columns[index] = s;
     }
     for (let c = 0; c < col_sel.length; c++) {
-      query11(grid.box).find("#grid_" + grid.name + "_column_" + col_sel[c] + " .tsg-col-header").addClass("tsg-col-selected");
+      query12(grid.box).find("#grid_" + grid.name + "_column_" + col_sel[c] + " .tsg-col-header").addClass("tsg-col-selected");
     }
   }
   sel.indexes.sort((a, b) => {
@@ -13468,9 +13589,9 @@ function select(grid, ...selectArgs) {
   });
   const areAllSelected = grid.records.length > 0 && sel.indexes.length == grid.records.length, areAllSearchedSelected = sel.indexes.length > 0 && grid.searchData.length !== 0 && sel.indexes.length == grid.last.searchIds.length;
   if (areAllSelected || areAllSearchedSelected) {
-    query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
+    query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
   } else {
-    query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
+    query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
   }
   grid.status();
   grid.addRange("selection");
@@ -13508,8 +13629,8 @@ function unselect(grid, ...unselectArgs) {
     const record = grid.get(recid);
     if (record == null) continue;
     const index = grid.get(record.recid, true) ?? -1;
-    const recEl1 = query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
-    const recEl2 = query11(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
+    const recEl1 = query12(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
+    const recEl2 = query12(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
     if (grid.selectType == "row") {
       if (sel.indexes.indexOf(index) == -1) continue;
       sel.indexes.splice(sel.indexes.indexOf(index), 1);
@@ -13534,8 +13655,8 @@ function unselect(grid, ...unselectArgs) {
       const s = sel.columns[index];
       if (!Array.isArray(s) || s.indexOf(col) == -1) continue;
       s.splice(s.indexOf(col), 1);
-      query11(grid.box).find(`#grid_${grid.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass("tsg-selected tsg-inactive");
-      query11(grid.box).find(`#grid_${grid.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass("tsg-selected tsg-inactive");
+      query12(grid.box).find(`#grid_${grid.name}_rec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass("tsg-selected tsg-inactive");
+      query12(grid.box).find(`#grid_${grid.name}_frec_${TsUtils.escapeId(recid)} > td[col="${col}"]`).removeClass("tsg-selected tsg-inactive");
       let isColSelected = false;
       let isRowSelected = false;
       const tmp2 = grid.getSelectionCells();
@@ -13544,10 +13665,10 @@ function unselect(grid, ...unselectArgs) {
         if (tmp2[i].recid == recid) isRowSelected = true;
       }
       if (!isColSelected) {
-        query11(grid.box).find(`.tsg-grid-columns td[col="${col}"] .tsg-col-header, .tsg-grid-fcolumns td[col="${col}"] .tsg-col-header`).removeClass("tsg-col-selected");
+        query12(grid.box).find(`.tsg-grid-columns td[col="${col}"] .tsg-col-header, .tsg-grid-fcolumns td[col="${col}"] .tsg-col-header`).removeClass("tsg-col-selected");
       }
       if (!isRowSelected) {
-        query11(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid)).find(".tsg-col-number").removeClass("tsg-row-selected");
+        query12(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid)).find(".tsg-col-number").removeClass("tsg-row-selected");
       }
       unselected++;
       if (s.length === 0) {
@@ -13559,9 +13680,9 @@ function unselect(grid, ...unselectArgs) {
   }
   const areAllSelected = grid.records.length > 0 && sel.indexes.length == grid.records.length, areAllSearchedSelected = sel.indexes.length > 0 && grid.searchData.length !== 0 && sel.indexes.length == grid.last.searchIds.length;
   if (areAllSelected || areAllSearchedSelected) {
-    query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
+    query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
   } else {
-    query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
+    query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
   }
   grid.status();
   grid.addRange("selection");
@@ -13627,20 +13748,20 @@ function selectAll(grid) {
   if (edata.isCancelled === true) return;
   grid.last.selection = sel;
   if (grid.selectType == "row") {
-    query11(grid.box).find(".tsg-grid-records tr:not(.tsg-empty-record)").addClass("tsg-selected").find(".tsg-col-number").addClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-frecords tr:not(.tsg-empty-record)").addClass("tsg-selected").find(".tsg-col-number").addClass("tsg-row-selected");
-    query11(grid.box).find("input.tsg-grid-select-check").prop("checked", true);
+    query12(grid.box).find(".tsg-grid-records tr:not(.tsg-empty-record)").addClass("tsg-selected").find(".tsg-col-number").addClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-frecords tr:not(.tsg-empty-record)").addClass("tsg-selected").find(".tsg-col-number").addClass("tsg-row-selected");
+    query12(grid.box).find("input.tsg-grid-select-check").prop("checked", true);
   } else {
-    query11(grid.box).find(".tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header").addClass("tsg-col-selected");
-    query11(grid.box).find(".tsg-grid-records tr .tsg-col-number").addClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-records tr:not(.tsg-empty-record)").find(".tsg-grid-data:not(.tsg-col-select)").addClass("tsg-selected");
-    query11(grid.box).find(".tsg-grid-frecords tr .tsg-col-number").addClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-frecords tr:not(.tsg-empty-record)").find(".tsg-grid-data:not(.tsg-col-select)").addClass("tsg-selected");
-    query11(grid.box).find("input.tsg-grid-select-check").prop("checked", true);
+    query12(grid.box).find(".tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header").addClass("tsg-col-selected");
+    query12(grid.box).find(".tsg-grid-records tr .tsg-col-number").addClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-records tr:not(.tsg-empty-record)").find(".tsg-grid-data:not(.tsg-col-select)").addClass("tsg-selected");
+    query12(grid.box).find(".tsg-grid-frecords tr .tsg-col-number").addClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-frecords tr:not(.tsg-empty-record)").find(".tsg-grid-data:not(.tsg-col-select)").addClass("tsg-selected");
+    query12(grid.box).find("input.tsg-grid-select-check").prop("checked", true);
   }
   sel = grid.getSelectionRows(true);
   grid.addRange("selection");
-  query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
+  query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
   grid.status();
   grid.updateToolbar({ indexes: sel }, true);
   edata.finish();
@@ -13655,20 +13776,20 @@ function selectNone(grid, skipEvent) {
   }
   const sel = grid.last.selection;
   if (grid.selectType == "row") {
-    query11(grid.box).find(".tsg-grid-records tr.tsg-selected").removeClass("tsg-selected tsg-inactive").find(".tsg-col-number").removeClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-frecords tr.tsg-selected").removeClass("tsg-selected tsg-inactive").find(".tsg-col-number").removeClass("tsg-row-selected");
-    query11(grid.box).find("input.tsg-grid-select-check").prop("checked", false);
+    query12(grid.box).find(".tsg-grid-records tr.tsg-selected").removeClass("tsg-selected tsg-inactive").find(".tsg-col-number").removeClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-frecords tr.tsg-selected").removeClass("tsg-selected tsg-inactive").find(".tsg-col-number").removeClass("tsg-row-selected");
+    query12(grid.box).find("input.tsg-grid-select-check").prop("checked", false);
   } else {
-    query11(grid.box).find(".tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header").removeClass("tsg-col-selected");
-    query11(grid.box).find(".tsg-grid-records tr .tsg-col-number").removeClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-frecords tr .tsg-col-number").removeClass("tsg-row-selected");
-    query11(grid.box).find(".tsg-grid-data.tsg-selected").removeClass("tsg-selected tsg-inactive");
-    query11(grid.box).find("input.tsg-grid-select-check").prop("checked", false);
+    query12(grid.box).find(".tsg-grid-columns td .tsg-col-header, .tsg-grid-fcolumns td .tsg-col-header").removeClass("tsg-col-selected");
+    query12(grid.box).find(".tsg-grid-records tr .tsg-col-number").removeClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-frecords tr .tsg-col-number").removeClass("tsg-row-selected");
+    query12(grid.box).find(".tsg-grid-data.tsg-selected").removeClass("tsg-selected tsg-inactive");
+    query12(grid.box).find("input.tsg-grid-select-check").prop("checked", false);
   }
   sel.indexes = [];
   sel.columns = {};
   grid.removeRange("selection");
-  query11(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
+  query12(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
   grid.status();
   grid.updateToolbar(sel, false);
   if (!skipEvent) {
@@ -13744,7 +13865,7 @@ function getSelection(grid, returnIndex) {
 }
 
 // src/tsfield.ts
-var query12 = query2;
+var query13 = query2;
 var TsMenu2 = TsMenu;
 var TsColor2 = TsColor;
 var TsDate2 = TsDate;
@@ -13911,8 +14032,8 @@ var TsField = class extends TsBase {
         };
         this.options = TsUtils.extend({ type: "date" }, defaults, options);
         options = this.options;
-        if (query12(this.el).attr("placeholder") == null) {
-          query12(this.el).attr("placeholder", options.format);
+        if (query13(this.el).attr("placeholder") == null) {
+          query13(this.el).attr("placeholder", options.format);
         }
         break;
       }
@@ -13928,8 +14049,8 @@ var TsField = class extends TsBase {
         };
         this.options = TsUtils.extend({ type: "time" }, defaults, options);
         options = this.options;
-        if (query12(this.el).attr("placeholder") == null) {
-          query12(this.el).attr("placeholder", options.format);
+        if (query13(this.el).attr("placeholder") == null) {
+          query13(this.el).attr("placeholder", options.format);
         }
         break;
       }
@@ -13953,8 +14074,8 @@ var TsField = class extends TsBase {
         };
         this.options = TsUtils.extend({ type: "datetime" }, defaults, options);
         options = this.options;
-        if (query12(this.el).attr("placeholder") == null) {
-          query12(this.el).attr("placeholder", options.placeholder || options.format);
+        if (query13(this.el).attr("placeholder") == null) {
+          query13(this.el).attr("placeholder", options.placeholder || options.format);
         }
         break;
       }
@@ -14034,7 +14155,7 @@ var TsField = class extends TsBase {
         }
         options.items = TsUtils.normMenu.call(this, options.items, options);
         if (this.type === "list") {
-          query12(this.el).addClass("tsg-select");
+          query13(this.el).addClass("tsg-select");
           if (!TsUtils.isPlainObject(options.selected) && Array.isArray(options.items)) {
             options.items.forEach((item) => {
               if (item && item.id === options.selected) {
@@ -14051,9 +14172,9 @@ var TsField = class extends TsBase {
         this.options = options;
         if (!TsUtils.isPlainObject(options.selected)) options.selected = {};
         this.selected = options.selected;
-        query12(this.el).attr("autocapitalize", "off").attr("autocomplete", "off").attr("autocorrect", "off").attr("spellcheck", "false");
+        query13(this.el).attr("autocapitalize", "off").attr("autocomplete", "off").attr("autocorrect", "off").attr("spellcheck", "false");
         if (options.selected.text != null) {
-          query12(this.el).val(options.selected.text);
+          query13(this.el).val(options.selected.text);
         }
         break;
       }
@@ -14197,8 +14318,8 @@ var TsField = class extends TsBase {
         this.options = options;
         if (!Array.isArray(options.selected)) options.selected = [];
         this.selected = options.selected;
-        if (query12(this.el).attr("placeholder") == null) {
-          query12(this.el).attr("placeholder", TsUtils.lang("Attach files by dragging and dropping or Click to Select"));
+        if (query13(this.el).attr("placeholder") == null) {
+          query13(this.el).attr("placeholder", TsUtils.lang("Attach files by dragging and dropping or Click to Select"));
         }
         break;
       }
@@ -14207,7 +14328,7 @@ var TsField = class extends TsBase {
         break;
       }
     }
-    const $elInit = query12(this.el);
+    const $elInit = query13(this.el);
     $elInit.css("box-sizing", "border-box");
     $elInit.addClass("TsField tsg-input").off(".TsField").on("change.TsField", (event2) => {
       this.change(event2);
@@ -14234,7 +14355,7 @@ var TsField = class extends TsBase {
     if (["list", "enum", "file"].indexOf(this.type) !== -1) {
       ret = this.selected;
     } else {
-      ret = query12(this.el).val();
+      ret = query13(this.el).val();
     }
     return ret;
   }
@@ -14247,16 +14368,16 @@ var TsField = class extends TsBase {
         if (!Array.isArray(this.selected)) this.selected = [];
         this.selected.push(val);
         if (overlay) overlay.options.selected = this.selected;
-        query12(this.el).trigger("input").trigger("change");
+        query13(this.el).trigger("input").trigger("change");
       } else {
         if (val == null) val = [];
         const it = this.type === "enum" && !Array.isArray(val) ? [val] : val;
         this.selected = it;
-        query12(this.el).trigger("input").trigger("change");
+        query13(this.el).trigger("input").trigger("change");
       }
       this.refresh();
     } else {
-      query12(this.el).val(val);
+      query13(this.el).val(val);
     }
   }
   setIndex(ind, append) {
@@ -14273,7 +14394,7 @@ var TsField = class extends TsBase {
           this.selected.push(items[ind]);
         }
         if (overlay) overlay.options.selected = this.selected;
-        query12(this.el).trigger("input").trigger("change");
+        query13(this.el).trigger("input").trigger("change");
         this.refresh();
         return true;
       }
@@ -14289,10 +14410,10 @@ var TsField = class extends TsBase {
       if (color.substr(0, 1) != "#" && color.substr(0, 3) != "rgb") {
         color = "#" + color;
       }
-      query12(this.helpers.suffix).find(":scope > div").css("background-color", color);
+      query13(this.helpers.suffix).find(":scope > div").css("background-color", color);
     }
     if (this.type == "list") {
-      if (this.helpers.prefix) query12(this.helpers.prefix).hide();
+      if (this.helpers.prefix) query13(this.helpers.prefix).hide();
       if (!this.helpers.search) return Date.now() - time;
       if (this.selected == null && options.icon) {
         options.prefix = `
@@ -14304,8 +14425,8 @@ var TsField = class extends TsBase {
         options.prefix = "";
         this.addPrefix();
       }
-      const focus2 = query12(this.helpers.search_focus);
-      const icon = query12(focus2.get(0).previousElementSibling);
+      const focus2 = query13(this.helpers.search_focus);
+      const icon = query13(focus2.get(0).previousElementSibling);
       focus2.css({ outline: "none" });
       if (focus2.val() === "") {
         focus2.css("opacity", 0);
@@ -14315,39 +14436,39 @@ var TsField = class extends TsBase {
           const ind = this.findItemIndex(options.items, this.selected.id);
           if (text != null) {
             ;
-            query12(this.el).val(TsUtils.lang(text)).data({
+            query13(this.el).val(TsUtils.lang(text)).data({
               selected: text,
               selectedIndex: ind[0]
             });
           }
         } else {
           this.el.value = "";
-          query12(this.el).removeData("selected selectedIndex");
+          query13(this.el).removeData("selected selectedIndex");
         }
       } else {
         focus2.css("opacity", 1);
         icon.css("opacity", 1);
-        query12(this.el).val("");
+        query13(this.el).val("");
         setTimeout(() => {
-          if (this.helpers.prefix) query12(this.helpers.prefix).hide();
+          if (this.helpers.prefix) query13(this.helpers.prefix).hide();
           if (options.icon) {
             focus2.css("margin-left", "17px");
-            query12(this.helpers.search).find(".tsg-icon-search").addClass("show-search");
+            query13(this.helpers.search).find(".tsg-icon-search").addClass("show-search");
           } else {
             focus2.css("margin-left", "0px");
-            query12(this.helpers.search).find(".tsg-icon-search").removeClass("show-search");
+            query13(this.helpers.search).find(".tsg-icon-search").removeClass("show-search");
           }
         }, 1);
       }
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) {
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) {
         setTimeout(() => {
-          if (this.helpers.prefix) query12(this.helpers.prefix).css("opacity", "0.6");
-          if (this.helpers.suffix) query12(this.helpers.suffix).css("opacity", "0.6");
+          if (this.helpers.prefix) query13(this.helpers.prefix).css("opacity", "0.6");
+          if (this.helpers.suffix) query13(this.helpers.suffix).css("opacity", "0.6");
         }, 1);
       } else {
         setTimeout(() => {
-          if (this.helpers.prefix) query12(this.helpers.prefix).css("opacity", "1");
-          if (this.helpers.suffix) query12(this.helpers.suffix).css("opacity", "1");
+          if (this.helpers.prefix) query13(this.helpers.prefix).css("opacity", "1");
+          if (this.helpers.suffix) query13(this.helpers.suffix).css("opacity", "1");
         }, 1);
       }
     }
@@ -14372,8 +14493,8 @@ var TsField = class extends TsBase {
       if (options.style) {
         div.attr("style", div.attr("style") + ";" + options.style);
       }
-      query12(this.el).css("z-index", "-1");
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) {
+      query13(this.el).css("z-index", "-1");
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) {
         setTimeout(() => {
           div.get(0).scrollTop = 0;
           div.addClass("tsg-readonly").find(".li-item").css("opacity", "0.9");
@@ -14386,13 +14507,13 @@ var TsField = class extends TsBase {
         }, 1);
       }
       if (this.selected?.length > 0) {
-        query12(this.el).attr("placeholder", "");
+        query13(this.el).attr("placeholder", "");
       }
       div.find(".tsg-enum-placeholder").remove();
       ul.find(".li-item").remove();
       if (html !== "") {
         ul.prepend(html);
-      } else if (query12(this.el).attr("placeholder") != null && div.find("input").val() === "") {
+      } else if (query13(this.el).attr("placeholder") != null && div.find("input").val() === "") {
         const style = TsUtils.stripSpaces(`
                     padding-top: ${styles["padding-top"]};
                     padding-left: ${styles["padding-left"]};
@@ -14401,7 +14522,7 @@ var TsField = class extends TsBase {
                     font-size: ${styles["font-size"]};
                     font-family: ${styles["font-family"]};
                 `);
-        div.prepend(`<div class="tsg-enum-placeholder" style="${style}">${query12(this.el).attr("placeholder")}</div>`);
+        div.prepend(`<div class="tsg-enum-placeholder" style="${style}">${query13(this.el).attr("placeholder")}</div>`);
       }
       div.off(".w2item").on("scroll.w2item", (event2) => {
         const edata = this.trigger("scroll", { target: this.el, originalEvent: event2 });
@@ -14410,25 +14531,25 @@ var TsField = class extends TsBase {
         edata.finish();
       }).find(".li-item").on("click.w2item", (event2) => {
         const mouseEvent = event2;
-        const target = query12(mouseEvent.target).closest(".li-item");
+        const target = query13(mouseEvent.target).closest(".li-item");
         const index = target.attr("index");
         const item = index != null ? this.selected[Number(index)] : void 0;
-        if (query12(target).hasClass("li-search")) return;
+        if (query13(target).hasClass("li-search")) return;
         mouseEvent.stopPropagation();
         let edata;
-        if (query12(mouseEvent.target).hasClass("tsg-list-remove")) {
-          if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+        if (query13(mouseEvent.target).hasClass("tsg-list-remove")) {
+          if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
           edata = this.trigger("remove", { target: this.el, originalEvent: mouseEvent, item });
           if (edata.isCancelled === true) return;
           const transfer = new DataTransfer();
-          const input = query12(mouseEvent.target).closest(".tsg-list").find("input.file-input").get(0);
+          const input = query13(mouseEvent.target).closest(".tsg-list").find("input.file-input").get(0);
           if (input) {
             Array.from(input.files ?? []).filter((f) => f.name != item.name).forEach((f) => transfer.items.add(f));
             input.files = transfer.files;
           }
           if (index != null) this.selected.splice(Number(index), 1);
-          query12(this.el).trigger("input").trigger("change");
-          query12(mouseEvent.target).remove();
+          query13(this.el).trigger("input").trigger("change");
+          query13(mouseEvent.target).remove();
         } else {
           edata = this.trigger("click", { target: this.el, originalEvent: mouseEvent.originalEvent, item });
           if (edata.isCancelled === true) return;
@@ -14462,13 +14583,13 @@ var TsField = class extends TsBase {
               hideOn: ["doc-click"],
               class: ""
             }).show((_event) => {
-              const $img = query12(`#w2overlay-${name} img`);
+              const $img = query13(`#w2overlay-${name} img`);
               $img.on("load", function(_event2) {
                 const w = this.clientWidth;
                 const h = this.clientHeight;
                 if (w < 300 && h < 300) return;
-                if (w >= h && w > 300) query12(this).css("width", "300px");
-                if (w < h && h > 300) query12(this).css("height", "300px");
+                if (w >= h && w > 300) query13(this).css("width", "300px");
+                if (w < h && h > 300) query13(this).css("height", "300px");
               }).on("error", function(_event2) {
                 this.style.display = "none";
               });
@@ -14478,18 +14599,18 @@ var TsField = class extends TsBase {
         edata.finish();
       }).on("mouseenter.w2item", (event2) => {
         const mouseEvent = event2;
-        const target = query12(mouseEvent.target).closest(".li-item");
-        if (query12(target).hasClass("li-search")) return;
-        const idx = query12(mouseEvent.target).attr("index");
+        const target = query13(mouseEvent.target).closest(".li-item");
+        if (query13(target).hasClass("li-search")) return;
+        const idx = query13(mouseEvent.target).attr("index");
         const item = idx != null ? this.selected[Number(idx)] : void 0;
         const edata = this.trigger("mouseEnter", { target: this.el, originalEvent: mouseEvent, item });
         if (edata.isCancelled === true) return;
         edata.finish();
       }).on("mouseleave.w2item", (event2) => {
         const mouseEvent = event2;
-        const target = query12(mouseEvent.target).closest(".li-item");
-        if (query12(target).hasClass("li-search")) return;
-        const idx = query12(mouseEvent.target).attr("index");
+        const target = query13(mouseEvent.target).closest(".li-item");
+        if (query13(target).hasClass("li-search")) return;
+        const idx = query13(mouseEvent.target).attr("index");
         const item = idx != null ? this.selected[Number(idx)] : void 0;
         const edata = this.trigger("mouseLeave", { target: this.el, originalEvent: mouseEvent, item });
         if (edata.isCancelled === true) return;
@@ -14514,10 +14635,10 @@ var TsField = class extends TsBase {
     const suffix = this.helpers.suffix;
     const prefix = this.helpers.prefix;
     if (focus2) {
-      query12(focus2).css("width", width);
+      query13(focus2).css("width", width);
     }
     if (multi) {
-      query12(multi).css("width", width - parseInt(styles["margin-left"], 10) - parseInt(styles["margin-right"], 10));
+      query13(multi).css("width", width - parseInt(styles["margin-left"], 10) - parseInt(styles["margin-right"], 10));
     }
     if (suffix) {
       this.addSuffix();
@@ -14527,8 +14648,8 @@ var TsField = class extends TsBase {
     }
     const div = this.helpers.multi;
     if (["enum", "file"].includes(this.type) && div) {
-      query12(this.el).css("height", "");
-      let cntHeight = query12(div).find(":scope div.tsg-multi-items").get(0).clientHeight + 5;
+      query13(this.el).css("height", "");
+      let cntHeight = query13(div).find(":scope div.tsg-multi-items").get(0).clientHeight + 5;
       if (cntHeight < 20) cntHeight = 20;
       if (this.tmp["max-height"] != null && cntHeight > this.tmp["max-height"]) {
         cntHeight = this.tmp["max-height"] ?? cntHeight;
@@ -14538,30 +14659,30 @@ var TsField = class extends TsBase {
       }
       const inpHeight = TsUtils.getSize(this.el, "height") - 2;
       if (inpHeight > cntHeight) cntHeight = inpHeight;
-      query12(div).css({
+      query13(div).css({
         "height": cntHeight + "px",
         overflow: cntHeight == this.tmp["max-height"] ? "auto" : "hidden"
       });
-      query12(div).css("height", cntHeight + "px");
-      query12(this.el).css({ "height": cntHeight + "px" });
+      query13(div).css("height", cntHeight + "px");
+      query13(this.el).css({ "height": cntHeight + "px" });
     }
     this.tmp.current_width = width;
   }
   reset() {
     if (this.tmp != null) {
-      query12(this.el).css("height", "");
+      query13(this.el).css("height", "");
       ["padding-left", "padding-right", "background-color", "border-color"].forEach((prop) => {
         if (this.tmp && this.tmp["old-" + prop] != null) {
-          query12(this.el).css(prop, this.tmp["old-" + prop]);
+          query13(this.el).css(prop, this.tmp["old-" + prop]);
           delete this.tmp["old-" + prop];
         }
       });
       clearInterval(this.tmp.sizeTimer);
     }
     ;
-    query12(this.el).val(this.clean(query12(this.el).val())).removeClass("TsField tsg-input").removeData("selected selectedIndex").off(".TsField");
+    query13(this.el).val(this.clean(query13(this.el).val())).removeClass("TsField tsg-input").removeData("selected selectedIndex").off(".TsField");
     Object.keys(this.helpers).forEach((key) => {
-      query12(this.helpers[key]).remove();
+      query13(this.helpers[key]).remove();
     });
     this.helpers = {};
     delete this.el._w2field;
@@ -14625,25 +14746,25 @@ var TsField = class extends TsBase {
   }
   change(event2) {
     if (["int", "float", "money", "currency", "percent"].indexOf(this.type) !== -1) {
-      const val = query12(this.el).val();
-      const new_val = this.format(this.clean(query12(this.el).val()));
+      const val = query13(this.el).val();
+      const new_val = this.format(this.clean(query13(this.el).val()));
       if (val !== "" && val != new_val) {
-        query12(this.el).val(new_val);
+        query13(this.el).val(new_val);
         event2.stopPropagation();
         event2.preventDefault();
         return false;
       }
     }
     if (this.type === "color") {
-      let color = query12(this.el).val();
+      let color = query13(this.el).val();
       if (color.substr(0, 3).toLowerCase() !== "rgb") {
         color = "#" + color;
-        const len = query12(this.el).val().length;
+        const len = query13(this.el).val().length;
         if (len !== 8 && len !== 6 && len !== 3) color = "";
       }
-      const next = query12(this.el).get(0).nextElementSibling;
-      query12(next).find("div").css("background-color", color);
-      if (query12(this.el).hasClass("has-focus")) {
+      const next = query13(this.el).get(0).nextElementSibling;
+      query13(next).find("div").css("background-color", color);
+      if (query13(this.el).hasClass("has-focus")) {
         this.updateOverlay();
       }
     }
@@ -14656,13 +14777,13 @@ var TsField = class extends TsBase {
         if (this.type === "time") tmp = TsUtils.formatTime(new Date(tmp), this.options.format);
         if (this.type === "date") tmp = TsUtils.formatDate(new Date(tmp), this.options.format);
         if (this.type === "datetime") tmp = TsUtils.formatDateTime(new Date(tmp), this.options.format);
-        query12(this.el).val(String(tmp)).trigger("input").trigger("change");
+        query13(this.el).val(String(tmp)).trigger("input").trigger("change");
       }
     }
   }
   click(event2) {
     if (["list", "combo", "enum"].includes(this.type)) {
-      if (!query12(this.el).hasClass("has-focus")) {
+      if (!query13(this.el).hasClass("has-focus")) {
         this.focus(event2);
       }
       if (this.type == "list" || this.type == "combo") {
@@ -14691,7 +14812,7 @@ var TsField = class extends TsBase {
   focus(event2) {
     if (this.type == "list" && document.activeElement == this.el) {
       this.helpers.search_focus?.focus();
-      if (event2.showMenu !== false && this.options.openOnFocus !== false && query12(this.el).hasClass("has-focus") && !this.tmp.overlay?.overlay?.displayed) {
+      if (event2.showMenu !== false && this.options.openOnFocus !== false && query13(this.el).hasClass("has-focus") && !this.tmp.overlay?.overlay?.displayed) {
         setTimeout(() => {
           this.tmp.openedOnFocus = true;
           this.updateOverlay();
@@ -14700,12 +14821,12 @@ var TsField = class extends TsBase {
       return;
     }
     if (["color", "date", "time", "datetime"].indexOf(this.type) !== -1) {
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
       this.updateOverlay();
     }
     if (["list", "combo", "enum"].indexOf(this.type) !== -1) {
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) {
-        query12(this.el).addClass("has-focus");
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) {
+        query13(this.el).addClass("has-focus");
         return;
       }
       if (typeof this.options._items_fun == "function") {
@@ -14720,13 +14841,13 @@ var TsField = class extends TsBase {
         }
       }
       if (this.type == "enum") {
-        const search2 = query12(this.el.previousElementSibling).find(".li-search input").get(0);
+        const search2 = query13(this.el.previousElementSibling).find(".li-search input").get(0);
         if (document.activeElement !== search2) {
           search2.focus();
         }
       }
       this.resize();
-      if (event2.showMenu !== false && this.options.openOnFocus !== false && query12(this.el).hasClass("has-focus") && !this.tmp.overlay?.overlay?.displayed) {
+      if (event2.showMenu !== false && this.options.openOnFocus !== false && query13(this.el).hasClass("has-focus") && !this.tmp.overlay?.overlay?.displayed) {
         setTimeout(() => {
           this.tmp.openedOnFocus = true;
           this.updateOverlay();
@@ -14734,14 +14855,14 @@ var TsField = class extends TsBase {
       }
     }
     if (this.type == "file") {
-      const prev = query12(this.el).get(0).previousElementSibling;
-      query12(prev).addClass("has-focus");
+      const prev = query13(this.el).get(0).previousElementSibling;
+      query13(prev).addClass("has-focus");
     }
-    query12(this.el).addClass("has-focus");
+    query13(this.el).addClass("has-focus");
   }
   blur(_event) {
-    const val = query12(this.el).val().trim();
-    query12(this.el).removeClass("has-focus");
+    const val = query13(this.el).val().trim();
+    query13(this.el).removeClass("has-focus");
     if (["int", "float", "money", "currency", "percent"].includes(this.type)) {
       if (val !== "") {
         let newVal = val;
@@ -14762,7 +14883,7 @@ var TsField = class extends TsBase {
         }
         if (this.options.autoCorrect) {
           ;
-          query12(this.el).val(newVal).trigger("input").trigger("change");
+          query13(this.el).val(newVal).trigger("input").trigger("change");
           if (error) {
             TsTooltip2.show({
               name: this.el.id + "_error",
@@ -14781,17 +14902,17 @@ var TsField = class extends TsBase {
         const check = this.type == "date" ? TsUtils.isDate : this.type == "time" ? TsUtils.isTime : TsUtils.isDateTime;
         if (!TsDate2.inRange(this.el.value, this.options) || !check.bind(TsUtils)(this.el.value, this.options.format)) {
           ;
-          query12(this.el).val("").trigger("input").trigger("change");
+          query13(this.el).val("").trigger("input").trigger("change");
         }
       }
     }
     if (this.type === "enum") {
       ;
-      query12(this.helpers.multi).find("input").val("").css("width", "15px");
+      query13(this.helpers.multi).find("input").val("").css("width", "15px");
     }
     if (this.type == "file") {
       const prev = this.el.previousElementSibling;
-      query12(prev).removeClass("has-focus");
+      query13(prev).removeClass("has-focus");
     }
     if (this.type === "list") {
       this.el.value = this.selected?.text ?? "";
@@ -14814,21 +14935,21 @@ var TsField = class extends TsBase {
       }
     }
     if (["int", "float", "money", "currency", "percent"].includes(this.type)) {
-      if (!options.keyboard || query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
-      val = parseFloat(query12(this.el).val().replace(options.moneyRE, "")) || 0;
+      if (!options.keyboard || query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
+      val = parseFloat(query13(this.el).val().replace(options.moneyRE, "")) || 0;
       inc = options.step;
       if (event2.ctrlKey || event2.metaKey) inc = options.step * 10;
       switch (key) {
         case 38:
           if (event2.shiftKey) break;
           newValue = val + inc <= options.max || options.max == null ? Number((val + inc).toFixed(12)) : options.max;
-          query12(this.el).val(String(newValue)).trigger("input").trigger("change");
+          query13(this.el).val(String(newValue)).trigger("input").trigger("change");
           cancel = true;
           break;
         case 40:
           if (event2.shiftKey) break;
           newValue = val - inc >= options.min || options.min == null ? Number((val - inc).toFixed(12)) : options.min;
-          query12(this.el).val(String(newValue)).trigger("input").trigger("change");
+          query13(this.el).val(String(newValue)).trigger("input").trigger("change");
           cancel = true;
           break;
       }
@@ -14838,13 +14959,13 @@ var TsField = class extends TsBase {
       }
     }
     if (["date", "datetime"].includes(this.type)) {
-      if (!options.keyboard || query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+      if (!options.keyboard || query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
       const is = (this.type == "date" ? TsUtils.isDate : TsUtils.isDateTime).bind(TsUtils);
       const format = (this.type == "date" ? TsUtils.formatDate : TsUtils.formatDateTime).bind(TsUtils);
       daymil = 24 * 60 * 60 * 1e3;
       inc = 1;
       if (event2.ctrlKey || event2.metaKey) inc = 10;
-      dt = is(query12(this.el).val(), options.format, true);
+      dt = is(query13(this.el).val(), options.format, true);
       if (!dt) {
         dt = /* @__PURE__ */ new Date();
         daymil = 0;
@@ -14858,7 +14979,7 @@ var TsField = class extends TsBase {
             dt.setTime(dt.getTime() + daymil);
           }
           newDT = format(dt.getTime(), options.format);
-          query12(this.el).val(newDT).trigger("input").trigger("change");
+          query13(this.el).val(newDT).trigger("input").trigger("change");
           cancel = true;
           break;
         case 40:
@@ -14869,7 +14990,7 @@ var TsField = class extends TsBase {
             dt.setTime(dt.getTime() - daymil);
           }
           newDT = format(dt.getTime(), options.format);
-          query12(this.el).val(newDT).trigger("input").trigger("change");
+          query13(this.el).val(newDT).trigger("input").trigger("change");
           cancel = true;
           break;
       }
@@ -14880,9 +15001,9 @@ var TsField = class extends TsBase {
       }
     }
     if (this.type === "time") {
-      if (!options.keyboard || query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+      if (!options.keyboard || query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
       inc = event2.ctrlKey || event2.metaKey ? 60 : 1;
-      val = query12(this.el).val();
+      val = query13(this.el).val();
       let time = TsDate2.str2min(val) || TsDate2.str2min((/* @__PURE__ */ new Date()).getHours() + ":" + ((/* @__PURE__ */ new Date()).getMinutes() - 1));
       switch (key) {
         case 38:
@@ -14898,7 +15019,7 @@ var TsField = class extends TsBase {
       }
       if (cancel) {
         event2.preventDefault();
-        query12(this.el).val(TsDate2.min2str(time)).trigger("input").trigger("change");
+        query13(this.el).val(TsDate2.min2str(time)).trigger("input").trigger("change");
         this.moveCaret2end();
       }
     }
@@ -14908,17 +15029,17 @@ var TsField = class extends TsBase {
         // delete
         case 46:
           if (this.type == "list") {
-            const search2 = query12(this.helpers.search_focus);
+            const search2 = query13(this.helpers.search_focus);
             if (search2.val() == "") {
               const edata = this.trigger("remove", { target: this.el, originalEvent: event2, item: this.selected });
               if (edata.isCancelled === true) return;
               this.selected = null;
               TsMenu2.hide(this.el.id + "_menu");
-              query12(this.el).val("").trigger("input").trigger("change");
+              query13(this.el).val("").trigger("input").trigger("change");
               edata.finish();
             }
           } else {
-            const search2 = query12(this.helpers.multi).find("input");
+            const search2 = query13(this.helpers.multi).find("input");
             if (search2.val() == "") {
               const edata = this.trigger("remove", { target: this.el, originalEvent: event2, item: this.selected[this.selected.length - 1] });
               if (edata.isCancelled === true) return;
@@ -14947,11 +15068,11 @@ var TsField = class extends TsBase {
   }
   keyUp(event2) {
     if (this.type == "list") {
-      const search2 = query12(this.helpers.search_focus);
+      const search2 = query13(this.helpers.search_focus);
       if (search2.val() !== "") {
-        query12(this.el).attr("placeholder", "");
+        query13(this.el).attr("placeholder", "");
       } else {
-        query12(this.el).attr("placeholder", this.tmp.pholder);
+        query13(this.el).attr("placeholder", this.tmp.pholder);
       }
       if (event2.keyCode == 13) {
         setTimeout(() => {
@@ -15020,7 +15141,7 @@ var TsField = class extends TsBase {
     const options = this.options;
     let params;
     if (this.type === "color") {
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
       TsColor2.show(TsUtils.extend({
         name: this.el.id + "_color",
         anchor: this.el,
@@ -15030,10 +15151,10 @@ var TsField = class extends TsBase {
         liveUpdate: true
       }, this.options)).select((event2) => {
         const color = event2.detail["color"];
-        query12(this.el).val(color).trigger("input").trigger("change");
+        query13(this.el).val(color).trigger("input").trigger("change");
       }).liveUpdate((event2) => {
         const color = event2.detail["color"];
-        query12(this.helpers.suffix).find(":scope > div").css("background-color", "#" + color);
+        query13(this.helpers.suffix).find(":scope > div").css("background-color", "#" + color);
       });
     }
     if (["list", "combo", "enum"].includes(this.type)) {
@@ -15041,7 +15162,7 @@ var TsField = class extends TsBase {
       let input = this.el;
       if (this.type === "enum") {
         el = this.helpers.multi?.get(0) ?? this.el;
-        input = query12(el).find("input").get(0) ?? this.el;
+        input = query13(el).find("input").get(0) ?? this.el;
       }
       if (this.type === "list") {
         const sel = this.selected;
@@ -15053,7 +15174,7 @@ var TsField = class extends TsBase {
         }
         input = this.helpers.search_focus ?? this.el;
       }
-      if (query12(this.el).hasClass("has-focus") && !this.el.readOnly && !this.el.disabled) {
+      if (query13(this.el).hasClass("has-focus") && !this.el.readOnly && !this.el.disabled) {
         params = TsUtils.extend({}, options, {
           name: this.el.id + "_menu",
           anchor: input,
@@ -15072,8 +15193,8 @@ var TsField = class extends TsBase {
         this.tmp.overlay = TsMenu2.show(params).select((event2) => {
           if (["list", "combo"].includes(this.type)) {
             this.selected = event2.detail["item"];
-            query12(input).val("");
-            query12(this.el).val(this.selected.text).trigger("input").trigger("change");
+            query13(input).val("");
+            query13(this.el).val(this.selected.text).trigger("input").trigger("change");
             this.focus({ showMenu: false });
           } else {
             const selected = this.selected;
@@ -15084,8 +15205,8 @@ var TsField = class extends TsBase {
               if (selected.length >= options.max && options.max > 0) selected.pop();
               delete newItem.hidden;
               selected.push(newItem);
-              query12(this.el).trigger("input").trigger("change");
-              query12(this.helpers.multi).find("input").val("");
+              query13(this.el).trigger("input").trigger("change");
+              query13(this.helpers.multi).find("input").val("");
               const overlay = TsMenu2.get(this.el.id + "_menu");
               if (overlay) overlay.options.selected = this.selected;
               edata.finish();
@@ -15095,7 +15216,7 @@ var TsField = class extends TsBase {
       }
     }
     if (["date", "time", "datetime"].includes(this.type)) {
-      if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+      if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
       TsDate2.show(TsUtils.extend({
         name: this.el.id + "_date",
         anchor: this.el,
@@ -15104,7 +15225,7 @@ var TsField = class extends TsBase {
         const date = event2.detail["date"];
         if (date != null) {
           ;
-          query12(this.el).val(date).trigger("input").trigger("change");
+          query13(this.el).val(date).trigger("input").trigger("change");
         }
       });
     }
@@ -15169,10 +15290,10 @@ var TsField = class extends TsBase {
     if (this.tmp["old-padding-left"] == null) {
       this.tmp["old-padding-left"] = styles["padding-left"];
     }
-    if (this.helpers.prefix) query12(this.helpers.prefix).remove();
-    query12(this.el).before(`<div class="tsg-field-helper">${this.options.prefix}</div>`);
-    const helper = query12(this.el).get(0).previousElementSibling;
-    query12(helper).css({
+    if (this.helpers.prefix) query13(this.helpers.prefix).remove();
+    query13(this.el).before(`<div class="tsg-field-helper">${this.options.prefix}</div>`);
+    const helper = query13(this.el).get(0).previousElementSibling;
+    query13(helper).css({
       "color": styles["color"],
       "font-family": styles["font-family"],
       "font-size": styles["font-size"],
@@ -15189,7 +15310,7 @@ var TsField = class extends TsBase {
       "display": "inline-flex",
       "align-items": "center"
     });
-    query12(this.el).css("padding-left", helper.clientWidth + "px !important");
+    query13(this.el).css("padding-left", helper.clientWidth + "px !important");
     this.helpers.prefix = helper;
   }
   addSuffix() {
@@ -15202,12 +15323,12 @@ var TsField = class extends TsBase {
     }
     let pr = parseInt(styles["padding-right"] || "0");
     if (this.options.arrows) {
-      if (this.helpers.arrows) query12(this.helpers.arrows).remove();
-      query12(this.el).after(
+      if (this.helpers.arrows) query13(this.helpers.arrows).remove();
+      query13(this.el).after(
         '<div class="tsg-field-helper" style="border: 1px solid transparent">&#160;    <div class="tsg-field-up" type="up">        <div class="arrow-up" type="up"></div>    </div>    <div class="tsg-field-down" type="down">        <div class="arrow-down" type="down"></div>    </div></div>'
       );
-      const arrowHelper = query12(this.el).get(0).nextElementSibling;
-      const $arrowHelper = query12(arrowHelper);
+      const arrowHelper = query13(this.el).get(0).nextElementSibling;
+      const $arrowHelper = query13(arrowHelper);
       $arrowHelper.css({
         "color": styles["color"],
         "font-family": styles["font-family"],
@@ -15222,22 +15343,22 @@ var TsField = class extends TsBase {
       });
       $arrowHelper.on("mousedown", (event2) => {
         const mouseEvent = event2;
-        if (query12(mouseEvent.target).hasClass("arrow-up")) {
+        if (query13(mouseEvent.target).hasClass("arrow-up")) {
           this.keyDown(mouseEvent, { keyCode: 38 });
         }
-        if (query12(mouseEvent.target).hasClass("arrow-down")) {
+        if (query13(mouseEvent.target).hasClass("arrow-down")) {
           this.keyDown(mouseEvent, { keyCode: 40 });
         }
       });
       pr += arrowHelper.clientWidth;
-      query12(this.el).css("padding-right", pr + "px !important");
+      query13(this.el).css("padding-right", pr + "px !important");
       this.helpers.arrows = arrowHelper;
     }
     if (this.options.suffix !== "") {
-      if (this.helpers.suffix) query12(this.helpers.suffix).remove();
-      query12(this.el).after(`<div class="tsg-field-helper">${this.options.suffix}</div>`);
-      const suffixHelper = query12(this.el).get(0).nextElementSibling;
-      query12(suffixHelper).css({
+      if (this.helpers.suffix) query13(this.helpers.suffix).remove();
+      query13(this.el).after(`<div class="tsg-field-helper">${this.options.suffix}</div>`);
+      const suffixHelper = query13(this.el).get(0).nextElementSibling;
+      query13(suffixHelper).css({
         "color": styles["color"],
         "font-family": styles["font-family"],
         "font-size": styles["font-size"],
@@ -15250,34 +15371,34 @@ var TsField = class extends TsBase {
         "margin-bottom": parseInt(styles["margin-bottom"], 10) + 1 + "px",
         "transform": "translateX(-100%)"
       });
-      query12(this.el).css("padding-right", suffixHelper.clientWidth + "px !important");
+      query13(this.el).css("padding-right", suffixHelper.clientWidth + "px !important");
       this.helpers.suffix = suffixHelper;
     }
   }
   // Only used for list
   addSearch() {
     if (this.type !== "list") return;
-    if (this.helpers.search) query12(this.helpers.search).remove();
-    let tabIndex = parseInt(query12(this.el).attr("tabIndex"));
+    if (this.helpers.search) query13(this.helpers.search).remove();
+    let tabIndex = parseInt(query13(this.el).attr("tabIndex"));
     if (!isNaN(tabIndex) && tabIndex !== -1) this.tmp["old-tabIndex"] = tabIndex;
     if (this.tmp["old-tabIndex"]) tabIndex = this.tmp["old-tabIndex"];
     if (tabIndex == null || isNaN(tabIndex)) tabIndex = 0;
     let searchId = "";
-    if (query12(this.el).attr("id") != null) {
-      searchId = 'id="' + query12(this.el).attr("id") + '_search"';
+    if (query13(this.el).attr("id") != null) {
+      searchId = 'id="' + query13(this.el).attr("id") + '_search"';
     }
     const html = `
             <div class="tsg-field-helper">
                 <span class="tsg-icon tsg-icon-search"></span>
-                <input ${searchId} type="text" tabIndex="${tabIndex}" ${query12(this.el).prop("readOnly") ? "readonly" : ""}
+                <input ${searchId} type="text" tabIndex="${tabIndex}" ${query13(this.el).prop("readOnly") ? "readonly" : ""}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`;
-    query12(this.el).attr("tabindex", String(-1)).before(html);
-    const helper = query12(this.el).get(0).previousElementSibling;
+    query13(this.el).attr("tabindex", String(-1)).before(html);
+    const helper = query13(this.el).get(0).previousElementSibling;
     this.helpers.search = helper;
-    this.helpers.search_focus = query12(helper).find("input").get(0);
+    this.helpers.search_focus = query13(helper).find("input").get(0);
     const styles = getComputedStyle(this.el);
-    const $helperSearch = query12(helper);
+    const $helperSearch = query13(helper);
     $helperSearch.css({
       width: this.el.clientWidth + "px",
       "margin-top": styles["margin-top"],
@@ -15294,16 +15415,16 @@ var TsField = class extends TsBase {
       border: "1px solid transparent",
       "background-color": "transparent"
     });
-    query12(helper).find("input").off(".tsg-helper").on("focus.tsg-helper", (event2) => {
+    query13(helper).find("input").off(".tsg-helper").on("focus.tsg-helper", (event2) => {
       const focusEvent = event2;
-      query12(focusEvent.target).val("");
-      this.tmp.pholder = query12(this.el).attr("placeholder") ?? "";
+      query13(focusEvent.target).val("");
+      this.tmp.pholder = query13(this.el).attr("placeholder") ?? "";
       this.focus(focusEvent);
       focusEvent.stopPropagation();
     }).on("blur.tsg-helper", (event2) => {
       const focusEvent = event2;
-      query12(focusEvent.target).val("");
-      if (this.tmp.pholder != null) query12(this.el).attr("placeholder", this.tmp.pholder);
+      query13(focusEvent.target).val("");
+      if (this.tmp.pholder != null) query13(this.el).attr("placeholder", this.tmp.pholder);
       this.blur(focusEvent);
       focusEvent.stopPropagation();
     }).on("keydown.tsg-helper", (event2) => {
@@ -15311,8 +15432,8 @@ var TsField = class extends TsBase {
     }).on("keyup.tsg-helper", (event2) => {
       this.keyUp(event2);
     });
-    query12(helper).off(".tsg-helper").on("click.tsg-helper", (_event) => {
-      query12(helper).find("input").get(0).focus();
+    query13(helper).off(".tsg-helper").on("click.tsg-helper", (_event) => {
+      query13(helper).find("input").get(0).focus();
     });
   }
   // Used in enum/file
@@ -15320,7 +15441,7 @@ var TsField = class extends TsBase {
     if (!["enum", "file"].includes(this.type)) {
       return;
     }
-    query12(this.helpers.multi).remove();
+    query13(this.helpers.multi).remove();
     let html = "";
     const styles = getComputedStyle(this.el);
     const margin = TsUtils.stripSpaces(`
@@ -15339,10 +15460,10 @@ var TsField = class extends TsBase {
       this.tmp["max-height"] = parseInt(styles["max-height"]);
     }
     let searchId = "";
-    if (query12(this.el).attr("id") != null) {
-      searchId = `id="${query12(this.el).attr("id")}_search"`;
+    if (query13(this.el).attr("id") != null) {
+      searchId = `id="${query13(this.el).attr("id")}_search"`;
     }
-    let tabIndex = parseInt(query12(this.el).attr("tabIndex"));
+    let tabIndex = parseInt(query13(this.el).attr("tabIndex"));
     if (!isNaN(tabIndex) && tabIndex !== -1) this.tmp["old-tabIndex"] = tabIndex;
     if (this.tmp["old-tabIndex"]) tabIndex = this.tmp["old-tabIndex"];
     if (tabIndex == null || isNaN(tabIndex)) tabIndex = 0;
@@ -15353,8 +15474,8 @@ var TsField = class extends TsBase {
                     <div class="li-search">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
-                            ${query12(this.el).prop("readOnly") ? "readonly" : ""}
-                            ${query12(this.el).prop("disabled") ? "disabled" : ""}>
+                            ${query13(this.el).prop("readOnly") ? "readonly" : ""}
+                            ${query13(this.el).prop("disabled") ? "disabled" : ""}>
                     </div>
                 </div>
             </div>`;
@@ -15366,32 +15487,32 @@ var TsField = class extends TsBase {
                     <input name="attachment" class="file-input" type="file" tabindex="-1"'
                         style="width: 100%; height: 100%; opacity: 0" title=""
                         ${this.options.max !== 1 ? "multiple" : ""}
-                        ${query12(this.el).prop("readOnly") || query12(this.el).prop("disabled") ? "disabled" : ""}
-                        ${query12(this.el).attr("accept") ? ' accept="' + query12(this.el).attr("accept") + '"' : ""}>
+                        ${query13(this.el).prop("readOnly") || query13(this.el).prop("disabled") ? "disabled" : ""}
+                        ${query13(this.el).attr("accept") ? ' accept="' + query13(this.el).attr("accept") + '"' : ""}>
                 </div>
                 <div class="tsg-multi-items">
                     <div class="li-search" style="display: none">
                         <input ${searchId} type="text" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                             tabindex="${tabIndex}"
-                            ${query12(this.el).prop("readOnly") ? "readonly" : ""}
-                            ${query12(this.el).prop("disabled") ? "disabled" : ""}>
+                            ${query13(this.el).prop("readOnly") ? "readonly" : ""}
+                            ${query13(this.el).prop("disabled") ? "disabled" : ""}>
                     </div>
                 </div>
             </div>`;
     }
     this.tmp["old-background-color"] = styles["background-color"];
     this.tmp["old-border-color"] = styles["border-color"];
-    query12(this.el).before(html).css({
+    query13(this.el).before(html).css({
       "border-color": "transparent",
       "background-color": "transparent"
     });
-    const div = query12(this.el.previousElementSibling);
+    const div = query13(this.el.previousElementSibling);
     this.helpers.multi = div;
-    query12(this.el).attr("tabindex", String(-1));
+    query13(this.el).attr("tabindex", String(-1));
     div.on("mousedown", (event2) => {
-      query12(event2.target).addClass("has-focus");
+      query13(event2.target).addClass("has-focus");
     }).on("mouseup", (event2) => {
-      query12(event2.target).removeClass("has-focus");
+      query13(event2.target).removeClass("has-focus");
     }).on("click", (event2) => {
       this.focus(event2);
       this.updateOverlay();
@@ -15411,17 +15532,17 @@ var TsField = class extends TsBase {
       div.find("input.file-input").off(".drag").on("click.drag", (event2) => {
         const mouseEvent = event2;
         mouseEvent.stopPropagation();
-        if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+        if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
         this.focus(mouseEvent);
       }).on("dragenter.drag", (_event) => {
-        if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+        if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
         div.addClass("tsg-file-dragover");
       }).on("dragleave.drag", (_event) => {
-        if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+        if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
         div.removeClass("tsg-file-dragover");
       }).on("drop.drag", (event2) => {
         const dragEvent = event2;
-        if (query12(this.el).prop("readOnly") || query12(this.el).prop("disabled")) return;
+        if (query13(this.el).prop("readOnly") || query13(this.el).prop("disabled")) return;
         div.removeClass("tsg-file-dragover");
         const files = Array.from(dragEvent.dataTransfer?.files ?? []);
         files.forEach((file) => {
@@ -15502,13 +15623,13 @@ var TsField = class extends TsBase {
         const ind = fl.indexOf(",");
         newItem.content = fl.substr(ind + 1);
         this.refresh();
-        query12(this.el).trigger("input").trigger("change");
+        query13(this.el).trigger("input").trigger("change");
         edata.finish();
       };
       reader.readAsDataURL(file);
     } else {
       this.refresh();
-      query12(this.el).trigger("input").trigger("change");
+      query13(this.el).trigger("input").trigger("change");
       edata.finish();
     }
   }
@@ -15521,7 +15642,7 @@ var TsField = class extends TsBase {
 };
 
 // src/grid-edit.ts
-var query13 = query2;
+var query14 = query2;
 var TsTooltip3 = TsTooltip;
 function editField(grid, recid, column, value, event2) {
   const self = grid;
@@ -15531,7 +15652,7 @@ function editField(grid, recid, column, value, event2) {
       grid.editChange({ type: "custom", value: value2 }, index2, column2, event2);
       grid.editDone(index2, column2, event2);
     } else {
-      const input2 = query13(grid.box).find("div.tsg-edit-box .tsg-input");
+      const input2 = query14(grid.box).find("div.tsg-edit-box .tsg-input");
       if (input2.length > 0) {
         if (input2.get(0).tagName == "DIV") {
           input2.text(input2.text() + value);
@@ -15563,14 +15684,14 @@ function editField(grid, recid, column, value, event2) {
   grid.last._edit = { value, index, column, recid };
   grid.selectNone(true);
   grid.select({ recid, column });
-  const tr = query13(grid.box).find("#grid_" + grid.name + prefix + "rec_" + TsUtils.escapeId(recid));
+  const tr = query14(grid.box).find("#grid_" + grid.name + prefix + "rec_" + TsUtils.escapeId(recid));
   let div = tr.find('[col="' + column + '"] > div');
   grid.last._edit["tr"] = tr;
   grid.last._edit["div"] = div;
-  query13(grid.box).find("div.tsg-edit-box").remove();
+  query14(grid.box).find("div.tsg-edit-box").remove();
   if (grid.selectType != "row") {
-    query13(grid.box).find("#grid_" + grid.name + prefix + "selection").attr("id", "grid_" + grid.name + "_editable").removeClass("tsg-selection").addClass("tsg-edit-box").prepend('<div style="position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;"></div>').find(".tsg-selection-resizer").remove();
-    div = query13(grid.box).find("#grid_" + grid.name + "_editable > div:first-child");
+    query14(grid.box).find("#grid_" + grid.name + prefix + "selection").attr("id", "grid_" + grid.name + "_editable").removeClass("tsg-selection").addClass("tsg-edit-box").prepend('<div style="position: absolute; top: 0px; bottom: 0px; left: 0px; right: 0px;"></div>').find(".tsg-selection-resizer").remove();
+    div = query14(grid.box).find("#grid_" + grid.name + "_editable > div:first-child");
   }
   edit.attr = edit.attr ?? "";
   edit.text = edit.text ?? "";
@@ -15627,7 +15748,7 @@ function editField(grid, recid, column, value, event2) {
       const doHide = (event3) => {
         const escKey = grid.last._edit?.["escKey"];
         let selected = false;
-        const name = query13(input).data("tooltipName");
+        const name = query14(input).data("tooltipName");
         if (name && TsTooltip3.get(name[0])?.selected != null) {
           selected = true;
         }
@@ -15648,10 +15769,10 @@ function editField(grid, recid, column, value, event2) {
     }
   }
   Object.assign(grid.last._edit, { input, edit });
-  query13(input).off(".tsg-editable").on("blur.tsg-editable", (event3) => {
+  query14(input).off(".tsg-editable").on("blur.tsg-editable", (event3) => {
     if (grid.last.inEditMode) {
       const type = grid.last._edit?.["edit"]?.type;
-      const name = query13(input).data("tooltipName");
+      const name = query14(input).data("tooltipName");
       const et = event3.target;
       if (name && dropTypes.includes(type) || et?._keepOpen === true) {
         delete et._keepOpen;
@@ -15683,7 +15804,7 @@ function editField(grid, recid, column, value, event2) {
         kev.preventDefault();
         break;
       case 27:
-        const name = query13(input).data("tooltipName");
+        const name = query14(input).data("tooltipName");
         if (name && name.length > 0) {
           if (grid.last._edit) grid.last._edit["escKey"] = true;
           TsTooltip3.hide(name[0]);
@@ -15713,7 +15834,7 @@ function editField(grid, recid, column, value, event2) {
         }
         case 13: {
           let selected = false;
-          const name = query13(input).data("tooltipName");
+          const name = query14(input).data("tooltipName");
           if (name && TsTooltip3.get(name[0]).selected != null) {
             selected = true;
           }
@@ -15763,11 +15884,11 @@ function editField(grid, recid, column, value, event2) {
     try {
       const styles2 = getComputedStyle(input2);
       const val2 = input2.tagName.toUpperCase() == "DIV" ? input2.innerText : input2.value;
-      const editBox = query13(self.box).find("#grid_" + self.name + "_editable").get(0);
+      const editBox = query14(self.box).find("#grid_" + self.name + "_editable").get(0);
       const style = `font-family: ${styles2.getPropertyValue("font-family")}; font-size: ${styles2.getPropertyValue("font-size")}; white-space: no-wrap;`;
       const width = TsUtils.getStrWidth(val2, style);
       if (width + 20 > editBox.clientWidth) {
-        query13(editBox).css("width", width + 20 + "px");
+        query14(editBox).css("width", width + 20 + "px");
       }
     } catch (e) {
     }
@@ -15864,7 +15985,7 @@ function editDone(grid, index, column, event2) {
     }, 1);
   }
   const summary = index < 0;
-  const cell = query13(grid.last._edit?.["tr"]).find('[col="' + column + '"]');
+  const cell = query14(grid.last._edit?.["tr"]).find('[col="' + column + '"]');
   const rec = grid.records[index];
   const col = grid.columns[column];
   grid.last.inEditMode = false;
@@ -15877,10 +15998,10 @@ function editDone(grid, index, column, event2) {
     }
     cell.replace(grid.getCellHTML(index, column, summary));
   }
-  query13(grid.box).find("div.tsg-edit-box").remove();
+  query14(grid.box).find("div.tsg-edit-box").remove();
   grid.updateToolbar();
   setTimeout(() => {
-    const input = query13(grid.box).find(`#grid_${grid.name}_focus`).get(0);
+    const input = query14(grid.box).find(`#grid_${grid.name}_focus`).get(0);
     if (document.activeElement !== input && !grid.last.inEditMode) {
       input.focus();
     }
@@ -15888,7 +16009,7 @@ function editDone(grid, index, column, event2) {
 }
 
 // src/grid-search.ts
-var query14 = query2;
+var query15 = query2;
 var TsMenu3 = TsMenu;
 var TsTooltip4 = TsTooltip;
 function addSearch(grid, before, search2) {
@@ -15993,7 +16114,7 @@ function search(grid, field, value) {
   let last_field = grid.last.field;
   let last_search = grid.last.search;
   let hasHiddenSearches = false;
-  const overlay = query14(`#w2overlay-${grid.name}-search-overlay`);
+  const overlay = query15(`#w2overlay-${grid.name}-search-overlay`);
   if (value === "") value = null;
   for (let i = 0; i < grid.searches.length; i++) {
     const srch_i = grid.searches[i];
@@ -16256,11 +16377,11 @@ function searchOpen(grid, options = {}) {
   if (edata.isCancelled === true) {
     return;
   }
-  const $btn = query14(grid.toolbar.box).find(".tsg-grid-search-input .tsg-search-drop");
+  const $btn = query15(grid.toolbar.box).find(".tsg-grid-search-input .tsg-search-drop");
   $btn.addClass("checked");
   TsTooltip4.show({
     name: grid.name + "-search-overlay",
-    anchor: query14(grid.box).find("#grid_" + grid.name + "_search_all").get(0),
+    anchor: query15(grid.box).find("#grid_" + grid.name + "_search_all").get(0),
     position: "bottom|top",
     html: grid.getSearchesHTML(),
     align: "left",
@@ -16271,21 +16392,21 @@ function searchOpen(grid, options = {}) {
   }).then((_event) => {
     grid.initSearches();
     grid.last["search_opened"] = true;
-    const overlay = query14(`#w2overlay-${grid.name}-search-overlay`);
+    const overlay = query15(`#w2overlay-${grid.name}-search-overlay`);
     overlay.data("gridName", grid.name).off(".grid-search").on("click.grid-search", (event2) => {
       overlay.find("input, select").each((el) => {
-        const names = query14(el).data("tooltipName");
+        const names = query15(el).data("tooltipName");
         if (names) names.forEach((name) => {
           TsTooltip4.hide(name);
         });
       });
       console.log(event2.target);
-      if (!query14(event2.target).hasClass("tsg-saved-searches")) {
+      if (!query15(event2.target).hasClass("tsg-saved-searches")) {
         TsTooltip4.hide(grid.name + "-search-suggest");
       }
     });
     TsUtils.bindEvents(overlay.find("select, input, button"), grid);
-    const sfields = query14(`#w2overlay-${grid.name}-search-overlay *[rel=search]`);
+    const sfields = query15(`#w2overlay-${grid.name}-search-overlay *[rel=search]`);
     if (sfields.length > 0) sfields[0].focus();
     edata.finish();
   }).hide((_event) => {
@@ -16342,7 +16463,7 @@ function searchFieldTooltip(grid, ind, sd_ind, el) {
             </div>`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   }).then((event2) => {
-    query14(event2.detail.overlay.box).find("#remove").on("click", () => {
+    query15(event2.detail.overlay.box).find("#remove").on("click", () => {
       grid.searchData.splice(sd_ind, 1);
       grid.reload();
       grid.localSearch();
@@ -16355,11 +16476,11 @@ function searchSuggest(grid, imediate, forceHide, anchor) {
   clearTimeout(grid.last["overlay_timer"]);
   grid.searchShowFields(true);
   if (anchor == null) grid.searchClose();
-  if (forceHide === true || anchor != null && query14(`#w2overlay-${grid.name}-search-suggest`).length > 0) {
+  if (forceHide === true || anchor != null && query15(`#w2overlay-${grid.name}-search-suggest`).length > 0) {
     TsTooltip4.hide(grid.name + "-search-suggest");
     return;
   }
-  if (query14(`#w2overlay-${grid.name}-search-suggest`).length > 0) {
+  if (query15(`#w2overlay-${grid.name}-search-suggest`).length > 0) {
     return;
   }
   if (!imediate) {
@@ -16368,7 +16489,7 @@ function searchSuggest(grid, imediate, forceHide, anchor) {
     }, 100);
     return;
   }
-  const el = anchor ?? query14(grid.box).find(`#grid_${grid.name}_search_all`).get(0);
+  const el = anchor ?? query15(grid.box).find(`#grid_${grid.name}_search_all`).get(0);
   const searches = [
     ...grid.defaultSearches ?? [],
     ...grid.defaultSearches?.length > 0 && grid.savedSearches?.length > 0 ? ["--"] : [],
@@ -16453,13 +16574,13 @@ function searchSave(grid) {
         `
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   })?.open(async (event2) => {
-    query14(event2.detail.box).find("input, button").eq(0).val(value);
+    query15(event2.detail.box).find("input, button").eq(0).val(value);
     await event2.complete;
-    query14(event2.detail.box).find("#grid-search-cancel").on("click", () => {
+    query15(event2.detail.box).find("#grid-search-cancel").on("click", () => {
       grid.message();
     });
-    query14(event2.detail.box).find("#grid-search-save").on("click", () => {
-      const input = query14(event2.detail.box).find(".tsg-message .search-name");
+    query15(event2.detail.box).find("#grid-search-save").on("click", () => {
+      const input = query15(event2.detail.box).find(".tsg-message .search-name");
       const name = input.val();
       if (grid["searchSelected"] && ind != -1) {
         Object.assign(grid.savedSearches[ind], {
@@ -16482,30 +16603,30 @@ function searchSave(grid) {
       grid.message();
       if (grid["searchSelected"]) {
         grid["searchSelected"].text = name;
-        query14(grid.box).find(`#grid_${grid.name}_search_name .name-text`).html(name);
+        query15(grid.box).find(`#grid_${grid.name}_search_name .name-text`).html(name);
       } else {
         grid["searchSelected"] = {
           text: name,
           logic: grid.last.logic,
           data: TsUtils.clone(grid.searchData)
         };
-        query14(event2.detail.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
-        query14(event2.detail.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(name);
+        query15(event2.detail.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
+        query15(event2.detail.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(name);
       }
       edata.finish({ name });
     });
     await TsUtils.wait(100);
-    query14(event2.detail.box).find("input, button").off(".message").on("keydown.message", (evt) => {
-      const val = String(query14(event2.detail.box).find(".tsg-message-body input").val()).trim();
+    query15(event2.detail.box).find("input, button").off(".message").on("keydown.message", (evt) => {
+      const val = String(query15(event2.detail.box).find(".tsg-message-body input").val()).trim();
       if (evt.keyCode == 13 && val != "") {
-        query14(event2.detail.box).find("#grid-search-save").trigger("click");
+        query15(event2.detail.box).find("#grid-search-save").trigger("click");
       }
       if (evt.keyCode == 27) {
         grid.message();
       }
     }).eq(0).on("input.message", (_evt) => {
-      const $save = query14(event2.detail.box).closest(".tsg-message").find("#grid-search-save");
-      if (String(query14(event2.detail.box).val()).trim() === "") {
+      const $save = query15(event2.detail.box).closest(".tsg-message").find("#grid-search-save");
+      if (String(query15(event2.detail.box).val()).trim() === "") {
         $save.prop("disabled", true);
       } else {
         $save.prop("disabled", false);
@@ -16554,7 +16675,7 @@ function searchReset(grid, noReload) {
   }
   const edata = grid.trigger("search", { reset: true, target: grid.name, searchData });
   if (edata.isCancelled === true) return;
-  const input = query14(grid.box).find("#grid_" + grid.name + "_search_all");
+  const input = query15(grid.box).find("#grid_" + grid.name + "_search_all");
   grid.searchData = edata.detail["searchData"];
   grid["searchSelected"] = null;
   grid.last.search = "";
@@ -16624,7 +16745,7 @@ function searchShowFields(grid, forceHide) {
   TsMenu3.show({
     type: "radio",
     name: grid.name + "-search-fields",
-    anchor: query14(grid.box).find("#grid_" + grid.name + "_search_name").parent().find(".tsg-search-down").get(0),
+    anchor: query15(grid.box).find("#grid_" + grid.name + "_search_name").parent().find(".tsg-search-down").get(0),
     items,
     align: "none",
     hideOn: ["doc-click", "select"]
@@ -16634,7 +16755,7 @@ function searchShowFields(grid, forceHide) {
 }
 function searchInitInput(grid, field, _value) {
   let srch;
-  const el = query14(grid.box).find("#grid_" + grid.name + "_search_all");
+  const el = query15(grid.box).find("#grid_" + grid.name + "_search_all");
   if (field == "all") {
     srch = { field: "all", label: TsUtils.lang("All Fields") };
   } else {
@@ -16650,11 +16771,11 @@ function searchInitInput(grid, field, _value) {
   }
   el.attr("placeholder", TsUtils.lang("Search") + " " + TsUtils.lang(srch.label || srch["caption"] || srch.field, true));
   if (grid["searchSelected"]) {
-    query14(grid.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
-    query14(grid.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(grid["searchSelected"].text);
+    query15(grid.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
+    query15(grid.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(grid["searchSelected"].text);
   } else {
-    query14(grid.box).find(`#grid_${grid.name}_search_all`).prop("readOnly", false);
-    query14(grid.box).find(`#grid_${grid.name}_search_name`).hide().find(".name-text").html("");
+    query15(grid.box).find(`#grid_${grid.name}_search_all`).prop("readOnly", false);
+    query15(grid.box).find(`#grid_${grid.name}_search_name`).hide().find(".name-text").html("");
   }
 }
 function getSearchesHTML(grid) {
@@ -16778,7 +16899,7 @@ function initOperator(grid, ind) {
   let options;
   const srch = grid.searches[ind];
   const sdata = grid.getSearchData(srch.field);
-  const overlay = query14(`#w2overlay-${grid.name}-search-overlay`);
+  const overlay = query15(`#w2overlay-${grid.name}-search-overlay`);
   const $rng = overlay.find(`#grid_${grid.name}_range_${ind}`);
   const $fld1 = overlay.find(`#grid_${grid.name}_field_${ind}`);
   const $fld2 = overlay.find(`#grid_${grid.name}_field2_${ind}`);
@@ -16922,7 +17043,7 @@ function initSearchLists(grid, changedField) {
   }
 }
 function initSearches(grid) {
-  const overlay = query14(`#w2overlay-${grid.name}-search-overlay`);
+  const overlay = query15(`#w2overlay-${grid.name}-search-overlay`);
   for (let ind = 0; ind < grid.searches.length; ind++) {
     const srch = grid.searches[ind];
     const sdata = grid.getSearchData(srch.field);
@@ -16971,7 +17092,7 @@ function initSearches(grid) {
 }
 
 // src/grid-interaction.ts
-var query15 = query2;
+var query16 = query2;
 var TsMenu4 = TsMenu;
 function click(grid, recid, event2) {
   const time = Date.now();
@@ -16994,13 +17115,13 @@ function click(grid, recid, event2) {
   grid.last.click_recid = recid;
   if (column == null && event2.target) {
     let trg = event2.target;
-    if (trg.tagName != "TD") trg = query15(trg).closest("td")[0];
-    if (query15(trg).attr("col") != null) column = parseInt(query15(trg).attr("col"));
+    if (trg.tagName != "TD") trg = query16(trg).closest("td")[0];
+    if (query16(trg).attr("col") != null) column = parseInt(query16(trg).attr("col"));
   }
   const index = grid.get(recid, true);
   const rec = index != null ? grid.records[index] : null;
   if (rec?.TsUi?.selectable === false && (rec?.TsUi?.children?.length ?? 0) > 0) {
-    if (!query15(event2.target).hasClass("tsg-show-children")) {
+    if (!query16(event2.target).hasClass("tsg-show-children")) {
       grid.toggle(recid);
       return;
     }
@@ -17008,7 +17129,7 @@ function click(grid, recid, event2) {
   const edata = grid.trigger("click", { target: grid.name, recid, column, originalEvent: event2 });
   if (edata.isCancelled === true) return;
   const sel = grid.getSelection();
-  query15(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
+  query16(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
   const ind = grid.get(recid, true);
   const selectColumns = [];
   grid.last.sel_ind = ind;
@@ -17055,7 +17176,7 @@ function click(grid, recid, event2) {
     const last = grid.last.selection;
     let flag = last.indexes.indexOf(ind ?? -1) != -1 ? true : false;
     let fselect = false;
-    if (query15(event2.target).closest("td").hasClass("tsg-col-select")) fselect = true;
+    if (query16(event2.target).closest("td").hasClass("tsg-col-select")) fselect = true;
     if ((!event2.ctrlKey && !event2.shiftKey && !event2.metaKey && !fselect || !grid.multiSelect) && !grid["showSelectColumn"]) {
       if (grid.selectType != "row" && !last.columns[ind ?? -1]?.includes(column)) {
         flag = false;
@@ -17151,7 +17272,7 @@ function columnContextMenu(grid, field, event2) {
     originalEvent: event2,
     items: grid.initColumnOnOff()
   }).then(() => {
-    query15("#w2overlay-context-menu .tsg-grid-skip").off(".tsg-grid").on("click.tsg-grid", (evt) => {
+    query16("#w2overlay-context-menu .tsg-grid-skip").off(".tsg-grid").on("click.tsg-grid", (evt) => {
       evt.stopPropagation();
     }).on("keypress", (evt) => {
       if (evt.keyCode == 13) {
@@ -17179,13 +17300,13 @@ function columnAutoSize(grid, colIndex) {
     return;
   }
   const col = grid.columns[colIndex];
-  const el = query15(`#grid_${grid.name}_column_${colIndex} .tsg-col-header`)[0];
+  const el = query16(`#grid_${grid.name}_column_${colIndex} .tsg-col-header`)[0];
   if (col["autoResize"] === false || col.hidden === true || !el) {
     return true;
   }
   const style = getComputedStyle(el);
   let maxWidth = TsUtils.getStrWidth(el.innerHTML, `font-family: ${style.fontFamily}; font-size: ${style.fontSize}`, true) + parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + 4;
-  query15(grid.box).find(`.tsg-grid-records td[col="${colIndex}"] > div`, grid.box).each((el2) => {
+  query16(grid.box).find(`.tsg-grid-records td[col="${colIndex}"] > div`, grid.box).each((el2) => {
     const htmlEl = el2;
     const style2 = getComputedStyle(htmlEl);
     const width = TsUtils.getStrWidth(htmlEl.innerHTML, `font-family: ${style2.fontFamily}; font-size: ${style2.fontSize}`, true) + parseFloat(style2.paddingLeft) + parseFloat(style2.paddingRight) + 4;
@@ -17213,9 +17334,9 @@ function focus(grid, event2) {
   const edata = grid.trigger("focus", { target: grid.name, originalEvent: event2 });
   if (edata.isCancelled === true) return false;
   grid.hasFocus = true;
-  query15(grid.box).removeClass("tsg-inactive").find(".tsg-inactive").removeClass("tsg-inactive");
+  query16(grid.box).removeClass("tsg-inactive").find(".tsg-inactive").removeClass("tsg-inactive");
   setTimeout(() => {
-    const txt = query15(grid.box).find(`#grid_${grid.name}_focus`).get(0);
+    const txt = query16(grid.box).find(`#grid_${grid.name}_focus`).get(0);
     if (txt && document.activeElement != txt) {
       txt.focus();
     }
@@ -17226,8 +17347,8 @@ function blur(grid, event2) {
   const edata = grid.trigger("blur", { target: grid.name, originalEvent: event2 });
   if (edata.isCancelled === true) return false;
   grid.hasFocus = false;
-  query15(grid.box).addClass("tsg-inactive").find(".tsg-selected").addClass("tsg-inactive");
-  query15(grid.box).find(".tsg-selection").addClass("tsg-inactive");
+  query16(grid.box).addClass("tsg-inactive").find(".tsg-selected").addClass("tsg-inactive");
+  query16(grid.box).find(".tsg-selection").addClass("tsg-inactive");
   edata.finish();
 }
 function keydown(grid, event2) {
@@ -17236,12 +17357,12 @@ function keydown(grid, event2) {
   if (obj.keyboard !== true) return;
   const edata = obj.trigger("keydown", { target: obj.name, originalEvent: event2 });
   if (edata.isCancelled === true) return;
-  if (query15(grid.box).find(".tsg-message").length > 0) {
+  if (query16(grid.box).find(".tsg-message").length > 0) {
     if (event2.keyCode == 27) grid.message();
     return;
   }
   let empty = false;
-  const records = query15(obj.box).find("#grid_" + obj.name + "_records");
+  const records = query16(obj.box).find("#grid_" + obj.name + "_records");
   const sel = obj.getSelection();
   if (sel.length === 0) empty = true;
   let recid = sel[0] || null;
@@ -17262,7 +17383,7 @@ function keydown(grid, event2) {
   }
   const ind = obj.get(recid, true) ?? -1;
   const ind2 = obj.get(recid2, true) ?? -1;
-  const recEL = query15(obj.box).find(`#grid_${obj.name}_rec_${ind >= 0 ? TsUtils.escapeId(obj.records[ind].recid) : "none"}`);
+  const recEL = query16(obj.box).find(`#grid_${obj.name}_rec_${ind >= 0 ? TsUtils.escapeId(obj.records[ind].recid) : "none"}`);
   const pageSize = Math.floor(records[0].clientHeight / obj.recordHeight);
   let cancel = false;
   const key = event2.keyCode;
@@ -17356,7 +17477,7 @@ function keydown(grid, event2) {
       if (empty) break;
       if (TsUtils.isSafari) {
         obj.last.copy_event = obj.copy(false, event2);
-        const focus2 = query15(obj.box).find("#grid_" + obj.name + "_focus");
+        const focus2 = query16(obj.box).find("#grid_" + obj.name + "_focus");
         focus2.val(obj.last.copy_event.detail.text);
         focus2[0].select();
       }
@@ -17368,7 +17489,7 @@ function keydown(grid, event2) {
           obj.copy(obj.last.copy_event, event2);
         } else {
           obj.last.copy_event = obj.copy(false, event2);
-          const focus2 = query15(obj.box).find("#grid_" + obj.name + "_focus");
+          const focus2 = query16(obj.box).find("#grid_" + obj.name + "_focus");
           focus2.val(obj.last.copy_event.detail.text);
           focus2[0].select();
           obj.copy(obj.last.copy_event, event2);
@@ -17383,7 +17504,7 @@ function keydown(grid, event2) {
           obj.copy(obj.last.copy_event, event2);
         } else {
           obj.last.copy_event = obj.copy(false, event2);
-          const focus2 = query15(obj.box).find("#grid_" + obj.name + "_focus");
+          const focus2 = query16(obj.box).find("#grid_" + obj.name + "_focus");
           focus2.val(obj.last.copy_event.detail.text);
           focus2[0].select();
           obj.copy(obj.last.copy_event, event2);
@@ -17398,7 +17519,7 @@ function keydown(grid, event2) {
     if (columns.length === 0) columns.push(0);
     cancel = false;
     setTimeout(() => {
-      const focus2 = query15(obj.box).find("#grid_" + obj.name + "_focus");
+      const focus2 = query16(obj.box).find("#grid_" + obj.name + "_focus");
       const key2 = focus2.val();
       focus2.val("");
       obj.editField(recid, columns[0], key2, event2);
@@ -17650,7 +17771,7 @@ function scrollIntoView(grid, ind, column, instant, recTop) {
       ind = grid.get(sel[0], true);
     }
   }
-  const records = query15(grid.box).find(`#grid_${grid.name}_records`);
+  const records = query16(grid.box).find(`#grid_${grid.name}_records`);
   const recWidth = records[0].clientWidth;
   const recHeight = records[0].clientHeight;
   const recSTop = records[0].scrollTop;
@@ -17721,8 +17842,8 @@ function dblClick(grid, recid, event2) {
   if (event2 == null) event2 = {};
   if (column == null && event2.target) {
     let tmp = event2.target;
-    if (tmp.tagName.toUpperCase() != "TD") tmp = query15(tmp).closest("td")[0];
-    column = parseInt(query15(tmp).attr("col"));
+    if (tmp.tagName.toUpperCase() != "TD") tmp = query16(tmp).closest("td")[0];
+    column = parseInt(query16(tmp).attr("col"));
   }
   const index = grid.get(recid, true);
   const rec = index != null ? grid.records[index] : null;
@@ -17742,7 +17863,7 @@ function showContextMenu(grid, event2, options) {
   const { recid, index, column } = options;
   if (grid.last.userSelect == "text") return;
   if (event2 == null) {
-    event2 = { offsetX: 0, offsetY: 0, target: query15(grid.box).find(`#grid_${grid.name}_rec_${recid}`)[0] };
+    event2 = { offsetX: 0, offsetY: 0, target: query16(grid.box).find(`#grid_${grid.name}_rec_${recid}`)[0] };
   }
   if (event2.offsetX == null) {
     event2.offsetX = event2.layerX - event2.target.offsetLeft;
@@ -17839,9 +17960,9 @@ function expand(grid, recid, noRefresh) {
     if (noRefresh !== true) grid.refresh();
     edata.finish();
   } else {
-    if (query15(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").length > 0 || grid.show.expandColumn !== true) return false;
+    if (query16(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").length > 0 || grid.show.expandColumn !== true) return false;
     if (rec.TsUi.expanded == "none") return false;
-    query15(grid.box).find("#grid_" + grid.name + "_rec_" + id).after(
+    query16(grid.box).find("#grid_" + grid.name + "_rec_" + id).after(
       `<tr id="grid_${grid.name}_rec_${recid}_expanded_row" class="tsg-expanded-row">
                 <td colspan="100" class="tsg-expanded2">
                     <div id="grid_${grid.name}_rec_${recid}_expanded"></div>
@@ -17849,7 +17970,7 @@ function expand(grid, recid, noRefresh) {
                 <td class="tsg-grid-data-last"></td>
             </tr>`
     );
-    query15(grid.box).find("#grid_" + grid.name + "_frec_" + id).after(
+    query16(grid.box).find("#grid_" + grid.name + "_frec_" + id).after(
       `<tr id="grid_${grid.name}_frec_${recid}_expanded_row" class="tsg-expanded-row">
                 ${grid.show.lineNumbers ? '<td class="tsg-col-number"></td>' : ""}
                 <td class="tsg-grid-data tsg-expanded1" colspan="100">
@@ -17864,12 +17985,12 @@ function expand(grid, recid, noRefresh) {
       fbox_id: "grid_" + grid.name + "_frec_" + recid + "_expanded"
     });
     if (edata.isCancelled === true) {
-      query15(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").remove();
-      query15(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded_row").remove();
+      query16(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").remove();
+      query16(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded_row").remove();
       return false;
     }
-    const row1 = query15(grid.box).find("#grid_" + grid.name + "_rec_" + recid + "_expanded");
-    const row2 = query15(grid.box).find("#grid_" + grid.name + "_frec_" + recid + "_expanded");
+    const row1 = query16(grid.box).find("#grid_" + grid.name + "_rec_" + recid + "_expanded");
+    const row2 = query16(grid.box).find("#grid_" + grid.name + "_frec_" + recid + "_expanded");
     const innerHeight = row1.find(":scope div:first-child")[0]?.clientHeight ?? 50;
     if (row1[0].clientHeight < innerHeight) {
       row1.css({ height: innerHeight + "px" });
@@ -17877,9 +17998,9 @@ function expand(grid, recid, noRefresh) {
     if (row2[0].clientHeight < innerHeight) {
       row2.css({ height: innerHeight + "px" });
     }
-    query15(grid.box).find("#grid_" + grid.name + "_rec_" + id).attr("expanded", "yes").addClass("tsg-expanded");
-    query15(grid.box).find("#grid_" + grid.name + "_frec_" + id).attr("expanded", "yes").addClass("tsg-expanded");
-    query15(grid.box).find("#grid_" + grid.name + "_cell_" + grid.get(recid, true) + "_expand div").html("-");
+    query16(grid.box).find("#grid_" + grid.name + "_rec_" + id).attr("expanded", "yes").addClass("tsg-expanded");
+    query16(grid.box).find("#grid_" + grid.name + "_frec_" + id).attr("expanded", "yes").addClass("tsg-expanded");
+    query16(grid.box).find("#grid_" + grid.name + "_cell_" + grid.get(recid, true) + "_expand div").html("-");
     rec.TsUi.expanded = true;
     edata.finish();
     grid.resizeRecords();
@@ -17924,7 +18045,7 @@ function collapse(grid, recid, noRefresh) {
     if (noRefresh !== true) grid.refresh();
     edata.finish();
   } else {
-    if (query15(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").length === 0 || grid.show.expandColumn !== true) return false;
+    if (query16(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").length === 0 || grid.show.expandColumn !== true) return false;
     edata = grid.trigger("collapse", {
       target: grid.name,
       recid,
@@ -17932,14 +18053,14 @@ function collapse(grid, recid, noRefresh) {
       fbox_id: "grid_" + grid.name + "_frec_" + recid + "_expanded"
     });
     if (edata.isCancelled === true) return false;
-    query15(grid.box).find("#grid_" + grid.name + "_rec_" + id).removeAttr("expanded").removeClass("tsg-expanded");
-    query15(grid.box).find("#grid_" + grid.name + "_frec_" + id).removeAttr("expanded").removeClass("tsg-expanded");
-    query15(grid.box).find("#grid_" + grid.name + "_cell_" + grid.get(recid, true) + "_expand div").html("+");
-    query15(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded").css("height", "0px");
-    query15(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded").css("height", "0px");
+    query16(grid.box).find("#grid_" + grid.name + "_rec_" + id).removeAttr("expanded").removeClass("tsg-expanded");
+    query16(grid.box).find("#grid_" + grid.name + "_frec_" + id).removeAttr("expanded").removeClass("tsg-expanded");
+    query16(grid.box).find("#grid_" + grid.name + "_cell_" + grid.get(recid, true) + "_expand div").html("+");
+    query16(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded").css("height", "0px");
+    query16(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded").css("height", "0px");
     setTimeout(() => {
-      query15(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").remove();
-      query15(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded_row").remove();
+      query16(grid.box).find("#grid_" + grid.name + "_rec_" + id + "_expanded_row").remove();
+      query16(grid.box).find("#grid_" + grid.name + "_frec_" + id + "_expanded_row").remove();
       if (rec.TsUi) rec.TsUi.expanded = false;
       edata.finish();
       grid.resizeRecords();
@@ -18040,7 +18161,7 @@ function sort(grid, field, direction, multiField) {
     grid.localSort(false, true);
     if (grid.searchData.length > 0) grid.localSearch(true);
     grid.last.vscroll.scrollTop = 0;
-    query15(grid.box).find(`#grid_${grid.name}_records`).prop("scrollTop", 0);
+    query16(grid.box).find(`#grid_${grid.name}_records`).prop("scrollTop", 0);
     edata.finish({ direction });
     grid.refresh();
   } else {
@@ -18175,12 +18296,12 @@ function paste(grid, text, event2) {
 }
 
 // src/grid-render.ts
-var query16 = query2;
+var query17 = query2;
 var TsMenu5 = TsMenu;
 var TsTooltip5 = TsTooltip;
 function resize(grid) {
   const time = Date.now();
-  if (!grid.box || query16(grid.box).attr("name") != grid.name) return;
+  if (!grid.box || query17(grid.box).attr("name") != grid.name) return;
   const edata = grid.trigger("resize", { target: grid.name });
   if (edata.isCancelled === true) return;
   if (grid.box != null) {
@@ -18254,7 +18375,7 @@ function update(grid, { cells, fullCellRefresh, ignoreColumns } = {}) {
     }
     if (cell == null) return;
     if (fullCellRefresh) {
-      query16(cell).replace(self.getCellHTML(index, column, false));
+      query17(cell).replace(self.getCellHTML(index, column, false));
       cell = self.box.querySelector(`#grid_${self.name}_data_${index}_${column}`);
       rec.TsUi["_update"].cells[column] = cell;
     } else {
@@ -18327,14 +18448,14 @@ function refreshCell(grid, recid, field) {
   const col_ind = grid.getColumn(field, true);
   if (index == null || col_ind == null) return false;
   const isSummary = grid.records[index] && grid.records[index].recid == recid ? false : true;
-  const cell = query16(grid.box).find(`${isSummary ? ".tsg-grid-summary " : ""}#grid_${grid.name}_data_${index}_${col_ind}`);
+  const cell = query17(grid.box).find(`${isSummary ? ".tsg-grid-summary " : ""}#grid_${grid.name}_data_${index}_${col_ind}`);
   if (cell.length == 0) return false;
   cell.replace(grid.getCellHTML(index, col_ind, isSummary));
   return true;
 }
 function refreshRow(grid, recid, ind = null) {
-  let tr1 = query16(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
-  let tr2 = query16(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
+  let tr1 = query17(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
+  let tr2 = query17(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
   if (tr1.length > 0) {
     if (ind == null) ind = grid.get(recid, true);
     const line = tr1.attr("line");
@@ -18348,8 +18469,8 @@ function refreshRow(grid, recid, ind = null) {
     tr2.replace(rec_html[1]);
     let st = grid.records[ind].TsUi ? grid.records[ind].TsUi["style"] : "";
     if (typeof st == "string") {
-      tr1 = query16(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
-      tr2 = query16(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
+      tr1 = query17(grid.box).find("#grid_" + grid.name + "_frec_" + TsUtils.escapeId(recid));
+      tr2 = query17(grid.box).find("#grid_" + grid.name + "_rec_" + TsUtils.escapeId(recid));
       tr1.attr("custom_style", st);
       tr2.attr("custom_style", st);
       if (tr1.hasClass("tsg-selected")) {
@@ -18375,14 +18496,14 @@ function refresh(grid) {
   const edata = grid.trigger("refresh", { target: grid.name });
   if (edata.isCancelled === true) return;
   if (grid.show.header) {
-    query16(grid.box).find(`#grid_${grid.name}_header`).html(TsUtils.lang(grid.header) + "&#160;").show();
+    query17(grid.box).find(`#grid_${grid.name}_header`).html(TsUtils.lang(grid.header) + "&#160;").show();
   } else {
-    query16(grid.box).find(`#grid_${grid.name}_header`).hide();
+    query17(grid.box).find(`#grid_${grid.name}_header`).hide();
   }
   if (grid.show.toolbar) {
-    query16(grid.box).find("#grid_" + grid.name + "_toolbar").show();
+    query17(grid.box).find("#grid_" + grid.name + "_toolbar").show();
   } else {
-    query16(grid.box).find("#grid_" + grid.name + "_toolbar").hide();
+    query17(grid.box).find("#grid_" + grid.name + "_toolbar").hide();
   }
   grid.searchClose();
   const getFirstSearchField = () => {
@@ -18411,7 +18532,7 @@ function refresh(grid) {
       grid.last.label = fld.label ?? "";
     }
   }
-  const sInput = query16(grid.box).find("#grid_" + grid.name + "_search_all");
+  const sInput = query17(grid.box).find("#grid_" + grid.name + "_search_all");
   for (let ss = 0; ss < grid.searches.length; ss++) {
     if (grid.searches[ss].field == grid.last.field) {
       grid.last.label = grid.searches[ss].label ?? "";
@@ -18431,15 +18552,15 @@ function refresh(grid) {
   grid.refreshSearch();
   grid.refreshBody();
   if (grid.show.footer) {
-    query16(grid.box).find(`#grid_${grid.name}_footer`).html(grid.getFooterHTML()).show();
+    query17(grid.box).find(`#grid_${grid.name}_footer`).html(grid.getFooterHTML()).show();
   } else {
-    query16(grid.box).find(`#grid_${grid.name}_footer`).hide();
+    query17(grid.box).find(`#grid_${grid.name}_footer`).hide();
   }
   const sel = grid.last.selection, areAllSelected = grid.records.length > 0 && sel.indexes.length == grid.records.length, areAllSearchedSelected = sel.indexes.length > 0 && grid.searchData.length !== 0 && sel.indexes.length == grid.last.searchIds.length;
   if (areAllSelected || areAllSearchedSelected) {
-    query16(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
+    query17(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", true);
   } else {
-    query16(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
+    query17(grid.box).find("#grid_" + grid.name + "_check_all").prop("checked", false);
   }
   grid.status();
   const rows = grid.find({ "TsUi.expanded": true }, true, true);
@@ -18461,7 +18582,7 @@ function refresh(grid) {
       }
       if (search2.length > 0) {
         search2.forEach((item) => {
-          const el = query16(grid.box).find('td[col="' + item.col + '"]:not(.tsg-head)');
+          const el = query17(grid.box).find('td[col="' + item.col + '"]:not(.tsg-head)');
           TsUtils.marker(el, item.search);
         });
       }
@@ -18484,8 +18605,8 @@ function refresh(grid) {
 }
 function refreshSearch(grid) {
   if (grid.multiSearch && grid.searchData.length > 0) {
-    if (query16(grid.box).find(".tsg-grid-searches").length == 0) {
-      query16(grid.box).find(".tsg-grid-toolbar").css("height", grid.last.toolbar_height + 35 + "px").append(`<div id="grid_${grid.name}_searches" class="tsg-grid-searches"></div>`);
+    if (query17(grid.box).find(".tsg-grid-searches").length == 0) {
+      query17(grid.box).find(".tsg-grid-toolbar").css("height", grid.last.toolbar_height + 35 + "px").append(`<div id="grid_${grid.name}_searches" class="tsg-grid-searches"></div>`);
     }
     let searches = `
             <span id="grid_${grid.name}_search_logic" class="tsg-grid-search-logic"></span>
@@ -18541,19 +18662,19 @@ function refreshSearch(grid) {
             <button class="tsg-btn grid-search-btn btn-remove" type="button"
                 data-click="searchReset">X</button>
         `;
-    query16(grid.box).find(`#grid_${grid.name}_searches`).html(searches);
-    query16(grid.box).find(`#grid_${grid.name}_search_logic`).html(TsUtils.lang(grid.last.logic == "AND" ? "All" : "Any"));
+    query17(grid.box).find(`#grid_${grid.name}_searches`).html(searches);
+    query17(grid.box).find(`#grid_${grid.name}_search_logic`).html(TsUtils.lang(grid.last.logic == "AND" ? "All" : "Any"));
   } else {
-    query16(grid.box).find(".tsg-grid-toolbar").css("height", grid.last.toolbar_height + "px").find(".tsg-grid-searches").remove();
+    query17(grid.box).find(".tsg-grid-toolbar").css("height", grid.last.toolbar_height + "px").find(".tsg-grid-searches").remove();
   }
   if (grid["searchSelected"]) {
-    query16(grid.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
-    query16(grid.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(grid["searchSelected"].text);
+    query17(grid.box).find(`#grid_${grid.name}_search_all`).val(" ").prop("readOnly", true);
+    query17(grid.box).find(`#grid_${grid.name}_search_name`).show().find(".name-text").html(grid["searchSelected"].text);
   } else {
-    query16(grid.box).find(`#grid_${grid.name}_search_all`).prop("readOnly", false);
-    query16(grid.box).find(`#grid_${grid.name}_search_name`).hide().find(".name-text").html("");
+    query17(grid.box).find(`#grid_${grid.name}_search_all`).prop("readOnly", false);
+    query17(grid.box).find(`#grid_${grid.name}_search_name`).hide().find(".name-text").html("");
   }
-  TsUtils.bindEvents(query16(grid.box).find(`#grid_${grid.name}_searches .tsg-action, #grid_${grid.name}_searches button`), grid);
+  TsUtils.bindEvents(query17(grid.box).find(`#grid_${grid.name}_searches .tsg-action, #grid_${grid.name}_searches button`), grid);
 }
 function refreshBody(grid) {
   grid.updateExpanded();
@@ -18564,28 +18685,28 @@ function refreshBody(grid) {
            <div class="top-marker"></div>
            <div class="bottom-marker"></div>
         </div>`;
-  const gridBody = query16(grid.box).find(`#grid_${grid.name}_body`, grid.box).html(bodyHTML);
-  const records = query16(grid.box).find(`#grid_${grid.name}_records`, grid.box);
-  const frecords = query16(grid.box).find(`#grid_${grid.name}_frecords`, grid.box);
+  const gridBody = query17(grid.box).find(`#grid_${grid.name}_body`, grid.box).html(bodyHTML);
+  const records = query17(grid.box).find(`#grid_${grid.name}_records`, grid.box);
+  const frecords = query17(grid.box).find(`#grid_${grid.name}_frecords`, grid.box);
   if (grid.selectType == "row") {
     records.on("mouseover mouseout", { delegate: "tr" }, (event2) => {
-      const ind = query16(event2.delegate).attr("index");
+      const ind = query17(event2.delegate).attr("index");
       const recid = grid.records[ind]?.recid;
-      query16(grid.box).find(`#grid_${grid.name}_frec_${TsUtils.escapeId(recid)}`).toggleClass("tsg-record-hover", event2.type == "mouseover");
+      query17(grid.box).find(`#grid_${grid.name}_frec_${TsUtils.escapeId(recid)}`).toggleClass("tsg-record-hover", event2.type == "mouseover");
     });
     frecords.on("mouseover mouseout", { delegate: "tr" }, (event2) => {
-      const ind = query16(event2.delegate).attr("index");
+      const ind = query17(event2.delegate).attr("index");
       const recid = grid.records[ind]?.recid;
-      query16(grid.box).find(`#grid_${grid.name}_rec_${TsUtils.escapeId(recid)}`).toggleClass("tsg-record-hover", event2.type == "mouseover");
+      query17(grid.box).find(`#grid_${grid.name}_rec_${TsUtils.escapeId(recid)}`).toggleClass("tsg-record-hover", event2.type == "mouseover");
     });
   }
   if (TsUtils.isMobile) {
     records.append(frecords).on("click", { delegate: "tr" }, (event2) => {
-      const index = query16(event2.delegate).attr("index");
+      const index = query17(event2.delegate).attr("index");
       const recid = grid.records[index]?.recid;
       grid.click(recid, event2);
     }).on("touchstart", { delegate: "tr" }, (event2) => {
-      const index = query16(event2.delegate).attr("index");
+      const index = query17(event2.delegate).attr("index");
       const recid = grid.records[index]?.recid;
       if (grid.last["mobile_touch"] && Date.now() - grid.last["mobile_touch"] < 350) {
         event2.preventDefault();
@@ -18594,9 +18715,9 @@ function refreshBody(grid) {
       grid.last["mobile_touch"] = Date.now();
       setTimeout(() => grid.last["mobile_touch"] = null, 350);
     }).on("contextmenu", { delegate: "tr" }, (event2) => {
-      const index = parseInt(query16(event2.delegate).attr("index"));
+      const index = parseInt(query17(event2.delegate).attr("index"));
       const recid = grid.records[index]?.recid;
-      const td = query16(event2.target).closest("td");
+      const td = query17(event2.target).closest("td");
       const column = td.attr("col") ? parseInt(td.attr("col")) : void 0;
       const ctxOpts = { index };
       if (recid != null) ctxOpts.recid = recid;
@@ -18605,15 +18726,15 @@ function refreshBody(grid) {
     });
   } else {
     records.add(frecords).on("click", { delegate: "tr" }, (event2) => {
-      const index = query16(event2.delegate).attr("index");
+      const index = query17(event2.delegate).attr("index");
       const recid = grid.records[index]?.recid;
       if (recid != "-none-" && !grid.last.inEditMode) {
         grid.click(recid, event2);
       }
     }).on("contextmenu", { delegate: "tr" }, (event2) => {
-      const index = parseInt(query16(event2.delegate).attr("index"));
+      const index = parseInt(query17(event2.delegate).attr("index"));
       const recid = grid.records[index]?.recid;
-      const td = query16(event2.target).closest("td");
+      const td = query17(event2.target).closest("td");
       const column = td.attr("col") ? parseInt(td.attr("col")) : void 0;
       const ctxOpts = { index };
       if (recid != null) ctxOpts.recid = recid;
@@ -18621,7 +18742,7 @@ function refreshBody(grid) {
       grid.showContextMenu(event2, ctxOpts);
     }).on("mouseover", { delegate: "tr" }, (event2) => {
       grid.last["rec_out"] = false;
-      const index = query16(event2.delegate).attr("index");
+      const index = query17(event2.delegate).attr("index");
       const recid = grid.records[index]?.recid;
       if (index !== grid.last["rec_over"]) {
         grid.last["rec_over"] = index;
@@ -18632,7 +18753,7 @@ function refreshBody(grid) {
         });
       }
     }).on("mouseout", { delegate: "tr" }, (event2) => {
-      const index = query16(event2.delegate).attr("index");
+      const index = query17(event2.delegate).attr("index");
       const recid = grid.records[index]?.recid;
       grid.last["rec_out"] = true;
       setTimeout(() => {
@@ -18667,8 +18788,8 @@ function refreshBody(grid) {
   records.off(".body-global").on("scroll.body-global", { delegate: ".tsg-grid-records" }, (event2) => {
     grid.scroll(event2);
   });
-  query16(grid.box).find(".tsg-grid-body").off(".body-global").on("click.body-global dblclick.body-global contextmenu.body-global", { delegate: "td.tsg-head" }, (event2) => {
-    const col_ind = parseInt(query16(event2.delegate).attr("col"));
+  query17(grid.box).find(".tsg-grid-body").off(".body-global").on("click.body-global dblclick.body-global contextmenu.body-global", { delegate: "td.tsg-head" }, (event2) => {
+    const col_ind = parseInt(query17(event2.delegate).attr("col"));
     const col = grid.columns[col_ind] ?? { field: String(col_ind) };
     switch (event2.type) {
       case "click":
@@ -18686,9 +18807,9 @@ function refreshBody(grid) {
         break;
     }
   }).on("mouseover.body-global", { delegate: ".tsg-col-header" }, (event2) => {
-    const col = query16(event2.delegate).parent().attr("col");
+    const col = query17(event2.delegate).parent().attr("col");
     grid.columnTooltipShow(col, event2);
-    query16(event2.delegate).off(".tooltip").on("mouseleave.tooltip", () => {
+    query17(event2.delegate).off(".tooltip").on("mouseleave.tooltip", () => {
       grid.columnTooltipHide(col, event2);
     });
   }).on("click.body-global", { delegate: "input.tsg-select-all" }, (event2) => {
@@ -18701,16 +18822,16 @@ function refreshBody(grid) {
     clearTimeout(grid.last.kbd_timer ?? void 0);
   }).on("click.body-global", { delegate: ".tsg-show-children, .tsg-col-expand" }, (event2) => {
     event2.stopPropagation();
-    const ind = query16(event2.target).parents("tr").attr("index");
+    const ind = query17(event2.target).parents("tr").attr("index");
     grid.toggle(grid.records[ind].recid);
   }).on("click.body-global mouseover.body-global", { delegate: ".tsg-info" }, (event2) => {
-    const td = query16(event2.delegate).closest("td");
+    const td = query17(event2.delegate).closest("td");
     const tr = td.parent();
     const col = grid.columns[td.attr("col")];
     const isSummary = tr.parents(".tsg-grid-body").hasClass("tsg-grid-summary");
     if (["mouseenter", "mouseover"].includes(col?.["info"]?.showOn?.toLowerCase()) && event2.type == "mouseover") {
       grid.showBubble(parseInt(tr.attr("index")), parseInt(td.attr("col")), isSummary).then(() => {
-        query16(event2.delegate).off(".tooltip").on("mouseleave.tooltip", () => {
+        query17(event2.delegate).off(".tooltip").on("mouseleave.tooltip", () => {
           TsTooltip5.hide(grid.name + "-bubble");
         });
       });
@@ -18720,7 +18841,7 @@ function refreshBody(grid) {
     }
   }).on("mouseover.body-global", { delegate: ".tsg-clipboard-copy" }, (event2) => {
     if (event2.delegate._tooltipShow) return;
-    const td = query16(event2.delegate).parent();
+    const td = query17(event2.delegate).parent();
     const tr = td.parent();
     const col = grid.columns[td.attr("col")];
     const isSummary = tr.parents(".tsg-grid-body").hasClass("tsg-grid-summary");
@@ -18731,7 +18852,7 @@ function refreshBody(grid) {
       position: "top|bottom",
       offsetY: -2
     });
-    query16(event2.delegate).off(".tooltip").on("mouseleave.tooltip", (_evt) => {
+    query17(event2.delegate).off(".tooltip").on("mouseleave.tooltip", (_evt) => {
       TsTooltip5.hide(grid.name + "-bubble");
     }).on("click.tooltip", (evt) => {
       evt.stopPropagation();
@@ -18740,29 +18861,29 @@ function refreshBody(grid) {
     });
     event2.delegate._tooltipShow = true;
   }).on("click.body-global", { delegate: ".tsg-editable-checkbox" }, (event2) => {
-    const dt = query16(event2.delegate).data();
+    const dt = query17(event2.delegate).data();
     grid.editChange.call(grid, event2.delegate, dt.changeind, dt.colind, event2);
     grid.updateToolbar();
   });
   if (grid.records.length === 0 && grid.msgEmpty) {
-    query16(grid.box).find(`#grid_${grid.name}_body`).append(`<div id="grid_${grid.name}_empty_msg" class="tsg-grid-empty-msg"><div>${TsUtils.lang(grid.msgEmpty)}</div></div>`);
-  } else if (query16(grid.box).find(`#grid_${grid.name}_empty_msg`).length > 0) {
-    query16(grid.box).find(`#grid_${grid.name}_empty_msg`).remove();
+    query17(grid.box).find(`#grid_${grid.name}_body`).append(`<div id="grid_${grid.name}_empty_msg" class="tsg-grid-empty-msg"><div>${TsUtils.lang(grid.msgEmpty)}</div></div>`);
+  } else if (query17(grid.box).find(`#grid_${grid.name}_empty_msg`).length > 0) {
+    query17(grid.box).find(`#grid_${grid.name}_empty_msg`).remove();
   }
   if (grid.summary.length > 0) {
     const sumHTML = grid.getSummaryHTML();
-    query16(grid.box).find(`#grid_${grid.name}_fsummary`).html(sumHTML?.[0] ?? "").show();
-    query16(grid.box).find(`#grid_${grid.name}_summary`).html(sumHTML?.[1] ?? "").show();
+    query17(grid.box).find(`#grid_${grid.name}_fsummary`).html(sumHTML?.[0] ?? "").show();
+    query17(grid.box).find(`#grid_${grid.name}_summary`).html(sumHTML?.[1] ?? "").show();
   } else {
-    query16(grid.box).find(`#grid_${grid.name}_fsummary`).hide();
-    query16(grid.box).find(`#grid_${grid.name}_summary`).hide();
+    query17(grid.box).find(`#grid_${grid.name}_fsummary`).hide();
+    query17(grid.box).find(`#grid_${grid.name}_summary`).hide();
   }
 }
 function destroy(grid) {
   const edata = grid.trigger("destroy", { target: grid.name });
   if (edata.isCancelled === true) return;
   grid.toolbar?.destroy?.();
-  if (query16(grid.box).find(`#grid_${grid.name}_body`).length > 0) {
+  if (query17(grid.box).find(`#grid_${grid.name}_body`).length > 0) {
     grid.unmount();
   }
   delete TsUi[grid.name];
@@ -18816,33 +18937,33 @@ function initColumnDrag(grid, _box) {
     const iClass = ["tsg-col-number", "tsg-col-expand", "tsg-col-select"];
     if (lastColumn !== true) iClass.push("tsg-head-last");
     for (let i = 0; i < iClass.length; i++) {
-      if (query16(target).closest(".tsg-head").hasClass(iClass[i])) {
+      if (query17(target).closest(".tsg-head").hasClass(iClass[i])) {
         return true;
       }
     }
     return false;
   };
-  query16(self.box).off(".colDrag").on("mousedown.colDrag", dragColStart);
+  query17(self.box).off(".colDrag").on("mousedown.colDrag", dragColStart);
   function dragColStart(event2) {
     if (dragData.pressed || dragData["numberPreColumnsPresent"] === 0 || event2.button !== 0) return;
     const preColHeadersSelector = ".tsg-head.tsg-col-number, .tsg-head.tsg-col-expand, .tsg-head.tsg-col-select";
-    if (!query16(event2.target).parents().hasClass("tsg-head") || hasInvalidClass(event2.target)) return;
+    if (!query17(event2.target).parents().hasClass("tsg-head") || hasInvalidClass(event2.target)) return;
     dragData.pressed = true;
     dragData["initialX"] = event2.pageX;
     dragData["initialY"] = event2.pageY;
-    dragData["numberPreColumnsPresent"] = query16(self.box).find(preColHeadersSelector).length;
-    const origColumn = dragData.columnHead = query16(event2.target).closest(".tsg-head");
+    dragData["numberPreColumnsPresent"] = query17(self.box).find(preColHeadersSelector).length;
+    const origColumn = dragData.columnHead = query17(event2.target).closest(".tsg-head");
     const origColumnNumber = dragData["originalPos"] = parseInt(origColumn.attr("col"), 10);
     const edata = self.trigger("columnDragStart", { originalEvent: event2, origColumnNumber, target: origColumn[0] });
     if (edata.isCancelled === true) return false;
-    const columns = dragData["columns"] = query16(self.box).find(".tsg-head:not(.tsg-head-last)");
-    query16(document).on("mouseup.colDrag", dragColEnd);
-    query16(document).on("mousemove.colDrag", dragColOver);
+    const columns = dragData["columns"] = query17(self.box).find(".tsg-head:not(.tsg-head-last)");
+    query17(document).on("mouseup.colDrag", dragColEnd);
+    query17(document).on("mousemove.colDrag", dragColOver);
     const col = self.columns[dragData["originalPos"]];
     const colText = TsUtils.lang(typeof col.text == "function" ? col.text(col) : col.text);
     dragData["ghost"] = query2.html(`<span col="${dragData["originalPos"]}">${colText}</span>`)[0];
-    query16(document.body).append(dragData["ghost"]);
-    query16(dragData["ghost"]).css({
+    query17(document.body).append(dragData["ghost"]);
+    query17(dragData["ghost"]).css({
       display: "none",
       left: event2.pageX,
       top: event2.pageY,
@@ -18874,11 +18995,11 @@ function initColumnDrag(grid, _box) {
     dragData.pressed = false;
     let target;
     const finish = () => {
-      const ghosts = query16(self.box).find(".tsg-grid-ghost");
-      query16(self.box).find(".tsg-intersection-marker").hide();
-      query16(dragData["ghost"]).remove();
+      const ghosts = query17(self.box).find(".tsg-grid-ghost");
+      query17(self.box).find(".tsg-intersection-marker").hide();
+      query17(dragData["ghost"]).remove();
       ghosts.remove();
-      query16(document).off(".colDrag");
+      query17(document).off(".colDrag");
       dragData = {};
     };
     if (event2.pageX == dragData["initialX"] && event2.pageY == dragData["initialY"]) {
@@ -18899,15 +19020,15 @@ function initColumnDrag(grid, _box) {
     edata.finish({ targetColumn: (target ?? 1) - 1 });
   }
   function markIntersection(event2) {
-    if (query16(event2.target).closest("td").length == 0) {
+    if (query17(event2.target).closest("td").length == 0) {
       return;
     }
-    const td = query16(event2.target).closest("td");
+    const td = query17(event2.target).closest("td");
     const newPos = td.hasClass("tsg-head-last") ? self.columns.length : parseInt(td.attr("col"));
     if (dragData.targetPos != newPos) {
-      const rect1 = query16(self.box).find(".tsg-grid-body").get(0).getBoundingClientRect();
-      const rect2 = query16(event2.target).closest("td").get(0).getBoundingClientRect();
-      query16(self.box).find(".tsg-intersection-marker").show().css({
+      const rect1 = query17(self.box).find(".tsg-grid-body").get(0).getBoundingClientRect();
+      const rect2 = query17(event2.target).closest("td").get(0).getBoundingClientRect();
+      query17(self.box).find(".tsg-intersection-marker").show().css({
         left: rect2.left - rect1.left + "px",
         height: rect2.height + "px"
       });
@@ -18916,14 +19037,14 @@ function initColumnDrag(grid, _box) {
     return;
   }
   function trackGhost(cursorX, cursorY) {
-    query16(dragData["ghost"]).css({
+    query17(dragData["ghost"]).css({
       left: cursorX - 10 + "px",
       top: cursorY - 10 + "px"
     }).show();
   }
   return {
     remove() {
-      query16(self.box).off(".colDrag");
+      query17(self.box).off(".colDrag");
       self.last.columnDrag = false;
     }
   };
@@ -18991,8 +19112,8 @@ function initToolbar(grid) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onRefresh: async (event2) => {
         await event2.complete;
-        const input = query16(grid.box).find(`#grid_${grid.name}_search_all`);
-        TsUtils.bindEvents(query16(grid.box).find(`#grid_${grid.name}_search_all, .tsg-action`), grid);
+        const input = query17(grid.box).find(`#grid_${grid.name}_search_all`);
+        TsUtils.bindEvents(query17(grid.box).find(`#grid_${grid.name}_search_all, .tsg-action`), grid);
         const slowSearch = TsUtils.debounce((event3) => {
           const val = event3.target.value;
           if (grid.liveSearch && grid.last["liveText"] != val) {
@@ -19069,7 +19190,7 @@ function initToolbar(grid) {
         } else {
           grid.initColumnOnOff();
           setTimeout(() => {
-            query16(`#w2overlay-${grid.name}_toolbar-drop .tsg-grid-skip`).off(".tsg-grid").on("click.tsg-grid", (evt) => {
+            query17(`#w2overlay-${grid.name}_toolbar-drop .tsg-grid-skip`).off(".tsg-grid").on("click.tsg-grid", (evt) => {
               evt.stopPropagation();
             }).on("keypress", (evt) => {
               if (evt.keyCode == 13) {
@@ -19114,7 +19235,7 @@ function initToolbar(grid) {
 }
 function initResize(grid) {
   const obj = grid;
-  query16(grid.box).find(".tsg-resizer").off(".grid-col-resize").on("click.grid-col-resize", function(event2) {
+  query17(grid.box).find(".tsg-resizer").off(".grid-col-resize").on("click.grid-col-resize", function(event2) {
     event2.stopPropagation();
     event2.preventDefault();
   }).on("mousedown.grid-col-resize", function(event2) {
@@ -19126,10 +19247,10 @@ function initResize(grid) {
       y: mev.screenY,
       gx: mev.screenX,
       gy: mev.screenY,
-      col: parseInt(query16(this).attr("name"))
+      col: parseInt(query17(this).attr("name"))
       // 'this' is the DOM element
     };
-    obj.last.tmp.tds = query16(obj.box).find("#grid_" + obj.name + '_body table tr:first-child td[col="' + obj.last.tmp.col + '"]');
+    obj.last.tmp.tds = query17(obj.box).find("#grid_" + obj.name + '_body table tr:first-child td[col="' + obj.last.tmp.col + '"]');
     mev.stopPropagation();
     mev.preventDefault();
     for (let c = 0; c < obj.columns.length; c++) {
@@ -19167,7 +19288,7 @@ function initResize(grid) {
       edata2.finish();
     };
     const mouseUp = function(event3) {
-      query16(document).off(".grid-col-resize");
+      query17(document).off(".grid-col-resize");
       obj.resizeRecords();
       obj.scroll();
       edata.finish({ originalEvent: event3 });
@@ -19175,27 +19296,27 @@ function initResize(grid) {
         obj.last.colResizing = false;
       }, 1);
     };
-    query16(document).off(".grid-col-resize").on("mousemove.grid-col-resize", mouseMove).on("mouseup.grid-col-resize", mouseUp);
+    query17(document).off(".grid-col-resize").on("mousemove.grid-col-resize", mouseMove).on("mouseup.grid-col-resize", mouseUp);
   }).on("dblclick.grid-col-resize", function(event2) {
-    const ind = parseInt(query16(this).attr("name"));
+    const ind = parseInt(query17(this).attr("name"));
     obj.columnAutoSize(ind);
     event2.stopPropagation();
     event2.preventDefault();
   }).each((el) => {
-    const td = query16(el).get(0).parentNode;
-    query16(el).css({
+    const td = query17(el).get(0).parentNode;
+    query17(el).css({
       "height": td.clientHeight + "px",
       "margin-left": td.clientWidth - 3 + "px"
     });
   });
 }
 function resizeBoxes(grid) {
-  const header = query16(grid.box).find(`#grid_${grid.name}_header`);
-  const toolbar = query16(grid.box).find(`#grid_${grid.name}_toolbar`);
-  const fsummary = query16(grid.box).find(`#grid_${grid.name}_fsummary`);
-  const summary = query16(grid.box).find(`#grid_${grid.name}_summary`);
-  const footer = query16(grid.box).find(`#grid_${grid.name}_footer`);
-  const body = query16(grid.box).find(`#grid_${grid.name}_body`);
+  const header = query17(grid.box).find(`#grid_${grid.name}_header`);
+  const toolbar = query17(grid.box).find(`#grid_${grid.name}_toolbar`);
+  const fsummary = query17(grid.box).find(`#grid_${grid.name}_fsummary`);
+  const summary = query17(grid.box).find(`#grid_${grid.name}_summary`);
+  const footer = query17(grid.box).find(`#grid_${grid.name}_footer`);
+  const body = query17(grid.box).find(`#grid_${grid.name}_body`);
   if (grid.show.header) {
     header.css({ top: "0px", left: "0px", right: "0px" });
   }
@@ -19227,20 +19348,20 @@ function resizeBoxes(grid) {
 }
 function resizeRecords(grid) {
   const obj = grid;
-  query16(grid.box).find(".tsg-empty-record").remove();
-  const box = query16(grid.box);
-  const gridEl = query16(grid.box).find(":scope > div.tsg-grid-box");
-  const header = query16(grid.box).find(`#grid_${grid.name}_header`);
-  const toolbar = query16(grid.box).find(`#grid_${grid.name}_toolbar`);
-  const summary = query16(grid.box).find(`#grid_${grid.name}_summary`);
-  const fsummary = query16(grid.box).find(`#grid_${grid.name}_fsummary`);
-  const footer = query16(grid.box).find(`#grid_${grid.name}_footer`);
-  const body = query16(grid.box).find(`#grid_${grid.name}_body`);
-  const columns = query16(grid.box).find(`#grid_${grid.name}_columns`);
-  const fcolumns = query16(grid.box).find(`#grid_${grid.name}_fcolumns`);
-  const records = query16(grid.box).find(`#grid_${grid.name}_records`);
-  const frecords = query16(grid.box).find(`#grid_${grid.name}_frecords`);
-  const scroll1 = query16(grid.box).find(`#grid_${grid.name}_scroll1`);
+  query17(grid.box).find(".tsg-empty-record").remove();
+  const box = query17(grid.box);
+  const gridEl = query17(grid.box).find(":scope > div.tsg-grid-box");
+  const header = query17(grid.box).find(`#grid_${grid.name}_header`);
+  const toolbar = query17(grid.box).find(`#grid_${grid.name}_toolbar`);
+  const summary = query17(grid.box).find(`#grid_${grid.name}_summary`);
+  const fsummary = query17(grid.box).find(`#grid_${grid.name}_fsummary`);
+  const footer = query17(grid.box).find(`#grid_${grid.name}_footer`);
+  const body = query17(grid.box).find(`#grid_${grid.name}_body`);
+  const columns = query17(grid.box).find(`#grid_${grid.name}_columns`);
+  const fcolumns = query17(grid.box).find(`#grid_${grid.name}_fcolumns`);
+  const records = query17(grid.box).find(`#grid_${grid.name}_records`);
+  const frecords = query17(grid.box).find(`#grid_${grid.name}_frecords`);
+  const scroll1 = query17(grid.box).find(`#grid_${grid.name}_scroll1`);
   let lineNumberWidth = String(grid.total).length * 8 + 10;
   if (lineNumberWidth < 34) lineNumberWidth = 34;
   if (grid.lineNumberWidth != null) lineNumberWidth = grid.lineNumberWidth;
@@ -19253,11 +19374,11 @@ function resizeRecords(grid) {
     sWidth += cSize;
   }
   if (records[0]?.clientWidth < sWidth) bodyOverflowX = true;
-  if (body[0]?.clientHeight - (columns[0]?.clientHeight ?? 0) < (query16(records).find(":scope > table")[0]?.clientHeight ?? 0) + (bodyOverflowX ? TsUtils.scrollBarSize() : 0)) {
+  if (body[0]?.clientHeight - (columns[0]?.clientHeight ?? 0) < (query17(records).find(":scope > table")[0]?.clientHeight ?? 0) + (bodyOverflowX ? TsUtils.scrollBarSize() : 0)) {
     bodyOverflowY = true;
   }
   if (!grid.fixedBody) {
-    const bodyHeight = TsUtils.getSize(columns, "height") + TsUtils.getSize(query16(grid.box).find("#grid_" + grid.name + "_records table"), "height") + (bodyOverflowX ? TsUtils.scrollBarSize() : 0);
+    const bodyHeight = TsUtils.getSize(columns, "height") + TsUtils.getSize(query17(grid.box).find("#grid_" + grid.name + "_records table"), "height") + (bodyOverflowX ? TsUtils.scrollBarSize() : 0);
     const calculatedHeight = bodyHeight + (grid.show.header ? TsUtils.getSize(header, "height") : 0) + (grid.show.toolbar ? TsUtils.getSize(toolbar, "height") : 0) + (summary.css("display") != "none" ? TsUtils.getSize(summary, "height") : 0) + (grid.show.footer ? TsUtils.getSize(footer, "height") : 0);
     gridEl.css("height", calculatedHeight + "px");
     body.css("height", bodyHeight + "px");
@@ -19334,8 +19455,8 @@ function resizeRecords(grid) {
     }
     html1 += '<td class="tsg-grid-data-last"></td> </tr>';
     html2 += '<td class="tsg-grid-data-last" col="end"></td> </tr>';
-    query16(grid2.box).find("#grid_" + grid2.name + "_frecords > table").append(html1);
-    query16(grid2.box).find("#grid_" + grid2.name + "_records > table").append(html2);
+    query17(grid2.box).find("#grid_" + grid2.name + "_frecords > table").append(html1);
+    query17(grid2.box).find("#grid_" + grid2.name + "_records > table").append(html2);
   }
   let width_box, percent;
   if (body.length > 0) {
@@ -19441,10 +19562,10 @@ function resizeRecords(grid) {
   records.css({ left: fwidth + "px" });
   summary.css({ left: fwidth + "px" });
   columns.find(":scope > table > tbody > tr:nth-child(1) td").add(fcolumns.find(":scope > table > tbody > tr:nth-child(1) td")).each((el) => {
-    if (query16(el).hasClass("tsg-col-number")) {
-      query16(el).css("width", lineNumberWidth + "px");
+    if (query17(el).hasClass("tsg-col-number")) {
+      query17(el).css("width", lineNumberWidth + "px");
     }
-    const ind = query16(el).attr("col");
+    const ind = query17(el).attr("col");
     if (ind != null) {
       if (ind == "start") {
         let width = 0;
@@ -19452,20 +19573,20 @@ function resizeRecords(grid) {
           if (!obj.columns[i] || obj.columns[i].frozen || obj.columns[i].hidden) continue;
           width += parseInt(obj.columns[i].sizeCalculated ?? "0");
         }
-        query16(el).css("width", width + "px");
+        query17(el).css("width", width + "px");
       }
-      if (obj.columns[ind]) query16(el).css("width", obj.columns[ind].sizeCalculated ?? "");
+      if (obj.columns[ind]) query17(el).css("width", obj.columns[ind].sizeCalculated ?? "");
     }
-    if (query16(el).hasClass("tsg-head-last")) {
+    if (query17(el).hasClass("tsg-head-last")) {
       if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
         let width = 0;
         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
           if (!obj.columns[i] || obj.columns[i].frozen || obj.columns[i].hidden) continue;
           width += parseInt(obj.columns[i].sizeCalculated ?? "0");
         }
-        query16(el).css("width", width + "px");
+        query17(el).css("width", width + "px");
       } else {
-        query16(el).css("width", TsUtils.scrollBarSize() + (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
+        query17(el).css("width", TsUtils.scrollBarSize() + (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
       }
     }
   });
@@ -19478,10 +19599,10 @@ function resizeRecords(grid) {
     });
   }
   records.find(":scope > table > tbody > tr:nth-child(1) td").add(frecords.find(":scope > table > tbody > tr:nth-child(1) td")).each((el) => {
-    if (query16(el).hasClass("tsg-col-number")) {
-      query16(el).css("width", lineNumberWidth + "px");
+    if (query17(el).hasClass("tsg-col-number")) {
+      query17(el).css("width", lineNumberWidth + "px");
     }
-    const ind = query16(el).attr("col");
+    const ind = query17(el).attr("col");
     if (ind != null) {
       if (ind == "start") {
         let width = 0;
@@ -19489,28 +19610,28 @@ function resizeRecords(grid) {
           if (!obj.columns[i] || obj.columns[i].frozen || obj.columns[i].hidden) continue;
           width += parseInt(obj.columns[i].sizeCalculated ?? "0");
         }
-        query16(el).css("width", width + "px");
+        query17(el).css("width", width + "px");
       }
-      if (obj.columns[ind]) query16(el).css("width", obj.columns[ind].sizeCalculated ?? "");
+      if (obj.columns[ind]) query17(el).css("width", obj.columns[ind].sizeCalculated ?? "");
     }
-    if (query16(el).hasClass("tsg-grid-data-last") && query16(el).parents(".tsg-grid-frecords").length === 0) {
+    if (query17(el).hasClass("tsg-grid-data-last") && query17(el).parents(".tsg-grid-frecords").length === 0) {
       if ((obj.last.vscroll.colIndEnd ?? 0) + 1 < obj.columns.length) {
         let width = 0;
         for (let i = (obj.last.vscroll.colIndEnd ?? 0) + 1; i < obj.columns.length; i++) {
           if (!obj.columns[i] || obj.columns[i].frozen || obj.columns[i].hidden) continue;
           width += parseInt(obj.columns[i].sizeCalculated ?? "0");
         }
-        query16(el).css("width", width + "px");
+        query17(el).css("width", width + "px");
       } else {
-        query16(el).css("width", (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
+        query17(el).css("width", (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
       }
     }
   });
   summary.find(":scope > table > tbody > tr:nth-child(1) td").add(fsummary.find(":scope > table > tbody > tr:nth-child(1) td")).each((el) => {
-    if (query16(el).hasClass("tsg-col-number")) {
-      query16(el).css("width", lineNumberWidth + "px");
+    if (query17(el).hasClass("tsg-col-number")) {
+      query17(el).css("width", lineNumberWidth + "px");
     }
-    const ind = query16(el).attr("col");
+    const ind = query17(el).attr("col");
     if (ind != null) {
       if (ind == "start") {
         let width = 0;
@@ -19518,12 +19639,12 @@ function resizeRecords(grid) {
           if (!obj.columns[i] || obj.columns[i].frozen || obj.columns[i].hidden) continue;
           width += parseInt(obj.columns[i].sizeCalculated ?? "0");
         }
-        query16(el).css("width", width + "px");
+        query17(el).css("width", width + "px");
       }
-      if (obj.columns[ind]) query16(el).css("width", obj.columns[ind].sizeCalculated ?? "");
+      if (obj.columns[ind]) query17(el).css("width", obj.columns[ind].sizeCalculated ?? "");
     }
-    if (query16(el).hasClass("tsg-grid-data-last") && query16(el).parents(".tsg-grid-frecords").length === 0) {
-      query16(el).css("width", TsUtils.scrollBarSize() + (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
+    if (query17(el).hasClass("tsg-grid-data-last") && query17(el).parents(".tsg-grid-frecords").length === 0) {
+      query17(el).css("width", TsUtils.scrollBarSize() + (width_diff > 0 && percent === 0 ? width_diff : 0) + "px");
     }
   });
   grid.initResize();
@@ -19694,7 +19815,7 @@ function getColumnCellHTML(grid, i) {
   return html;
 }
 function columnTooltipShow(grid, ind, _event) {
-  const $el = query16(grid.box).find("#grid_" + grid.name + "_column_" + ind);
+  const $el = query17(grid.box).find("#grid_" + grid.name + "_column_" + ind);
   const item = grid.columns[ind];
   const pos = grid.columnTooltip;
   TsTooltip5.show({
@@ -19713,7 +19834,7 @@ function getRecordsHTML(grid) {
   if (grid.searchData.length != 0 && !url) buffered = grid.last.searchIds.length;
   if (buffered > grid.vs_start) grid.last.vscroll.show_extra = grid.vs_extra;
   else grid.last.vscroll.show_extra = grid.vs_start;
-  const records = query16(grid.box).find(`#grid_${grid.name}_records`);
+  const records = query17(grid.box).find(`#grid_${grid.name}_records`);
   let limit = Math.floor((records.get(0)?.clientHeight || 0) / grid.recordHeight) + grid.last.vscroll.show_extra + 1;
   if (limit < grid.vs_start) {
     limit = grid.vs_start;
@@ -20008,7 +20129,7 @@ function clipboardCopy(grid, ind, col_ind, summary) {
   if (col && typeof col.clipboardCopy == "function") {
     txt = col.clipboardCopy(rec, { self: grid, index: ind, colIndex: col_ind, summary: !!summary });
   }
-  query16(grid.box).find("#grid_" + grid.name + "_focus").text(txt).get(0).select();
+  query17(grid.box).find("#grid_" + grid.name + "_focus").text(txt).get(0).select();
   document.execCommand("copy");
 }
 function showBubble(grid, ind, col_ind, summary) {
@@ -20016,7 +20137,7 @@ function showBubble(grid, ind, col_ind, summary) {
   if (!info) return;
   let html = "";
   const rec = grid.records[ind];
-  const el = query16(grid.box).find(`${summary ? ".tsg-grid-summary" : ""} #grid_${grid.name}_data_${ind}_${col_ind} .tsg-info`);
+  const el = query17(grid.box).find(`${summary ? ".tsg-grid-summary" : ""} #grid_${grid.name}_data_${ind}_${col_ind} .tsg-info`);
   if (grid.last.bubbleEl) {
     TsTooltip5.hide(grid.name + "-bubble");
   }
@@ -20212,15 +20333,15 @@ function getFooterHTML(_grid) {
 function scroll(grid, event2) {
   const obj = grid;
   const url = grid.url?.get ?? grid.url;
-  const records = query16(grid.box).find(`#grid_${grid.name}_records`);
-  const frecords = query16(grid.box).find(`#grid_${grid.name}_frecords`);
+  const records = query17(grid.box).find(`#grid_${grid.name}_records`);
+  const frecords = query17(grid.box).find(`#grid_${grid.name}_frecords`);
   if (event2) {
     const sTop = event2.target.scrollTop;
     const sLeft = event2.target.scrollLeft;
     grid.last.vscroll.scrollTop = sTop;
     grid.last.vscroll.scrollLeft = sLeft;
-    const cols = query16(grid.box).find(`#grid_${grid.name}_columns`)[0];
-    const summary = query16(grid.box).find(`#grid_${grid.name}_summary`)[0];
+    const cols = query17(grid.box).find(`#grid_${grid.name}_columns`)[0];
+    const summary = query17(grid.box).find(`#grid_${grid.name}_summary`)[0];
     if (cols) cols.scrollLeft = sLeft;
     if (summary) summary.scrollLeft = sLeft;
     if (frecords[0]) frecords[0].scrollTop = sTop;
@@ -20254,7 +20375,7 @@ function scroll(grid, event2) {
       else colEnd++;
     }
     if (colStart != grid.last.vscroll.colIndStart || colEnd != grid.last.vscroll.colIndEnd) {
-      const $box = query16(grid.box);
+      const $box = query17(grid.box);
       const deltaStart = Math.abs(colStart - grid.last.vscroll.colIndStart);
       const deltaEnd = Math.abs(colEnd - grid.last.vscroll.colIndEnd);
       if (deltaStart < 5 && deltaEnd < 5) {
@@ -20283,16 +20404,16 @@ function scroll(grid, event2) {
             if (grid.columns[i] && (grid.columns[i].frozen || grid.columns[i].hidden)) continue;
             $cfirst.after(grid.getColumnCellHTML(i));
             $rfirst.each((el) => {
-              const index = query16(el).parent().attr("index");
+              const index = query17(el).parent().attr("index");
               let td = '<td class="tsg-grid-data" col="' + i + '" style="height: 0px"></td>';
               if (index != null) td = grid.getCellHTML(parseInt(index), i, false);
-              query16(el).after(td);
+              query17(el).after(td);
             });
             $sfirst.each((el) => {
-              const index = query16(el).parent().attr("index");
+              const index = query17(el).parent().attr("index");
               let td = '<td class="tsg-grid-data" col="' + i + '" style="height: 0px"></td>';
               if (index != null) td = grid.getCellHTML(parseInt(index), i, true);
-              query16(el).after(td);
+              query17(el).after(td);
             });
           }
         }
@@ -20301,15 +20422,15 @@ function scroll(grid, event2) {
             if (grid.columns[i] && (grid.columns[i].frozen || grid.columns[i].hidden)) continue;
             $clast.before(grid.getColumnCellHTML(i));
             $rlast.each((el) => {
-              const index = query16(el).parent().attr("index");
+              const index = query17(el).parent().attr("index");
               let td = '<td class="tsg-grid-data" col="' + i + '" style="height: 0px"></td>';
               if (index != null) td = grid.getCellHTML(parseInt(index), i, false);
-              query16(el).before(td);
+              query17(el).before(td);
             });
             $slast.each((el) => {
-              const index = query16(el).parent().attr("index") || -1;
+              const index = query17(el).parent().attr("index") || -1;
               const td = grid.getCellHTML(parseInt(index), i, true);
-              query16(el).before(td);
+              query17(el).before(td);
             });
           }
         }
@@ -20348,7 +20469,7 @@ function scroll(grid, event2) {
   let t2 = t1 + (Math.round(records.prop("clientHeight") / grid.recordHeight) - 1);
   if (t1 > buffered) t1 = buffered;
   if (t2 >= buffered - 1) t2 = buffered;
-  query16(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-right").html(
+  query17(grid.box).find("#grid_" + grid.name + "_footer .tsg-footer-right").html(
     (grid.show.statusRange ? TsUtils.formatNumber(grid.offset + t1) + "-" + TsUtils.formatNumber(grid.offset + t2) + (grid.total != -1 ? " " + TsUtils.lang("of") + ' <span class="tsg-total">' + TsUtils.formatNumber(grid.total) + "</span>" : "") : "") + (url && grid.show.statusBuffered ? " (" + TsUtils.lang("buffered") + ' <span class="tsg-buffered">' + TsUtils.formatNumber(buffered) + "</span>" + (grid.offset > 0 ? ', skip <span class="tsg-skip">' + TsUtils.formatNumber(grid.offset) : "") + "</span>)" : "")
   );
   if (!url && (!grid.fixedBody || grid.total != -1 && grid.total <= grid.vs_start)) return;
@@ -20450,9 +20571,9 @@ function scroll(grid, event2) {
       grid.last.fetch.offset = (grid.last.fetch.offset ?? 0) + grid.limit;
       grid.request("load");
     }
-    const more = query16(grid.box).find("#grid_" + grid.name + "_rec_more, #grid_" + grid.name + "_frec_more");
+    const more = query17(grid.box).find("#grid_" + grid.name + "_rec_more, #grid_" + grid.name + "_frec_more");
     more.show().eq(1).off(".load-more").on("click.load-more", function() {
-      query16(this).find("td").html('<div><div style="width: 20px; height: 20px;" class="tsg-spinner"></div></div>');
+      query17(this).find("td").html('<div><div style="width: 20px; height: 20px;" class="tsg-spinner"></div></div>');
       obj.last.vscroll.pull_more = true;
       obj.last.fetch.offset = (obj.last.fetch.offset ?? 0) + obj.limit;
       obj.request("load");
@@ -20474,7 +20595,7 @@ function scroll(grid, event2) {
       }
       if (search2.length > 0) {
         search2.forEach((item) => {
-          const el = query16(obj.box).find('td[col="' + item.col + '"]:not(.tsg-head)');
+          const el = query17(obj.box).find('td[col="' + item.col + '"]:not(.tsg-head)');
           TsUtils.marker(el, item.search);
         });
       }
@@ -20483,7 +20604,7 @@ function scroll(grid, event2) {
 }
 
 // src/tsgrid.ts
-var query17 = query2;
+var query18 = query2;
 var TsGrid = class extends TsBase {
   columns;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21084,7 +21205,7 @@ var TsGrid = class extends TsBase {
       });
     }
     this.initToolbar();
-    if (typeof this.box == "string") this.box = query17(this.box).get(0);
+    if (typeof this.box == "string") this.box = query18(this.box).get(0);
     if (this.box) this.render(this.box);
   }
   add(record, first) {
@@ -21390,7 +21511,7 @@ var TsGrid = class extends TsBase {
           this.total = this.offset + (this.last.fetch.offset ?? 0) + data.records.length;
         }
         if (!this.last.fetch.hasMore) {
-          query17(this.box).find("#grid_" + this.name + "_rec_more, #grid_" + this.name + "_frec_more").hide();
+          query18(this.box).find("#grid_" + this.name + "_rec_more, #grid_" + this.name + "_frec_more").hide();
         }
         if (this.last.fetch.offset === 0) {
           this.records = [];
@@ -21732,7 +21853,7 @@ var TsGrid = class extends TsBase {
   render(box) {
     const time = Date.now();
     const obj = this;
-    if (typeof box == "string") box = query17(box).get(0);
+    if (typeof box == "string") box = query18(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -21742,10 +21863,10 @@ var TsGrid = class extends TsBase {
     if (!this.box) return;
     const url = this.url?.get ?? this.url;
     this.reset(true);
-    query17(this.box).attr("name", this.name).addClass("tsg-reset tsg-grid tsg-inactive").html('<div class="tsg-grid-box">    <div id="grid_' + this.name + '_header" class="tsg-grid-header"></div>    <div id="grid_' + this.name + '_toolbar" class="tsg-grid-toolbar"></div>    <div id="grid_' + this.name + '_body" class="tsg-grid-body"></div>    <div id="grid_' + this.name + '_fsummary" class="tsg-grid-body tsg-grid-summary"></div>    <div id="grid_' + this.name + '_summary" class="tsg-grid-body tsg-grid-summary"></div>    <div id="grid_' + this.name + '_footer" class="tsg-grid-footer"></div>    <textarea id="grid_' + this.name + '_focus" class="tsg-grid-focus-input" ' + (this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : "") + (TsUtils.isMobile ? "readonly" : "") + "></textarea></div>");
-    if (this.selectType != "row") query17(this.box).addClass("tsg-ss");
-    if (query17(this.box).length > 0) query17(this.box)[0].style.cssText += this.style;
-    const tb_box = query17(this.box).find(`#grid_${this.name}_toolbar`);
+    query18(this.box).attr("name", this.name).addClass("tsg-reset tsg-grid tsg-inactive").html('<div class="tsg-grid-box">    <div id="grid_' + this.name + '_header" class="tsg-grid-header"></div>    <div id="grid_' + this.name + '_toolbar" class="tsg-grid-toolbar"></div>    <div id="grid_' + this.name + '_body" class="tsg-grid-body"></div>    <div id="grid_' + this.name + '_fsummary" class="tsg-grid-body tsg-grid-summary"></div>    <div id="grid_' + this.name + '_summary" class="tsg-grid-body tsg-grid-summary"></div>    <div id="grid_' + this.name + '_footer" class="tsg-grid-footer"></div>    <textarea id="grid_' + this.name + '_focus" class="tsg-grid-focus-input" ' + (this.tabIndex ? 'tabindex="' + this.tabIndex + '"' : "") + (TsUtils.isMobile ? "readonly" : "") + "></textarea></div>");
+    if (this.selectType != "row") query18(this.box).addClass("tsg-ss");
+    if (query18(this.box).length > 0) query18(this.box)[0].style.cssText += this.style;
+    const tb_box = query18(this.box).find(`#grid_${this.name}_toolbar`);
     if (this.toolbar != null) this.toolbar.render(tb_box[0]);
     this.last.toolbar_height = tb_box.prop("offsetHeight");
     if (this.last.field && this.last.field != "all") {
@@ -21754,7 +21875,7 @@ var TsGrid = class extends TsBase {
         this.searchInitInput(this.last.field, sd.length == 1 ? sd[0].value : null);
       }, 1);
     }
-    query17(this.box).find(`#grid_${this.name}_footer`).html(this.getFooterHTML());
+    query18(this.box).find(`#grid_${this.name}_footer`).html(this.getFooterHTML());
     if (!this.last.state) this.last.state = this.stateSave(true);
     this.stateRestore();
     if (url) {
@@ -21776,7 +21897,7 @@ var TsGrid = class extends TsBase {
     } else {
       this.reload();
     }
-    query17(this.box).find(`#grid_${this.name}_focus`).on("focus", (_event) => {
+    query18(this.box).find(`#grid_${this.name}_focus`).on("focus", (_event) => {
       clearTimeout(this.last.kbd_timer ?? void 0);
       if (!this.hasFocus) this.focus();
     }).on("blur", (_event) => {
@@ -21825,7 +21946,7 @@ var TsGrid = class extends TsBase {
       TsUi[obj.name].keydown.call(TsUi[obj.name], event2);
     });
     let edataCol;
-    query17(this.box).off("mousedown.mouseStart").on("mousedown.mouseStart", mouseStart);
+    query18(this.box).off("mousedown.mouseStart").on("mousedown.mouseStart", mouseStart);
     this.updateToolbar();
     edata.finish();
     this.last["observeResize"] = new ResizeObserver(() => {
@@ -21838,12 +21959,12 @@ var TsGrid = class extends TsBase {
       if (event2.which != 1) return;
       if (obj.last.userSelect == "text") {
         obj.last.userSelect = "";
-        query17(obj.box).find(".tsg-grid-body").css("user-select", "none");
+        query18(obj.box).find(".tsg-grid-body").css("user-select", "none");
       }
-      if (obj.selectType == "row" && (query17(event2.target).parents().hasClass("tsg-head") || query17(event2.target).hasClass("tsg-head"))) return;
+      if (obj.selectType == "row" && (query18(event2.target).parents().hasClass("tsg-head") || query18(event2.target).hasClass("tsg-head"))) return;
       if (obj.last.move && obj.last.move.type == "expand") return;
       if (event2.altKey) {
-        query17(obj.box).find(".tsg-grid-body").css("user-select", "text");
+        query18(obj.box).find(".tsg-grid-body").css("user-select", "text");
         obj.selectNone();
         obj.last.move = { type: "text-select" };
         obj.last.userSelect = "text";
@@ -21863,10 +21984,10 @@ var TsGrid = class extends TsBase {
           }
           tmp = tmp.parentNode;
         }
-        const index = query17(event2.target).parents("tr").attr("index");
+        const index = query18(event2.target).parents("tr").attr("index");
         const recid = obj.records[index]?.recid;
         if (obj.selectType == "cell" && !event2.shiftKey) {
-          let column1 = parseInt(query17(event2.target).closest("td").attr("col"));
+          let column1 = parseInt(query18(event2.target).closest("td").attr("col"));
           let column2 = column1;
           if (isNaN(column1)) {
             column1 = 0;
@@ -21886,14 +22007,14 @@ var TsGrid = class extends TsBase {
           focusX: pos.x,
           focusY: pos.y,
           recid,
-          column: parseInt(event2.target.tagName.toUpperCase() == "TD" ? query17(event2.target).attr("col") : query17(event2.target).parents("td").attr("col")),
+          column: parseInt(event2.target.tagName.toUpperCase() == "TD" ? query18(event2.target).attr("col") : query18(event2.target).parents("td").attr("col")),
           type: "select",
           ghost: false,
           start: true
         };
         if (obj.last.move.recid == null && obj.records.length > 0) {
           obj.last.move.type = "select-column";
-          const column = parseInt(query17(event2.target).closest("td").attr("col"));
+          const column = parseInt(query18(event2.target).closest("td").attr("col"));
           const start = obj.records[0].recid;
           const end = obj.records[obj.records.length - 1].recid;
           obj.addRange({
@@ -21903,17 +22024,17 @@ var TsGrid = class extends TsBase {
           });
         }
         const target = event2.target;
-        const $input = query17(obj.box).find("#grid_" + obj.name + "_focus");
+        const $input = query18(obj.box).find("#grid_" + obj.name + "_focus");
         if (obj.last.move) {
           let sLeft = obj.last.move.focusX;
           let sTop = obj.last.move.focusY;
-          const $owner = query17(target).parents("table").parent();
+          const $owner = query18(target).parents("table").parent();
           if ($owner.hasClass("tsg-grid-records") || $owner.hasClass("tsg-grid-frecords") || $owner.hasClass("tsg-grid-columns") || $owner.hasClass("tsg-grid-fcolumns") || $owner.hasClass("tsg-grid-summary")) {
-            sLeft = obj.last.move.focusX - query17(obj.box).find("#grid_" + obj.name + "_records").prop("scrollLeft");
-            sTop = obj.last.move.focusY - query17(obj.box).find("#grid_" + obj.name + "_records").prop("scrollTop");
+            sLeft = obj.last.move.focusX - query18(obj.box).find("#grid_" + obj.name + "_records").prop("scrollLeft");
+            sTop = obj.last.move.focusY - query18(obj.box).find("#grid_" + obj.name + "_records").prop("scrollTop");
           }
-          if (query17(target).hasClass("tsg-grid-footer") || query17(target).parents("div.tsg-grid-footer").length > 0) {
-            sTop = query17(obj.box).find("#grid_" + obj.name + "_footer").get(0).offsetTop;
+          if (query18(target).hasClass("tsg-grid-footer") || query18(target).parents("div.tsg-grid-footer").length > 0) {
+            sTop = query18(obj.box).find("#grid_" + obj.name + "_footer").get(0).offsetTop;
           }
           if ($owner.hasClass("tsg-scroll-wrapper") && $owner.parent().hasClass("tsg-toolbar")) {
             sLeft = obj.last.move.focusX - $owner.prop("scrollLeft");
@@ -21938,8 +22059,8 @@ var TsGrid = class extends TsBase {
       }
       if (obj.reorderRows == true) {
         let el = event2.target;
-        if (el.tagName.toUpperCase() != "TD") el = query17(el).parents("td")[0];
-        if (query17(el).hasClass("tsg-col-number") || query17(el).hasClass("tsg-col-order")) {
+        if (el.tagName.toUpperCase() != "TD") el = query18(el).parents("td")[0];
+        if (query18(el).hasClass("tsg-col-number") || query18(el).hasClass("tsg-col-order")) {
           let sel = obj.getSelection();
           if (sel.length > 0 && typeof sel[0] == "object") {
             const cellSel = sel;
@@ -21966,19 +22087,19 @@ var TsGrid = class extends TsBase {
           sel.forEach((recid) => selectExpandedChildren(recid));
           sel = [...sel, ...new_sel];
           obj.last.move.reorder = true;
-          const eColor = query17(obj.box).find(".tsg-even.tsg-empty-record").css("background-color");
-          const oColor = query17(obj.box).find(".tsg-odd.tsg-empty-record").css("background-color");
-          query17(obj.box).find(".tsg-even td").filter(":not(.tsg-col-number)").css("background-color", eColor);
-          query17(obj.box).find(".tsg-odd td").filter(":not(.tsg-col-number)").css("background-color", oColor);
+          const eColor = query18(obj.box).find(".tsg-even.tsg-empty-record").css("background-color");
+          const oColor = query18(obj.box).find(".tsg-odd.tsg-empty-record").css("background-color");
+          query18(obj.box).find(".tsg-even td").filter(":not(.tsg-col-number)").css("background-color", eColor);
+          query18(obj.box).find(".tsg-odd td").filter(":not(.tsg-col-number)").css("background-color", oColor);
           const mv = obj.last.move;
-          const recs = query17(obj.box).find(".tsg-grid-records");
+          const recs = query18(obj.box).find(".tsg-grid-records");
           if (!mv["ghost"]) {
-            const rows = sel.map((r) => query17(obj.box).find(`#grid_${obj.name}_rec_${r}`));
+            const rows = sel.map((r) => query18(obj.box).find(`#grid_${obj.name}_rec_${r}`));
             const tmp = rows[0].parents("table").find("tr:first-child").get(0).cloneNode(true);
             mv.offsetY = event2.offsetY;
             mv.from = sel;
             mv.pos = { top: rows[0].get(0).offsetTop - 1, left: rows[rows.length - 1].get(0).offsetLeft };
-            mv["ghost"] = query17(rows.map((row) => row.get(0).cloneNode(true)));
+            mv["ghost"] = query18(rows.map((row) => row.get(0).cloneNode(true)));
             mv["ghost"].removeAttr("id");
             mv["ghost"].find("td").css({
               "border-top": "1px solid silver",
@@ -21990,9 +22111,9 @@ var TsGrid = class extends TsBase {
             });
             recs.append('<div id="grid_' + obj.name + '_ghost_line" style="position: absolute; z-index: 999999; pointer-events: none; width: 100%;"></div>');
             recs.append('<table id="grid_' + obj.name + '_ghost" style="position: absolute; z-index: 999998; opacity: 0.9; pointer-events: none;"></table>');
-            query17(obj.box).find("#grid_" + obj.name + "_ghost").append(tmp).append(mv["ghost"]);
+            query18(obj.box).find("#grid_" + obj.name + "_ghost").append(tmp).append(mv["ghost"]);
           }
-          const ghost = query17(obj.box).find("#grid_" + obj.name + "_ghost");
+          const ghost = query18(obj.box).find("#grid_" + obj.name + "_ghost");
           ghost.css({
             top: mv.pos.top + "px",
             left: mv.pos.left + "px"
@@ -22001,7 +22122,7 @@ var TsGrid = class extends TsBase {
           obj.last.move.reorder = false;
         }
       }
-      query17(document).on("mousemove.tsg-" + obj.name, mouseMove).on("mouseup.tsg-" + obj.name, mouseStop);
+      query18(document).on("mousemove.tsg-" + obj.name, mouseMove).on("mouseup.tsg-" + obj.name, mouseStop);
       event2.stopPropagation();
     }
     function mouseMove(event2) {
@@ -22015,18 +22136,18 @@ var TsGrid = class extends TsBase {
       if (Math.abs(mv.divX) <= 1 && Math.abs(mv.divY) <= 1) return;
       obj.last.cancelClick = true;
       if (obj.reorderRows == true && obj.last.move.reorder) {
-        const tmp = query17(event2.target).parents("tr");
+        const tmp = query18(event2.target).parents("tr");
         const ind2 = tmp.attr("index");
         let recid2 = obj.records[ind2]?.recid;
         if (recid2 == "-none-" || recid2 == null) recid2 = "bottom";
         if (mv.from.indexOf(recid2) == -1) {
-          const row2 = query17(obj.box).find("#grid_" + obj.name + "_rec_" + recid2);
-          query17(obj.box).find(".insert-before");
+          const row2 = query18(obj.box).find("#grid_" + obj.name + "_rec_" + recid2);
+          query18(obj.box).find(".insert-before");
           row2.addClass("insert-before");
           mv.lastY = event2.screenY;
           mv.to = recid2;
           const pos = { top: row2.get(0)?.offsetTop, left: row2.get(0)?.offsetLeft };
-          const ghost_line = query17(obj.box).find("#grid_" + obj.name + "_ghost_line");
+          const ghost_line = query18(obj.box).find("#grid_" + obj.name + "_ghost_line");
           if (pos) {
             ghost_line.css({
               top: pos.top + "px",
@@ -22039,7 +22160,7 @@ var TsGrid = class extends TsBase {
             });
           }
         }
-        const ghost = query17(obj.box).find("#grid_" + obj.name + "_ghost");
+        const ghost = query18(obj.box).find("#grid_" + obj.name + "_ghost");
         ghost.css({
           top: mv.pos.top + mv.divY + "px",
           left: mv.pos.left + "px"
@@ -22051,16 +22172,16 @@ var TsGrid = class extends TsBase {
         mv.start = false;
       }
       const newSel = [];
-      const ind = event2.target.tagName.toUpperCase() == "TR" ? query17(event2.target).attr("index") : query17(event2.target).parents("tr").attr("index");
+      const ind = event2.target.tagName.toUpperCase() == "TR" ? query18(event2.target).attr("index") : query18(event2.target).parents("tr").attr("index");
       const recid = obj.records[ind]?.recid;
       if (recid == null) {
         if (obj.selectType == "row") return;
         if (obj.last.move && obj.last.move.type == "select") return;
-        const col = parseInt(query17(event2.target).parents("td").attr("col"));
+        const col = parseInt(query18(event2.target).parents("td").attr("col"));
         if (isNaN(col)) {
           obj.removeRange("column-selection");
-          query17(obj.box).find(".tsg-grid-columns .tsg-col-header, .tsg-grid-fcolumns .tsg-col-header").removeClass("tsg-col-selected");
-          query17(obj.box).find(".tsg-col-number").removeClass("tsg-row-selected");
+          query18(obj.box).find(".tsg-grid-columns .tsg-col-header, .tsg-grid-fcolumns .tsg-col-header").removeClass("tsg-col-selected");
+          query18(obj.box).find(".tsg-col-number").removeClass("tsg-row-selected");
           delete mv.colRange;
         } else {
           let newRange = col + "-" + col;
@@ -22091,7 +22212,7 @@ var TsGrid = class extends TsBase {
         let ind2 = obj.get(recid, true);
         if (ind2 == null) return;
         let col1 = parseInt(mv.column);
-        let col2 = parseInt(event2.target.tagName.toUpperCase() == "TD" ? query17(event2.target).attr("col") : query17(event2.target).parents("td").attr("col"));
+        let col2 = parseInt(event2.target.tagName.toUpperCase() == "TD" ? query18(event2.target).attr("col") : query18(event2.target).parents("td").attr("col"));
         if (isNaN(col1) && isNaN(col2)) {
           col1 = 0;
           col2 = obj.columns.length - 1;
@@ -22147,7 +22268,7 @@ var TsGrid = class extends TsBase {
       setTimeout(() => {
         obj.last.cancelClick = null;
       }, 1);
-      if (query17(event2.target).parents().hasClass(".tsg-head") || query17(event2.target).hasClass(".tsg-head")) return;
+      if (query18(event2.target).parents().hasClass(".tsg-head") || query18(event2.target).hasClass(".tsg-head")) return;
       obj.removeRange("selection-preview");
       if (mv && ["select", "select-column"].includes(mv.type)) {
         if (mv.colRange != null && edataCol.isCancelled !== true) {
@@ -22186,7 +22307,7 @@ var TsGrid = class extends TsBase {
               }
             }
             obj.sortData = [];
-            query17(obj.box).find(`#grid_${obj.name}_columns .tsg-col-header`).removeClass("tsg-col-sorted");
+            query18(obj.box).find(`#grid_${obj.name}_columns .tsg-col-header`).removeClass("tsg-col-sorted");
             resetRowReorder();
             obj.selectNone(true);
             obj.select(mv.from);
@@ -22197,11 +22318,11 @@ var TsGrid = class extends TsBase {
         }
       }
       delete obj.last.move;
-      query17(document).off(".tsg-" + obj.name);
+      query18(document).off(".tsg-" + obj.name);
     }
     function resetRowReorder() {
-      query17(obj.box).find(`#grid_${obj.name}_ghost`).remove();
-      query17(obj.box).find(`#grid_${obj.name}_ghost_line`).remove();
+      query18(obj.box).find(`#grid_${obj.name}_ghost`).remove();
+      query18(obj.box).find(`#grid_${obj.name}_ghost_line`).remove();
       obj.refresh();
       delete obj.last.move;
     }
@@ -22384,7 +22505,7 @@ var TsGrid = class extends TsBase {
 
 // src/tsform.ts
 var TsTooltip6 = TsTooltip;
-var query18 = query2;
+var query19 = query2;
 var TsForm = class extends TsBase {
   header;
   url;
@@ -22618,7 +22739,7 @@ var TsForm = class extends TsBase {
     } else if (this.formHTML) {
       this.isGenerated = true;
     }
-    if (typeof this.box == "string") this.box = query18(this.box).get(0);
+    if (typeof this.box == "string") this.box = query19(this.box).get(0);
     if (this.box) this.render(this.box);
     function _processFields(fields2) {
       const newFields = [];
@@ -22829,9 +22950,9 @@ var TsForm = class extends TsBase {
       current = field.TsField.clean(current);
     }
     if (["radio"].includes(field.type)) {
-      const selected2 = query18(el).closest(".tsg-field-group").find("input:checked").get(0);
+      const selected2 = query19(el).closest(".tsg-field-group").find("input:checked").get(0);
       if (selected2) {
-        const item = field.options.items[query18(selected2).data("index")];
+        const item = field.options.items[query19(selected2).data("index")];
         current = item.id;
       } else {
         current = null;
@@ -22842,11 +22963,11 @@ var TsForm = class extends TsBase {
     }
     if (["check", "checks"].includes(field.type)) {
       current = [];
-      const selected2 = query18(el).closest(".tsg-field-group").find("input:checked");
+      const selected2 = query19(el).closest(".tsg-field-group").find("input:checked");
       if (selected2.length > 0) {
         selected2.each((node) => {
           const el2 = node;
-          const item = field.options.items[query18(el2).data("index")];
+          const item = field.options.items[query19(el2).data("index")];
           current.push(item.id);
         });
       }
@@ -22874,11 +22995,11 @@ var TsForm = class extends TsBase {
     if (["map", "array"].includes(field.type)) {
       current = field.type == "map" ? {} : [];
       field.$el.parent().find(".tsg-map-field").each((div, _ind) => {
-        const key = query18(div).find(".tsg-map.key").val();
-        const value = query18(div).find(".tsg-map.value").val();
+        const key = query19(div).find(".tsg-map.key").val();
+        const value = query19(div).find(".tsg-map.value").val();
         if (typeof field.html?.render == "function") {
           current[_ind] ??= {};
-          query18(div).find("input, textarea").each((node) => {
+          query19(div).find("input, textarea").each((node) => {
             const inp = node;
             const name2 = inp.dataset["name"] ?? inp["name"];
             if (name2 != null && name2 != "") {
@@ -22911,7 +23032,7 @@ var TsForm = class extends TsBase {
       }
       case "radio": {
         value = value?.id ?? value;
-        const inputs = query18(el).closest(".tsg-field-group").find("input");
+        const inputs = query19(el).closest(".tsg-field-group").find("input");
         const items = field.options.items;
         items.forEach((it, ind) => {
           const input = inputs.filter(`[data-index="${ind}"]`);
@@ -22938,7 +23059,7 @@ var TsForm = class extends TsBase {
           }
         }
         value = value.map((val) => val?.id ?? val);
-        const inputs = query18(el).closest("div.tsg-field-group").find("input");
+        const inputs = query19(el).closest("div.tsg-field-group").find("input");
         const items = field.options.items;
         items.forEach((it, ind) => {
           const input = inputs.filter(`[data-index="${ind}"]`);
@@ -23020,13 +23141,13 @@ var TsForm = class extends TsBase {
           this.setValue(field.field, [], true);
           value = this.getValue(field.field);
         }
-        const container = query18(field.el).parent().find(".tsg-map-container");
+        const container = query19(field.el).parent().find(".tsg-map-container");
         field.el.mapRefresh(value, container);
         break;
       }
       case "div":
       case "custom": {
-        query18(el).html(value);
+        query19(el).html(value);
         break;
       }
       case "color": {
@@ -23148,12 +23269,12 @@ var TsForm = class extends TsBase {
     return effected;
   }
   updateEmptyGroups() {
-    query18(this.box).find(".tsg-group").each((node) => {
+    query19(this.box).find(".tsg-group").each((node) => {
       const group = node;
-      if (isHidden(query18(group).find(".tsg-field"))) {
-        query18(group).hide();
+      if (isHidden(query19(group).find(".tsg-field"))) {
+        query19(group).hide();
       } else {
-        query18(group).show();
+        query19(group).show();
       }
     });
     function isHidden($els) {
@@ -23197,9 +23318,9 @@ var TsForm = class extends TsBase {
    * When user clicks on group title, it will toggle the group (collapse or expand it).
    */
   toggleGroup(groupName, show) {
-    const el = query18(this.box).find('.tsg-group-title[data-group="' + TsUtils.base64encode(groupName) + '"]');
+    const el = query19(this.box).find('.tsg-group-title[data-group="' + TsUtils.base64encode(groupName) + '"]');
     if (el.length === 0) return;
-    const el_next = query18(el.prop("nextElementSibling"));
+    const el_next = query19(el.prop("nextElementSibling"));
     if (typeof show === "undefined") {
       show = el_next.css("display") == "none";
     }
@@ -23378,7 +23499,7 @@ var TsForm = class extends TsBase {
     const errors = this.last.errors;
     if (errors.length <= 0) return;
     this.goto(errors[0].field.page);
-    query18(errors[0].field.$el).parents(".tsg-field").get(0).scrollIntoView({ block: "nearest", inline: "nearest" });
+    query19(errors[0].field.$el).parents(".tsg-field").get(0).scrollIntoView({ block: "nearest", inline: "nearest" });
     errors.forEach((error) => {
       const opt = TsUtils.extend({
         anchorClass: "tsg-error",
@@ -23389,7 +23510,7 @@ var TsForm = class extends TsBase {
       if (error.field == null) return;
       let anchor = error.field.el;
       if (error.field.type === "radio") {
-        anchor = query18(error.field.el).closest("div").get(0);
+        anchor = query19(error.field.el).closest("div").get(0);
       } else if (["enum", "file"].includes(error.field.type)) {
       }
       TsTooltip6.show(TsUtils.extend({
@@ -23399,7 +23520,7 @@ var TsForm = class extends TsBase {
       }, opt));
     });
     this.last.errorsShown = true;
-    query18(errors[0].field.$el).parents(".tsg-page").off(".hideErrors").on("scroll.hideErrors", (_evt) => {
+    query19(errors[0].field.$el).parents(".tsg-page").off(".hideErrors").on("scroll.hideErrors", (_evt) => {
       if (this.last.errorsShown) {
         this.showErrors();
       }
@@ -23718,7 +23839,7 @@ var TsForm = class extends TsBase {
     TsUtils.unlock(box, speed);
   }
   lockPage(page, msg, spinner) {
-    const $page = query18(this.box).find(".page-" + page);
+    const $page = query19(this.box).find(".page-" + page);
     if ($page.length) {
       TsUtils.lock($page, msg, spinner);
       return true;
@@ -23726,7 +23847,7 @@ var TsForm = class extends TsBase {
     return false;
   }
   unlockPage(page, speed) {
-    const $page = query18(this.box).find(".page-" + page);
+    const $page = query19(this.box).find(".page-" + page);
     if ($page.length) {
       TsUtils.unlock($page, speed);
       return true;
@@ -23736,8 +23857,8 @@ var TsForm = class extends TsBase {
   goto(page) {
     if (this.page === page) return;
     if (page != null) this.page = page;
-    if (query18(this.box).data("autoSize") === true) {
-      query18(this.box).get(0).clientHeight = 0;
+    if (query19(this.box).data("autoSize") === true) {
+      query19(this.box).get(0).clientHeight = 0;
     }
     this.refresh();
   }
@@ -24024,7 +24145,7 @@ var TsForm = class extends TsBase {
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getAction(action) {
-    const ret = query18(this.box).find('.tsg-buttons button[name="' + action + '"]');
+    const ret = query19(this.box).find('.tsg-buttons button[name="' + action + '"]');
     if (ret.length === 0) {
       console.log('ERROR: Action "' + action + '" not found. Valid actions are: ' + Object.keys(this.actions).join(", "));
     }
@@ -24060,20 +24181,20 @@ var TsForm = class extends TsBase {
         return { headerHeight: headerHeight2, tbHeight: tbHeight2, tabsHeight: tabsHeight2 };
       };
       var resizeElements = resizeElements2;
-      const header = query18(this.box).find(":scope > div .tsg-form-header");
-      const toolbar = query18(this.box).find(":scope > div .tsg-form-toolbar");
-      const tabs = query18(this.box).find(":scope > div .tsg-form-tabs");
-      const page = query18(this.box).find(":scope > div .tsg-page");
-      const dpage = query18(this.box).find(":scope > div .tsg-page.page-" + this.page + " > div");
-      const buttons = query18(this.box).find(":scope > div .tsg-buttons");
+      const header = query19(this.box).find(":scope > div .tsg-form-header");
+      const toolbar = query19(this.box).find(":scope > div .tsg-form-toolbar");
+      const tabs = query19(this.box).find(":scope > div .tsg-form-tabs");
+      const page = query19(this.box).find(":scope > div .tsg-page");
+      const dpage = query19(this.box).find(":scope > div .tsg-page.page-" + this.page + " > div");
+      const buttons = query19(this.box).find(":scope > div .tsg-buttons");
       const { headerHeight, tbHeight, tabsHeight } = resizeElements2();
       if (this.autosize) {
-        const cHeight = query18(this.box).get(0).clientHeight;
-        if (cHeight === 0 || query18(this.box).data("autosize") == "yes") {
-          query18(this.box).css({
+        const cHeight = query19(this.box).get(0).clientHeight;
+        if (cHeight === 0 || query19(this.box).data("autosize") == "yes") {
+          query19(this.box).css({
             height: headerHeight + tbHeight + tabsHeight + 15 + (page.length > 0 ? TsUtils.getSize(dpage, "height") : 0) + (buttons.length > 0 ? TsUtils.getSize(buttons, "height") : 0) + "px"
           });
-          query18(this.box).data("autosize", "yes");
+          query19(this.box).data("autosize", "yes");
         }
         resizeElements2();
       }
@@ -24092,7 +24213,7 @@ var TsForm = class extends TsBase {
     const time = Date.now();
     const self = this;
     if (!this.box) return 0;
-    if (!this.isGenerated || !query18(this.box).html()) return 0;
+    if (!this.isGenerated || !query19(this.box).html()) return 0;
     const edata = this.trigger("refresh", { target: this.name, page: this.page, field: args[0], fields: args });
     if (edata.isCancelled === true) return 0;
     let fields = Array.from(this.fields.keys());
@@ -24105,12 +24226,12 @@ var TsForm = class extends TsBase {
         else return false;
       });
     } else {
-      query18(this.box).find("input, textarea, select").each((node) => {
+      query19(this.box).find("input, textarea, select").each((node) => {
         const el = node;
-        const name = query18(el).attr("name") != null ? query18(el).attr("name") : query18(el).attr("id");
+        const name = query19(el).attr("name") != null ? query19(el).attr("name") : query19(el).attr("id");
         const field = this.get(name);
         if (field) {
-          const div = query18(el).closest(".tsg-page");
+          const div = query19(el).closest(".tsg-page");
           if (div.length > 0) {
             for (let i = 0; i < 100; i++) {
               if (div.hasClass("page-" + i)) {
@@ -24121,21 +24242,21 @@ var TsForm = class extends TsBase {
           }
         }
       });
-      query18(this.box).find(".tsg-page").hide();
-      query18(this.box).find(".tsg-page.page-" + this.page).show();
-      query18(this.box).find(".tsg-form-header").html(TsUtils.lang(this.header));
+      query19(this.box).find(".tsg-page").hide();
+      query19(this.box).find(".tsg-page.page-" + this.page).show();
+      query19(this.box).find(".tsg-form-header").html(TsUtils.lang(this.header));
       if (typeof this.tabs === "object" && Array.isArray(this.tabs.tabs) && this.tabs.tabs.length > 0) {
-        query18(this.box).find("#form_" + this.name + "_tabs").show();
+        query19(this.box).find("#form_" + this.name + "_tabs").show();
         this.tabs.active = this.tabs.tabs[this.page].id;
         this.tabs.refresh();
       } else {
-        query18(this.box).find("#form_" + this.name + "_tabs").hide();
+        query19(this.box).find("#form_" + this.name + "_tabs").hide();
       }
       if (typeof this.toolbar === "object" && Array.isArray(this.toolbar.items) && this.toolbar.items.length > 0) {
-        query18(this.box).find("#form_" + this.name + "_toolbar").show();
+        query19(this.box).find("#form_" + this.name + "_toolbar").show();
         this.toolbar.refresh();
       } else {
-        query18(this.box).find("#form_" + this.name + "_toolbar").hide();
+        query19(this.box).find("#form_" + this.name + "_toolbar").hide();
       }
     }
     for (let f = 0; f < fields.length; f++) {
@@ -24145,7 +24266,7 @@ var TsForm = class extends TsBase {
       if (field == null) continue;
       if (field.name == null && field.field != null) field.name = field.field;
       if (field.field == null && field.name != null) field.field = field.name;
-      field.$el = query18(this.box).find(`[name='${String(field.name).replace(/\\/g, "\\\\")}']`);
+      field.$el = query19(this.box).find(`[name='${String(field.name).replace(/\\/g, "\\\\")}']`);
       field.el = field.$el.get(0);
       if (field.el) field.el.id = field.name;
       if (field.TsField) {
@@ -24156,7 +24277,7 @@ var TsForm = class extends TsBase {
         if (value == null) return;
         if (["enum", "file"].includes(field.type)) {
           const helper = field.TsField?.helpers?.multi;
-          query18(helper).removeClass("tsg-error");
+          query19(helper).removeClass("tsg-error");
         }
         if (this._previous != null) {
           value.previous = this._previous;
@@ -24194,16 +24315,16 @@ var TsForm = class extends TsBase {
         }
       }
       let tmp = field.el;
-      if (!tmp) tmp = query18(this.box).find("#" + field.field);
+      if (!tmp) tmp = query19(this.box).find("#" + field.field);
       if (field.hidden) {
-        query18(tmp).closest(".tsg-field").hide();
+        query19(tmp).closest(".tsg-field").hide();
       } else {
-        query18(tmp).closest(".tsg-field").show();
+        query19(tmp).closest(".tsg-field").show();
       }
     }
-    query18(this.box).find("button, input[type=button]").each((node) => {
+    query19(this.box).find("button, input[type=button]").each((node) => {
       const el = node;
-      query18(el).off("click").on("click", function(event2) {
+      query19(el).off("click").on("click", function(event2) {
         let action = this.value;
         if (this.id) action = this.id;
         if (this["name"]) action = this["name"];
@@ -24260,25 +24381,25 @@ var TsForm = class extends TsBase {
         field.toolbar.resize();
         field.$el.off(".form-input").on("focus.form-input", (event2) => {
           const ind = field.toolbar.get(field.$el.val(), true);
-          query18(event2.target).prop("_index", ind);
-          query18(field.toolbar.box).addClass("tsg-tb-focus");
+          query19(event2.target).prop("_index", ind);
+          query19(field.toolbar.box).addClass("tsg-tb-focus");
         }).on("blur.form-input", (event2) => {
-          query18(event2.target).removeProp("_index");
-          query18(`#${field.name}-tb .tsg-tb-button`).removeClass("over");
-          query18(field.toolbar.box).removeClass("tsg-tb-focus");
+          query19(event2.target).removeProp("_index");
+          query19(`#${field.name}-tb .tsg-tb-button`).removeClass("over");
+          query19(field.toolbar.box).removeClass("tsg-tb-focus");
         }).on("keydown.form-input", (event2) => {
-          let ind = query18(event2.target).prop("_index");
+          let ind = query19(event2.target).prop("_index");
           switch (event2.key) {
             case "ArrowLeft": {
               if (ind > 0) ind--;
-              query18(`#${field.name}-tb .tsg-tb-button`).removeClass("over").eq(ind).addClass("over");
-              query18(event2.target).prop("_index", ind);
+              query19(`#${field.name}-tb .tsg-tb-button`).removeClass("over").eq(ind).addClass("over");
+              query19(event2.target).prop("_index", ind);
               break;
             }
             case "ArrowRight": {
               if (ind < field.toolbar.items.length - 1) ind++;
-              query18(`#${field.name}-tb .tsg-tb-button`).removeClass("over").eq(ind).addClass("over");
-              query18(event2.target).prop("_index", ind);
+              query19(`#${field.name}-tb .tsg-tb-button`).removeClass("over").eq(ind).addClass("over");
+              query19(event2.target).prop("_index", ind);
               break;
             }
           }
@@ -24295,7 +24416,7 @@ var TsForm = class extends TsBase {
             self.record[field.name] = value.current;
             self.setFieldValue(field.name, value.current);
             edata2.finish();
-            query18(`#${field.name}-tb .tsg-tb-button`).removeClass("over");
+            query19(`#${field.name}-tb .tsg-tb-button`).removeClass("over");
           }
           if (!event2.metaKey && !event2.ctrlKey && event2.keyCode != 9) {
             event2.preventDefault();
@@ -24345,8 +24466,8 @@ var TsForm = class extends TsBase {
             if (typeof field3.html.render == "function") {
               const box = div.find(`[data-index="${cnt}"]`);
               box.find("input, textarea").each((el) => {
-                if (query18(el).attr("tabindex") == null) {
-                  query18(el).attr("tabindex", field3.html.tabindex);
+                if (query19(el).attr("tabindex") == null) {
+                  query19(el).attr("tabindex", field3.html.tabindex);
                 }
               });
               if (typeof field3.html.onRefresh == "function") {
@@ -24423,26 +24544,26 @@ var TsForm = class extends TsBase {
               curr.find(".value").prop("readOnly", field2.disabled ? true : false);
             }
             let lastKey = null;
-            const container = query18(field2.el).get(0)?.nextSibling;
-            query18(container).off(".mapChange").on("mouseup.mapChange", { delegate: "input, textarea" }, function(event2) {
+            const container = query19(field2.el).get(0)?.nextSibling;
+            query19(container).off(".mapChange").on("mouseup.mapChange", { delegate: "input, textarea" }, function(event2) {
               if (document.activeElement != event2.target) {
                 event2.target.focus();
               }
             }).on("keyup.mapChange", { delegate: "input, textarea" }, function(event2) {
               const kbdEvent = event2;
-              const $div = query18(kbdEvent.target).closest(".tsg-map-field");
+              const $div = query19(kbdEvent.target).closest(".tsg-map-field");
               const next = $div.get(0).nextElementSibling;
               const prev = $div.get(0).previousElementSibling;
-              const className = query18(kbdEvent.target).hasClass("key") ? "key" : "value";
+              const className = query19(kbdEvent.target).hasClass("key") ? "key" : "value";
               if (kbdEvent.keyCode == 38 && prev) {
-                query18(prev).find(`input.${className}, textarea.${className}, input[name="${kbdEvent.target["name"]}"] textarea[name="${kbdEvent.target["name"]}"]`).get(0)?.select();
+                query19(prev).find(`input.${className}, textarea.${className}, input[name="${kbdEvent.target["name"]}"] textarea[name="${kbdEvent.target["name"]}"]`).get(0)?.select();
                 kbdEvent.preventDefault();
               }
               if (kbdEvent.keyCode == 40 && next) {
                 ;
                 kbdEvent.target.blur();
                 const next2 = $div.get(0).nextElementSibling;
-                query18(next2).find(`input.${className}, textarea.${className}, input[name="${kbdEvent.target["name"]}"] textarea[name="${kbdEvent.target["name"]}"]`).get(0)?.select();
+                query19(next2).find(`input.${className}, textarea.${className}, input[name="${kbdEvent.target["name"]}"] textarea[name="${kbdEvent.target["name"]}"]`).get(0)?.select();
                 kbdEvent.preventDefault();
               }
             }).on("keydown.mapChange", { delegate: "input, textarea" }, function(_event) {
@@ -24459,23 +24580,23 @@ var TsForm = class extends TsBase {
                 event2.preventDefault();
               }
             }).on("input.mapChange", { delegate: "input, textarea" }, function(event2) {
-              const fld = query18(event2.target).closest("div.tsg-map-field");
+              const fld = query19(event2.target).closest("div.tsg-map-field");
               const cnt2 = fld.data("index");
               const next = fld.get(0).nextElementSibling;
               let isEmpty = true;
-              query18(fld).find("input, textarea").each((node) => {
+              query19(fld).find("input, textarea").each((node) => {
                 const el = node;
                 if (!["checkbox", "button"].includes(el.type) && el.value != "") isEmpty = false;
               });
               let isNextEmpty = true;
-              query18(next).find("input, textarea").each((node) => {
+              query19(next).find("input, textarea").each((node) => {
                 const el = node;
                 if (!["checkbox", "button"].includes(el.type) && el.value != "") isNextEmpty = false;
               });
               if (!isEmpty && !next) {
                 field2.el.mapAdd(field2, div, parseInt(cnt2) + 1, true);
               } else if (isEmpty && next && isNextEmpty) {
-                query18(next).remove();
+                query19(next).remove();
               }
             }).on("change.mapChange", { delegate: "input, textarea" }, function(_event) {
               const event2 = _event;
@@ -24483,7 +24604,7 @@ var TsForm = class extends TsBase {
               const _fieldValue = self.getFieldValue(field2.field);
               if (_fieldValue == null) return;
               let { current, previous, original } = _fieldValue;
-              const $cnt = query18(event2.target).closest(".tsg-map-container");
+              const $cnt = query19(event2.target).closest(".tsg-map-container");
               if (typeof field2.html?.render == "function") {
                 current = current.filter((kk) => {
                   const val = [...new Set(Object.values(kk).filter((vv) => typeof vv != "boolean"))];
@@ -24510,13 +24631,13 @@ var TsForm = class extends TsBase {
               }
               let index;
               let className = "";
-              const cnt2 = query18(event2.target).closest(".tsg-map-container");
+              const cnt2 = query19(event2.target).closest(".tsg-map-container");
               if (field2.type == "array" || lastKey == "tab") {
                 cnt2.find("input, textarea").each((node, ind) => {
                   if (node == event2.target) index = ind;
                 });
               } else {
-                className = query18(event2.target).hasClass("key") ? ".key" : ".value";
+                className = query19(event2.target).hasClass("key") ? ".key" : ".value";
                 cnt2.find("input" + className + ", textarea" + className).each((node, ind) => {
                   if (node == event2.target) index = ind;
                 });
@@ -24556,7 +24677,7 @@ var TsForm = class extends TsBase {
   render(box) {
     const time = Date.now();
     const self = this;
-    if (typeof box == "string") box = query18(box).get(0);
+    if (typeof box == "string") box = query19(box).get(0);
     const edata = this.trigger("render", { target: this.name, box: box ?? this.box });
     if (edata.isCancelled === true) return;
     if (box != null) {
@@ -24566,9 +24687,9 @@ var TsForm = class extends TsBase {
     if (!this.isGenerated && !this.formHTML) return;
     if (!this.box) return;
     const html = '<div class="tsg-form-box">' + (this.header !== "" ? '<div class="tsg-form-header">' + TsUtils.lang(this.header) + "</div>" : "") + '    <div id="form_' + this.name + '_toolbar" class="tsg-form-toolbar" style="display: none"></div>    <div id="form_' + this.name + '_tabs" class="tsg-form-tabs" style="display: none"></div>' + this.formHTML + "</div>";
-    query18(this.box).attr("name", this.name).addClass("tsg-reset tsg-form").html(html);
-    if (query18(this.box).length > 0) query18(this.box).get(0).style.cssText += this.style;
-    TsUtils.bindEvents(query18(this.box).find(".tsg-eaction"), this);
+    query19(this.box).attr("name", this.name).addClass("tsg-reset tsg-form").html(html);
+    if (query19(this.box).length > 0) query19(this.box).get(0).style.cssText += this.style;
+    TsUtils.bindEvents(query19(this.box).find(".tsg-eaction"), this);
     if (typeof this.toolbar.render !== "function") {
       this.toolbar = new TsToolbar(TsUtils.extend({}, this.toolbar, { name: this.name + "_toolbar", owner: this }));
       this.toolbar.on("click", function(event2) {
@@ -24578,7 +24699,7 @@ var TsForm = class extends TsBase {
       });
     }
     if (typeof this.toolbar === "object" && typeof this.toolbar.render === "function") {
-      this.toolbar.render(query18(this.box).find("#form_" + this.name + "_toolbar").get(0));
+      this.toolbar.render(query19(this.box).find("#form_" + this.name + "_toolbar").get(0));
     }
     if (typeof this.tabs.render !== "function") {
       this.tabs = new TsTabs(TsUtils.extend({}, this.tabs, { name: this.name + "_tabs", owner: this, active: this.tabs.active }));
@@ -24587,7 +24708,7 @@ var TsForm = class extends TsBase {
       });
     }
     if (typeof this.tabs === "object" && typeof this.tabs.render === "function") {
-      this.tabs.render(query18(this.box).find("#form_" + this.name + "_tabs").get(0));
+      this.tabs.render(query19(this.box).find("#form_" + this.name + "_tabs").get(0));
       if (this.tabs.active) this.tabs.click(this.tabs.active);
     }
     edata.finish();
@@ -24606,7 +24727,7 @@ var TsForm = class extends TsBase {
     if (this.focus != -1) {
       let setCount = 0;
       const setFocus = () => {
-        if (query18(self.box).find("input, select, textarea").length > 0) {
+        if (query19(self.box).find("input, select, textarea").length > 0) {
           self.setFocus();
         } else {
           setCount++;
@@ -24628,7 +24749,7 @@ var TsForm = class extends TsBase {
     if (edata.isCancelled === true) return;
     this.tabs?.destroy?.();
     this.toolbar?.destroy?.();
-    if (query18(this.box).find("#form_" + this.name + "_tabs").length > 0) {
+    if (query19(this.box).find("#form_" + this.name + "_tabs").length > 0) {
       this.unmount();
     }
     this.last.observeResize?.disconnect();
@@ -24645,15 +24766,15 @@ var TsForm = class extends TsBase {
       if (focus2 < 0) {
         return;
       }
-      const inputs = query18(this.box).find("div:not(.tsg-field-helper) > input, select, textarea, div > label:nth-child(1) > [type=radio]").filter(":not(.file-input)");
+      const inputs = query19(this.box).find("div:not(.tsg-field-helper) > input, select, textarea, div > label:nth-child(1) > [type=radio]").filter(":not(.file-input)");
       while (inputs.get(focus2)?.offsetParent == null && inputs.length > focus2) {
         focus2++;
       }
       if (inputs.get(focus2)) {
-        $input = query18(inputs.get(focus2));
+        $input = query19(inputs.get(focus2));
       }
     } else if (typeof focus2 === "string") {
-      $input = query18(this.box).find(`[name='${focus2}']`);
+      $input = query19(this.box).find(`[name='${focus2}']`);
     }
     if ($input?.length > 0) {
       $input.get(0).focus();
@@ -24687,6 +24808,10 @@ var TsForm = class extends TsBase {
   TsUtils,
   query
 });
+/*
+ * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
+ * @license    MIT License
+ */
 
 
 // Compatibility with CommonJS and AMD modules
