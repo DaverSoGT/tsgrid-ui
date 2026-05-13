@@ -420,6 +420,13 @@ describe('TsUtils.hsv2rgb', () => {
         expect(c.g).toBe(255)
         expect(c.b).toBe(255)
     })
+    it('dual-form: hsv2rgb({h, s, v}) object-arg parity with (h, s, v) form', () => {
+        const c = TsUtils.hsv2rgb({ h: 0, s: 100, v: 100 } as any)
+        expect(c.r).toBe(255)
+        expect(c.g).toBe(0)
+        expect(c.b).toBe(0)
+        expect(c.a).toBe(1)
+    })
 })
 
 describe('TsUtils.rgb2hsv', () => {
@@ -449,6 +456,13 @@ describe('TsUtils.rgb2hsv', () => {
         expect(Math.abs(hsv.h - hIn)).toBeLessThanOrEqual(1)
         expect(Math.abs(hsv.s - sIn)).toBeLessThanOrEqual(1)
         expect(Math.abs(hsv.v - vIn)).toBeLessThanOrEqual(1)
+    })
+    it('dual-form: rgb2hsv({r, g, b}) object-arg parity with (r, g, b) form', () => {
+        const c = TsUtils.rgb2hsv({ r: 255, g: 0, b: 0 } as any)
+        expect(c.h).toBe(0)
+        expect(c.s).toBe(100)
+        expect(c.v).toBe(100)
+        expect(c.a).toBe(1)
     })
 })
 
