@@ -45,6 +45,8 @@ import { marker as _marker } from './tsutils-marker.js'
 import { TsUi, checkName as _checkName } from './tsutils-registry.js'
 import { notify as _notify } from './tsutils-notify.js'
 import { normButtons as _normButtons } from './tsutils-message.js'
+import type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
+export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -136,54 +138,8 @@ export interface TsMenuItem {
     [key: string]: unknown
 }
 
-/** Promise-chain handle returned by TsUtils.message() / .confirm() / .prompt() */
-export interface TsMessageProm {
-    self: TsBase
-    action(callBack: (event: unknown) => void): TsMessageProm
-    close(callBack: (event: unknown) => void): TsMessageProm
-    open(callBack: (event: unknown) => void): TsMessageProm
-    then(callBack: (event: unknown) => void): TsMessageProm
-    change?: (callBack: (event: unknown) => void) => TsMessageProm
-    [key: string]: unknown  // dynamic action keys (yes/no/ok/cancel) added at runtime
-}
-
-/** Where-descriptor for TsUtils.message() */
-export interface TsMessageWhere {
-    box: string | Element | null
-    after?: string | Element | null
-    owner?: { name?: string; lock?: (...args: unknown[]) => void; unlock?: (...args: unknown[]) => void; focus?: () => void }
-    param?: unknown
-}
-
-/** Options for TsUtils.message() */
-export interface TsMessageOptions {
-    width?: number
-    height?: number
-    text?: string | null
-    body?: string
-    buttons?: string
-    html?: string
-    focus?: number | string | null
-    hideOn?: string[]
-    actions?: Record<string, unknown>
-    cancelAction?: string
-    on?: unknown
-    onOpen?: unknown
-    onClose?: unknown
-    onAction?: unknown
-    originalWidth?: number
-    originalHeight?: number
-    msgIndex?: number
-    tmp?: { zIndex: string; overflow: string }
-    input?: Element | null
-    box?: Element | null
-    trigger?: (event: string, data: Record<string, unknown>) => unknown
-    close?: () => void
-    setFocus?: (focus: number | string | null | undefined) => void
-    action?: (action: string, event: unknown) => void
-    // any: message mixes in TsBase methods at runtime via extend(); typed loosely here
-    [key: string]: unknown
-}
+// TsMessageProm, TsMessageWhere, TsMessageOptions — moved to tsutils-message.ts (Phase 3a of v2.3 SDD).
+// Re-exported above via: export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
 
 class Utils {
     version: string
