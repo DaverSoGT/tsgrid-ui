@@ -44,6 +44,7 @@ import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _en
 import { marker as _marker } from './tsutils-marker.js'
 import { TsUi, checkName as _checkName } from './tsutils-registry.js'
 import { notify as _notify } from './tsutils-notify.js'
+import { normButtons as _normButtons } from './tsutils-message.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -1558,44 +1559,11 @@ class Utils {
      * @returns  options
      */
     normButtons(options: Record<string, unknown>, btn: Record<string, unknown>): Record<string, unknown> {
-        options['actions'] = options['actions'] ?? {}
-        const btns = Object.keys(btn)
-        btns.forEach(name => {
-            const action = options['btn_' + name] as Record<string, unknown> | undefined
-            if (action) {
-                btn[name] = {
-                    text: TsUtils.lang(String(action['text'] ?? btn[name] ?? '')),
-                    class: action['class'] ?? '',
-                    style: action['style'] ?? '',
-                    attrs: action['attrs'] ?? ''
-                }
-                delete options['btn_' + name]
-            }
-            ;['text', 'class', 'style', 'attrs'].forEach(suffix => {
-                if (options[name + '_' + suffix]) {
-                    if (typeof btn[name] == 'string') {
-                        btn[name] = { text: btn[name] }
-                    }
-                    ;(btn[name] as Record<string, unknown>)[suffix] = options[name + '_' + suffix]
-                    delete options[name + '_' + suffix]
-                }
-            })
+        return _normButtons(options, btn, {
+            extend: _extend,
+            lang: this.lang.bind(this),
+            settings: this.settings
         })
-        if (btns.includes('yes') && btns.includes('no')) {
-            if (TsUtils.settings.macButtonOrder) {
-                TsUtils.extend(options['actions'], { no: btn['no'], yes: btn['yes'] })
-            } else {
-                TsUtils.extend(options['actions'], { yes: btn['yes'], no: btn['no'] })
-            }
-        }
-        if (btns.includes('ok') && btns.includes('cancel')) {
-            if (TsUtils.settings.macButtonOrder) {
-                TsUtils.extend(options['actions'], { cancel: btn['cancel'], ok: btn['ok'] })
-            } else {
-                TsUtils.extend(options['actions'], { ok: btn['ok'], cancel: btn['cancel'] })
-            }
-        }
-        return options
     }
 
     /**
