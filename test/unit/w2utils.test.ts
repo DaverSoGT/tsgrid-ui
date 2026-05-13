@@ -348,3 +348,118 @@ describe('TsUtils.prepareParams', () => {
         expect(fetchOptions['__custom']).toBe(true)
     })
 })
+
+// ─── Phase 0: Color cluster unit tests (safety net before Phase 2 extraction) ───
+
+describe('TsUtils.parseColor', () => {
+    it('T-C1: parses 6-char hex #ff8000 into r=255 g=128 b=0 a=1', () => {
+        const c = TsUtils.parseColor('#ff8000')
+        expect(c).not.toBeNull()
+        expect(c!.r).toBe(255)
+        expect(c!.g).toBe(128)
+        expect(c!.b).toBe(0)
+        expect(c!.a).toBe(1)
+    })
+    it('T-C10: parses #000000 into r=0 g=0 b=0 a=1', () => {
+        const c = TsUtils.parseColor('#000000')
+        expect(c).not.toBeNull()
+        expect(c!.r).toBe(0)
+        expect(c!.g).toBe(0)
+        expect(c!.b).toBe(0)
+        expect(c!.a).toBe(1)
+    })
+    it('T-C2: invalid input returns null without throwing', () => {
+        expect(TsUtils.parseColor('not-a-color')).toBeNull()
+        expect(TsUtils.parseColor('')).toBeNull()
+        expect(TsUtils.parseColor(null)).toBeNull()
+    })
+    it('supports 3-char hex #FFF → r=255 g=255 b=255 a=1', () => {
+        const c = TsUtils.parseColor('#FFF')
+        expect(c).not.toBeNull()
+        expect(c!.r).toBe(255)
+        expect(c!.g).toBe(255)
+        expect(c!.b).toBe(255)
+        expect(c!.a).toBe(1)
+    })
+    it('supports RGB(10, 20, 30) form', () => {
+        const c = TsUtils.parseColor('RGB(10, 20, 30)')
+        expect(c).not.toBeNull()
+        expect(c!.r).toBe(10)
+        expect(c!.g).toBe(20)
+        expect(c!.b).toBe(30)
+        expect(c!.a).toBe(1)
+    })
+    it('supports RGBA(10, 20, 30, 0.5) form', () => {
+        const c = TsUtils.parseColor('RGBA(10, 20, 30, 0.5)')
+        expect(c).not.toBeNull()
+        expect(c!.r).toBe(10)
+        expect(c!.g).toBe(20)
+        expect(c!.b).toBe(30)
+        expect(c!.a).toBe(0.5)
+    })
+})
+
+describe('TsUtils.hsv2rgb', () => {
+    // NOTE: implementation uses h=0..360, s=0..100, v=0..100 (not 0..1)
+    it('T-C3: hsv2rgb(0, 100, 100) → pure red {r:255, g:0, b:0, a:1}', () => {
+        const c = TsUtils.hsv2rgb(0, 100, 100)
+        expect(c.r).toBe(255)
+        expect(c.g).toBe(0)
+        expect(c.b).toBe(0)
+        expect(c.a).toBe(1)
+    })
+    it('boundary: hsv2rgb(0, 0, 0) → black {r:0, g:0, b:0}', () => {
+        const c = TsUtils.hsv2rgb(0, 0, 0)
+        expect(c.r).toBe(0)
+        expect(c.g).toBe(0)
+        expect(c.b).toBe(0)
+    })
+    it('boundary: hsv2rgb(0, 0, 100) → white {r:255, g:255, b:255}', () => {
+        const c = TsUtils.hsv2rgb(0, 0, 100)
+        expect(c.r).toBe(255)
+        expect(c.g).toBe(255)
+        expect(c.b).toBe(255)
+    })
+})
+
+describe('TsUtils.rgb2hsv', () => {
+    // NOTE: implementation returns h=0..360, s=0..100, v=0..100 (not 0..1)
+    it('T-C4: rgb2hsv(255, 0, 0) → pure red {h:0, s:100, v:100}', () => {
+        const c = TsUtils.rgb2hsv(255, 0, 0)
+        expect(c.h).toBe(0)
+        expect(c.s).toBe(100)
+        expect(c.v).toBe(100)
+    })
+    it('T-C6: rgb2hsv(0, 0, 0) → black {h:0, s:0, v:0}', () => {
+        const c = TsUtils.rgb2hsv(0, 0, 0)
+        expect(c.h).toBe(0)
+        expect(c.s).toBe(0)
+        expect(c.v).toBe(0)
+    })
+    it('T-C7: rgb2hsv(255, 255, 255) → white {h:0, s:0, v:100}', () => {
+        const c = TsUtils.rgb2hsv(255, 255, 255)
+        expect(c.h).toBe(0)
+        expect(c.s).toBe(0)
+        expect(c.v).toBe(100)
+    })
+    it('T-C5: round-trip hsv2rgb → rgb2hsv within tolerance (±1 hue, ±1 s/v)', () => {
+        const hIn = 120, sIn = 75, vIn = 90
+        const rgb = TsUtils.hsv2rgb(hIn, sIn, vIn)
+        const hsv = TsUtils.rgb2hsv(rgb.r, rgb.g, rgb.b)
+        expect(Math.abs(hsv.h - hIn)).toBeLessThanOrEqual(1)
+        expect(Math.abs(hsv.s - sIn)).toBeLessThanOrEqual(1)
+        expect(Math.abs(hsv.v - vIn)).toBeLessThanOrEqual(1)
+    })
+})
+
+describe('TsUtils.colorContrast', () => {
+    // NOTE: implementation returns a string (ratio.toFixed(2)), not a number
+    it('T-C8: colorContrast white vs black → string value >= "21.00" (max WCAG)', () => {
+        const ratio = TsUtils.colorContrast('#ffffff', '#000000')
+        expect(parseFloat(ratio)).toBeGreaterThanOrEqual(21)
+    })
+    it('T-C9: colorContrast identical colors → "1.00" (no contrast)', () => {
+        const ratio = TsUtils.colorContrast('#000000', '#000000')
+        expect(parseFloat(ratio)).toBe(1)
+    })
+})
