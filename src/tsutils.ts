@@ -37,8 +37,9 @@ import { query as _query, Query } from './query.js'
 import { isInt as _isInt, isHex as _isHex, isAlphaNumeric as _isAlphaNumeric, isEmail as _isEmail, isIpAddress as _isIpAddress, isPlainObject as _isPlainObject, isBin as _isBin, isFloat as _isFloat, isMoney as _isMoney } from './tsutils-type-guards.js'
 import { parseColor as _parseColor, colorContrast as _colorContrast, hsv2rgb as _hsv2rgb, rgb2hsv as _rgb2hsv } from './tsutils-color.js'
 import type { TsColorRgb } from './tsutils-color.js'
-import { clone as _clone, extend as _extend } from './tsutils-data.js'
-import type { TsCloneOptions } from './tsutils-data.js'
+import { clone as _clone, extend as _extend, naturalCompare as _naturalCompare, getNested as _getNested, normMenu as _normMenu, encodeParams as _encodeParams, prepareParams as _prepareParams, parseRoute as _parseRoute, debounce as _debounce, wait as _wait } from './tsutils-data.js'
+import type { TsCloneOptions, TsNormMenuOptions } from './tsutils-data.js'
+export type { TsNormMenuOptions } from './tsutils-data.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -140,12 +141,6 @@ export interface TsMenuItem {
     class?: string
     style?: string
     attrs?: string
-    [key: string]: unknown
-}
-
-/** Options for TsUtils.normMenu() */
-interface TsNormMenuOptions {
-    itemMap?: { id: string; text: string }
     [key: string]: unknown
 }
 
@@ -2215,36 +2210,11 @@ class Utils {
      */
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     encodeParams(obj: any, prefix = ''): string { // any: arbitrary nested object from user code
-        let str = ''
-        Object.keys(obj).forEach(key => {
-            if (str != '') str += '&'
-            if (typeof obj[key] == 'object') {
-                str += this.encodeParams(obj[key], prefix + key + (prefix ? ']' : '') + '[')
-            } else {
-                str += `${prefix}${key}${prefix ? ']' : ''}=${obj[key]}`
-            }
-        })
-        return str
+        return _encodeParams(obj, prefix)
     }
 
     parseRoute(route: string): { path: RegExp; keys: { name: string; optional: boolean }[] } {
-        const keys: { name: string; optional: boolean }[] = []
-        const path = route
-            .replace(/\/\(/g, '(?:/')
-            .replace(/\+/g, '__plus__')
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            .replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_: any, slash: any, format: any, key: any, capture: any, optional: any) => { // any: regex replace callback; args are untyped capture groups
-                keys.push({ name: key, optional: !! optional })
-                slash = slash || ''
-                return '' + (optional ? '' : slash) + '(?:' + (optional ? slash : '') + (format || '') + (capture || (format && '([^/.]+?)' || '([^/]+?)')) + ')' + (optional || '')
-            })
-            .replace(/([\/.])/g, '\\$1')
-            .replace(/__plus__/g, '(.+)')
-            .replace(/\*/g, '(.*)')
-        return {
-            path  : new RegExp('^' + path + '$', 'i'),
-            keys  : keys
-        }
+        return _parseRoute(route)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2382,41 +2352,7 @@ class Utils {
      * @license    MIT License
      */
     naturalCompare(a: unknown, b: unknown): number {
-        let i: number = 0, codeA: number = 0, codeB = 1, posA = 0, posB = 0
-        // any: String.alphabet is an optional user-defined extension for custom sort order (non-standard)
-        const alphabet = (String as unknown as Record<string, unknown>)['alphabet'] as string | undefined
-
-        function getCode(str: string, pos: number, code?: number): number {
-            if (code) {
-                for (i = pos; (code = getCode(str, i)) , code < 76 && code > 65;) ++i
-                return +str.slice(pos - 1, i)
-            }
-            let c: number = alphabet ? alphabet.indexOf(str.charAt(pos)) : -1
-            return c > -1 ? c + 76 : ((c = str.charCodeAt(pos) || 0), c < 45 || c > 127) ? c
-                : c < 46 ? 65 // -
-                : c < 48 ? c - 1
-                : c < 58 ? c + 18 // 0-9
-                : c < 65 ? c - 11
-                : c < 91 ? c + 11 // A-Z
-                : c < 97 ? c - 37
-                : c < 123 ? c + 5 // a-z
-                : c - 63
-        }
-
-        const aStr = '' + a, bStr = '' + b
-        if (aStr != bStr) for (;codeB;) {
-            codeA = getCode(aStr, posA++)
-            codeB = getCode(bStr, posB++)
-
-            if (codeA < 76 && codeB < 76 && codeA > 66 && codeB > 66) {
-                codeA = getCode(aStr, posA, posA)
-                codeB = getCode(bStr, posB, posA = i)
-                posB  = i
-            }
-
-            if (codeA != codeB) return (codeA < codeB) ? -1 : 1
-        }
-        return 0
+        return _naturalCompare(a, b)
     }
 
     /**
@@ -2425,36 +2361,7 @@ class Utils {
      * to find out id and text fields.
      */
     normMenu(menu: unknown, options: TsNormMenuOptions = {}): TsMenuItem[] | undefined {
-        if (Array.isArray(menu)) {
-            menu.forEach((it, m) => {
-                if (typeof it === 'string' || typeof it === 'number') {
-                    menu[m] = { id: it, text: String(it) }
-                } else if (it != null) {
-                    if (options.itemMap != null) {
-                        let val = TsUtils.getNested(it, options.itemMap.id)
-                        if (options.itemMap.id != null && val != null) {
-                            it.id = val
-                        }
-                        val = TsUtils.getNested(it, options.itemMap.text)
-                        if (options.itemMap.text != null && val) {
-                            it.text = val
-                        }
-                    }
-                    if (it.caption != null && it.text == null) it.text = it.caption
-                    if (it.text != null && it.id == null) it.id = it.text
-                    if (it.text == null && it.id != null) it.text = it.id
-                } else {
-                    menu[m] = { id: null, text: 'null' }
-                }
-            })
-            return menu
-        } else if (typeof menu === 'function') {
-            const newMenu = menu.call(this, menu, options)
-            return TsUtils.normMenu.call(this, newMenu, options)
-        } else if (typeof menu === 'object' && menu !== null) {
-            const menuObj = menu as Record<string, unknown>
-            return Object.keys(menuObj).map(key => { return { id: key, text: String(menuObj[key] ?? '') } })
-        }
+        return _normMenu(menu, options) as TsMenuItem[] | undefined
     }
 
     /**
@@ -2462,73 +2369,7 @@ class Utils {
      * dataType is in TsUtils. This method is used in grid, form and tooltip to prepare fetch parameters
      */
     prepareParams(url: URL, fetchOptions: Record<string, unknown>, options: Record<string, unknown> = {}): Record<string, unknown> {
-        const dataType = (options?.['dataType'] as string | undefined) ?? TsUtils.settings.dataType
-        let postParams = fetchOptions['body']
-        fetchOptions['method'] = String(fetchOptions['method']).toUpperCase()
-        switch (dataType) {
-            /**
-             * Will submit GET, POST, PUT, DELETE
-             * - if GET - it will be in URL
-             * - if POST, PUT, DELETE it will be JSON encoded
-             */
-            case 'RESTFULL':
-            case 'RESTFULJSON': {
-                if (['POST', 'PUT', 'DELETE'].includes(String(fetchOptions['method']))) {
-                    ;(fetchOptions['headers'] as Record<string, string>)['Content-Type'] = 'application/json'
-                }
-                if (String(fetchOptions['method']) == 'GET') {
-                    // any: cast-to-any for dynamic dispatch; TsUtils helper accepts heterogeneous runtime input
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    if ((dataType as any) == 'RESTFULLJSON') { // note: pre-existing typo in original code (RESTFULLJSON vs RESTFULJSON)
-                        postParams = { request: postParams }
-                    }
-                    body2params()
-                }
-                break
-            }
-            /**
-             * Will submit either GET or POST and
-             * - if POST it will be JSON encoded
-             * - if GET it will be in URL
-             * - if HTTPJSON and GET then it will be JSON encoded
-             */
-            case 'HTTP':
-            case 'HTTPJSON':
-            case 'JSON': {
-                if (String(fetchOptions['method']) == 'GET') {
-                    if (dataType == 'JSON' || dataType === 'HTTPJSON') {
-                        postParams = { request: postParams }
-                    }
-                    body2params()
-                } else {
-                    ;(fetchOptions['headers'] as Record<string, string>)['Content-Type'] = 'application/json'
-                    fetchOptions['method'] = 'POST'
-                }
-                break
-            }
-            default: {
-                if (typeof dataType == 'function') {
-                    // do nothing, it is custom function that will handle everything
-                    fetchOptions = (dataType as unknown as (u: URL, f: Record<string, unknown>, o: Record<string, unknown>) => Record<string, unknown>)(url, fetchOptions, options)
-                } else {
-                    console.log(`ERROR: Unsupported dataType "${dataType}". Supported types are JSON (default), HTTP, RESTFULL. For backward compatibility HTTPJSON is same as JSON. RESTULFLJSON will encode GET request as JSON.`)
-                }
-            }
-        }
-        if (fetchOptions['body'] != null) {
-            fetchOptions['body'] = typeof fetchOptions['body'] == 'string' ? fetchOptions['body'] : JSON.stringify(fetchOptions['body'])
-        }
-        return fetchOptions
-
-        function body2params() {
-            const pp = postParams as Record<string, unknown>
-            Object.keys(pp).forEach(key => {
-                let param: unknown = pp[key]
-                if (typeof param == 'object') param = JSON.stringify(param)
-                url.searchParams.append(key, String(param ?? ''))
-            })
-            delete fetchOptions['body']
-        }
+        return _prepareParams(url, fetchOptions, options, TsUtils.settings.dataType)
     }
 
     bindEvents(selector: unknown, subject: Record<string, unknown>): void {
@@ -2613,34 +2454,16 @@ class Utils {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     debounce(func: (...args: any[]) => void, wait = 250): (...args: any[]) => void { // any: debounce wraps arbitrary functions
-        let timeout: ReturnType<typeof setTimeout> | undefined
-        return (...args: unknown[]) => {
-            clearTimeout(timeout)
-            timeout = setTimeout(() => { func(...args) }, wait)
-        }
+        return _debounce(func, wait)
     }
 
-    async wait(time = 0) {
-        return new Promise<void>(resolve => {
-            setTimeout(() => resolve(), time)
-        })
+    async wait(time = 0): Promise<void> {
+        return _wait(time)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     getNested(obj: any, prop: any): unknown { // any: traverses arbitrary nested objects via dot-path string
-        let val: unknown
-        try { // need this to make sure no error in props
-            val = obj
-            const tmp = String(prop).split('.')
-            for (let i = 0; i < tmp.length; i++) {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                val = (val as any)[tmp[i] ?? ''] // any: dynamic property access on unknown nested object
-            }
-        } catch (event) {
-            val = undefined
-        }
-        return val
-
+        return _getNested(obj, prop)
     }
 }
 var TsUtils = new Utils() // eslint-disable-line -- needs to be functional/module scope variable
