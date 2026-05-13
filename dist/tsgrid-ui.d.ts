@@ -228,6 +228,55 @@ declare class Query {
 }
 
 /**
+ * Part of TsUi 2.0 library — color cluster sub-module
+ *  - Extracted from src/tsutils.ts by v2.1 SDD refactor (Phase 2)
+ *  - No dependencies on TsBase, TsUtils, or any other sub-module (L1 DAG leaf)
+ *  - All exports are plain functions — no default export
+ *
+ * 4-space indent (project convention for sub-modules).
+ */
+/** RGB(A) color as returned by parseColor() */
+interface TsColorRgb {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
+/**
+ * TsUtils v2.1 — Data / Object helpers sub-module (Phase 3+4 of v2.1 SDD)
+ *
+ * Contains: TsCloneOptions, clone, extend,
+ *           naturalCompare, normMenu, getNested, encodeParams,
+ *           prepareParams, parseRoute, debounce, wait
+ *
+ * Rules:
+ *  - No default export
+ *  - No import from tsbase.ts (INV-4)
+ *  - No this.-dispatch inside function bodies (INV-8)
+ *  - 4-space indent
+ */
+/** Options for TsUtils.clone() */
+interface TsCloneOptions {
+    functions?: boolean;
+    elements?: boolean;
+    events?: boolean;
+    exclude?: string[] | ((key: string, ctx: {
+        obj: unknown;
+        parent: string;
+    }) => boolean);
+    parent?: string;
+}
+/** Options for TsUtils.normMenu() */
+interface TsNormMenuOptions {
+    itemMap?: {
+        id: string;
+        text: string;
+    };
+    [key: string]: unknown;
+}
+
+/**
  * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsLocale
  *
@@ -310,13 +359,7 @@ interface TsTimeResult {
     minutes: number;
     seconds: number;
 }
-/** RGB(A) color as returned by TsUtils.parseColor() */
-interface TsColorRgb {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-}
+
 /** A normalized menu item */
 interface TsMenuItem {
     id: string | number | null;
@@ -326,25 +369,6 @@ interface TsMenuItem {
     style?: string;
     attrs?: string;
     [key: string]: unknown;
-}
-/** Options for TsUtils.normMenu() */
-interface TsNormMenuOptions {
-    itemMap?: {
-        id: string;
-        text: string;
-    };
-    [key: string]: unknown;
-}
-/** Options for TsUtils.clone() */
-interface TsCloneOptions {
-    functions?: boolean;
-    elements?: boolean;
-    events?: boolean;
-    exclude?: string[] | ((key: string, ctx: {
-        obj: unknown;
-        parent: string;
-    }) => boolean);
-    parent?: string;
 }
 /** Promise-chain handle returned by TsUtils.message() / .confirm() / .prompt() */
 interface TsMessageProm {
@@ -536,7 +560,7 @@ declare class Utils {
     getStrWidth(str: string, styles?: string, raw?: boolean): any;
     getStrHeight(str: string, styles?: string, raw?: boolean): any;
     execTemplate(str: any, replace_obj: any): any;
-    marker(el: any, items: any, options?: any): any;
+    marker(el: any, items: any, options?: any): unknown;
     lang(phrase: string, params?: Record<string, string | number> | boolean): string;
     locale(locale: string | string[] | Record<string, unknown>, keepPhrases?: boolean, noMerge?: boolean): Promise<{
         file: string;

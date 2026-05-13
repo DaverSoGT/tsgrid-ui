@@ -2,6 +2,30 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.1.0 — 2026-05-13
+
+### Refactor
+
+Decomposed `TsUtils` into 5 stateless sub-modules — **no breaking changes**, no public API surface change. The class still exists with the same shape; method bodies are now one-line delegators that route to plain functions in sibling modules.
+
+- `src/tsutils-type-guards.ts` — 9 type-guard functions (`isInt`, `isFloat`, `isMoney`, `isHex`, `isAlphaNumeric`, `isEmail`, `isIpAddress`, `isPlainObject`, `isBin`). `isFloat`/`isMoney` accept a `Pick<TsUISettings, ...>` slice for locale-aware testing.
+- `src/tsutils-color.ts` — 4 color math functions (`parseColor`, `hsv2rgb`, `rgb2hsv`, `colorContrast`) + `TsColorRgb` type. Dual-form dispatch (object-arg vs positional) preserved using `typeof` detection — more robust than `arguments.length` under the delegator pattern.
+- `src/tsutils-data.ts` — 10 data helpers (`clone`, `extend`, `naturalCompare`, `normMenu`, `getNested`, `encodeParams`, `prepareParams`, `parseRoute`, `debounce`, `wait`) + `TsCloneOptions`, `TsNormMenuOptions` types. `prepareParams` accepts `defaultDataType` parameter.
+- `src/tsutils-string.ts` — 10 string/HTML helpers (`stripSpaces`, `stripTags`, `encodeTags`, `decodeTags`, `escapeId`, `unescapeId`, `base64encode`, `base64decode`, `sha256`, `execTemplate`).
+- `src/tsutils-marker.ts` — `marker` + private DOM regex helpers (`_clearMarkers`, `_replace`).
+
+`TsUtils` singleton shape and all ~788 call sites: **UNCHANGED**. SEMVER MINOR. BC verdict: NONE.
+
+### Tests
+
+Added 27 unit tests (84 → 111): 15 color cluster (`parseColor`, `hsv2rgb`, `rgb2hsv`, `colorContrast`) + 2 `isBin` ratchet + 2 object-form regression locks (`hsv2rgb`/`rgb2hsv`) + 6 data ratchet (`getNested`, `normMenu`) + 2 string ratchet (`decodeTags`, `execTemplate`).
+
+### Bundle
+
+Delta vs v2.0.1 baseline: `dist/tsgrid-ui.js` +0.15% (944,879 → 943,454 bytes), `dist/tsgrid-ui.es6.js` +0.15% (943,022 → 941,597 bytes). Within ±2% gate. PASSED.
+
+---
+
 ## v2.0.1 — 2026-05-13
 
 ### Fixed

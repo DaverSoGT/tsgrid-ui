@@ -22,7 +22,7 @@ interface _W2MarkerOptions {
 
 // any: el is string or HTMLElement; runtime-checked via typeof
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function _clearMerkers(el: any, options: _W2MarkerOptions) {
+function _clearMarkers(el: any, options: _W2MarkerOptions) {
     // options.class is always set (??= 'tsg-marker') before this helper is called — non-null assertion is safe
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const markerRE = new RegExp(`<${options.tag}[^>]*class=["']${options.class!.replace(/-/g, '\\-')}["'][^>]*>([\\s\\S]*?)<\\/${options.tag}>`, 'ig')
@@ -74,7 +74,7 @@ export function marker(el: any, items: any, options: any = { onlyFirst: false, w
         }
     }
     if (typeof el == 'string') {
-        _clearMerkers(el, options)
+        _clearMarkers(el, options)
         // any: items is a mixed array of string/regex passed dynamically via marker() api
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         items.forEach((item: any) => {
@@ -98,7 +98,7 @@ export function marker(el: any, items: any, options: any = { onlyFirst: false, w
         // any: query.each() gives Node at runtime; el is HTMLElement — cast at use sites
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         query(el).each((el: any) => {
-            _clearMerkers(el, options)
+            _clearMarkers(el, options)
             if (isRegexSearch) {
                 // For regex searches, use DOM traversal approach
                 // any: pattern is string|regex from dynamic items array
