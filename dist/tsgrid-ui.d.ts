@@ -1,3 +1,152 @@
+type QuerySelector = string | Node | Window | Query | Array<Node | Element> | Iterable<Node | Element> | null | undefined;
+type QueryContext = Document | Element | ShadowRoot | DocumentFragment;
+interface EventRecord {
+    event: string;
+    scope: string | undefined;
+    callback: EventListener;
+    options: AddEventListenerOptions | boolean | undefined;
+}
+interface MQueryData {
+    events?: EventRecord[];
+    prevDisplay?: string;
+    [key: string]: unknown;
+}
+declare global {
+    interface Node {
+        _mQuery?: MQueryData;
+    }
+}
+declare class Query {
+    static version: number;
+    context: QueryContext;
+    nodes: Node[];
+    length: number;
+    [index: number]: Node;
+    constructor(selector: QuerySelector, context?: QueryContext);
+    static _fragment(html: string): DocumentFragment;
+    static _scriptConvert(node: Node): Node;
+    static _fixProp(name: string): string;
+    _insert(method: string, html: string | Query | Node): Query;
+    _save(node: Node, name: string, value: unknown): void;
+    get(index?: number): Node | Node[] | null;
+    eq(index: number): Query;
+    then(fun: (q: Query) => Query | null | undefined): Query;
+    find(selector: string): Query;
+    filter(selector: string | Node | ((node: Node) => boolean)): Query;
+    next(): Query;
+    prev(): Query;
+    shadow(selector?: string): Query;
+    closest(selector: string): Query;
+    host(all?: boolean): Query;
+    parent(selector?: string): Query;
+    parents(selector?: string, firstOnly?: boolean): Query;
+    add(more: Query | Node | Node[]): Query;
+    each(func: (node: Node, ind: number, col: Query) => void): Query;
+    append(html: string | Query | Node): Query;
+    prepend(html: string | Query | Node): Query;
+    after(html: string | Query | Node): Query;
+    before(html: string | Query | Node): Query;
+    replace(html: string | Query | Node): Query;
+    remove(): Query;
+    css(key?: string | Record<string, string | number>, value?: string | number): string | Record<string, string> | undefined | Query;
+    addClass(classes: string): Query;
+    removeClass(classes: string | string[] | null): Query;
+    toggleClass(classes: string | string[] | null, force?: boolean): Query;
+    hasClass(classes: string | string[] | null): boolean | string[];
+    on(events: string, options: AddEventListenerOptions | EventListener | {
+        delegate?: string;
+    } | undefined, callback?: EventListener): Query;
+    on(events: string, callback: EventListener): Query;
+    off(events?: string, options?: AddEventListenerOptions | EventListener, callback?: EventListener): Query;
+    trigger(name: string | Event | CustomEvent, options?: EventInit): Query;
+    attr(name: string): string | undefined;
+    attr(name: string | Record<string, string>, value?: string): Query;
+    removeAttr(...attrs: string[]): Query;
+    prop(name: string): unknown;
+    prop(name: string | Record<string, unknown>, value?: unknown): Query;
+    removeProp(...props: string[]): Query;
+    data(key?: string | Record<string, unknown>, value?: unknown): unknown | Query;
+    removeData(key: string | string[]): Query;
+    show(): Query;
+    hide(): Query;
+    toggle(force?: boolean): Query;
+    empty(): Query;
+    html(html?: string | HTMLElement): string | Query | undefined;
+    text(text?: string): unknown | Query;
+    val(value?: string): unknown | Query;
+    change(): Query;
+    click(): Query;
+}
+
+/**
+ * Part of TsUi 2.0 library — color cluster sub-module
+ *  - Extracted from src/tsutils.ts by v2.1 SDD refactor (Phase 2)
+ *  - No dependencies on TsBase, TsUtils, or any other sub-module (L1 DAG leaf)
+ *  - All exports are plain functions — no default export
+ *
+ * 4-space indent (project convention for sub-modules).
+ */
+/** RGB(A) color as returned by parseColor() */
+interface TsColorRgb {
+    r: number;
+    g: number;
+    b: number;
+    a: number;
+}
+
+/**
+ * TsUtils v2.1 — Data / Object helpers sub-module (Phase 3+4 of v2.1 SDD)
+ *
+ * Contains: TsCloneOptions, clone, extend,
+ *           naturalCompare, normMenu, getNested, encodeParams,
+ *           prepareParams, parseRoute, debounce, wait
+ *
+ * Rules:
+ *  - No default export
+ *  - No import from tsbase.ts (INV-4)
+ *  - No this.-dispatch inside function bodies (INV-8)
+ *  - 4-space indent
+ */
+/** Options for TsUtils.clone() */
+interface TsCloneOptions {
+    functions?: boolean;
+    elements?: boolean;
+    events?: boolean;
+    exclude?: string[] | ((key: string, ctx: {
+        obj: unknown;
+        parent: string;
+    }) => boolean);
+    parent?: string;
+}
+/** Options for TsUtils.normMenu() */
+interface TsNormMenuOptions {
+    itemMap?: {
+        id: string;
+        text: string;
+    };
+    [key: string]: unknown;
+}
+
+/**
+ * TsUi registry + checkName — Phase 0 of v2.3 SDD.
+ * DEPENDENCY-FREE: zero imports from tsutils/tsbase family.
+ *
+ * Hosts the mutable widget registry object (TsUi) and the name-validation
+ * helper (checkName) that were previously coupled to tsbase.ts via tsutils.ts,
+ * creating a tsbase ↔ tsutils import cycle. Moving them here breaks that cycle:
+ *
+ *   tsbase.ts → tsutils-registry.ts → tsutils-type-guards.ts → (leaf)
+ *
+ * tsutils.ts re-exports TsUi from this module (does NOT re-declare it) to
+ * preserve the single-object identity required by INV-12 (referential equality
+ * across all import paths).
+ *
+ * Imports: only isAlphaNumeric from ./tsutils-type-guards.js
+ * Exports: TsUi, checkName
+ */
+/** Widget registry — widgets register here when constructed with a `name`. */
+declare const TsUi: Record<string, unknown>;
+
 /**
  * Part of TsUi 2.0 library
  *  - Dependencies: TsUtils
@@ -147,132 +296,81 @@ declare class TsBase {
     unmount(): void;
 }
 
-type QuerySelector = string | Node | Window | Query | Array<Node | Element> | Iterable<Node | Element> | null | undefined;
-type QueryContext = Document | Element | ShadowRoot | DocumentFragment;
-interface EventRecord {
-    event: string;
-    scope: string | undefined;
-    callback: EventListener;
-    options: AddEventListenerOptions | boolean | undefined;
-}
-interface MQueryData {
-    events?: EventRecord[];
-    prevDisplay?: string;
+/**
+ * TsUtils message cluster (message/alert/confirm/prompt/normButtons + types)
+ * — Phase 2-4 of v2.3 SDD (message-cluster-extraction).
+ *
+ * IMPORTANT: This module imports TsBase from tsbase.ts — the only carve-out
+ * to INV-4. Rationale: message() does `new TsBase()` to mix events into msgBase.
+ * This exception is documented here and whitelisted in the INV-4 grep policy.
+ *
+ * Exports (Phase 2):
+ *   normButtons — standalone pure helper; no DOM, no timers
+ *
+ * Exports (Phase 3a):
+ *   TsMessageProm, TsMessageWhere, TsMessageOptions (types)
+ *   MessageDeps (deps interface for _message — scaffold for Phase 3b)
+ *   _message (stub — body lands in Phase 3b)
+ *
+ * Exports (Phase 3b+):
+ *   _message (full body), _alert, _confirm, _prompt (Phase 4)
+ *
+ * Imports: TsBase from tsbase.ts (INV-4 carve-out, see above)
+ *          TsUISettings type from tsutils.ts (type-only, no runtime dep)
+ *          query from query.js (DOM helper)
+ */
+
+/** Promise-chain handle returned by message() / confirm() / prompt() */
+interface TsMessageProm {
+    self: TsBase;
+    action(callBack: (event: unknown) => void): TsMessageProm;
+    close(callBack: (event: unknown) => void): TsMessageProm;
+    open(callBack: (event: unknown) => void): TsMessageProm;
+    then(callBack: (event: unknown) => void): TsMessageProm;
+    change?: (callBack: (event: unknown) => void) => TsMessageProm;
     [key: string]: unknown;
 }
-declare global {
-    interface Node {
-        _mQuery?: MQueryData;
-    }
-}
-declare class Query {
-    static version: number;
-    context: QueryContext;
-    nodes: Node[];
-    length: number;
-    [index: number]: Node;
-    constructor(selector: QuerySelector, context?: QueryContext);
-    static _fragment(html: string): DocumentFragment;
-    static _scriptConvert(node: Node): Node;
-    static _fixProp(name: string): string;
-    _insert(method: string, html: string | Query | Node): Query;
-    _save(node: Node, name: string, value: unknown): void;
-    get(index?: number): Node | Node[] | null;
-    eq(index: number): Query;
-    then(fun: (q: Query) => Query | null | undefined): Query;
-    find(selector: string): Query;
-    filter(selector: string | Node | ((node: Node) => boolean)): Query;
-    next(): Query;
-    prev(): Query;
-    shadow(selector?: string): Query;
-    closest(selector: string): Query;
-    host(all?: boolean): Query;
-    parent(selector?: string): Query;
-    parents(selector?: string, firstOnly?: boolean): Query;
-    add(more: Query | Node | Node[]): Query;
-    each(func: (node: Node, ind: number, col: Query) => void): Query;
-    append(html: string | Query | Node): Query;
-    prepend(html: string | Query | Node): Query;
-    after(html: string | Query | Node): Query;
-    before(html: string | Query | Node): Query;
-    replace(html: string | Query | Node): Query;
-    remove(): Query;
-    css(key?: string | Record<string, string | number>, value?: string | number): string | Record<string, string> | undefined | Query;
-    addClass(classes: string): Query;
-    removeClass(classes: string | string[] | null): Query;
-    toggleClass(classes: string | string[] | null, force?: boolean): Query;
-    hasClass(classes: string | string[] | null): boolean | string[];
-    on(events: string, options: AddEventListenerOptions | EventListener | {
-        delegate?: string;
-    } | undefined, callback?: EventListener): Query;
-    on(events: string, callback: EventListener): Query;
-    off(events?: string, options?: AddEventListenerOptions | EventListener, callback?: EventListener): Query;
-    trigger(name: string | Event | CustomEvent, options?: EventInit): Query;
-    attr(name: string): string | undefined;
-    attr(name: string | Record<string, string>, value?: string): Query;
-    removeAttr(...attrs: string[]): Query;
-    prop(name: string): unknown;
-    prop(name: string | Record<string, unknown>, value?: unknown): Query;
-    removeProp(...props: string[]): Query;
-    data(key?: string | Record<string, unknown>, value?: unknown): unknown | Query;
-    removeData(key: string | string[]): Query;
-    show(): Query;
-    hide(): Query;
-    toggle(force?: boolean): Query;
-    empty(): Query;
-    html(html?: string | HTMLElement): string | Query | undefined;
-    text(text?: string): unknown | Query;
-    val(value?: string): unknown | Query;
-    change(): Query;
-    click(): Query;
-}
-
-/**
- * Part of TsUi 2.0 library — color cluster sub-module
- *  - Extracted from src/tsutils.ts by v2.1 SDD refactor (Phase 2)
- *  - No dependencies on TsBase, TsUtils, or any other sub-module (L1 DAG leaf)
- *  - All exports are plain functions — no default export
- *
- * 4-space indent (project convention for sub-modules).
- */
-/** RGB(A) color as returned by parseColor() */
-interface TsColorRgb {
-    r: number;
-    g: number;
-    b: number;
-    a: number;
-}
-
-/**
- * TsUtils v2.1 — Data / Object helpers sub-module (Phase 3+4 of v2.1 SDD)
- *
- * Contains: TsCloneOptions, clone, extend,
- *           naturalCompare, normMenu, getNested, encodeParams,
- *           prepareParams, parseRoute, debounce, wait
- *
- * Rules:
- *  - No default export
- *  - No import from tsbase.ts (INV-4)
- *  - No this.-dispatch inside function bodies (INV-8)
- *  - 4-space indent
- */
-/** Options for TsUtils.clone() */
-interface TsCloneOptions {
-    functions?: boolean;
-    elements?: boolean;
-    events?: boolean;
-    exclude?: string[] | ((key: string, ctx: {
-        obj: unknown;
-        parent: string;
-    }) => boolean);
-    parent?: string;
-}
-/** Options for TsUtils.normMenu() */
-interface TsNormMenuOptions {
-    itemMap?: {
-        id: string;
-        text: string;
+/** Where-descriptor for message() */
+interface TsMessageWhere {
+    box: string | Element | null;
+    after?: string | Element | null;
+    owner?: {
+        name?: string;
+        lock?: (...args: unknown[]) => void;
+        unlock?: (...args: unknown[]) => void;
+        focus?: () => void;
     };
+    param?: unknown;
+}
+/** Options for message() */
+interface TsMessageOptions {
+    width?: number;
+    height?: number;
+    text?: string | null;
+    body?: string;
+    buttons?: string;
+    html?: string;
+    focus?: number | string | null;
+    hideOn?: string[];
+    actions?: Record<string, unknown>;
+    cancelAction?: string;
+    on?: unknown;
+    onOpen?: unknown;
+    onClose?: unknown;
+    onAction?: unknown;
+    originalWidth?: number;
+    originalHeight?: number;
+    msgIndex?: number;
+    tmp?: {
+        zIndex: string;
+        overflow: string;
+    };
+    input?: Element | null;
+    box?: Element | null;
+    trigger?: (event: string, data: Record<string, unknown>) => unknown;
+    close?: () => void;
+    setFocus?: (focus: number | string | null | undefined) => void;
+    action?: (action: string, event: unknown) => void;
     [key: string]: unknown;
 }
 
@@ -310,7 +408,6 @@ interface TsNormMenuOptions {
  */
 
 declare const query: (selector: unknown, context?: unknown) => Query;
-declare const TsUi: Record<string, unknown>;
 /** Settings object merged from TsLocale + user locale overrides */
 interface TsUISettings {
     dataType: string;
@@ -370,59 +467,6 @@ interface TsMenuItem {
     attrs?: string;
     [key: string]: unknown;
 }
-/** Promise-chain handle returned by TsUtils.message() / .confirm() / .prompt() */
-interface TsMessageProm {
-    self: TsBase;
-    action(callBack: (event: unknown) => void): TsMessageProm;
-    close(callBack: (event: unknown) => void): TsMessageProm;
-    open(callBack: (event: unknown) => void): TsMessageProm;
-    then(callBack: (event: unknown) => void): TsMessageProm;
-    change?: (callBack: (event: unknown) => void) => TsMessageProm;
-    [key: string]: unknown;
-}
-/** Where-descriptor for TsUtils.message() */
-interface TsMessageWhere {
-    box: string | Element | null;
-    after?: string | Element | null;
-    owner?: {
-        name?: string;
-        lock?: (...args: unknown[]) => void;
-        unlock?: (...args: unknown[]) => void;
-        focus?: () => void;
-    };
-    param?: unknown;
-}
-/** Options for TsUtils.message() */
-interface TsMessageOptions {
-    width?: number;
-    height?: number;
-    text?: string | null;
-    body?: string;
-    buttons?: string;
-    html?: string;
-    focus?: number | string | null;
-    hideOn?: string[];
-    actions?: Record<string, unknown>;
-    cancelAction?: string;
-    on?: unknown;
-    onOpen?: unknown;
-    onClose?: unknown;
-    onAction?: unknown;
-    originalWidth?: number;
-    originalHeight?: number;
-    msgIndex?: number;
-    tmp?: {
-        zIndex: string;
-        overflow: string;
-    };
-    input?: Element | null;
-    box?: Element | null;
-    trigger?: (event: string, data: Record<string, unknown>) => unknown;
-    close?: () => void;
-    setFocus?: (focus: number | string | null | undefined) => void;
-    action?: (action: string, event: unknown) => void;
-    [key: string]: unknown;
-}
 declare class Utils {
     version: string;
     tmp: Record<string, unknown>;
@@ -468,6 +512,25 @@ declare class Utils {
     transition(div_old: HTMLElement, div_new: HTMLElement, type: string, callBack?: () => void): Promise<void>;
     lock(box: unknown, options?: TsLockOptions | string, ...rest: unknown[]): void;
     unlock(box: unknown, speed?: number): void;
+    /**
+     * Constructs the MessageDeps object for the _message() delegator.
+     * Called once per message() invocation — captures `this` at call time.
+     * Per design §C.5 / §C.2.
+     */
+    private _msgDeps;
+    /**
+     * Constructs the ConfirmDeps object for the _confirm() delegator.
+     * Per design §C.3.
+     * normButtons closure: uses inline lambda that binds this.lang and this.settings
+     * at call time — preserving the call-time timing semantics (design §C.3 caveat).
+     */
+    private _confirmDeps;
+    /**
+     * Constructs the PromptDeps object for the _prompt() delegator.
+     * Per design §C.3.
+     * lang is bound at call time so deps.lang('Ok') uses current locale.
+     */
+    private _promptDeps;
     /**
      * Opens a context message, similar in parameters as TsPopup.open()
      *

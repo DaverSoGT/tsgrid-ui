@@ -2,6 +2,41 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.3.0 — 2026-05-13
+
+### Refactor
+
+Decomposed the **message cluster** (652 LOC) out of `TsUtils` into two new sibling modules — **no breaking changes**, public API byte-identical to v2.2.0. Class methods remain; bodies are now one-line delegators routing to plain functions in sibling modules.
+
+- `src/tsutils-registry.ts` — `TsUi` widget registry + `checkName()` validation helper. Phase 0 Cycle-Break: severs the `tsbase ↔ tsutils` circular import that existed since v1.x. `tsbase.ts` now imports from `tsutils-registry.ts`, `tsutils-data.ts`, `tsutils-type-guards.ts`, and `query.js` directly — zero edges back into `tsutils.ts`.
+- `src/tsutils-notify.ts` — `notify()` pure function + `NotifyDeps` DI interface. Imports only `query.js`; `this.tmp` state passed by reference via `deps.tmpSlot`.
+- `src/tsutils-message.ts` — `normButtons()`, `_message()`, `_alert()`, `_confirm()`, `_prompt()` pure functions + `MessageDeps`, `NotifyDeps`, `ConfirmDeps`, `PromptDeps` DI interfaces + `TsMessageProm`, `TsMessageWhere`, `TsMessageOptions` type definitions. The only sub-module permitted to import `TsBase` from `tsbase.ts` (required for event-mixin instantiation; documented carve-out to INV-4).
+
+`TsUtils` singleton shape and all ~788+ call sites: **UNCHANGED**. SEMVER MINOR. BC verdict: NONE.
+
+### Added
+
+- New internal DI interfaces exported from `tsutils-message.ts`: `MessageDeps`, `ConfirmDeps`, `PromptDeps`.
+- `TsMessageProm`, `TsMessageWhere`, `TsMessageOptions` types relocated from inline declarations in `tsutils.ts` to `tsutils-message.ts`; re-exported via `tsutils.ts` barrel — all existing import paths remain valid.
+
+### Fixed
+
+- **`arguments.length == 1` overload trap** in `message()`, `confirm()`, and `prompt()`: the class delegator always passes 2 arguments to the extracted function, making `arguments.length` always `2` and silently breaking the single-arg `where-as-options` call form. Replaced with `options == null` (loose-equality covers both `undefined` and `null`). Behavior is a strict superset: additionally fixes `confirm(where, null)` and `prompt(where, null)` which previously assigned `null` to `msgOpts` and would crash on subsequent property access. Locked by parity tests (1-arg vs 2-arg-undefined produce identical DOM output for each method).
+
+### Tests
+
+- Added 82 unit tests (115 → 197): 6 registry (Phase 0), 17 notify (Phase 1), 15 normButtons (Phase 2), 15 message scaffold (Phase 3a), 14 message body/animation/parity (Phase 3b), 15 alert/confirm/prompt/parity (Phase 4).
+
+### Bundle
+
+Delta vs v2.2.0 baseline: `dist/tsgrid-ui.js` 946,684 B (+1,648 B, +0.17%), `dist/tsgrid-ui.es6.js` 944,836 B (+1,657 B, +0.18%). Within ±2% gate. PASSED.
+
+### BC
+
+Net-additive. All `TsUtils` method signatures, arities, return types, and runtime behavior unchanged. Three type definitions relocated (re-exported at original paths). SEMVER MINOR. BC verdict: NONE.
+
+---
+
 ## v2.2.0 — 2026-05-13
 
 ### Added
