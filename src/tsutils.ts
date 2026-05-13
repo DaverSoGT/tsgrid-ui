@@ -31,7 +31,8 @@
  *  - TsUtils.wait() - async timer
  */
 
-import { TsBase } from './tsbase.js'
+// TsBase import removed in Phase 3b — new TsBase() is now called in tsutils-message.ts only.
+// Per design §J.9: tsutils.ts no longer needs TsBase after message() body extraction.
 import { TsLocale } from './tslocale.js'
 import { query as _query, Query } from './query.js'
 import { isInt as _isInt, isHex as _isHex, isAlphaNumeric as _isAlphaNumeric, isEmail as _isEmail, isIpAddress as _isIpAddress, isPlainObject as _isPlainObject, isBin as _isBin, isFloat as _isFloat, isMoney as _isMoney } from './tsutils-type-guards.js'
@@ -44,8 +45,8 @@ import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _en
 import { marker as _marker } from './tsutils-marker.js'
 import { TsUi, checkName as _checkName } from './tsutils-registry.js'
 import { notify as _notify } from './tsutils-notify.js'
-import { normButtons as _normButtons } from './tsutils-message.js'
-import type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
+import { normButtons as _normButtons, _message as _messageFn } from './tsutils-message.js'
+import type { TsMessageProm, TsMessageWhere, TsMessageOptions, MessageDeps } from './tsutils-message.js'
 export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
@@ -997,6 +998,23 @@ class Utils {
     }
 
     /**
+     * Constructs the MessageDeps object for the _message() delegator.
+     * Called once per message() invocation — captures `this` at call time.
+     * Per design §C.5 / §C.2.
+     */
+    private _msgDeps(): MessageDeps {
+        return {
+            extend: _extend,
+            bindEvents: (s, subj) => this.bindEvents(s, subj),
+            lock: (box, opts) => this.lock(box, opts as never),
+            unlock: (box, speed) => this.unlock(box, speed),
+            // any: 'name' is set dynamically on widget instances (TsGrid, TsForm, etc.) at runtime
+            ownerName: (this as unknown as Record<string, unknown>)['name'] as string | undefined,
+            self: this as unknown as Record<string, unknown>
+        }
+    }
+
+    /**
      * Opens a context message, similar in parameters as TsPopup.open()
      *
      * Sample Calls
@@ -1028,365 +1046,7 @@ class Utils {
      * }
      */
     message(where: TsMessageWhere, options?: TsMessageOptions | string | number): TsMessageProm | undefined {
-        let closeTimer: ReturnType<typeof setTimeout>,
-            openTimer: ReturnType<typeof setTimeout>,
-            edata: unknown
-        // any: msgBase is the live TsMessageOptions reference shared across all closures
-        let msgBase: TsMessageOptions = {}
-        const removeLast = () => {
-            const msgs = query(where?.box).find('.tsg-message')
-            if (msgs.length == 0) return // no messages already
-            // any: DOM element has _msg_options stored dynamically at open time
-            msgBase = (msgs.get(0) as unknown as Record<string, unknown>)['_msg_options'] as TsMessageOptions || {}
-            if (typeof msgBase?.close == 'function') {
-                msgBase.close!()
-            }
-        }
-        // any: options is morphed into a TsBase instance mid-function; the full shape is known only at runtime
-        const closeComplete = (options: Record<string, unknown>) => {
-            // any: DOM element has _msg_prevFocus stored dynamically at open time
-            const msgBoxEl = options['box'] as Record<string, unknown> | null
-            const focus = msgBoxEl?.['_msg_prevFocus'] as Element | undefined
-            if (query(where.box).find('.tsg-message').length <= 1) {
-                if (where.owner) {
-                    where.owner.unlock?.(where.param, 150)
-                } else {
-                    this.unlock(where.box, 150)
-                }
-            } else {
-                query(where.box).find(`#tsg-message-${where.owner?.name}-${(options['msgIndex'] as number)-1}`).css('z-index', '1500')
-            }
-            if (focus) {
-                const msg = query(focus).closest('.tsg-message')
-                if (msg.length > 0) {
-                    // any: DOM element has _msg_options + setFocus stored dynamically at open time
-                    const opt = (msg.get(0) as unknown as Record<string, unknown>)['_msg_options'] as Record<string, unknown>
-                    ;(opt['setFocus'] as (f: Element) => void)(focus)
-                } else {
-                    (focus as HTMLElement).focus()
-                }
-            } else {
-                if (typeof where.owner?.focus == 'function') where.owner.focus()
-            }
-            query(options['box'] as unknown).remove()
-            if (options['msgIndex'] === 0) {
-                const tmp = options['tmp'] as { zIndex: string; overflow: string }
-                head.css('z-index', tmp.zIndex)
-                query(where.box).css('overflow', tmp.overflow)
-            }
-            // event after
-            if (options['trigger']) {
-                // any: edata is a TsEvent whose finish() is called after close; runtime-owned by options.trigger
-                ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
-            }
-        }
-
-        if (typeof options == 'string' || typeof options == 'number') {
-            msgBase = {
-                width : (String(options).length < 300 ? 350 : 550),
-                height: (String(options).length < 300 ? 170: 250),
-                text  : String(options),
-            }
-        } else if (arguments.length == 1 || options == null) {
-            msgBase = where as unknown as TsMessageOptions
-        } else {
-            msgBase = options ?? {}
-        }
-        if ((msgBase.text === '' || msgBase.text == null) && (msgBase.body === '' || msgBase.body == null)) {
-            removeLast()
-            return
-        }
-        if (msgBase.text != null) msgBase.body = `<div class="tsg-centered tsg-msg-text">${msgBase.text}</div>`
-        if (msgBase.width == null) msgBase.width = 350
-        if (msgBase.height == null) msgBase.height = 170
-        if (msgBase.hideOn == null) msgBase.hideOn = ['esc']
-        msgBase.cancelAction ??= 'Ok'
-        // mix in events
-        // any: msgBase is coerced into a TsBase instance here so that .on/.off/.trigger work;
-        // the resulting shape is a hybrid TsMessageOptions + TsBase that TS cannot express statically
-        if (msgBase.on == null) {
-            const opts = msgBase
-            msgBase = new TsBase() as unknown as TsMessageOptions
-            TsUtils.extend(msgBase, opts) // needs to be TsUtils
-        }
-        // any: at this point msgBase has both TsMessageOptions fields AND TsBase event methods (on/off/trigger)
-        const msgOpts = msgBase as unknown as Record<string, unknown>
-        ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open', (event: Record<string, unknown>) => {
-            TsUtils.bindEvents(query(msgOpts['box'] as unknown).find('.tsg-eaction'), msgOpts) // msgOpts is TsBase object
-            const detail = event['detail'] as Record<string, unknown>
-            query(detail['box'] as unknown).find('button, input, textarea, [name=hidden-first]')
-                .off('.message')
-                .on('keydown.message', function(evt: Event) {
-                    const keyEvt = evt as KeyboardEvent
-                    if (keyEvt.keyCode == 27 && (msgOpts['hideOn'] as string[]).includes('esc')) {
-                        if (msgOpts['cancelAction']) {
-                            ;(msgOpts['action'] as (..._a: unknown[]) => unknown)(msgOpts['cancelAction'])
-                        } else {
-                            ;(msgOpts['close'] as (..._a: unknown[]) => unknown)()
-                        }
-                    }
-                })
-            // timeout is needed because messages opens over 0.3 seconds
-            setTimeout(() => (msgOpts['setFocus'] as (..._a: unknown[]) => unknown)(msgOpts['focus']), 300)
-        })
-        ;(msgOpts['off'] as (..._a: unknown[]) => unknown)('.prom')
-        const prom: TsMessageProm = {
-            self: msgBase as unknown as TsBase,
-            action(callBack: (event: unknown) => void) {
-                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('action.prom', callBack)
-                return prom
-            },
-            close(callBack: (event: unknown) => void) {
-                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('close.prom', callBack)
-                return prom
-            },
-            open(callBack: (event: unknown) => void) {
-                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open.prom', callBack)
-                return prom
-            },
-            then(callBack: (event: unknown) => void) {
-                ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('open:after.prom', callBack)
-                return prom
-            }
-        }
-        if (msgBase.actions == null && msgBase.buttons == null && msgBase.html == null) {
-            msgBase.actions = { Ok(event: Record<string, unknown>) { ((event['detail'] as Record<string, unknown>)?.['self'] as Record<string, () => void> | null | undefined)?.['close']?.() }}
-        }
-        ;(msgOpts['off'] as (..._a: unknown[]) => unknown)('.buttons')
-        if (msgBase.actions != null) {
-            msgBase.buttons = ''
-            Object.keys(msgBase.actions).forEach((action) => {
-                const handler = msgBase.actions![action]
-                let btnAction: string = action
-                if (typeof handler == 'function') {
-                    msgBase.buttons += `<button class="tsg-btn tsg-eaction" data-click='["action","${action}","event"]' name="${action}">${action}</button>`
-                }
-                if (typeof handler == 'object' && handler !== null) {
-                    const h = handler as Record<string, unknown>
-                    msgBase.buttons += `<button class="tsg-btn tsg-eaction ${h['class'] || ''}" name="${action}" data-click='["action","${action}","event"]'
-                        style="${h['style'] ?? ''}" ${h['attrs'] ?? ''}>${h['text'] || action}</button>`
-                    btnAction = Array.isArray(msgBase.actions) ? String(h['text']) : action
-                }
-                if (typeof handler == 'string') {
-                    msgBase.buttons += `<button class="tsg-btn tsg-eaction" name="${handler}" data-click='["action","${handler}","event"]'>${handler}</button>`
-                    btnAction = handler
-                }
-                if (typeof btnAction == 'string') {
-                    btnAction = (btnAction[0] ?? '').toLowerCase() + btnAction.substr(1).replace(/\s+/g, '')
-                }
-                prom[btnAction] = function (callBack: (event: unknown) => void) {
-                    ;(msgOpts['on'] as (..._a: unknown[]) => unknown)('action.buttons', (event: Record<string, unknown>) => {
-                        const detail = event['detail'] as Record<string, unknown>
-                        const act = String(detail['action'])
-                        const target = (act[0] ?? '').toLowerCase() + act.substr(1).replace(/\s+/g, '')
-                        if (target == btnAction) callBack(event)
-                    })
-                    return prom
-                }
-            })
-        }
-        // trim if any
-        ;(['html', 'body', 'buttons'] as const).forEach(param => {
-            msgBase[param] = String(msgBase[param] ?? '').trim()
-        })
-        if (msgBase.body !== '' || msgBase.buttons !== '') {
-            msgBase.html = `
-                <div class="tsg-message-body">${msgBase.body || ''}</div>
-                <div class="tsg-message-buttons">${msgBase.buttons || ''}</div>
-            `
-        }
-        let styles  = getComputedStyle(query(where.box).get(0) as Element)
-        const pWidth  = parseFloat(styles.width)
-        const pHeight = parseFloat(styles.height)
-        let titleHeight = 0
-        if (query(where.after).length > 0) {
-            styles = getComputedStyle(query(where.after).get(0) as Element)
-            titleHeight = parseInt(styles.display != 'none' ? styles.height : '0')
-        }
-        if ((msgBase.width ?? 0) > pWidth) msgBase.width = pWidth - 10
-        if ((msgBase.height ?? 0) > pHeight - titleHeight) msgBase.height = pHeight - 10 - titleHeight
-        if (msgBase.width != null) msgBase.originalWidth = msgBase.width
-        if (msgBase.height != null) msgBase.originalHeight = msgBase.height
-        if (parseInt(String(msgBase.width)) < 0) msgBase.width = pWidth + (msgBase.width ?? 0)
-        if (parseInt(String(msgBase.width)) < 10) msgBase.width = 10
-        if (parseInt(String(msgBase.height)) < 0) msgBase.height = pHeight + (msgBase.height ?? 0) - titleHeight
-        if (parseInt(String(msgBase.height)) < 10) msgBase.height = 10
-        // negative value means margin
-        if ((msgBase.originalHeight ?? 0) < 0) msgBase.height = pHeight + (msgBase.originalHeight ?? 0) - titleHeight
-        if ((msgBase.originalWidth ?? 0) < 0) msgBase.width = pWidth + (msgBase.originalWidth ?? 0) * 2 // x 2 because there is left and right margin
-        const head = query(where.box).find(where.after as string) // needed for z-index manipulations
-        if (!msgBase.tmp) {
-            msgBase.tmp = {
-                zIndex: String(head.css('z-index')),
-                overflow: styles.overflow
-            }
-        }
-        // remove message
-        if (msgBase.html === '' && msgBase.body === '' && msgBase.buttons === '') {
-            removeLast()
-        } else {
-            msgBase.msgIndex = query(where.box).find('.tsg-message').length
-            if (msgBase.msgIndex === 0 && typeof this.lock == 'function') {
-                query(where.box).css('overflow', 'hidden')
-                if (where.owner) { // where.param is used in the panel
-                    // any: lock() is a widget method accessed via TsBase index signature; safe runtime call
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    ;(where.owner as any).lock?.(where.param)
-                } else {
-                    this.lock(where.box)
-                }
-            }
-            // send back previous messages
-            query(where.box).find('.tsg-message').css('z-index', '1390')
-            head.css('z-index', '1501')
-            // add message
-            const content = `
-                <div id="tsg-message-${where.owner?.name}-${msgBase.msgIndex}" class="tsg-message" data-mousedown="stop"
-                    style="z-index: 1500; left: ${((pWidth - (msgBase.width ?? 0)) / 2)}px; top: ${titleHeight}px;
-                        width: ${msgBase.width}px; height: ${msgBase.height}px; transform: translateY(-${msgBase.height}px)"
-                    ${(msgBase.hideOn ?? []).includes('click')
-                        ? where.param
-                            ? `data-click='["message", "${where.param}"]`
-                            : 'data-click="message"'
-                        : ''}>
-                    <span name="hidden-first" tabindex="0" style="position: absolute; top: 0; outline: none"></span>
-                    ${msgBase.html}
-                    <span name="hidden-last" tabindex="0" style="position: absolute; top: 0; outline: none"></span>
-                </div>`
-            if (query(where.after).length > 0) {
-                query(where.box).find(where.after as string).after(content)
-            } else {
-                query(where.box).prepend(content)
-            }
-            // any: DOM elements get _msg_options + _msg_prevFocus dynamic properties at open time
-            msgBase.box = query(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)[0] as Element
-            TsUtils.bindEvents(msgBase.box, this as unknown as Record<string, unknown>)
-            query(msgBase.box)
-                .addClass('animating')
-            // remember options and prev focus
-            ;(msgBase.box as unknown as Record<string, unknown>)['_msg_options'] = msgBase
-            ;(msgBase.box as unknown as Record<string, unknown>)['_msg_prevFocus'] = document.activeElement
-            // timeout is needs so that callBacks are setup
-            setTimeout(() => {
-                // before event
-                // any: trigger is mixed in from TsBase; edata is a TsEvent with isCancelled + finish()
-                edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('open', { target: (this as unknown as Record<string, unknown>)['name'], box: msgBase.box, self: msgBase })
-                const edataR = edata as Record<string, unknown>
-                if (edataR['isCancelled'] === true) {
-                    query(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).remove()
-                    if (msgBase.msgIndex === 0) {
-                        head.css('z-index', msgBase.tmp!.zIndex)
-                        query(where.box).css('overflow', msgBase.tmp!.overflow)
-                    }
-                    return
-                }
-                // slide down
-                query(msgBase.box).css({
-                    transition: '0.3s',
-                    transform: 'translateY(0px)'
-                })
-            }, 0)
-            // timeout is needed so that animation can finish
-            openTimer = setTimeout(() => {
-                // has to be on top of lock
-                query(where.box)
-                    .find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)
-                    .removeClass('animating')
-                    .css({ 'transition': '0s' })
-                // event after
-                ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
-            }, 300)
-        }
-        // action handler
-        msgBase.action = (action: string, event: unknown) => {
-            let click = msgBase.actions?.[action]
-            if (click instanceof Object && (click as Record<string, unknown>)['onClick']) click = (click as Record<string, unknown>)['onClick'] as unknown
-            // event before
-            // any: trigger is mixed in from TsBase
-            const edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('action', { target: (this as unknown as Record<string, unknown>)['name'], action, self: msgBase,
-                originalEvent: event, value: msgBase.input ? (msgBase.input as HTMLInputElement).value : null })
-            const edataR = edata as Record<string, unknown>
-            if (edataR['isCancelled'] === true) return
-            // default actions
-            if (typeof click === 'function') click(edata)
-            // event after
-            ;(edataR['finish'] as (() => void) | undefined)?.()
-        }
-        msgBase.close = () => {
-            // any: trigger is mixed in from TsBase
-            edata = (msgOpts['trigger'] as (..._a: unknown[]) => unknown)('close', { target: 'self', box: msgBase.box, self: msgBase })
-            const edataR = edata as Record<string, unknown>
-            if (edataR['isCancelled'] === true) return
-            clearTimeout(openTimer)
-            if (query(msgBase.box).hasClass('animating')) {
-                clearTimeout(closeTimer)
-                closeComplete(msgOpts)
-                return
-            }
-            // default behavior
-            query(msgBase.box)
-                .addClass('tsg-closing animating')
-                .css({
-                    'transition': '0.15s',
-                    'transform': 'translateY(-' + msgBase.height + 'px)'
-                })
-            if ((msgBase.msgIndex ?? 0) !== 0) {
-                // previous message
-                query(where.box).find(`#tsg-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1)-1}`).css('z-index', '1499')
-            }
-            closeTimer = setTimeout(() => { closeComplete(msgOpts) }, 150)
-        }
-        msgBase.setFocus = (focus: number | string | null | undefined) => {
-            // in message or popup
-            const cnt = query(where.box).find('.tsg-message').length - 1
-            const box = query(where.box).find(`#tsg-message-${where.owner?.name}-${cnt}`)
-            const sel = 'input, button, select, textarea, [contentEditable], .tsg-input'
-            if (focus != null) {
-                // any: parameter typed any — runtime dispatch by call site; TsUtils helper accepts heterogeneous runtime input
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const el: any = typeof focus === 'string'
-                    ? box.find(sel).filter(focus).get(0)
-                    : box.find(sel).get(focus as number)
-                el?.focus()
-            } else {
-                // any: cast-to-any for dynamic dispatch; TsUtils helper accepts heterogeneous runtime input
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                (box.find('[name=hidden-first]').get(0) as any)?.focus()
-            }
-
-            // clear focus if there are other messages
-            query(where.box)
-                .find('.tsg-message')
-                .find(sel + ',[name=hidden-first],[name=hidden-last]')
-                .off('.keep-focus')
-
-            // keep focus/blur inside popup
-            query(box)
-                .find(sel + ',[name=hidden-first],[name=hidden-last]')
-                .on('blur.keep-focus', function (_event) {
-                    setTimeout(() => {
-                        const focus = document.activeElement
-                        const inside = focus != null && query(box).find(sel).filter(focus as Node).length > 0
-                        const name = query(focus).attr('name')
-                        if (!inside && focus && focus !== document.body) {
-                            // any: cast-to-any for dynamic dispatch; TsUtils helper accepts heterogeneous runtime input
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (query(box).find(sel).get(0) as any)?.focus()
-                        }
-                        if (name == 'hidden-last') {
-                            // any: cast-to-any for dynamic dispatch; TsUtils helper accepts heterogeneous runtime input
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (query(box).find(sel).get(0) as any)?.focus()
-                        }
-                        if (name == 'hidden-first') {
-                            // any: cast-to-any for dynamic dispatch; TsUtils helper accepts heterogeneous runtime input
-                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                            (query(box).find(sel).get(-1) as any)?.focus()
-                        }
-                    }, 1)
-                })
-        }
-        return prom
+        return _messageFn(where, options, this._msgDeps())
     }
 
     alert(where: TsMessageWhere, options?: TsMessageOptions | string | number): TsMessageProm | undefined {
