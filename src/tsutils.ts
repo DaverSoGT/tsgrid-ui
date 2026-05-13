@@ -40,6 +40,7 @@ import type { TsColorRgb } from './tsutils-color.js'
 import { clone as _clone, extend as _extend, naturalCompare as _naturalCompare, getNested as _getNested, normMenu as _normMenu, encodeParams as _encodeParams, prepareParams as _prepareParams, parseRoute as _parseRoute, debounce as _debounce, wait as _wait } from './tsutils-data.js'
 import type { TsCloneOptions, TsNormMenuOptions } from './tsutils-data.js'
 export type { TsNormMenuOptions } from './tsutils-data.js'
+import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _encodeTags, decodeTags as _decodeTags, escapeId as _escapeId, unescapeId as _unescapeId, base64encode as _base64encode, base64decode as _base64decode, sha256 as _sha256, execTemplate as _execTemplate } from './tsutils-string.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -748,150 +749,23 @@ class Utils {
         return this.formatDate(dateStr, fmt[0]) + ' ' + this.formatTime(dateStr, fmt[1])
     }
 
-    stripSpaces(html: unknown): unknown {
-        if (html == null) return html
-        switch (typeof html) {
-            case 'number':
-                break
-            case 'string':
-                html = String(html).replace(/(?:\r\n|\r|\n)/g, ' ').replace(/\s\s+/g, ' ').trim()
-                break
-            case 'object':
-                // does not modify original object, but creates a copy
-                if (Array.isArray(html)) {
-                    const arr = this.extend([], html) as unknown[]
-                    arr.forEach((key, ind) => { arr[ind] = this.stripSpaces(key) })
-                    return arr
-                } else {
-                    const obj = this.extend({}, html) as Record<string, unknown>
-                    Object.keys(obj).forEach(key => { obj[key] = this.stripSpaces(obj[key]) })
-                    return obj
-                }
-        }
-        return html
-    }
+    stripSpaces(html: unknown): unknown { return _stripSpaces(html) }
 
-    stripTags(html: unknown): unknown {
-        if (html == null) return html
-        switch (typeof html) {
-            case 'number':
-                break
-            case 'string':
-                html = String(html).replace(/<(?:[^>=]|='[^']*'|="[^"]*"|=[^'"][^\s>]*)*>/ig, '')
-                break
-            case 'object':
-                // does not modify original object, but creates a copy
-                if (Array.isArray(html)) {
-                    const arr = this.extend([], html) as unknown[]
-                    arr.forEach((key, ind) => { arr[ind] = this.stripTags(key) })
-                    return arr
-                } else {
-                    const obj = this.extend({}, html) as Record<string, unknown>
-                    Object.keys(obj).forEach(key => { obj[key] = this.stripTags(obj[key]) })
-                    return obj
-                }
-        }
-        return html
-    }
+    stripTags(html: unknown): unknown { return _stripTags(html) }
 
-    encodeTags(html: unknown): unknown {
-        if (html == null) return html
-        switch (typeof html) {
-            case 'number':
-                break
-            case 'string':
-                html = String(html).replace(/&/g, '&amp;').replace(/>/g, '&gt;').replace(/</g, '&lt;').replace(/"/g, '&quot;')
-                break
-            case 'object':
-                // does not modify original object, but creates a copy
-                if (Array.isArray(html)) {
-                    const arr = this.extend([], html) as unknown[]
-                    arr.forEach((key, ind) => { arr[ind] = this.encodeTags(key) })
-                    return arr
-                } else {
-                    const obj = this.extend({}, html) as Record<string, unknown>
-                    Object.keys(obj).forEach(key => { obj[key] = this.encodeTags(obj[key]) })
-                    return obj
-                }
-        }
-        return html
-    }
+    encodeTags(html: unknown): unknown { return _encodeTags(html) }
 
-    decodeTags(html: unknown): unknown {
-        if (html == null) return html
-        switch (typeof html) {
-            case 'number':
-                break
-            case 'string':
-                html = String(html).replace(/&gt;/g, '>').replace(/&lt;/g, '<').replace(/&quot;/g, '"').replace(/&amp;/g, '&')
-                break
-            case 'object':
-                // does not modify original object, but creates a copy
-                if (Array.isArray(html)) {
-                    const arr = this.extend([], html) as unknown[]
-                    arr.forEach((key, ind) => { arr[ind] = this.decodeTags(key) })
-                    return arr
-                } else {
-                    const obj = this.extend({}, html) as Record<string, unknown>
-                    Object.keys(obj).forEach(key => { obj[key] = this.decodeTags(obj[key]) })
-                    return obj
-                }
-        }
-        return html
-    }
+    decodeTags(html: unknown): unknown { return _decodeTags(html) }
 
-    escapeId(id: unknown): string {
-        // This logic is borrowed from jQuery
-        if (id === '' || id == null) return ''
-        const re = /([\0-\x1f\x7f]|^-?\d)|^-$|[^\0-\x1f\x7f-\uFFFF\w-]/g
-        return (id + '').replace(re, (ch, asCodePoint) => {
-            if (asCodePoint) {
-                if (ch === '\0') return '\uFFFD'
-                return ch.slice( 0, -1 ) + '\\' + ch.charCodeAt( ch.length - 1 ).toString( 16 ) + ' '
-            }
-            return '\\' + ch
-        })
-    }
+    escapeId(id: unknown): string { return _escapeId(id) }
 
-    unescapeId(id: string | null | undefined): string {
-        // This logic is borrowed from jQuery
-        if (id === '' || id == null) return ''
-        const re = /\\[\da-fA-F]{1,6}[\x20\t\r\n\f]?|\\([^\r\n\f])/g
-        return id.replace(re, (escape, nonHex) => {
-            const high = (parseInt('0x' + escape.slice(1), 16)) - 0x10000
-            return nonHex ? nonHex : high < 0
-                    ? String.fromCharCode(high + 0x10000 )
-                    : String.fromCharCode(high >> 10 | 0xD800, high & 0x3FF | 0xDC00)
-        })
-    }
+    unescapeId(id: string | null | undefined): string { return _unescapeId(id) }
 
-    base64encode(str: string): string {
-        // Fast Native support in Chrome since 2010
-        const utf8Bytes = new TextEncoder().encode(str)
-        let binaryString = ''
-        for (const byte of utf8Bytes) {
-            binaryString += String.fromCharCode(byte)
-        }
-        return btoa(binaryString)
-    }
+    base64encode(str: string): string { return _base64encode(str) }
 
-    base64decode(encodedStr: string): string {
-        // Fast Native support in Chrome since 2010
-        const binaryString = atob(encodedStr)
-        const utf8Bytes = new Uint8Array(binaryString.length)
-        for (let i = 0; i < binaryString.length; i++) {
-            utf8Bytes[i] = binaryString.charCodeAt(i)
-        }
-        return new TextDecoder().decode(utf8Bytes)
-    }
+    base64decode(encodedStr: string): string { return _base64decode(encodedStr) }
 
-    async sha256(str: string): Promise<string> {
-        const utf8 = new TextEncoder().encode(str)
-        return crypto.subtle.digest('SHA-256', utf8).then((hashBuffer) => {
-            const hashArray = Array.from(new Uint8Array(hashBuffer))
-            return hashArray.map((bytes) => bytes.toString(16).padStart(2, '0')).join('')
-        })
-    }
+    sha256(str: string): Promise<string> { return _sha256(str) }
 
     transition(div_old: HTMLElement, div_new: HTMLElement, type: string, callBack?: () => void): Promise<void> {
         return new Promise<void>((resolve, _reject) => {
@@ -1862,23 +1736,9 @@ class Utils {
         return this.getStrDimentions(str, styles, raw).height
     }
 
-    execTemplate(
-        // any: str and replace_obj are dynamic template params; types vary by caller
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        str: any,
-        // any: targeted-any per typing_policy; TsUtils helper accepts heterogeneous runtime input
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        replace_obj: any
-    // any: return type any — caller narrows by code path; TsUtils helper accepts heterogeneous runtime input
+    // any: targeted-any per typing_policy; TsUtils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ): any {
-        if (typeof str !== 'string' || !replace_obj || typeof replace_obj !== 'object') {
-            return str
-        }
-        // any: $2 is the matched key from template literal, replace_obj[$2] is dynamic
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return str.replace(/\${([^}]+)?}/g, function(_$1: any, $2: any) { return replace_obj[$2]||$2 })
-    }
+    execTemplate(str: any, replace_obj: any): any { return _execTemplate(str, replace_obj) }
 
     // any: parameter typed any — runtime dispatch by call site; TsUtils helper accepts heterogeneous runtime input
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
