@@ -42,13 +42,11 @@ import type { TsCloneOptions, TsNormMenuOptions } from './tsutils-data.js'
 export type { TsNormMenuOptions } from './tsutils-data.js'
 import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _encodeTags, decodeTags as _decodeTags, escapeId as _escapeId, unescapeId as _unescapeId, base64encode as _base64encode, base64decode as _base64decode, sha256 as _sha256, execTemplate as _execTemplate } from './tsutils-string.js'
 import { marker as _marker } from './tsutils-marker.js'
+import { TsUi, checkName as _checkName } from './tsutils-registry.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
 const query = _query as (selector: unknown, context?: unknown) => Query
-
-// variable that holds all TsUi objects
-const TsUi: Record<string, unknown> = {}
 
 // ---------------------------------------------------------------------------
 // Public interfaces — exported via TsUtils instance
@@ -1840,19 +1838,7 @@ class Utils {
     }
 
     checkName(name: string): boolean {
-        if (name == null) {
-            console.log('ERROR: Property "name" is required but not supplied.')
-            return false
-        }
-        if (TsUi[name] != null) {
-            console.log(`ERROR: Object named "${name}" is already registered as TsUi.${name}.`)
-            return false
-        }
-        if (!this.isAlphaNumeric(name)) {
-            console.log('ERROR: Property "name" has to be alpha-numeric (a-z, 0-9, dash and underscore).')
-            return false
-        }
-        return true
+        return _checkName(name)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

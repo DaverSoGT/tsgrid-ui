@@ -9,12 +9,17 @@
  *
  */
 
-import { TsUtils, query, TsUi } from './tsutils.js'
-// IMPORTANT: do NOT rebind TsUi to a local const at module-top scope here.
-// esbuild's CJS bundle inlines tsbase BEFORE tsutils, so any module-init
-// binding (e.g. `const _registry = TsUi`) captures TsUi while it's still
-// hoisted-undefined, and widget registration silently writes to undefined.
-// Always read TsUi at call time inside class methods (post-init).
+import { extend } from './tsutils-data.js'
+import { isPlainObject } from './tsutils-type-guards.js'
+import { TsUi, checkName } from './tsutils-registry.js'
+import { query as _query } from './query.js'
+// Cycle break — Phase 0 of v2.3 SDD message-cluster-extraction:
+// tsbase.ts no longer imports from tsutils.ts. The historical "do NOT rebind TsUi"
+// warning is preserved here for posterity but is no longer load-bearing — TsUi now
+// comes from tsutils-registry.ts, which is a true leaf module (only imports
+// isAlphaNumeric from tsutils-type-guards.ts). The tsbase ↔ tsutils import cycle
+// is fully severed per design §D.3.
+const query = _query as (selector: unknown, context?: unknown) => import('./query.js').Query
 
 /**
  * Payload object passed to handlers registered via `.on(eventName, handler)`.
@@ -109,7 +114,7 @@ class TsEvent {
 
     finish(detail?: Partial<TsEventData>): void {
         if (detail) {
-            TsUtils.extend(this.detail, detail)
+            extend(this.detail, detail)
         }
         this.phase = 'after'
         this.owner.trigger.call(this.owner, this)
@@ -179,7 +184,7 @@ class TsBase {
         this.listeners = [] // event listeners
         // register globally
         if (typeof name !== 'undefined') {
-            if (!TsUtils.checkName(name)) return
+            if (!checkName(name)) return
             ;(TsUi as Record<string, unknown>)[name] = this
         }
         this.debug = false // if true, will trigger all events
@@ -208,7 +213,7 @@ class TsBase {
                 const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type, execute: execute ?? 'before', scope }
             }
-            edata = TsUtils.extend({ type: null, execute: 'before', onComplete: null }, edata)
+            edata = extend({ type: null, execute: 'before', onComplete: null }, edata)
             // errors
             if (!edata.type) { console.log('ERROR: You must specify event type when calling .on() method of '+ this.name); return }
             if (!handler) { console.log('ERROR: You must specify event handler function when calling .on() method of '+ this.name); return }
@@ -244,7 +249,7 @@ class TsBase {
                 const [type, execute] = (eventName ?? '').replace(':complete', ':after').replace(':done', ':after').split(':')
                 edata = { type: type || '*', execute: execute || '', scope: scope || '' }
             }
-            edata = TsUtils.extend({ type: null, execute: null, onComplete: null }, edata)
+            edata = extend({ type: null, execute: null, onComplete: null }, edata)
             // errors
             if (!edata.type && !edata.scope) { console.log('ERROR: You must specify event type when calling .off() method of '+ this.name); return }
             if (!handler) { handler = undefined }
@@ -296,7 +301,7 @@ class TsBase {
             edata.type = eventName
             edata.target = edata.target ?? this
         }
-        if (TsUtils.isPlainObject(edata) && edata.phase == 'after') {
+        if (isPlainObject(edata) && edata.phase == 'after') {
             // find event
             edata = this.activeEvents.find((event: TsEvent) => {
                 if (event.type == edata.type && event.target == edata.target) {
