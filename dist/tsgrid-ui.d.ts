@@ -587,6 +587,7 @@ declare class Utils {
     setCursorPosition(input: HTMLElement | null, pos: number, posEnd?: number): void;
     parseColor(str: string | null | undefined): TsColorRgb | null;
     colorContrast(color1: string, color2: string): string;
+    colorContrastValue(color1: string, color2: string): number;
     hsv2rgb(h: any, s?: any, v?: any, a?: any): {
         r: number;
         g: number;

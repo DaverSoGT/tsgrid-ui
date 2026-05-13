@@ -1,4 +1,4 @@
-/* tsgrid-ui 1.0.x (nightly) (5/13/2026, 3:29:14 PM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 1.0.x (nightly) (5/13/2026, 4:06:07 PM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -1183,11 +1183,10 @@ function parseColor(str) {
   }
   return color;
 }
-function colorContrast(color1, color2) {
+function colorContrastValue(color1, color2) {
   const lum1 = calcLumens(color1);
   const lum2 = calcLumens(color2);
-  const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
-  return ratio.toFixed(2);
+  return (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05);
   function calcLumens(color) {
     const { r, g, b } = parseColor(color) ?? { r: 0, g: 0, b: 0, a: 1 };
     const gamma = 2.2;
@@ -1199,6 +1198,9 @@ function colorContrast(color1, color2) {
     const sB = normB <= 0.03928 ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma);
     return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB;
   }
+}
+function colorContrast(color1, color2) {
+  return colorContrastValue(color1, color2).toFixed(2);
 }
 function hsv2rgb(h, s, v, a) {
   let r, g, b;
@@ -3463,6 +3465,9 @@ var Utils = class {
   }
   colorContrast(color1, color2) {
     return colorContrast(color1, color2);
+  }
+  colorContrastValue(color1, color2) {
+    return colorContrastValue(color1, color2);
   }
   // h=0..360, s=0..100, v=0..100
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -8226,7 +8231,7 @@ var TsToolbar = class extends TsBase {
           let bcolor = item.backColor;
           if (item.backColor === true) {
             bcolor = "#fff";
-            if (Number(TsUtils.colorContrast("#fff", color)) < 2) {
+            if (TsUtils.colorContrastValue("#fff", color) < 2) {
               bcolor = "#555";
             }
           }

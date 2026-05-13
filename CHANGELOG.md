@@ -2,6 +2,27 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.2.0 — 2026-05-13
+
+### Added
+
+- **`TsUtils.colorContrastValue(color1, color2): number`** — numeric companion to `colorContrast()` that returns the raw WCAG ratio as a `number` instead of a `.toFixed(2)` string. Consumers performing threshold checks no longer need to wrap the result in `Number(...)` or `parseFloat(...)`.
+
+### Refactor
+
+- `colorContrast()` now delegates to `colorContrastValue().toFixed(2)`. Output is byte-identical to v2.1.0; no behavior change.
+- `tstoolbar.ts` background-color contrast check upgraded to the numeric API (`TsUtils.colorContrastValue('#fff', color) < 2`), removing the `Number(...)` cast.
+
+### Tests
+
+- Added 4 unit tests for `colorContrastValue` (111 → 115): typeof number, white/black ≥ 21 (max WCAG), identical = 1, parity with `colorContrast` string form via `.toFixed(2)`.
+
+### BC
+
+Net-additive. `colorContrast` return type and value unchanged. SEMVER MINOR. BC verdict: NONE.
+
+---
+
 ## v2.1.0 — 2026-05-13
 
 ### Refactor
