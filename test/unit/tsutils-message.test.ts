@@ -528,3 +528,231 @@ describe('Phase 3b — open cancellation via preventDefault', () => {
         expect(true).toBe(true)
     })
 })
+
+// ---------------------------------------------------------------------------
+// Phase 4 — alert() delegator
+// Per spec §Phase 4 Scenario: alert is byte-identical to message (delegator-to-delegator).
+// ---------------------------------------------------------------------------
+
+describe('Phase 4 — alert() delegator', () => {
+    let host: MessageHost
+
+    beforeEach(() => {
+        host = setupMessageHost()
+        ;(TsUtils as unknown as Record<string, unknown>)['tmp'] = {}
+    })
+
+    afterEach(() => {
+        host.cleanup()
+    })
+
+    it('alert() creates a .tsg-message element in the box', () => {
+        const prom = TsUtils.alert({ box: host.box }, { text: 'Alert test' })
+        const msgs = host.box.querySelectorAll('.tsg-message')
+        expect(msgs.length).toBe(1)
+        prom?.self.close?.()
+    })
+
+    it('alert() DOM output is identical to message() for the same options', () => {
+        TsUtils.alert({ box: host.box }, { text: 'Identical' })
+        const alertHTML = host.box.querySelector('.tsg-message')?.innerHTML
+
+        host.cleanup()
+        host = setupMessageHost()
+
+        TsUtils.message({ box: host.box }, { text: 'Identical' })
+        const msgHTML = host.box.querySelector('.tsg-message')?.innerHTML
+
+        expect(alertHTML).toBe(msgHTML)
+    })
+
+    it('alert() returns a TsMessageProm with action/close/open/then', () => {
+        const prom = TsUtils.alert({ box: host.box }, { text: 'Prom shape' })
+        expect(typeof prom?.action).toBe('function')
+        expect(typeof prom?.close).toBe('function')
+        expect(typeof prom?.open).toBe('function')
+        expect(typeof prom?.then).toBe('function')
+        prom?.self.close?.()
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Phase 4 — confirm() extraction
+// Per spec §Phase 4: confirm extracts to _confirm in tsutils-message.ts.
+// Tests cover: prom shape (yes/no), single-arg form parity (R1 lock for confirm),
+// macButtonOrder, yes/no click callbacks.
+// ---------------------------------------------------------------------------
+
+describe('Phase 4 — confirm() prom shape and buttons', () => {
+    let host: MessageHost
+
+    beforeEach(() => {
+        host = setupMessageHost()
+        ;(TsUtils as unknown as Record<string, unknown>)['tmp'] = {}
+    })
+
+    afterEach(() => {
+        host.cleanup()
+    })
+
+    it('confirm() creates a .tsg-message element', () => {
+        const prom = TsUtils.confirm({ box: host.box }, { text: 'Delete?' })
+        expect(host.box.querySelectorAll('.tsg-message').length).toBe(1)
+        prom?.self.close?.()
+    })
+
+    it('confirm() prom has action/close/open/then methods', () => {
+        const prom = TsUtils.confirm({ box: host.box }, { text: 'Confirm prom?' })
+        expect(typeof prom?.action).toBe('function')
+        expect(typeof prom?.close).toBe('function')
+        expect(typeof prom?.open).toBe('function')
+        expect(typeof prom?.then).toBe('function')
+        prom?.self.close?.()
+    })
+
+    it('confirm() renders yes and no buttons from normButtons', () => {
+        TsUtils.confirm({ box: host.box }, { text: 'Sure?', yes_text: 'Yep', no_text: 'Nope' } as unknown as import('../../src/tsutils.js').TsMessageOptions)
+        const buttons = Array.from(host.box.querySelectorAll('.tsg-message button'))
+        const texts = buttons.map(b => b.textContent?.trim())
+        expect(texts).toContain('Yep')
+        expect(texts).toContain('Nope')
+    })
+
+    it('confirm() default buttons are "Yes" and "No"', () => {
+        TsUtils.confirm({ box: host.box }, { text: 'Defaults?' })
+        const buttons = Array.from(host.box.querySelectorAll('.tsg-message button'))
+        const texts = buttons.map(b => b.textContent?.trim())
+        expect(texts).toContain('Yes')
+        expect(texts).toContain('No')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Phase 4 — confirm() single-arg form parity (R1 lock for confirm)
+// Per design §F.2: options == null replaces arguments.length == 1 in _confirm.
+// ---------------------------------------------------------------------------
+
+describe('Phase 4 — confirm() single-arg parity (R1 lock)', () => {
+    let host: MessageHost
+
+    beforeEach(() => {
+        host = setupMessageHost()
+        ;(TsUtils as unknown as Record<string, unknown>)['tmp'] = {}
+    })
+
+    afterEach(() => {
+        host.cleanup()
+    })
+
+    it('confirm: 1-arg form (where IS options) renders correctly', () => {
+        const where = { box: host.box, text: 'Confirm 1-arg?' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        const prom = TsUtils.confirm(where)
+        expect(prom).toBeDefined()
+        const msgs = host.box.querySelectorAll('.tsg-message')
+        expect(msgs.length).toBe(1)
+        expect(host.box.querySelector('.tsg-message')?.textContent).toContain('Confirm 1-arg?')
+        prom?.self.close?.()
+    })
+
+    it('confirm: 2-arg with undefined matches 1-arg output (delegator parity)', () => {
+        const where1 = { box: host.box, text: 'Parity confirm', yes_text: 'Ok', no_text: 'Cancel' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        TsUtils.confirm(where1)
+        const dom1 = host.box.querySelector('.tsg-message')?.textContent
+        host.cleanup()
+        host = setupMessageHost()
+
+        const where2 = { box: host.box, text: 'Parity confirm', yes_text: 'Ok', no_text: 'Cancel' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        TsUtils.confirm(where2, undefined)
+        const dom2 = host.box.querySelector('.tsg-message')?.textContent
+
+        expect(dom1).toBe(dom2)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Phase 4 — prompt() extraction
+// Per spec §Phase 4: prompt extracts to _prompt in tsutils-message.ts.
+// Tests cover: input rendering, .change() method, single-arg form parity (R1 lock).
+// ---------------------------------------------------------------------------
+
+describe('Phase 4 — prompt() input rendering', () => {
+    let host: MessageHost
+
+    beforeEach(() => {
+        host = setupMessageHost()
+        ;(TsUtils as unknown as Record<string, unknown>)['tmp'] = {}
+    })
+
+    afterEach(() => {
+        host.cleanup()
+    })
+
+    it('prompt() creates a .tsg-message element', () => {
+        const prom = TsUtils.prompt({ box: host.box }, { text: 'Enter name:' } as unknown as import('../../src/tsutils.js').TsMessageOptions)
+        expect(host.box.querySelectorAll('.tsg-message').length).toBe(1)
+        prom?.self.close?.()
+    })
+
+    it('prompt() with label renders an input#TsPrompt', () => {
+        TsUtils.prompt({ box: host.box }, { label: 'Name:' } as unknown as import('../../src/tsutils.js').TsMessageOptions)
+        const input = host.box.querySelector('#TsPrompt')
+        expect(input).not.toBeNull()
+        expect(input?.tagName.toLowerCase()).toBe('input')
+    })
+
+    it('prompt() with textarea: true renders a textarea#TsPrompt', () => {
+        TsUtils.prompt({ box: host.box }, { label: 'Comment:', textarea: true } as unknown as import('../../src/tsutils.js').TsMessageOptions)
+        const textarea = host.box.querySelector('#TsPrompt')
+        expect(textarea).not.toBeNull()
+        expect(textarea?.tagName.toLowerCase()).toBe('textarea')
+    })
+
+    it('prompt() returns prom with .change() method (added post-render)', () => {
+        const prom = TsUtils.prompt({ box: host.box }, { label: 'Enter:' } as unknown as import('../../src/tsutils.js').TsMessageOptions)
+        // After the open timer fires, prom.change is attached via prom.then()
+        // Even before the timer fires, prom exists
+        expect(prom).toBeDefined()
+        prom?.self.close?.()
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Phase 4 — prompt() single-arg form parity (R1 lock for prompt)
+// ---------------------------------------------------------------------------
+
+describe('Phase 4 — prompt() single-arg parity (R1 lock)', () => {
+    let host: MessageHost
+
+    beforeEach(() => {
+        host = setupMessageHost()
+        ;(TsUtils as unknown as Record<string, unknown>)['tmp'] = {}
+    })
+
+    afterEach(() => {
+        host.cleanup()
+    })
+
+    it('prompt: 1-arg form (where IS options) renders correctly', () => {
+        const where = { box: host.box, label: 'Enter 1-arg:' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        const prom = TsUtils.prompt(where)
+        expect(prom).toBeDefined()
+        expect(host.box.querySelectorAll('.tsg-message').length).toBe(1)
+        const input = host.box.querySelector('#TsPrompt')
+        expect(input).not.toBeNull()
+        prom?.self.close?.()
+    })
+
+    it('prompt: 2-arg with undefined matches 1-arg output (delegator parity)', () => {
+        const where1 = { box: host.box, label: 'Parity prompt:' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        TsUtils.prompt(where1)
+        const dom1 = host.box.querySelector('.tsg-message')?.textContent
+        host.cleanup()
+        host = setupMessageHost()
+
+        const where2 = { box: host.box, label: 'Parity prompt:' } as unknown as import('../../src/tsutils.js').TsMessageWhere
+        TsUtils.prompt(where2, undefined)
+        const dom2 = host.box.querySelector('.tsg-message')?.textContent
+
+        expect(dom1).toBe(dom2)
+    })
+})

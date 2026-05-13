@@ -45,8 +45,8 @@ import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _en
 import { marker as _marker } from './tsutils-marker.js'
 import { TsUi, checkName as _checkName } from './tsutils-registry.js'
 import { notify as _notify } from './tsutils-notify.js'
-import { normButtons as _normButtons, _message as _messageFn } from './tsutils-message.js'
-import type { TsMessageProm, TsMessageWhere, TsMessageOptions, MessageDeps } from './tsutils-message.js'
+import { normButtons as _normButtons, _message as _messageFn, _alert as _alertFn, _confirm as _confirmFn, _prompt as _promptFn } from './tsutils-message.js'
+import type { TsMessageProm, TsMessageWhere, TsMessageOptions, MessageDeps, ConfirmDeps, PromptDeps } from './tsutils-message.js'
 export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-message.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
@@ -1015,6 +1015,37 @@ class Utils {
     }
 
     /**
+     * Constructs the ConfirmDeps object for the _confirm() delegator.
+     * Per design §C.3.
+     * normButtons closure: uses inline lambda that binds this.lang and this.settings
+     * at call time — preserving the call-time timing semantics (design §C.3 caveat).
+     */
+    private _confirmDeps(): ConfirmDeps {
+        return {
+            extend: _extend,
+            normButtons: (opts, btn) => _normButtons(opts, btn, { extend: _extend, lang: this.lang.bind(this), settings: this.settings }),
+            message: (w, o) => this.message(w, o),
+            settings: this.settings,
+            lang: this.lang.bind(this)
+        }
+    }
+
+    /**
+     * Constructs the PromptDeps object for the _prompt() delegator.
+     * Per design §C.3.
+     * lang is bound at call time so deps.lang('Ok') uses current locale.
+     */
+    private _promptDeps(): PromptDeps {
+        return {
+            extend: _extend,
+            normButtons: (opts, btn) => _normButtons(opts, btn, { extend: _extend, lang: this.lang.bind(this), settings: this.settings }),
+            message: (w, o) => this.message(w, o),
+            settings: this.settings,
+            lang: this.lang.bind(this)
+        }
+    }
+
+    /**
      * Opens a context message, similar in parameters as TsPopup.open()
      *
      * Sample Calls
@@ -1050,7 +1081,7 @@ class Utils {
     }
 
     alert(where: TsMessageWhere, options?: TsMessageOptions | string | number): TsMessageProm | undefined {
-        return this.message(where, options)
+        return _alertFn(where, options, this._msgDeps())
     }
 
     /**
@@ -1065,26 +1096,7 @@ class Utils {
      *    .yes(event => console.log(event))
      */
     confirm(where: TsMessageWhere, options?: TsMessageOptions | string | number): TsMessageProm | undefined {
-        // any: options is normalized in-place; shape is TsMessageOptions at runtime
-        let msgOpts: Record<string, unknown> = {}
-        if (['string', 'number'].includes(typeof options)) {
-            msgOpts = { text: options }
-        } else if (arguments.length == 1) {
-            msgOpts = where as unknown as Record<string, unknown>
-        } else {
-            msgOpts = (options ?? {}) as unknown as Record<string, unknown>
-        }
-        TsUtils.normButtons(msgOpts, { yes: 'Yes', no: 'No' })
-        msgOpts['cancelAction'] ??= 'No'
-        const prom = TsUtils.message(where, msgOpts as unknown as TsMessageOptions)
-        if (prom) {
-            prom.action((event: unknown) => {
-                const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
-                const self = d?.['self'] as Record<string, unknown>
-                ;(self?.['close'] as (() => void) | undefined)?.()
-            })
-        }
-        return prom
+        return _confirmFn(where, options, this._confirmDeps())
     }
 
     /**
@@ -1100,72 +1112,8 @@ class Utils {
      *    })
      *    .ok(event => console.log(event))
      */
-    prompt(where: TsMessageWhere, options?: TsMessageOptions | string | number) {
-        // any: options is normalized in-place; shape is TsMessageOptions at runtime
-        let msgOpts: Record<string, unknown> = {}
-        if (['string', 'number'].includes(typeof options)) {
-            msgOpts = { label: options }
-        } else if (arguments.length == 1) {
-            msgOpts = where as unknown as Record<string, unknown>
-        } else {
-            msgOpts = (options ?? {}) as unknown as Record<string, unknown>
-        }
-        msgOpts['cancelAction'] ??= 'Cancel'
-        if (msgOpts['label']) {
-            msgOpts['focus'] = 0 // the input should be in focus, which is first in the popup
-            msgOpts['body'] = (msgOpts['textarea']
-                ? `<div class="tsg-prompt textarea">
-                     <div>${msgOpts['label']}</div>
-                     <textarea id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
-                        data-keydown="keydown|event" data-keyup="change|event"></textarea>
-                   </div>`
-                : `<div class="tsg-prompt tsg-centered">
-                     <label>${msgOpts['label']}&nbsp;</label>
-                     <input id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
-                        data-keydown="keydown|event" data-keyup="change|event">
-                   </div>`
-            )
-        }
-        TsUtils.normButtons(msgOpts, { ok: TsUtils.lang('Ok'), cancel: TsUtils.lang('Cancel') })
-        const prom = TsUtils.message(where, msgOpts as unknown as TsMessageOptions)
-        if (prom) {
-            prom.change = function(callBack: (event: unknown) => void) {
-                const selfR = prom.self as unknown as Record<string, unknown>
-                ;(selfR?.['on'] as ((ev: string, cb: (event: unknown) => void) => void) | undefined)?.('change.prom', callBack)
-                return prom
-            }
-            prom
-                .action((event: unknown) => {
-                    const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
-                    const self = d?.['self'] as Record<string, unknown>
-                    ;(self?.['close'] as (() => void) | undefined)?.()
-                })
-                .then((event: unknown) => {
-                    const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
-                    ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#TsPrompt').get(0)
-                    query(d?.['box'])
-                        .find('#TsPrompt')
-                        // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        .on('keydown', (evt: any) => {
-                            if (evt.keyCode == 13 && evt.shiftKey === false) {
-                                evt.preventDefault()
-                            }
-                        })
-                        // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        .on('keyup', (evt: any) => {
-                            const self = d?.['self'] as Record<string, unknown>
-                            // any: trigger is mixed in from TsBase
-                            const edata = (self?.['trigger'] as (..._a: unknown[]) => unknown)?.('change', { value: evt.target.value, input: evt.target, originalEvent: evt })
-                            if (evt.keyCode == 13 && evt.shiftKey === false) {
-                                ;(self?.['action'] as (..._a: unknown[]) => unknown)?.('Ok', evt)
-                            }
-                            ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
-                        })
-                })
-        }
-        return prom
+    prompt(where: TsMessageWhere, options?: TsMessageOptions | string | number): TsMessageProm | undefined {
+        return _promptFn(where, options, this._promptDeps())
     }
 
     /**

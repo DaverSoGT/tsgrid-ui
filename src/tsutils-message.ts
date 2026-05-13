@@ -561,3 +561,188 @@ export function _message(
     }
     return prom
 }
+
+// ---------------------------------------------------------------------------
+// Phase 4 — _alert, _confirm, _prompt
+// Extracted verbatim from TsUtils.prototype.alert/confirm/prompt (tsutils.ts)
+// with deps-injection substitutions.
+//
+// Key INV-8 fix: `arguments.length == 1` replaced with `options == null`
+// in both _confirm and _prompt (design §F.2). This is a strict behavioral
+// superset: covers single-arg calls AND explicit undefined/null 2nd arg.
+// ---------------------------------------------------------------------------
+
+/**
+ * Deps interface for _confirm() — per design §C.3.
+ * @internal
+ */
+export interface ConfirmDeps {
+    /** Object/array merge — sourced from tsutils-data */
+    extend: (target: object, ...sources: object[]) => object
+    /** Normalize yes/no/ok/cancel buttons — already extracted as normButtons() */
+    normButtons: (options: Record<string, unknown>, btn: Record<string, unknown>) => Record<string, unknown>
+    /** Forward ref to extracted message() delegator — preserves widget mixing via this.message() */
+    message: (where: TsMessageWhere, options: TsMessageOptions | string | number | undefined) => TsMessageProm | undefined
+    /** Settings object (for macButtonOrder in normButtons) */
+    settings: { macButtonOrder?: boolean; [key: string]: unknown }
+    /** i18n translation — bound to this at call time (prompt only, confirm may omit) */
+    lang?: (phrase: string, params?: Record<string, string | number> | boolean) => string
+}
+
+/**
+ * Deps interface for _prompt() — per design §C.3 (extends ConfirmDeps with lang required).
+ * @internal
+ */
+export interface PromptDeps extends ConfirmDeps {
+    /** i18n translation — required for prompt (Ok / Cancel button labels) */
+    lang: (phrase: string, params?: Record<string, string | number> | boolean) => string
+}
+
+/**
+ * Extracted alert() implementation — delegator-to-delegator.
+ * alert() is behaviorally identical to message(); it delegates directly.
+ * @internal — called by the TsUtils class delegator only
+ */
+export function _alert(
+    this: void,
+    where: TsMessageWhere,
+    options: TsMessageOptions | string | number | undefined,
+    deps: MessageDeps
+): TsMessageProm | undefined {
+    return _message(where, options, deps)
+}
+
+/**
+ * Extracted confirm() implementation — full body (Phase 4).
+ * Extracted from TsUtils.prototype.confirm (tsutils.ts:1067-1088).
+ *
+ * INV-8 fix: `arguments.length == 1` → `options == null`
+ *   (options == null covers both undefined and explicit null, which is a strict superset
+ *    of the original guard and fixes the delegator-wrapping silently-always-2-args bug)
+ *
+ * Substitutions:
+ *   TsUtils.normButtons(...)  → deps.normButtons(...)
+ *   TsUtils.message(...)      → deps.message(...)
+ *   arguments.length == 1     → options == null   (INV-8 / design §F.2)
+ * @internal — called by the TsUtils class delegator only
+ */
+export function _confirm(
+    this: void,
+    where: TsMessageWhere,
+    options: TsMessageOptions | string | number | undefined,
+    deps: ConfirmDeps
+): TsMessageProm | undefined {
+    // any: options is normalized in-place; shape is TsMessageOptions at runtime
+    let msgOpts: Record<string, unknown> = {}
+    if (['string', 'number'].includes(typeof options)) {
+        msgOpts = { text: options }
+    } else if (options == null) {
+        // INV-8: replaces `arguments.length == 1` — covers single-arg call AND explicit undefined/null
+        msgOpts = where as unknown as Record<string, unknown>
+    } else {
+        msgOpts = (options ?? {}) as unknown as Record<string, unknown>
+    }
+    deps.normButtons(msgOpts, { yes: 'Yes', no: 'No' })
+    msgOpts['cancelAction'] ??= 'No'
+    const prom = deps.message(where, msgOpts as unknown as TsMessageOptions)
+    if (prom) {
+        prom.action((event: unknown) => {
+            const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+            const self = d?.['self'] as Record<string, unknown>
+            ;(self?.['close'] as (() => void) | undefined)?.()
+        })
+    }
+    return prom
+}
+
+/**
+ * Extracted prompt() implementation — full body (Phase 4).
+ * Extracted from TsUtils.prototype.prompt (tsutils.ts:1103-1169).
+ *
+ * INV-8 fix: `arguments.length == 1` → `options == null`
+ *
+ * Substitutions:
+ *   TsUtils.normButtons(...)   → deps.normButtons(...)
+ *   TsUtils.lang(...)          → deps.lang(...)    (bound at call time: this.lang.bind(this))
+ *   TsUtils.message(...)       → deps.message(...)
+ *   arguments.length == 1      → options == null   (INV-8 / design §F.2)
+ *
+ * Design §C.3 normButtons closure caveat:
+ *   The normButtons call uses `deps.lang('Ok')` and `deps.lang('Cancel')` which are
+ *   evaluated at _prompt() call time. `deps.lang` is bound to `this` in the class
+ *   delegator (this.lang.bind(this)), preserving the call-time binding semantics.
+ * @internal — called by the TsUtils class delegator only
+ */
+export function _prompt(
+    this: void,
+    where: TsMessageWhere,
+    options: TsMessageOptions | string | number | undefined,
+    deps: PromptDeps
+): TsMessageProm | undefined {
+    // any: options is normalized in-place; shape is TsMessageOptions at runtime
+    let msgOpts: Record<string, unknown> = {}
+    if (['string', 'number'].includes(typeof options)) {
+        msgOpts = { label: options }
+    } else if (options == null) {
+        // INV-8: replaces `arguments.length == 1` — covers single-arg call AND explicit undefined/null
+        msgOpts = where as unknown as Record<string, unknown>
+    } else {
+        msgOpts = (options ?? {}) as unknown as Record<string, unknown>
+    }
+    msgOpts['cancelAction'] ??= 'Cancel'
+    if (msgOpts['label']) {
+        msgOpts['focus'] = 0 // the input should be in focus, which is first in the popup
+        msgOpts['body'] = (msgOpts['textarea']
+            ? `<div class="tsg-prompt textarea">
+                     <div>${msgOpts['label']}</div>
+                     <textarea id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
+                        data-keydown="keydown|event" data-keyup="change|event"></textarea>
+                   </div>`
+            : `<div class="tsg-prompt tsg-centered">
+                     <label>${msgOpts['label']}&nbsp;</label>
+                     <input id="TsPrompt" class="tsg-input" ${msgOpts['attrs'] ?? ''}
+                        data-keydown="keydown|event" data-keyup="change|event">
+                   </div>`
+        )
+    }
+    deps.normButtons(msgOpts, { ok: deps.lang('Ok'), cancel: deps.lang('Cancel') })
+    const prom = deps.message(where, msgOpts as unknown as TsMessageOptions)
+    if (prom) {
+        prom.change = function(callBack: (event: unknown) => void) {
+            const selfR = prom.self as unknown as Record<string, unknown>
+            ;(selfR?.['on'] as ((ev: string, cb: (event: unknown) => void) => void) | undefined)?.('change.prom', callBack)
+            return prom
+        }
+        prom
+            .action((event: unknown) => {
+                const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+                const self = d?.['self'] as Record<string, unknown>
+                ;(self?.['close'] as (() => void) | undefined)?.()
+            })
+            .then((event: unknown) => {
+                const d = (event as Record<string, unknown>)['detail'] as Record<string, unknown>
+                ;(d?.['self'] as Record<string, unknown>)['input'] = query(d?.['box']).find('#TsPrompt').get(0)
+                query(d?.['box'])
+                    .find('#TsPrompt')
+                    // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .on('keydown', (evt: any) => {
+                        if (evt.keyCode == 13 && evt.shiftKey === false) {
+                            evt.preventDefault()
+                        }
+                    })
+                    // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    .on('keyup', (evt: any) => {
+                        const self = d?.['self'] as Record<string, unknown>
+                        // any: trigger is mixed in from TsBase
+                        const edata = (self?.['trigger'] as (..._a: unknown[]) => unknown)?.('change', { value: evt.target.value, input: evt.target, originalEvent: evt })
+                        if (evt.keyCode == 13 && evt.shiftKey === false) {
+                            ;(self?.['action'] as (..._a: unknown[]) => unknown)?.('Ok', evt)
+                        }
+                        ;((edata as Record<string, unknown>)?.['finish'] as (() => void) | undefined)?.()
+                    })
+            })
+    }
+    return prom
+}
