@@ -43,6 +43,7 @@ export type { TsNormMenuOptions } from './tsutils-data.js'
 import { stripSpaces as _stripSpaces, stripTags as _stripTags, encodeTags as _encodeTags, decodeTags as _decodeTags, escapeId as _escapeId, unescapeId as _unescapeId, base64encode as _base64encode, base64decode as _base64decode, sha256 as _sha256, execTemplate as _execTemplate } from './tsutils-string.js'
 import { marker as _marker } from './tsutils-marker.js'
 import { TsUi, checkName as _checkName } from './tsutils-registry.js'
+import { notify as _notify } from './tsutils-notify.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -1615,63 +1616,7 @@ class Utils {
      * @returns promise
      */
     notify(text: string | Record<string, unknown>, options?: Record<string, unknown>): Promise<void> {
-        return new Promise<void>(resolve => {
-            // any: text can be an options object; normalize in-place
-            let opts: Record<string, unknown> = options ?? {}
-            let textStr: string = ''
-            if (typeof text == 'object') {
-                opts = text
-                textStr = String(opts['text'] ?? '')
-            } else {
-                textStr = String(text ?? '')
-            }
-            opts['where'] ??= document.body
-            opts['timeout'] ??= 15_000 // 15 seconds or will be hidden on route change
-            if (typeof this.tmp['notify_resolve'] == 'function') {
-                ;(this.tmp['notify_resolve'] as () => void)()
-                query(this.tmp['notify_where']).find('#tsg-notify').remove()
-            }
-            this.tmp['notify_resolve'] = resolve
-            this.tmp['notify_where'] = opts['where']
-            clearTimeout(this.tmp['notify_timer'] as number)
-            if (textStr) {
-                if (typeof opts['actions'] == 'object') {
-                    const actions: Record<string, string> = {}
-                    Object.keys(opts['actions'] as Record<string, unknown>).forEach(action => {
-                        actions[action] = `<a class="tsg-notify-link" value="${action}">${action}</a>`
-                    })
-                    textStr = this.execTemplate(textStr, actions)
-                }
-                const html = `
-                    <div id="tsg-notify" style="${opts['where'] == document.body ? 'position: fixed' : ''}">
-                        <div class="${opts['class'] ?? ''} ${opts['error'] ? 'tsg-notify-error' : ''} ${opts['success'] ? 'tsg-notify-success' : ''}">
-                            ${textStr}
-                            <span class="tsg-notify-close tsg-icon-cross"></span>
-                        </div>
-                    </div>`
-                query(opts['where']).append(html)
-                query(opts['where']).find('#tsg-notify').find('.tsg-notify-close')
-                    .on('click', _event => {
-                        query(opts['where']).find('#tsg-notify').remove()
-                        resolve()
-                    })
-                if (opts['actions']) {
-                    query(opts['where']).find('#tsg-notify .tsg-notify-link')
-                        .on('click', event => {
-                            const value = query((event as Event).target).attr('value') ?? ''
-                            ;((opts['actions'] as Record<string, unknown>)[value] as () => void)()
-                            query(opts['where']).find('#tsg-notify').remove()
-                            resolve()
-                        })
-                }
-                if ((opts['timeout'] as number) > 0) {
-                    this.tmp['notify_timer'] = setTimeout(() => {
-                        query(opts['where']).find('#tsg-notify').remove()
-                        resolve()
-                    }, opts['timeout'] as number)
-                }
-            }
-        })
+        return _notify(text, options, { execTemplate: this.execTemplate.bind(this), tmpSlot: this.tmp })
     }
 
     getSize(el: unknown, type: string): number {
