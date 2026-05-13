@@ -486,3 +486,33 @@ describe('TsUtils.isBin', () => {
         expect(TsUtils.isBin('102')).toBe(false)
     })
 })
+
+describe('TsUtils.getNested', () => {
+    it('returns nested value via dot path', () => {
+        expect(TsUtils.getNested({ a: { b: 1 } }, 'a.b')).toBe(1)
+    })
+    it('returns undefined for missing path', () => {
+        expect(TsUtils.getNested({ a: { b: 1 } }, 'a.x')).toBeUndefined()
+    })
+    it('returns top-level value for single-key path', () => {
+        expect(TsUtils.getNested({ foo: 'bar' }, 'foo')).toBe('bar')
+    })
+})
+
+describe('TsUtils.normMenu', () => {
+    it('normalizes a string array to id/text objects', () => {
+        const result = TsUtils.normMenu(['Foo', 'Bar'] as any) as any[]
+        expect(Array.isArray(result)).toBe(true)
+        expect(result[0]).toMatchObject({ id: 'Foo', text: 'Foo' })
+        expect(result[1]).toMatchObject({ id: 'Bar', text: 'Bar' })
+    })
+    it('normalizes an object to id/text array', () => {
+        const result = TsUtils.normMenu({ a: 'Alpha', b: 'Beta' } as any) as any[]
+        expect(Array.isArray(result)).toBe(true)
+        expect(result[0]).toMatchObject({ id: 'a', text: 'Alpha' })
+    })
+    it('preserves existing id/text fields on object items', () => {
+        const result = TsUtils.normMenu([{ id: '1', text: 'Foo' }] as any) as any[]
+        expect(result[0]).toMatchObject({ id: '1', text: 'Foo' })
+    })
+})
