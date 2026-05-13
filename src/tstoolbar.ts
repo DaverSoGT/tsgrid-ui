@@ -909,7 +909,7 @@ class TsToolbar extends TsBase {
                     let bcolor = item.backColor
                     if (item.backColor === true) {
                         bcolor = '#fff'
-                        if (Number(TsUtils.colorContrast('#fff', color)) < 2) {
+                        if (TsUtils.colorContrastValue('#fff', color) < 2) {
                             bcolor = '#555'
                         }
                     }

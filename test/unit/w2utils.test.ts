@@ -478,6 +478,26 @@ describe('TsUtils.colorContrast', () => {
     })
 })
 
+describe('TsUtils.colorContrastValue', () => {
+    it('T-C10: colorContrastValue returns a number (not string)', () => {
+        const ratio = TsUtils.colorContrastValue('#ffffff', '#000000')
+        expect(typeof ratio).toBe('number')
+    })
+    it('T-C11: colorContrastValue white vs black → >= 21 (max WCAG)', () => {
+        const ratio = TsUtils.colorContrastValue('#ffffff', '#000000')
+        expect(ratio).toBeGreaterThanOrEqual(21)
+    })
+    it('T-C12: colorContrastValue identical colors → 1 (no contrast)', () => {
+        const ratio = TsUtils.colorContrastValue('#000000', '#000000')
+        expect(ratio).toBe(1)
+    })
+    it('T-C13: colorContrast string === colorContrastValue number .toFixed(2) (parity)', () => {
+        const num = TsUtils.colorContrastValue('#336699', '#fefefe')
+        const str = TsUtils.colorContrast('#336699', '#fefefe')
+        expect(num.toFixed(2)).toBe(str)
+    })
+})
+
 describe('TsUtils.isBin', () => {
     it('returns true for binary strings', () => {
         expect(TsUtils.isBin('1010')).toBe(true)

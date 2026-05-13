@@ -69,15 +69,13 @@ export function parseColor(str: string | null | undefined): TsColorRgb | null {
 }
 
 /**
- * Compute WCAG contrast ratio between two color strings.
- * Returns a string formatted to 2 decimal places (e.g. "21.00").
+ * Compute WCAG contrast ratio between two color strings as a raw number.
  * Uses local parseColor — NOT TsUtils.parseColor (N3 fix: no back-edge in DAG).
  */
-export function colorContrast(color1: string, color2: string): string {
+export function colorContrastValue(color1: string, color2: string): number {
     const lum1 = calcLumens(color1)
     const lum2 = calcLumens(color2)
-    const ratio = (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05)
-    return ratio.toFixed(2)
+    return (Math.max(lum1, lum2) + 0.05) / (Math.min(lum1, lum2) + 0.05)
 
     function calcLumens(color: string): number {
         const { r, g, b } = parseColor(color) ?? { r: 0, g: 0, b: 0, a: 1 }
@@ -90,6 +88,15 @@ export function colorContrast(color1: string, color2: string): string {
         const sB = (normB <= 0.03928) ? normB / 12.92 : Math.pow((normB + 0.055) / 1.055, gamma)
         return 0.2126 * sR + 0.7152 * sG + 0.0722 * sB
     }
+}
+
+/**
+ * Compute WCAG contrast ratio between two color strings.
+ * Returns a string formatted to 2 decimal places (e.g. "21.00").
+ * For programmatic use prefer `colorContrastValue` (returns a number).
+ */
+export function colorContrast(color1: string, color2: string): string {
+    return colorContrastValue(color1, color2).toFixed(2)
 }
 
 /**

@@ -35,7 +35,7 @@ import { TsBase } from './tsbase.js'
 import { TsLocale } from './tslocale.js'
 import { query as _query, Query } from './query.js'
 import { isInt as _isInt, isHex as _isHex, isAlphaNumeric as _isAlphaNumeric, isEmail as _isEmail, isIpAddress as _isIpAddress, isPlainObject as _isPlainObject, isBin as _isBin, isFloat as _isFloat, isMoney as _isMoney } from './tsutils-type-guards.js'
-import { parseColor as _parseColor, colorContrast as _colorContrast, hsv2rgb as _hsv2rgb, rgb2hsv as _rgb2hsv } from './tsutils-color.js'
+import { parseColor as _parseColor, colorContrast as _colorContrast, colorContrastValue as _colorContrastValue, hsv2rgb as _hsv2rgb, rgb2hsv as _rgb2hsv } from './tsutils-color.js'
 import type { TsColorRgb } from './tsutils-color.js'
 import { clone as _clone, extend as _extend, naturalCompare as _naturalCompare, getNested as _getNested, normMenu as _normMenu, encodeParams as _encodeParams, prepareParams as _prepareParams, parseRoute as _parseRoute, debounce as _debounce, wait as _wait } from './tsutils-data.js'
 import type { TsCloneOptions, TsNormMenuOptions } from './tsutils-data.js'
@@ -1960,6 +1960,8 @@ class Utils {
     parseColor(str: string | null | undefined): TsColorRgb | null { return _parseColor(str) }
 
     colorContrast(color1: string, color2: string): string { return _colorContrast(color1, color2) }
+
+    colorContrastValue(color1: string, color2: string): number { return _colorContrastValue(color1, color2) }
 
     // h=0..360, s=0..100, v=0..100
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
