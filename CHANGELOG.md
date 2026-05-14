@@ -2,6 +2,57 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.6.0 — 2026-05-13
+
+### Refactor
+
+- **`date()` extraction — `DateDeps` deps-injection pattern**: Extracted the `TsUtils.date()` method body (22 LOC, the sole `this.lang('Yesterday')` coupling in `tsutils.ts`) into `_date()` in `src/tsutils-datetime.ts` via a new minimal `DateDeps` interface (`{ lang: (phrase: string) => string }`). Class method `date()` becomes a one-line delegator: `return _date(dateStr, this.settings, { lang: this.lang.bind(this) })`. Public signature `TsUtils.date(dateStr: unknown): string` is **byte-identical** to v2.5.0. `vi.spyOn(TsUtils, 'date')` continues to work (prototype delegator). Follows the v2.3 `MessageDeps` / `NotifyDeps` canonical pattern.
+  - `DateDeps` is an **internal** interface backing the deps-injection delegation pattern. It is NOT exported through `src/index.ts` barrel (INV-7 byte-identical). Consumers of `TsUtils.date()` are unaffected — the public method signature and runtime behavior are identical to v2.5.0 (same string outputs for all date inputs).
+- **`TsTimeResult` dedup**: Promoted `interface TsTimeResult` in `src/tsutils-datetime.ts` from non-exported to `export interface TsTimeResult`. Deleted the local duplicate declaration in `src/tsutils.ts` (lines 102-107); replaced with `import type { TsTimeResult } from './tsutils-datetime.js'` (for internal use by `isTime()`) and `export type { TsTimeResult } from './tsutils-datetime.js'` (barrel re-export). Single source-of-truth now in `tsutils-datetime.ts`. Mirrors the `TsColorRgb` precedent (`tsutils.ts:104`). `dist/tsgrid-ui.d.ts` continues to declare `TsTimeResult` exactly once (INV-LOC-1 `grep -c` = 1, line 425). Existing `import type { TsTimeResult } from 'tsgrid-ui'` consumers continue to work unchanged — same d.ts reachability, different source file.
+
+### Tests
+
+- Added 7-case safety-net suite for `_date()` in `test/unit/tsutils-datetime.test.ts` committed as Phase 4 RED before extraction (INV-TDD PASS):
+  - T-DATE-1 — empty string → `''`
+  - T-DATE-2 — `null` → `''`
+  - T-DATE-3 — invalid date string → `''`
+  - T-DATE-4 — today (frozen clock, `vi.useFakeTimers()`) → regex match on `<span title="...">H:MM am|pm</span>`
+  - T-DATE-5 — yesterday (frozen clock) → regex match on `<span title="May 12, 2026 ...">Yesterday</span>` (proves `deps.lang` is called)
+  - T-DATE-6 — Unix timestamp (older) → `<span title="...">` with month-day-year
+  - T-DATE-7 — older date string → `<span title="...">` with month-day-year
+- `vi.useFakeTimers()` / `vi.useRealTimers()` wrap the entire `_date()` describe block (INV-DATE-TIMEFREEZE PASS). Total Vitest tests: **288/288 GREEN** (v2.5.0 baseline: 280/280).
+
+### Bundle
+
+Delta vs v2.5.0 baseline:
+
+| Artifact | v2.5.0 | v2.6.0 | Δ bytes | Δ % |
+|----------|--------|--------|---------|-----|
+| `dist/tsgrid-ui.js` (CJS) | 946,611 B | 946,686 B | +75 B | +0.0079% |
+| `dist/tsgrid-ui.es6.js` (ESM) | 944,804 B | 944,878 B | +74 B | +0.0078% |
+| `dist/tsgrid-ui.min.js` (CJS min) | 508,902 B | 508,954 B | +52 B | +0.0102% |
+| `dist/tsgrid-ui.es6.min.js` (ESM min) | 507,768 B | 507,819 B | +51 B | +0.0100% |
+| `dist/tsgrid-ui.d.ts` | 93,022 B | 94,446 B | +1,424 B | +1.5308% |
+
+All within ±2% gate. PASSED. The JS bundles are essentially byte-stable (≤0.011%) — the mechanical extraction added nothing meaningful at runtime. The `d.ts` grew by +1,424 B because `TsTimeResult` is now emitted as a named export from `tsutils-datetime.ts` (its source-of-truth file) rather than transitively via `isTime()` from `tsutils.ts`; additionally `DateDeps` is declared in `tsutils-datetime.ts` and included in the rolled d.ts.
+
+**Note on P6 dist commit**: `pnpm build` was run at P6-DEDUP to enable the INV-LOC-1 audit-trail gate (`grep -c` = 1 in committed dist). P8 re-emits dist with the `v2.6.0` version banner baked into the JS headers. This is intentional and mirrors the v2.5.0 release commit (`51c00836`) pattern.
+
+### BC
+
+- `TsUtils.date(dateStr: unknown): string` — signature and runtime behavior **BYTE-IDENTICAL** to v2.5.0. All existing call sites work unchanged.
+- `TsUtils.isTime(val: unknown, retTime?: boolean): boolean | TsTimeResult` — signature **BYTE-IDENTICAL** to v2.5.0.
+- `TsTimeResult` — shape `{ hours: number; minutes: number; seconds: number }` unchanged. Continues to be reachable in `dist/tsgrid-ui.d.ts` at the same surface. Existing `import type { TsTimeResult } from 'tsgrid-ui'` consumers unaffected.
+- `DateDeps` — NEW **internal** interface. Not exported through `src/index.ts` barrel (INV-7 byte-identical). Consumers do not depend on it; `_date()` is not a public export. Spec requirement A-4 (emit `DateDeps` in d.ts as a named export) is NOT honored because honoring it would require modifying `src/index.ts`, violating INV-7. The type IS present in the rolled d.ts (tsutils-datetime.ts is included by tsup), but is not consumer-reachable via a top-level import path. This is a documented spec divergence: INV-7 (backwards compat, blocking) takes precedence over A-4 (additive surface, non-blocking for existing consumers). Future revision: export `DateDeps` from `src/index.ts` if consumers need it.
+- `src/index.ts` barrel — **byte-identical** to v2.5.0 (INV-7 PASS).
+- SEMVER MINOR. BC verdict: NONE.
+
+### Internal
+
+- v2.5 SUGG-5 (INV-8 over `src/tsutils-color.ts`) **CLOSED by verification**: ESLint `no-restricted-syntax` glob `src/tsutils-*.ts` already covers `tsutils-color.ts`. The two `arguments` occurrences at lines 110 and 145 of that file are inside explanatory comments (`// ... example: arguments[0]...`), not AST nodes — the rule does not fire on comment text. Confirmed by INV-LINT-INV8 canary: injecting `void arguments.length;` into `src/tsutils-datetime.ts` triggers `pnpm lint` EXIT 1 with the expected diagnostic; reverting restores EXIT 0. No code change required. No carry-forward to v2.7+ SUGG list.
+
+---
+
 ## v2.5.0 — 2026-05-13
 
 ### Refactor
