@@ -1,5 +1,5 @@
 /**
- * TsUtils locale sub-module — Phase 5a scaffold of v2.7 SDD.
+ * TsUtils locale sub-module — Phase 5b of v2.7 SDD.
  * DAG position: leaf module (no tsbase/tsutils runtime imports).
  *
  * Imports:
@@ -48,30 +48,95 @@ export type LocaleResult =
     | { kind: 'merge'; settings: TsUISettings }
     | { kind: 'void'; settings?: TsUISettings }
 
-// Keep TsLocale in scope for P5b body — avoids unused-import error at scaffold stage
-void TsLocale
-
 // ---------------------------------------------------------------------------
-// _locale() — STUB (Phase 5a)
-// Body lands in Phase 5b.
+// _locale() — Phase 5b (full body)
+// Extracted from TsUtils.locale() body (tsutils.ts:625-686 in v2.6.0).
 // ---------------------------------------------------------------------------
 
 /**
- * Locale loader — extracted from TsUtils.locale() body in Phase 5b.
+ * Locale loader — pure async function extracted from TsUtils.locale() body.
  * Called by the TsUtils.locale() delegator; NOT part of the public API.
  *
- * @param locale  - string locale code, full URL, array of codes, or plain object to merge
+ * INV-9: zero this.X references in this body.
+ * INV-L7-LEAF: no runtime imports from tsutils.ts or tsbase.ts.
+ *
+ * @param locale      - string locale code, full URL, array of codes, or plain object to merge
  * @param keepPhrases - if true, existing phrases are preserved before merge (default: clear)
- * @param noMerge - if true, settings are NOT mutated; resolves with { file, data } payload
- * @param settings - TsUISettings reference (passed by ref from the delegator)
- * @param deps - injected dependencies (extend + fetch)
+ * @param noMerge     - if true, settings are NOT mutated; resolves with { file, data } payload
+ * @param settings    - TsUISettings reference (passed by ref from the delegator)
+ * @param deps        - injected dependencies (extend + fetch)
  */
 export async function _locale(
-    _loc: string | string[] | Record<string, unknown>,
-    _keepPhrases: boolean | undefined,
-    _noMerge: boolean | undefined,
-    _settings: TsUISettings,
-    _deps: LocaleDeps,
+    locale: string | string[] | Record<string, unknown>,
+    keepPhrases: boolean | undefined,
+    noMerge: boolean | undefined,
+    settings: TsUISettings,
+    deps: LocaleDeps,
 ): Promise<LocaleResult> {
-    throw new Error('_locale not implemented — landing in P5b')
+    // --- Array branch (OQ-2/D2 — DIRECT recursion via _locale, not through delegator) ---
+    if (Array.isArray(locale)) {
+        // Pre-reset phrases before fanout (mirrors original line 629)
+        let mergedSettings: TsUISettings = deps.extend({}, settings, { phrases: {} }) as TsUISettings
+        const localeArr = locale as string[]
+        const proms: Array<Promise<LocaleResult>> = []
+        const files: Record<string, unknown> = {}
+        localeArr.forEach((file, ind) => {
+            if (file.length === 5) {
+                file = 'locale/'+ file.toLowerCase() +'.json'
+                localeArr[ind] = file   // R-LOC-2: preserves original array mutation (deferred fix per spec §Non-Goals)
+            }
+            // Direct _locale call — NOT through delegator. Design OQ-2/D2 chosen option (ii).
+            // keepPhrases=true, noMerge=false for inner recursive calls (mirrors original line 638)
+            proms.push(_locale(file, true, false, mergedSettings, deps))
+        })
+        const res = await Promise.allSettled(proms)
+        res.forEach(r => {
+            if (r.status === 'fulfilled' && r.value.kind === 'load') {
+                files[r.value.file] = r.value.data
+            }
+        })
+        // Merge in declared order (order of files is important — mirrors original lines 646-648)
+        localeArr.forEach(file => {
+            mergedSettings = deps.extend({}, mergedSettings, (files[file] ?? {}) as object) as TsUISettings
+        })
+        return { kind: 'void', settings: mergedSettings }
+    }
+
+    if (!locale) locale = 'en-us'
+
+    // --- Object branch (Thread C — INV-L7-OBJFIX fix) ---
+    // Original line 658: `return` without resolve → Promise hung forever.
+    // Fix: async function return auto-wraps; return { kind: 'merge', settings } resolves correctly.
+    if (typeof locale === 'object') {
+        const mergedSettings = deps.extend({}, settings, TsLocale, locale) as TsUISettings
+        return { kind: 'merge', settings: mergedSettings }
+    }
+
+    // --- String branch (5-char auto-expansion or full path) ---
+    let localeStr = locale as string
+    if (localeStr.length === 5) {
+        localeStr = 'locale/'+ localeStr.toLowerCase() +'.json'
+    }
+
+    // Load from the file (mirrors original lines 667-684)
+    try {
+        const res = await deps.fetch(localeStr, { method: 'GET' })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const data = await (res as any).json() as object
+        if (noMerge !== true) {
+            if (keepPhrases) {
+                // keep phrases, useful for recursive calls (mirrors original line 673)
+                const newSettings = deps.extend({}, settings, data) as TsUISettings
+                return { kind: 'load', file: localeStr, data, settings: newSettings }
+            } else {
+                // clear phrases from language before merging (mirrors original line 676)
+                const newSettings = deps.extend({}, settings, TsLocale, { phrases: {} }, data) as TsUISettings
+                return { kind: 'load', file: localeStr, data, settings: newSettings }
+            }
+        }
+        return { kind: 'load', file: localeStr, data }
+    } catch (err) {
+        console.log('ERROR: Cannot load locale '+ localeStr)
+        throw err   // rejects the async Promise (T-LOC-8); mirrors original .catch(reject)
+    }
 }
