@@ -1,4 +1,4 @@
-/* tsgrid-ui 1.0.x (nightly) (5/14/2026, 12:10:16 AM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 1.0.x (nightly) (5/14/2026, 1:17:35 AM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -3045,15 +3045,13 @@ function _date(dateStr, settings, deps) {
 // src/tsutils-locale.ts
 async function _locale(locale, keepPhrases, noMerge, settings, deps) {
   if (Array.isArray(locale)) {
-    let mergedSettings = deps.extend({}, settings, { phrases: {} });
-    const localeArr = locale;
+    let mergedSettings = deps.extend({}, { ...settings, phrases: {} });
+    const localeArr = locale.map(
+      (f) => f.length === 5 ? "locale/" + f.toLowerCase() + ".json" : f
+    );
     const proms = [];
     const files = {};
-    localeArr.forEach((file, ind) => {
-      if (file.length === 5) {
-        file = "locale/" + file.toLowerCase() + ".json";
-        localeArr[ind] = file;
-      }
+    localeArr.forEach((file) => {
       proms.push(_locale(file, true, false, mergedSettings, deps));
     });
     const res = await Promise.allSettled(proms);
@@ -3084,7 +3082,8 @@ async function _locale(locale, keepPhrases, noMerge, settings, deps) {
         const newSettings = deps.extend({}, settings, data);
         return { kind: "load", file: localeStr, data, settings: newSettings };
       } else {
-        const newSettings = deps.extend({}, settings, TsLocale, { phrases: {} }, data);
+        const phrasesCleared = { ...settings, phrases: {} };
+        const newSettings = deps.extend({}, phrasesCleared, TsLocale, data);
         return { kind: "load", file: localeStr, data, settings: newSettings };
       }
     }

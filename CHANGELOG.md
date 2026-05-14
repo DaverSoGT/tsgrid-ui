@@ -2,6 +2,62 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.7.1 — 2026-05-14
+
+### Fixed
+
+- **R-LOC-V26-PRESERVED — `keepPhrases=false` now actually clears phrases** (`src/tsutils-locale.ts:133`, string branch): The v2.6.0 / v2.7.0 implementation `deps.extend({}, settings, TsLocale, { phrases: {} }, data)` was a deep-merge no-op on the phrases sub-tree — `extend` is deep and `extend(existingPhrases, {})` iterates `Object.keys({})` → zero keys, leaving pre-existing phrase keys intact. v2.7.1 replaces this with the spread-override-before-extend idiom: `const phrasesCleared = { ...settings, phrases: {} }; deps.extend({}, phrasesCleared, TsLocale, data)`. Pre-existing `settings.phrases` keys are NOW cleared before the `TsLocale` + `data` phrase-merge, aligning with the original code comment "clear phrases from language before merging" (in place since v2.6.0). Covered by `T-LOC-5` (flipped) + `INV-L7-PHRASES-CLEAR` (string clause). See engram #925 (discovery).
+- **R-LOC-2 — `_locale()` no longer mutates the caller's input array** (`src/tsutils-locale.ts:80,86`, array branch): Calling `await Utils.locale(['en-us', 'ru-ru'])` previously rewrote the caller's array in-place to `['locale/en-us.json', 'locale/ru-ru.json']` (alias mutation via `const localeArr = locale as string[]` + `localeArr[ind] = file`). v2.7.1 uses `.map()` upfront for path expansion, producing a fresh internal array; the caller's original array reference and contents are byte-identical post-call. Covered by new `T-LOC-11` + `INV-L7-IMMUTABLE-INPUT`.
+- **R-V271-4 — Array-branch `mergedSettings` init now actually pre-resets phrases** (`src/tsutils-locale.ts:79`, array branch): `let mergedSettings = deps.extend({}, settings, { phrases: {} })` had the same deep-merge no-op as R-LOC-V26-PRESERVED — pre-existing `settings.phrases` keys leaked into the initial fanout accumulator. v2.7.1 replaces it with `let mergedSettings = deps.extend({}, { ...settings, phrases: {} })`, aligning with the comment "Pre-reset phrases before fanout" (in place since v2.7.0). Covered by new `T-LOC-12` + `INV-L7-PHRASES-CLEAR` (array clause).
+
+### Tests
+
+- `T-LOC-5` flipped + header rewritten: was `expect(phrases).toHaveProperty('stale', 'remove-me')`; now `expect(phrases).not.toHaveProperty('stale')`. Positive assertion `expect(phrases).toHaveProperty('Add new record')` retained (proves the `keepPhrases=false` branch still merges TsLocale defaults). Comment block removes the `R-LOC-V26-PRESERVED` preservation note and adds the `INV-L7-PHRASES-CLEAR` reference + "v2.7.1 PATCH: phrases-clear now works as documented" one-liner.
+- `T-LOC-11` NEW: array-input immutability gate (`INV-L7-IMMUTABLE-INPUT`). Snapshots the caller's input array, awaits `_locale(input, ...)`, asserts `expect(input).toEqual(snapshot)` AND `expect(input).toBe(inputRef)`. Sub-assertion: `deps.fetch` was still called with expanded paths (`'locale/en-us.json'`, `'locale/ru-ru.json'`).
+- `T-LOC-12` NEW: array-branch `mergedSettings` phrases-clear gate (`INV-L7-PHRASES-CLEAR`, array clause). Sets `TsUtils.settings.phrases = { stale: 'remove-me' }` pre-call; asserts post-call `result.settings.phrases` does NOT contain `stale`.
+- Total Vitest tests: **299/299 GREEN** (v2.7.0 baseline: 297/297).
+
+### Bundle
+
+Delta vs v2.7.0 baseline (`e8d9a74e`):
+
+| Artifact | v2.7.0 | v2.7.1 | Δ bytes | Δ % |
+|----------|--------|--------|---------|-----|
+| `dist/tsgrid-ui.js` (CJS) | 947,274 B | 947,277 B | +3 B | +0.0003% |
+| `dist/tsgrid-ui.es6.js` (ESM) | 945,466 B | 945,470 B | +4 B | +0.0004% |
+| `dist/tsgrid-ui.min.js` (CJS min) | 509,260 B | 509,263 B | +3 B | +0.0003% |
+| `dist/tsgrid-ui.es6.min.js` (ESM min) | 508,125 B | 508,129 B | +4 B | +0.0004% |
+| `dist/tsgrid-ui.d.ts` | 94,446 B | 94,446 B | 0 B | 0.0000% |
+| `dist/tsgrid-ui.css` | 246,980 B | 246,979 B | -1 B | -0.0004% |
+| `dist/tsgrid-ui.min.css` | 229,707 B | 229,706 B | -1 B | -0.0004% |
+
+All within ±2% gate. PASSED. JS bundles grew by +3–4 B (3 small fixes + new INV-L7-* inline comments — Terser strips comments in min bundles so min delta is tiny). The `d.ts` is **byte-identical** to v2.7.0 (INV-L7-API PASS — `locale(` signature unchanged). CSS delta is icon-noise (non-deterministic gulp regen, ±1 B).
+
+### BC
+
+- `TsUtils.locale(locale, keepPhrases?, noMerge?): Promise<{ file: string; data: unknown } | void>` — signature **BYTE-IDENTICAL** to v2.7.0. Public API surface unchanged. `dist/tsgrid-ui.d.ts` `locale(` line unchanged (INV-L7-API PASS).
+- **Behavior corrections** (PATCH-classifiable per SemVer §6 — implementation now matches documented intent in all three cases):
+  - `await Utils.locale(lang, false /* keepPhrases */)` no longer preserves pre-existing `settings.phrases` keys (now matches the in-code comment "clear phrases from language before merging").
+  - `await Utils.locale([...])` no longer mutates the input array (caller's array reference + contents are byte-identical post-call).
+  - The internal array-branch `mergedSettings` accumulator no longer leaks pre-existing phrase keys into the fanout.
+- `src/index.ts` barrel — **byte-identical** to v2.7.0 (INV-7 PASS).
+- SEMVER PATCH. BC verdict: NONE for consumers using the documented behavior; latent-bug-correction for consumers depending on the never-documented broken behavior (none identified in repo audit).
+
+### Known issues
+
+- **R-LOC-3** (carry-forward from v2.6 / v2.7): Locale extraction does NOT directly unblock formatter extraction. The `format()` family still has its own deps-injection requirement; will be tackled separately in v2.8 via a `FormatterDeps` cluster.
+- `R-LOC-V26-PRESERVED`, `R-LOC-2`, `R-V271-4` — **REMOVED** (now fixed; see §Fixed above).
+
+### Internal
+
+- `INV-L7-PHRASES-CLEAR` (NEW invariant): When `keepPhrases=false` (string branch) OR array-branch init, the resulting `settings.phrases` MUST NOT contain keys from the pre-call `settings.phrases` that are absent from `TsLocale.phrases` (and `data.phrases` for the string branch). Gated by `T-LOC-5` (flipped) + `T-LOC-12` (new).
+- `INV-L7-IMMUTABLE-INPUT` (NEW invariant): `_locale()` MUST NOT mutate the `locale` argument when it is an array. Caller's array reference + contents are byte-identical post-call. Gated by `T-LOC-11` (new).
+- `INV-L7-LEAF` (carry, PASS): `tsutils-locale.ts` runtime imports limited to `./tslocale.js`; type-only from `./tsutils.js`. No tsbase/tsutils runtime imports.
+- `INV-9` (carry, PASS): zero `this.X` references in `_locale()` body.
+- `INV-LINT-INV8` canary (carry, PASS): `src/tsutils-*.ts` ESLint glob covers `tsutils-locale.ts`.
+
+---
+
 ## v2.7.0 — 2026-05-14
 
 ### Refactor
