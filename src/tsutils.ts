@@ -86,9 +86,7 @@ export interface TsUISettings {
     [key: string]: unknown   // locale files can add arbitrary keys; unknown forces cast at use-sites
 }
 
-/** Extra data passed to grid cell formatters
- * @internal
- */
+/** Extra data passed to grid cell formatters */
 interface TsFormatterExtra {
     value: unknown
     params?: unknown
@@ -96,15 +94,11 @@ interface TsFormatterExtra {
     [key: string]: unknown
 }
 
-/** Signature of a grid-cell formatter function
- * @internal
- */
+/** Signature of a grid-cell formatter function */
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string
 
 
-/** Return value from TsUtils.isTime() when retTime === true
- * @internal
- */
+/** Return value from TsUtils.isTime() when retTime === true */
 interface TsTimeResult {
     hours: number
     minutes: number

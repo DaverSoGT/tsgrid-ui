@@ -2,6 +2,18 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.4.1 — 2026-05-13
+
+### Fixed
+
+- **d.ts correctness** — `dist/tsgrid-ui.d.ts` referenced `TsFormatter` and `TsTimeResult` in public method signatures (`formatters: Record<string, TsFormatter>`, `isTime(...): boolean | TsTimeResult`) but did NOT declare them — they were stripped by tsup `stripInternal` in v2.4.0. Consumers compiling with strict TypeScript saw unresolved type references. Removed the `@internal` JSDoc tag from `TsFormatterExtra`, `TsFormatter`, and `TsTimeResult` in `src/tsutils.ts`; the three types remain non-exported but are now emitted in the rolled `.d.ts` because they're transitively referenced from public surface. SEMVER PATCH — runtime bundles byte-identical to v2.4.0; only the `.d.ts` grows by ~458 B (+0.49%).
+
+### BC
+
+`.d.ts` is now internally consistent; no other change. Public API surface, runtime, and bundles: UNCHANGED. SEMVER PATCH. BC verdict: NONE.
+
+---
+
 ## v2.4.0 — 2026-05-13
 
 ### Added

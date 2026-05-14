@@ -452,6 +452,21 @@ interface TsUISettings {
     locale?: string;
     [key: string]: unknown;
 }
+/** Extra data passed to grid cell formatters */
+interface TsFormatterExtra {
+    value: unknown;
+    params?: unknown;
+    record?: unknown;
+    [key: string]: unknown;
+}
+/** Signature of a grid-cell formatter function */
+type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string;
+/** Return value from TsUtils.isTime() when retTime === true */
+interface TsTimeResult {
+    hours: number;
+    minutes: number;
+    seconds: number;
+}
 
 /** A normalized menu item */
 interface TsMenuItem {
