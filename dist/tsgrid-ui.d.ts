@@ -373,6 +373,27 @@ interface TsMessageOptions {
 }
 
 /**
+ * TsUtils DOM sub-module — Phase 5b of v2.4 SDD.
+ * DAG position: leaf module (no tsbase/tsutils imports).
+ *
+ * Imports: ./tsutils-string.js (_encodeTags), ./tsutils-type-guards.js (_isInt),
+ *          ./tsutils-data.js (_extend), ./query.js (query, Query), DOM globals only.
+ * 4-space indent convention.
+ *
+ * INV-4: MUST NOT import from tsbase.ts or tsutils.ts.
+ * INV-8: No arguments.length usage.
+ * INV-9: No this.X in exported function bodies.
+ */
+/** Options for TsUtils.lock() — moved from tsutils.ts (Phase 5a of v2.4 SDD) */
+interface TsLockOptions {
+    msg?: string | number;
+    spinner?: boolean;
+    opacity?: number;
+    bgColor?: string;
+    onClick?: () => void;
+}
+
+/**
  * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsLocale
  *
@@ -430,14 +451,6 @@ interface TsUISettings {
     missing?: Record<string, string>;
     locale?: string;
     [key: string]: unknown;
-}
-/** Options for TsUtils.lock() */
-interface TsLockOptions {
-    msg?: string | number;
-    spinner?: boolean;
-    opacity?: number;
-    bgColor?: string;
-    onClick?: () => void;
 }
 
 /** A normalized menu item */
@@ -581,11 +594,11 @@ declare class Utils {
     notify(text: string | Record<string, unknown>, options?: Record<string, unknown>): Promise<void>;
     getSize(el: unknown, type: string): number;
     getStrDimentions(str: string, styles?: string, raw?: boolean): {
-        width: any;
-        height: any;
+        width: number;
+        height: number;
     };
-    getStrWidth(str: string, styles?: string, raw?: boolean): any;
-    getStrHeight(str: string, styles?: string, raw?: boolean): any;
+    getStrWidth(str: string, styles?: string, raw?: boolean): number;
+    getStrHeight(str: string, styles?: string, raw?: boolean): number;
     execTemplate(str: any, replace_obj: any): any;
     marker(el: any, items: any, options?: any): unknown;
     lang(phrase: string, params?: Record<string, string | number> | boolean): string;
