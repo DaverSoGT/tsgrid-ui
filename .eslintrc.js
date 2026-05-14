@@ -96,6 +96,18 @@ module.exports = {
                 'no-unused-vars': 'off',
                 'dot-notation': 'off',                                 // bracket access on `any`/dynamic types is intentional; TS itself enforces correctness
             }
+        },
+        {
+            // INV-8 enforcement: no arguments.length in tsutils sub-modules.
+            // arguments.length silently breaks the delegator pattern (see v2.1/v2.3 SDD).
+            // Use options == null or typeof checks for overload detection instead.
+            files: ['src/tsutils-*.ts'],
+            rules: {
+                'no-restricted-syntax': ['error', {
+                    selector: 'MemberExpression[object.name="arguments"][property.name="length"]',
+                    message: 'INV-8: use options==null or typeof for overload detection; arguments.length silently breaks delegator pattern (see v2.1/v2.3 SDD).'
+                }]
+            }
         }
     ]
 }
