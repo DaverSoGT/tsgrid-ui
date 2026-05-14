@@ -453,9 +453,29 @@ export function _formatDateTime(
  * B-1: exact parameter order: dateStr, settings, deps.
  */
 export function _date(
-    _dateStr: unknown,
-    _settings: TsUISettings,
-    _deps: DateDeps
+    dateStr: unknown,
+    settings: TsUISettings,
+    deps: DateDeps
 ): string {
-    throw new Error('_date not implemented — Phase 5a stub')
+    if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
+    let d1 = new Date(dateStr as string | number)
+    if (_isInt(dateStr)) d1 = new Date(Number(dateStr)) // for unix timestamps (was this.isInt → _isInt)
+    if (String(d1) === 'Invalid Date') return ''
+
+    const months = settings.shortmonths                   // was this.settings.shortmonths
+    const d2     = new Date() // today
+    const d3     = new Date()
+    d3.setTime(d3.getTime() - 86400000) // yesterday
+
+    const dd1 = months[d1.getMonth()] + ' ' + d1.getDate() + ', ' + d1.getFullYear()
+    const dd2 = months[d2.getMonth()] + ' ' + d2.getDate() + ', ' + d2.getFullYear()
+    const dd3 = months[d3.getMonth()] + ' ' + d3.getDate() + ', ' + d3.getFullYear()
+
+    const time  = (d1.getHours() - (d1.getHours() > 12 ? 12 : 0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
+    const time2 = (d1.getHours() - (d1.getHours() > 12 ? 12 : 0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ':' + (d1.getSeconds() < 10 ? '0' : '') + d1.getSeconds() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
+    let dsp = dd1
+    if (dd1 === dd2) dsp = time
+    if (dd1 === dd3) dsp = deps.lang('Yesterday')         // was this.lang('Yesterday') → deps.lang (INV-DATE-LOCALE)
+
+    return '<span title="' + dd1 + ' ' + time2 + '">' + dsp + '</span>'
 }

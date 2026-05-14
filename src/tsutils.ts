@@ -51,7 +51,7 @@ export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-
 import { transition as _transition, lock as _lock, unlock as _unlock, getSize as _getSize, getStrDimentions as _getStrDimentions, getStrWidth as _getStrWidth, getStrHeight as _getStrHeight, bindEvents as _bindEvents } from './tsutils-dom.js'
 import type { TsLockOptions } from './tsutils-dom.js'
 export type { TsLockOptions } from './tsutils-dom.js'
-import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime } from './tsutils-datetime.js'
+import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime, _date } from './tsutils-datetime.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -362,27 +362,7 @@ class Utils {
     interval(value: number): string { return _interval(value) }
 
     date(dateStr: unknown): string {
-        if (dateStr === '' || dateStr == null || (typeof dateStr === 'object' && !(dateStr as Date).getMonth)) return ''
-        let d1 = new Date(dateStr as string | number)
-        if (this.isInt(dateStr)) d1 = new Date(Number(dateStr)) // for unix timestamps
-        if (String(d1) === 'Invalid Date') return ''
-
-        const months = this.settings.shortmonths
-        const d2     = new Date() // today
-        const d3     = new Date()
-        d3.setTime(d3.getTime() - 86400000) // yesterday
-
-        const dd1 = months[d1.getMonth()] + ' ' + d1.getDate() + ', ' + d1.getFullYear()
-        const dd2 = months[d2.getMonth()] + ' ' + d2.getDate() + ', ' + d2.getFullYear()
-        const dd3 = months[d3.getMonth()] + ' ' + d3.getDate() + ', ' + d3.getFullYear()
-
-        const time  = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
-        const time2 = (d1.getHours() - (d1.getHours() > 12 ? 12 :0)) + ':' + (d1.getMinutes() < 10 ? '0' : '') + d1.getMinutes() + ':' + (d1.getSeconds() < 10 ? '0' : '') + d1.getSeconds() + ' ' + (d1.getHours() >= 12 ? 'pm' : 'am')
-        let dsp   = dd1
-        if (dd1 === dd2) dsp = time
-        if (dd1 === dd3) dsp = this.lang('Yesterday')
-
-        return '<span title="'+ dd1 +' ' + time2 +'">'+ dsp +'</span>'
+        return _date(dateStr, this.settings, { lang: this.lang.bind(this) })
     }
 
     formatSize(sizeStr: unknown): string | number {
