@@ -118,30 +118,30 @@ describe('T-LOC-4: keepPhrases=true → existing phrase keys survive after merge
 })
 
 // ---------------------------------------------------------------------------
-// T-LOC-5 — keepPhrases=false (default): phrases cleared before merge
+// T-LOC-5 — keepPhrases=false (default): phrases CLEARED before merge (INV-L7-PHRASES-CLEAR)
 // ---------------------------------------------------------------------------
 
-describe('T-LOC-5: keepPhrases=false (default) → TsLocale defaults merged via keepPhrases=false branch', () => {
-    it('merges TsLocale default phrases when keepPhrases is falsy (branch taken)', async () => {
+describe('T-LOC-5: keepPhrases=false (default) → pre-existing phrases CLEARED, TsLocale defaults merged', () => {
+    it('clears pre-existing phrases AND merges TsLocale defaults when keepPhrases is falsy', async () => {
         const deps = makeDeps()
         TsUtils.settings.phrases = { stale: 'remove-me' }
         const result = await _locale('en-us', false, undefined, TsUtils.settings, deps)
         expect((result as { kind: string }).kind).toBe('load')
-        // R-LOC-V26-PRESERVED — v2.6.0 BEHAVIOR PRESERVED VERBATIM (per spec §Non-Goals scope):
-        // The original `extend({}, settings, TsLocale, { phrases: {} }, data)` pattern was authored
-        // with the intent "clear phrases before merging" (see preserved comment in body), but
-        // `extend` is DEEP — `extend(existingPhrases, {})` iterates Object.keys({}) → zero keys →
-        // no-op. So pre-existing phrase keys (e.g. 'stale') are PRESERVED by the keepPhrases=false
-        // branch in v2.6.0, not cleared. v2.7 scope is ONE latent bugfix (INV-L7-OBJFIX) — a true
-        // phrases-clear would be a second behavior change, deferred to v2.8 alongside R-LOC-2.
+        // INV-L7-PHRASES-CLEAR (string branch, keepPhrases=false):
+        // v2.7.1 PATCH — phrases-clear now works as documented. The keepPhrases=false branch
+        // uses the spread-override-before-extend idiom (`{ ...settings, phrases: {} }`) which
+        // resets phrases to a fresh empty object BEFORE deep-extend processes it. Pre-existing
+        // settings.phrases keys are dropped; TsLocale defaults + data phrases populate from a
+        // clean baseline. Pre-v2.7.1 (v2.6.0 + v2.7.0) the `{ phrases: {} }` source position
+        // was a deep-extend no-op — pre-existing keys leaked. See engram #925 (discovery) and
+        // CHANGELOG v2.7.1 §Fixed.
         //
-        // What this test verifies: the keepPhrases=false BRANCH is exercised — TsLocale defaults
-        // get merged into result.settings.phrases (e.g. 'Add new record' from TsLocale.phrases).
-        // This distinguishes the keepPhrases=false branch from keepPhrases=true (where TsLocale is
-        // NOT merged — see T-LOC-4).
+        // What this test verifies: (a) the keepPhrases=false BRANCH still merges TsLocale
+        // defaults (proves branch taken — `'Add new record'` from TsLocale.phrases is present);
+        // (b) the pre-call `stale` key is NO LONGER preserved (proves the fix lands).
         const phrases = (result as { settings: { phrases: Record<string, string> } }).settings.phrases
         expect(phrases).toHaveProperty('Add new record')   // from TsLocale.phrases — proves branch taken
-        expect(phrases).toHaveProperty('stale', 'remove-me') // pre-existing key preserved (deep-extend no-op)
+        expect(phrases).not.toHaveProperty('stale')        // v2.7.1: pre-existing key now cleared
     })
 })
 
@@ -188,6 +188,51 @@ describe('T-LOC-8: fetch rejection → Promise rejects with the caught error', (
         const networkErr = new Error('network')
         ;(deps.fetch as ReturnType<typeof vi.fn>).mockRejectedValueOnce(networkErr)
         await expect(_locale('ru-ru', undefined, undefined, TsUtils.settings, deps)).rejects.toThrow('network')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// T-LOC-11 — Array-form input immutability (INV-L7-IMMUTABLE-INPUT)
+// ---------------------------------------------------------------------------
+
+describe('T-LOC-11: array-form locale([...]) does NOT mutate the caller\'s input array', () => {
+    it('preserves the original array reference + contents byte-identical post-call', async () => {
+        const deps = makeDeps()
+        const input = ['en-us', 'ru-ru']
+        const snapshot = [...input]   // deep-shallow snapshot — strings are value-typed
+        const inputRef = input         // reference snapshot
+        await _locale(input, undefined, undefined, TsUtils.settings, deps)
+        // INV-L7-IMMUTABLE-INPUT (v2.7.1 PATCH for R-LOC-2):
+        // Pre-v2.7.1, _locale mutated localeArr[ind] = expanded path, leaking through the alias
+        // back to the caller's input array. v2.7.1 uses `.map()` upfront so the original array
+        // is never written through. Both reference identity and content equality MUST hold.
+        expect(input).toBe(inputRef)                // same reference (sanity)
+        expect(input).toEqual(snapshot)             // contents byte-identical to pre-call snapshot
+        expect(input).toEqual(['en-us', 'ru-ru'])   // explicit content check (defense-in-depth)
+        // Sub-assertion: internal expansion still works (fetch was called with expanded paths)
+        expect(deps.fetch).toHaveBeenCalledWith('locale/en-us.json', { method: 'GET' })
+        expect(deps.fetch).toHaveBeenCalledWith('locale/ru-ru.json', { method: 'GET' })
+    })
+})
+
+// ---------------------------------------------------------------------------
+// T-LOC-12 — Array-branch mergedSettings init phrases-clear (INV-L7-PHRASES-CLEAR, array clause)
+// ---------------------------------------------------------------------------
+
+describe('T-LOC-12: array-form locale([...]) → initial mergedSettings does NOT leak pre-existing phrases', () => {
+    it('array-branch init clears pre-existing phrases (R-V271-4 fix)', async () => {
+        const deps = makeDeps()
+        TsUtils.settings.phrases = { stale: 'remove-me' }
+        const result = await _locale(['en-us', 'ru-ru'], undefined, false, TsUtils.settings, deps)
+        // INV-L7-PHRASES-CLEAR (array clause, v2.7.1 PATCH for R-V271-4):
+        // Pre-v2.7.1, the array-branch `let mergedSettings = deps.extend({}, settings, { phrases: {} })`
+        // had the same deep-merge no-op as Bug 1 — pre-existing settings.phrases keys leaked into
+        // the initial accumulator before the fanout. v2.7.1 uses the spread-override-before-extend
+        // idiom (`deps.extend({}, { ...settings, phrases: {} })`) which deep-clones a settings
+        // object whose phrases is already an empty `{}`. Pre-existing keys are dropped.
+        expect((result as { kind: string }).kind).toBe('void')
+        const settings = (result as { settings: { phrases: Record<string, string> } }).settings
+        expect(settings.phrases).not.toHaveProperty('stale')   // v2.7.1: pre-existing key cleared
     })
 })
 
