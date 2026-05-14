@@ -75,16 +75,21 @@ export async function _locale(
 ): Promise<LocaleResult> {
     // --- Array branch (OQ-2/D2 — DIRECT recursion via _locale, not through delegator) ---
     if (Array.isArray(locale)) {
-        // Pre-reset phrases before fanout (mirrors original line 629)
-        let mergedSettings: TsUISettings = deps.extend({}, settings, { phrases: {} }) as TsUISettings
-        const localeArr = locale as string[]
+        // Pre-reset phrases before fanout — v2.7.1 PATCH (INV-L7-PHRASES-CLEAR, array clause).
+        // The spread { ...settings, phrases: {} } resets phrases to a fresh empty object BEFORE
+        // deep-extend deep-clones the result. Pre-v2.7.1 the `{ phrases: {} }` source position
+        // was a deep-extend no-op (extend iterates Object.keys({}) → 0 keys), so pre-existing
+        // settings.phrases keys leaked into the initial accumulator.
+        let mergedSettings: TsUISettings = deps.extend({}, { ...settings, phrases: {} }) as TsUISettings
+        // .map() upfront — produces a FRESH array of expanded paths; original `locale` is never
+        // mutated. v2.7.1 PATCH for R-LOC-2 (INV-L7-IMMUTABLE-INPUT). Downstream merge loop at
+        // line 99 consumes localeArr (expanded) for files[file] lookup keys — semantics identical.
+        const localeArr = (locale as string[]).map(f =>
+            f.length === 5 ? 'locale/'+ f.toLowerCase() +'.json' : f
+        )
         const proms: Array<Promise<LocaleResult>> = []
         const files: Record<string, unknown> = {}
-        localeArr.forEach((file, ind) => {
-            if (file.length === 5) {
-                file = 'locale/'+ file.toLowerCase() +'.json'
-                localeArr[ind] = file   // R-LOC-2: preserves original array mutation (deferred fix per spec §Non-Goals)
-            }
+        localeArr.forEach(file => {
             // Direct _locale call — NOT through delegator. Design OQ-2/D2 chosen option (ii).
             // keepPhrases=true, noMerge=false for inner recursive calls (mirrors original line 638)
             proms.push(_locale(file, true, false, mergedSettings, deps))
@@ -129,8 +134,14 @@ export async function _locale(
                 const newSettings = deps.extend({}, settings, data) as TsUISettings
                 return { kind: 'load', file: localeStr, data, settings: newSettings }
             } else {
-                // clear phrases from language before merging (mirrors original line 676)
-                const newSettings = deps.extend({}, settings, TsLocale, { phrases: {} }, data) as TsUISettings
+                // clear phrases from language before merging — v2.7.1 PATCH (INV-L7-PHRASES-CLEAR)
+                // The spread { ...settings, phrases: {} } resets phrases to a fresh empty object
+                // BEFORE deep-extend sees it; subsequent TsLocale + data sources then populate phrases
+                // from a clean baseline. Pre-v2.7.1 the `{ phrases: {} }` source position was a
+                // deep-extend no-op (extend iterates Object.keys({}) → 0 keys), so pre-existing
+                // settings.phrases keys survived. See engram #925 (discovery).
+                const phrasesCleared = { ...settings, phrases: {} }
+                const newSettings = deps.extend({}, phrasesCleared, TsLocale, data) as TsUISettings
                 return { kind: 'load', file: localeStr, data, settings: newSettings }
             }
         }
