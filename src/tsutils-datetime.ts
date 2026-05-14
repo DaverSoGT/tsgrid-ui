@@ -41,6 +41,20 @@ interface TsTimeResult {
 }
 
 // ---------------------------------------------------------------------------
+// Locale-injection interface — v2.6 DateDeps pattern (mirrors MessageDeps/NotifyDeps)
+// ---------------------------------------------------------------------------
+
+/**
+ * Locale dependencies injected into _date() by the TsUtils.date() delegator.
+ * Follows the v2.3 MessageDeps / NotifyDeps single-field deps-injection pattern.
+ * A-1: exported so callers can type their own deps objects.
+ * A-2: only `lang` field — no other locale surface in v2.6.
+ */
+export interface DateDeps {
+    lang: (phrase: string) => string
+}
+
+// ---------------------------------------------------------------------------
 // Exported functions — Phase 5b (real bodies)
 // ---------------------------------------------------------------------------
 
@@ -424,4 +438,24 @@ export function _formatDateTime(
     if (fmt[1] === 'h24') fmt[1] = 'h24:m'
     // R-DT-2: both intra-cluster calls become module-level function refs
     return _formatDate(dateStr, fmt[0], settings) + ' ' + _formatTime(dateStr, fmt[1], settings)
+}
+
+/**
+ * Return an HTML `<span>` string representing a date value relative to today.
+ * Today's date returns a time-of-day string; yesterday returns the locale phrase;
+ * older dates return the formatted month-day-year string.
+ *
+ * @param dateStr - date value (string, number timestamp, null, or undefined)
+ * @param settings - TsUISettings reference (shortmonths, passed by reference — R-DT-3)
+ * @param deps - DateDeps locale callbacks (lang for 'Yesterday' lookup — INV-DATE-LOCALE)
+ *
+ * Phase 5a stub — body filled at Phase 5b.
+ * B-1: exact parameter order: dateStr, settings, deps.
+ */
+export function _date(
+    _dateStr: unknown,
+    _settings: TsUISettings,
+    _deps: DateDeps
+): string {
+    throw new Error('_date not implemented — Phase 5a stub')
 }

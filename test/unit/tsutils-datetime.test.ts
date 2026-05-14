@@ -28,7 +28,6 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsUtils } from '../../src/tsutils.js'
-// @ts-expect-error — P4 RED: _date and DateDeps implemented at Phase 5a
 import { _date } from '../../src/tsutils-datetime.js'
 
 // Snapshot of mutable settings — restore between tests so locale/grouping
