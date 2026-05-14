@@ -98,14 +98,9 @@ interface TsFormatterExtra {
  */
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string
 
-/** Options for TsUtils.lock() */
-export interface TsLockOptions {
-    msg?: string | number
-    spinner?: boolean
-    opacity?: number
-    bgColor?: string
-    onClick?: () => void
-}
+/** Options for TsUtils.lock() — defined in tsutils-dom, re-exported here for barrel compatibility */
+export type { TsLockOptions } from './tsutils-dom.js'
+import type { TsLockOptions } from './tsutils-dom.js'
 
 /** Return value from TsUtils.isTime() when retTime === true
  * @internal
