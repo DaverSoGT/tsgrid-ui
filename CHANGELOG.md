@@ -2,6 +2,57 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.4.0 — 2026-05-13
+
+### Added
+
+- **Minified bundles** — new `dist/tsgrid-ui.min.js` (CJS, IIFE-wrapped) and `dist/tsgrid-ui.es6.min.js` (ESM). ~46% smaller than non-min counterparts (~508 KB vs ~947 KB). Non-min bundles remain the default for debugging; minified are opt-in by direct path.
+- **ESM sourcemap** — `dist/tsgrid-ui.es6.js.map` shipped alongside the ESM bundle for consumer debugging. CJS sourcemap intentionally omitted (incompatible with the legacy IIFE wrapper rewrite).
+- **ESLint enforcement of INV-8** — new `no-restricted-syntax` rule scoped to `src/tsutils-*.ts` blocks `arguments.length` (codifies the delegator-trap discovered in v2.1 / fixed in v2.3 into the lint gate).
+
+### Refactor
+
+Decomposed the **DOM cluster** (8 methods, ~397 LOC) out of `TsUtils` into a new leaf module `src/tsutils-dom.ts` — **no breaking changes**, public API preserved. Class methods remain; bodies are now one-line delegators routing to pure functions in the sibling module.
+
+- `src/tsutils-dom.ts` — `transition`, `lock`, `unlock`, `getSize`, `getStrDimentions`, `getStrWidth`, `getStrHeight`, `bindEvents` extracted as stateless functions (~234 LOC). Zero `this.X` references in function bodies (INV-9); no import from `tsbase.ts` (INV-4 leaf rule).
+- `TsLockOptions` interface moved to `tsutils-dom.ts` and re-exported via `tsutils.ts` barrel (TsCloneOptions / TsMessageOptions pattern). Public API unchanged.
+- `lock()` internal `this.unlock(...)` call → direct module-level `unlock()` call (R-DOM-1 mitigation).
+- `getStrDimentions()` internal `this.encodeTags(...)` → import `_encodeTags` from `tsutils-string.js` (R-DOM-2 mitigation).
+- `src/tsutils.ts` shrinks from ~1,602 → ~1,470 LOC. **NET REPO DELTA: −18 LOC** (397 removed inline, 234 + 25 added in dom + delegators).
+
+`TsUtils` singleton shape and all ~49+ call sites: **UNCHANGED**. SEMVER MINOR. BC verdict: NONE.
+
+### Improved (type)
+
+- `TsUtils.getStrDimentions(str, styles): { width: number; height: number }`, `TsUtils.getStrWidth(str, styles): number`, `TsUtils.getStrHeight(str, styles): number` — return types narrowed from accidental `any` to explicit `number`. **Type improvement, runtime-equivalent**; no behavior change. Consumers using strict tsconfig settings will see the tighter types (all previously valid call sites remain valid — `any → number` is a strict refinement).
+
+### Internal
+
+- `@internal` JSDoc + tsup `stripInternal: true` for private surface (`_msgDeps`/`_confirmDeps`/`_promptDeps`, plus `TsFormatterExtra`/`TsFormatter`/`TsTimeResult`). `dist/tsgrid-ui.d.ts` reduced ~1.07% (93,567 → 92,564 B). Larger reductions deferred to v2.5+ (root cause: `TsFormatter`/`TsTimeResult` referenced inline in public method signatures, so tsc re-emits them).
+- `scripts/wrap-legacy.mjs` regex generalized to match esbuild's minified `module.exports=ui(_i);` form (anchors removed) — handles both `tsgrid-ui.js` and `tsgrid-ui.min.js` (R-WRAP-1 mitigation).
+
+### Tests
+
+- Added 27 unit tests (197 → 224) covering DOM cluster (lock/unlock/getSize/getStrDimentions/getStrWidth/getStrHeight/bindEvents). `transition` covered by Playwright smoke only (jsdom cannot observe CSS animations).
+
+### Bundle
+
+Non-min delta vs v2.3.0 baseline:
+- `dist/tsgrid-ui.js`: 946,684 → 946,553 B (−0.014%)
+- `dist/tsgrid-ui.es6.js`: 944,836 → 944,746 B (−0.010%)
+
+New minified artifacts:
+- `dist/tsgrid-ui.min.js`: ~509 KB (−46.3% vs non-min)
+- `dist/tsgrid-ui.es6.min.js`: ~508 KB (−46.3%)
+
+All within ±2% gate. PASSED.
+
+### BC
+
+Net-additive (new artifacts + type narrowing). Public method signatures: byte-identical for transition/lock/unlock/getSize/bindEvents. `getStrWidth/Height/getStrDimentions` types narrowed `any → number` (strict superset; no runtime change). SEMVER MINOR. BC verdict: NONE.
+
+---
+
 ## v2.3.0 — 2026-05-13
 
 ### Refactor
