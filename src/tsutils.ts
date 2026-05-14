@@ -53,6 +53,8 @@ import type { TsLockOptions } from './tsutils-dom.js'
 export type { TsLockOptions } from './tsutils-dom.js'
 import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime, _date } from './tsutils-datetime.js'
 import type { TsTimeResult } from './tsutils-datetime.js'
+import { _locale } from './tsutils-locale.js'
+import type { LocaleDeps } from './tsutils-locale.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -623,65 +625,13 @@ class Utils {
     }
 
     locale(locale: string | string[] | Record<string, unknown>, keepPhrases?: boolean, noMerge?: boolean): Promise<{ file: string; data: unknown } | void> {
-        return new Promise<{ file: string; data: unknown } | void>((resolve, reject) => {
-            // if locale is an array we call this function recursively and merge the results
-            if (Array.isArray(locale)) {
-                this.settings.phrases = {}
-                const proms: Array<Promise<unknown>> = []
-                const files: Record<string, unknown> = {}
-                const localeArr = locale as string[]
-                localeArr.forEach((file, ind) => {
-                    if (file.length === 5) {
-                        file = 'locale/'+ file.toLowerCase() +'.json'
-                        localeArr[ind] = file
-                    }
-                    proms.push(this.locale(file, true, false))
-                })
-                Promise.allSettled(proms)
-                    .then(res => {
-                        // order of files is important to merge
-                        // any: callback parameter — caller signature varies; TsUtils helper accepts heterogeneous runtime input
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        res.forEach((r: any) => { if (r.value) files[r.value.file] = r.value.data })
-                        localeArr.forEach(file => {
-                            this.settings = this.extend({}, this.settings, files[file])
-                        })
-                        resolve()
-                    })
-                return
-            }
-            if (!locale) locale = 'en-us'
-
-            // if locale is an object, then merge it with TsUtils.settings
-            if (typeof locale === 'object') {
-                this.settings = this.extend({}, this.settings, TsLocale, locale)
-                return
-            }
-
-            let localeStr = locale as string
-            if (localeStr.length === 5) {
-                localeStr = 'locale/'+ localeStr.toLowerCase() +'.json'
-            }
-
-            // load from the file
-            fetch(localeStr, { method: 'GET' })
-                .then(res => res.json())
-                .then(data => {
-                    if (noMerge !== true) {
-                        if (keepPhrases) {
-                            // keep phrases, useful for recursive calls
-                            this.settings = this.extend({}, this.settings, data)
-                        } else {
-                            // clear phrases from language before merging
-                            this.settings = this.extend({}, this.settings, TsLocale, { phrases: {} }, data)
-                        }
-                    }
-                    resolve({ file: localeStr, data })
-                })
-                .catch((err) => {
-                    console.log('ERROR: Cannot load locale '+ localeStr)
-                    reject(err)
-                })
+        const deps: LocaleDeps = {
+            extend: this.extend.bind(this) as (target: object, ...sources: object[]) => object,
+            fetch: globalThis.fetch.bind(globalThis),
+        }
+        return _locale(locale, keepPhrases, noMerge, this.settings, deps).then(result => {
+            if (result.settings) this.settings = result.settings
+            return result.kind === 'load' ? { file: result.file, data: result.data } : undefined
         })
     }
 
