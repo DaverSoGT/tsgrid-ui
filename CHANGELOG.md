@@ -2,6 +2,44 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.5.0 — 2026-05-13
+
+### Refactor
+
+Decomposed the **date-time cluster** (8 methods, 293 LOC) out of `TsUtils` into a new leaf module `src/tsutils-datetime.ts` — **no breaking changes**, public API preserved. Class methods remain; bodies are now one-line delegators routing to pure functions in the sibling module.
+
+- `src/tsutils-datetime.ts` — `isDate`, `isTime`, `isDateTime`, `age`, `interval`, `formatDate`, `formatTime`, `formatDateTime` extracted as stateless functions (~427 LOC including header + types + 8 function bodies). Zero `this.X` references in function bodies (INV-9); no runtime import from `tsbase.ts` or `tsutils.ts` (INV-4 leaf rule). Only allowed imports: `_isInt` from `tsutils-type-guards.js`; `TsUISettings` as a type-only import from `tsutils.js` (erased at emit — same precedent as `tsutils-message.ts` and `tsutils-type-guards.ts`).
+- `settings` parameter injected by reference (`this.settings`) in each delegator so TsLocale runtime mutations to `fullmonths`, `shortmonths`, `dateFormat`, `timeFormat`, `datetimeFormat` flow through without restart.
+- Intra-cluster cross-calls become module-level function references: `_isDateTime` calls `_isDate` + `_isTime` directly; `_formatDateTime` calls `_formatDate` + `_formatTime` directly; `_formatTime` calls `_isTime` directly (R-DT-2 / R-DT-8 mitigations — zero `this.X` in extracted bodies).
+- `date()` stays in `tsutils.ts` (sole `this.lang('Yesterday')` coupling; deferred to v2.6 locale cycle). `formatters` initializer stays in `tsutils.ts` (goes through class delegators — one extra hop within bundle budget per R-DT-9).
+- `src/tsutils.ts` shrinks from ~1,470 → ~1,183 LOC (293 cluster LOC removed, 24 LOC delegators added). Mirrors the v2.4 DOM cluster pattern (engram #889).
+
+`TsUtils` singleton shape and all ~78 call sites: **UNCHANGED**. SEMVER MINOR. BC verdict: NONE.
+
+### Tests
+
+- Added 56 unit tests (224 → 280) across 8 method blocks in `test/unit/tsutils-datetime.test.ts`: `isDate` (12), `isTime` (8), `isDateTime` (7), `age` (8), `interval` (5), `formatDate` (5), `formatTime` (4), `formatDateTime` (3) + delegation spy (2). jsdom feasibility: 100% — no Playwright-only paths in this cluster. Safety-net tests committed as Phase 4 RED before extraction (INV-TDD PASS).
+
+### Bundle
+
+Delta vs v2.4.1 baseline:
+
+| Artifact | v2.4.1 | v2.5.0 | Delta | % |
+|----------|--------|--------|-------|---|
+| `dist/tsgrid-ui.js` (CJS) | 946,553 B | 946,611 B | +58 B | +0.006% |
+| `dist/tsgrid-ui.es6.js` (ESM) | 944,746 B | 944,804 B | +58 B | +0.006% |
+| `dist/tsgrid-ui.min.js` (CJS min) | 508,818 B | 508,902 B | +84 B | +0.017% |
+| `dist/tsgrid-ui.es6.min.js` (ESM min) | 507,684 B | 507,768 B | +84 B | +0.017% |
+| `dist/tsgrid-ui.d.ts` | 93,022 B | 93,022 B | 0 B | 0% |
+
+All within ±2% gate. PASSED. The `+84 B` increase in minified bundles is expected noise from the delegator shim layer (same one-extra-hop pattern as v2.4 DOM cluster). The d.ts is byte-identical — extracted function bodies and the local `TsTimeResult` interface in `tsutils-datetime.ts` are internal, not emitted in the rolled d.ts.
+
+### BC
+
+Net-additive (new module + delegators). Public method signatures byte-identical OR narrowed-with-strict-refinement per documentation. `TsTimeResult` continues to be declared in `tsutils.ts` (no-export, emitted transitively in d.ts per v2.4.1 hotfix); the new `tsutils-datetime.ts` module declares a structurally identical local `TsTimeResult` for `_isTime`'s internal use — non-exported, not emitted in rolled d.ts. No consumer-visible type change. `vi.spyOn(TsUtils, 'X')` continues to work for all 8 extracted methods via class-prototype delegators (INV-SPY PASS). SEMVER MINOR. BC verdict: NONE.
+
+---
+
 ## v2.4.1 — 2026-05-13
 
 ### Fixed

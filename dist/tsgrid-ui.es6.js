@@ -2659,6 +2659,335 @@ function bindEvents(selector, subject) {
   });
 }
 
+// src/tsutils-datetime.ts
+function _isDate(val, format, retDate, settings) {
+  if (!val) return false;
+  let dt = "Invalid Date";
+  let month, day, year;
+  if (format == null) format = settings.dateFormat;
+  if (val instanceof Date) {
+    year = val.getFullYear();
+    month = val.getMonth() + 1;
+    day = val.getDate();
+  } else if (typeof val === "number" || typeof val === "string" && parseInt(val) == val && parseInt(val) > 0) {
+    const d = new Date(parseInt(String(val)));
+    year = d.getFullYear();
+    month = d.getMonth() + 1;
+    day = d.getDate();
+  } else {
+    let strVal = String(val);
+    if (new RegExp("mon", "ig").test(format)) {
+      format = format.replace(/month/ig, "m").replace(/mon/ig, "m").replace(/dd/ig, "d").replace(/[, ]/ig, "/").replace(/\/\//g, "/").toLowerCase();
+      strVal = strVal.replace(/[, ]/ig, "/").replace(/\/\//g, "/").toLowerCase();
+      for (let m = 0, len = settings.fullmonths.length; m < len; m++) {
+        const t = settings.fullmonths[m] ?? "";
+        strVal = strVal.replace(new RegExp(t, "ig"), String(m + 1)).replace(new RegExp(t.substr(0, 3), "ig"), String(m + 1));
+      }
+    }
+    const tmp = strVal.replace(/-/g, "/").replace(/\./g, "/").toLowerCase().split("/");
+    const tmp2 = format.replace(/-/g, "/").replace(/\./g, "/").toLowerCase();
+    if (tmp2 === "mm/dd/yyyy") {
+      month = tmp[0];
+      day = tmp[1];
+      year = tmp[2];
+    }
+    if (tmp2 === "m/d/yyyy") {
+      month = tmp[0];
+      day = tmp[1];
+      year = tmp[2];
+    }
+    if (tmp2 === "dd/mm/yyyy") {
+      month = tmp[1];
+      day = tmp[0];
+      year = tmp[2];
+    }
+    if (tmp2 === "d/m/yyyy") {
+      month = tmp[1];
+      day = tmp[0];
+      year = tmp[2];
+    }
+    if (tmp2 === "yyyy/dd/mm") {
+      month = tmp[2];
+      day = tmp[1];
+      year = tmp[0];
+    }
+    if (tmp2 === "yyyy/d/m") {
+      month = tmp[2];
+      day = tmp[1];
+      year = tmp[0];
+    }
+    if (tmp2 === "yyyy/mm/dd") {
+      month = tmp[1];
+      day = tmp[2];
+      year = tmp[0];
+    }
+    if (tmp2 === "yyyy/m/d") {
+      month = tmp[1];
+      day = tmp[2];
+      year = tmp[0];
+    }
+    if (tmp2 === "mm/dd/yy") {
+      month = tmp[0];
+      day = tmp[1];
+      year = tmp[2];
+    }
+    if (tmp2 === "m/d/yy") {
+      month = tmp[0];
+      day = tmp[1];
+      year = parseInt(tmp[2] ?? "0") + 1900;
+    }
+    if (tmp2 === "dd/mm/yy") {
+      month = tmp[1];
+      day = tmp[0];
+      year = parseInt(tmp[2] ?? "0") + 1900;
+    }
+    if (tmp2 === "d/m/yy") {
+      month = tmp[1];
+      day = tmp[0];
+      year = parseInt(tmp[2] ?? "0") + 1900;
+    }
+    if (tmp2 === "yy/dd/mm") {
+      month = tmp[2];
+      day = tmp[1];
+      year = parseInt(tmp[0] ?? "0") + 1900;
+    }
+    if (tmp2 === "yy/d/m") {
+      month = tmp[2];
+      day = tmp[1];
+      year = parseInt(tmp[0] ?? "0") + 1900;
+    }
+    if (tmp2 === "yy/mm/dd") {
+      month = tmp[1];
+      day = tmp[2];
+      year = parseInt(tmp[0] ?? "0") + 1900;
+    }
+    if (tmp2 === "yy/m/d") {
+      month = tmp[1];
+      day = tmp[2];
+      year = parseInt(tmp[0] ?? "0") + 1900;
+    }
+  }
+  if (!isInt(year)) return false;
+  if (!isInt(month)) return false;
+  if (!isInt(day)) return false;
+  const numYear = +(year ?? 0);
+  const numMonth = +(month ?? 0);
+  const numDay = +(day ?? 0);
+  dt = new Date(numYear, numMonth - 1, numDay);
+  dt.setFullYear(numYear);
+  if (numMonth == null) return false;
+  if (String(dt) === "Invalid Date") return false;
+  if (dt.getMonth() + 1 !== numMonth || dt.getDate() !== numDay || dt.getFullYear() !== numYear) return false;
+  if (retDate === true) return dt;
+  else return true;
+}
+function _isTime(val, retTime) {
+  if (val == null) return false;
+  let max;
+  let strVal = String(val).toUpperCase();
+  const am = strVal.indexOf("AM") >= 0;
+  const pm = strVal.indexOf("PM") >= 0;
+  const ampm = pm || am;
+  if (ampm) max = 12;
+  else max = 24;
+  strVal = strVal.replace("AM", "").replace("PM", "").trim();
+  const tmp = strVal.split(":");
+  const tmp0 = tmp[0] ?? "", tmp1 = tmp[1] ?? "", tmp2 = tmp[2] ?? "";
+  let h = parseInt(tmp0 || "0");
+  const m = parseInt(tmp1 || "0"), s = parseInt(tmp2 || "0");
+  if ((!ampm || tmp.length !== 1) && tmp.length !== 2 && tmp.length !== 3) {
+    return false;
+  }
+  if (tmp0 === "" || h < 0 || h > max || !isInt(tmp0) || tmp0.length > 2) {
+    return false;
+  }
+  if (tmp.length > 1 && (tmp1 === "" || m < 0 || m > 59 || !isInt(tmp1) || tmp1.length !== 2)) {
+    return false;
+  }
+  if (tmp.length > 2 && (tmp2 === "" || s < 0 || s > 59 || !isInt(tmp2) || tmp2.length !== 2)) {
+    return false;
+  }
+  if (!ampm && max === h && (m !== 0 || s !== 0)) {
+    return false;
+  }
+  if (ampm && tmp.length === 1 && h === 0) {
+    return false;
+  }
+  if (retTime === true) {
+    if (pm && h !== 12) h += 12;
+    if (am && h === 12) h += 12;
+    return {
+      hours: h,
+      minutes: m,
+      seconds: s
+    };
+  }
+  return true;
+}
+function _isDateTime(val, format, retDate, settings) {
+  if (val instanceof Date) {
+    if (retDate !== true) return true;
+    return val;
+  }
+  const intVal = parseInt(String(val));
+  if (intVal === val) {
+    if (intVal < 0) return false;
+    else if (retDate !== true) return true;
+    else return new Date(intVal);
+  }
+  const strVal = String(val);
+  const tmp = strVal.indexOf(" ");
+  if (tmp < 0) {
+    if (strVal.indexOf("T") < 0 || String(new Date(strVal)) == "Invalid Date") return false;
+    else if (retDate !== true) return true;
+    else return new Date(strVal);
+  } else {
+    if (format == null) format = settings.datetimeFormat;
+    const formats = format.split("|");
+    const values = [strVal.substr(0, tmp), strVal.substr(tmp).trim()];
+    if (formats[0] != null) formats[0] = formats[0].trim();
+    if (formats[1]) formats[1] = formats[1].trim();
+    const tmp1 = _isDate(values[0], formats[0], true, settings);
+    const tmp2 = _isTime(values[1], true);
+    if (tmp1 !== false && tmp2 !== false) {
+      if (retDate !== true) return true;
+      const dt1 = tmp1;
+      const t2 = tmp2;
+      dt1.setHours(t2.hours);
+      dt1.setMinutes(t2.minutes);
+      dt1.setSeconds(t2.seconds);
+      return dt1;
+    } else {
+      return false;
+    }
+  }
+}
+function _age(dateStr) {
+  let d1;
+  if (dateStr === "" || dateStr == null) return "";
+  if (dateStr instanceof Date) {
+    d1 = dateStr;
+  } else if (typeof dateStr === "number" || typeof dateStr === "string" && parseInt(dateStr) == dateStr && parseInt(dateStr) > 0) {
+    d1 = new Date(parseInt(String(dateStr)));
+  } else {
+    d1 = new Date(String(dateStr));
+  }
+  if (String(d1) === "Invalid Date") return "";
+  const d2 = /* @__PURE__ */ new Date();
+  const sec = (d2.getTime() - d1.getTime()) / 1e3;
+  let amount = 0;
+  let type = "";
+  if (sec < 0) {
+    amount = 0;
+    type = "sec";
+  } else if (sec < 60) {
+    amount = Math.floor(sec);
+    type = "sec";
+    if (sec < 0) {
+      amount = 0;
+      type = "sec";
+    }
+  } else if (sec < 60 * 60) {
+    amount = Math.floor(sec / 60);
+    type = "min";
+  } else if (sec < 24 * 60 * 60) {
+    amount = Math.floor(sec / 60 / 60);
+    type = "hour";
+  } else if (sec < 30 * 24 * 60 * 60) {
+    amount = Math.floor(sec / 24 / 60 / 60);
+    type = "day";
+  } else if (sec < 365 * 24 * 60 * 60) {
+    amount = Math.floor(sec / 30 / 24 / 60 / 60 * 10) / 10;
+    type = "month";
+  } else if (sec < 365 * 4 * 24 * 60 * 60) {
+    amount = Math.floor(sec / 365 / 24 / 60 / 60 * 10) / 10;
+    type = "year";
+  } else if (sec >= 365 * 4 * 24 * 60 * 60) {
+    amount = Math.floor(sec / 365.25 / 24 / 60 / 60 * 10) / 10;
+    type = "year";
+  }
+  return amount + " " + type + (amount > 1 ? "s" : "");
+}
+function _interval(value) {
+  let ret = "";
+  if (value < 100) {
+    ret = "< 0.01 sec";
+  } else if (value < 1e3) {
+    ret = Math.floor(value / 10) / 100 + " sec";
+  } else if (value < 1e4) {
+    ret = Math.floor(value / 100) / 10 + " sec";
+  } else if (value < 6e4) {
+    ret = Math.floor(value / 1e3) + " secs";
+  } else if (value < 36e5) {
+    ret = Math.floor(value / 6e4) + " mins";
+  } else if (value < 864e5) {
+    ret = Math.floor(value / 36e5 * 10) / 10 + " hours";
+  } else if (value < 2628e6) {
+    ret = Math.floor(value / 864e5 * 10) / 10 + " days";
+  } else if (value < 31536e6) {
+    ret = Math.floor(value / 2628e6 * 10) / 10 + " months";
+  } else {
+    ret = Math.floor(value / 31536e5) / 10 + " years";
+  }
+  return ret;
+}
+function _formatDate(dateStr, format, settings) {
+  if (!format) format = settings.dateFormat;
+  if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
+  let dt = new Date(dateStr);
+  if (isInt(dateStr)) dt = new Date(Number(dateStr));
+  if (String(dt) === "Invalid Date") return "";
+  const year = dt.getFullYear();
+  const month = dt.getMonth();
+  const date = dt.getDate();
+  return format.toLowerCase().replace("month", settings.fullmonths[month] ?? "").replace("mon", settings.shortmonths[month] ?? "").replace(/yyyy/g, ("000" + year).slice(-4)).replace(/yyy/g, ("000" + year).slice(-4)).replace(/yy/g, ("0" + year).slice(-2)).replace(/(^|[^a-z$])y/g, "$1" + year).replace(/mm/g, ("0" + (month + 1)).slice(-2)).replace(/dd/g, ("0" + date).slice(-2)).replace(/th/g, date == 1 ? "st" : "th").replace(/th/g, date == 2 ? "nd" : "th").replace(/th/g, date == 3 ? "rd" : "th").replace(/(^|[^a-z$])m/g, "$1" + (month + 1)).replace(/(^|[^a-z$])d/g, "$1" + date);
+}
+function _formatTime(dateStr, format, settings) {
+  if (!format) format = settings.timeFormat;
+  if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
+  let dt = new Date(dateStr);
+  if (isInt(dateStr)) dt = new Date(Number(dateStr));
+  if (_isTime(dateStr)) {
+    const tmp = _isTime(dateStr, true);
+    dt = /* @__PURE__ */ new Date();
+    dt.setHours(tmp.hours);
+    dt.setMinutes(tmp.minutes);
+  }
+  if (String(dt) === "Invalid Date") return "";
+  if (format == "h12") format = "hh:mi pm";
+  let type = "am";
+  let hour = dt.getHours();
+  const h24 = dt.getHours();
+  let min = dt.getMinutes();
+  let sec = dt.getSeconds();
+  if (min < 10) min = "0" + min;
+  if (sec < 10) sec = "0" + sec;
+  if (format.indexOf("am") !== -1 || format.indexOf("pm") !== -1) {
+    if (hour >= 12) type = "pm";
+    if (hour > 12) hour = hour - 12;
+    if (hour === 0) hour = 12;
+  }
+  const hourStr = String(hour);
+  const minStr = String(min);
+  const secStr = String(sec);
+  const h24Str = String(h24);
+  return format.toLowerCase().replace("am", type).replace("pm", type).replace("hhh", Number(hour) < 10 ? "0" + hourStr : hourStr).replace("hh24", h24 < 10 ? "0" + h24Str : h24Str).replace("h24", h24Str).replace("hh", hourStr).replace("mm", minStr).replace("mi", minStr).replace("ss", secStr).replace(/(^|[^a-z$])h/g, "$1" + hourStr).replace(/(^|[^a-z$])m/g, "$1" + minStr).replace(/(^|[^a-z$])s/g, "$1" + secStr);
+}
+function _formatDateTime(dateStr, format, settings) {
+  let fmt;
+  if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
+  if (typeof format !== "string") {
+    fmt = [settings.dateFormat, settings.timeFormat];
+  } else {
+    fmt = format.split("|");
+    if (fmt[0] != null) fmt[0] = fmt[0].trim();
+    fmt[1] = fmt.length > 1 ? (fmt[1] ?? "").trim() : settings.timeFormat;
+  }
+  if (fmt[1] === "h12") fmt[1] = "h:m pm";
+  if (fmt[1] === "h24") fmt[1] = "h24:m";
+  return _formatDate(dateStr, fmt[0], settings) + " " + _formatTime(dateStr, fmt[1], settings);
+}
+
 // src/tsutils.ts
 var query7 = query;
 var Utils = class {
@@ -2859,275 +3188,19 @@ var Utils = class {
     return isIpAddress(val);
   }
   isDate(val, format, retDate) {
-    if (!val) return false;
-    let dt = "Invalid Date";
-    let month, day, year;
-    if (format == null) format = this.settings.dateFormat;
-    if (val instanceof Date) {
-      year = val.getFullYear();
-      month = val.getMonth() + 1;
-      day = val.getDate();
-    } else if (typeof val === "number" || typeof val === "string" && parseInt(val) == val && parseInt(val) > 0) {
-      const d = new Date(parseInt(String(val)));
-      year = d.getFullYear();
-      month = d.getMonth() + 1;
-      day = d.getDate();
-    } else {
-      let strVal = String(val);
-      if (new RegExp("mon", "ig").test(format)) {
-        format = format.replace(/month/ig, "m").replace(/mon/ig, "m").replace(/dd/ig, "d").replace(/[, ]/ig, "/").replace(/\/\//g, "/").toLowerCase();
-        strVal = strVal.replace(/[, ]/ig, "/").replace(/\/\//g, "/").toLowerCase();
-        for (let m = 0, len = this.settings.fullmonths.length; m < len; m++) {
-          const t = this.settings.fullmonths[m] ?? "";
-          strVal = strVal.replace(new RegExp(t, "ig"), String(m + 1)).replace(new RegExp(t.substr(0, 3), "ig"), String(m + 1));
-        }
-      }
-      const tmp = strVal.replace(/-/g, "/").replace(/\./g, "/").toLowerCase().split("/");
-      const tmp2 = format.replace(/-/g, "/").replace(/\./g, "/").toLowerCase();
-      if (tmp2 === "mm/dd/yyyy") {
-        month = tmp[0];
-        day = tmp[1];
-        year = tmp[2];
-      }
-      if (tmp2 === "m/d/yyyy") {
-        month = tmp[0];
-        day = tmp[1];
-        year = tmp[2];
-      }
-      if (tmp2 === "dd/mm/yyyy") {
-        month = tmp[1];
-        day = tmp[0];
-        year = tmp[2];
-      }
-      if (tmp2 === "d/m/yyyy") {
-        month = tmp[1];
-        day = tmp[0];
-        year = tmp[2];
-      }
-      if (tmp2 === "yyyy/dd/mm") {
-        month = tmp[2];
-        day = tmp[1];
-        year = tmp[0];
-      }
-      if (tmp2 === "yyyy/d/m") {
-        month = tmp[2];
-        day = tmp[1];
-        year = tmp[0];
-      }
-      if (tmp2 === "yyyy/mm/dd") {
-        month = tmp[1];
-        day = tmp[2];
-        year = tmp[0];
-      }
-      if (tmp2 === "yyyy/m/d") {
-        month = tmp[1];
-        day = tmp[2];
-        year = tmp[0];
-      }
-      if (tmp2 === "mm/dd/yy") {
-        month = tmp[0];
-        day = tmp[1];
-        year = tmp[2];
-      }
-      if (tmp2 === "m/d/yy") {
-        month = tmp[0];
-        day = tmp[1];
-        year = parseInt(tmp[2] ?? "0") + 1900;
-      }
-      if (tmp2 === "dd/mm/yy") {
-        month = tmp[1];
-        day = tmp[0];
-        year = parseInt(tmp[2] ?? "0") + 1900;
-      }
-      if (tmp2 === "d/m/yy") {
-        month = tmp[1];
-        day = tmp[0];
-        year = parseInt(tmp[2] ?? "0") + 1900;
-      }
-      if (tmp2 === "yy/dd/mm") {
-        month = tmp[2];
-        day = tmp[1];
-        year = parseInt(tmp[0] ?? "0") + 1900;
-      }
-      if (tmp2 === "yy/d/m") {
-        month = tmp[2];
-        day = tmp[1];
-        year = parseInt(tmp[0] ?? "0") + 1900;
-      }
-      if (tmp2 === "yy/mm/dd") {
-        month = tmp[1];
-        day = tmp[2];
-        year = parseInt(tmp[0] ?? "0") + 1900;
-      }
-      if (tmp2 === "yy/m/d") {
-        month = tmp[1];
-        day = tmp[2];
-        year = parseInt(tmp[0] ?? "0") + 1900;
-      }
-    }
-    if (!this.isInt(year)) return false;
-    if (!this.isInt(month)) return false;
-    if (!this.isInt(day)) return false;
-    const numYear = +(year ?? 0);
-    const numMonth = +(month ?? 0);
-    const numDay = +(day ?? 0);
-    dt = new Date(numYear, numMonth - 1, numDay);
-    dt.setFullYear(numYear);
-    if (numMonth == null) return false;
-    if (String(dt) === "Invalid Date") return false;
-    if (dt.getMonth() + 1 !== numMonth || dt.getDate() !== numDay || dt.getFullYear() !== numYear) return false;
-    if (retDate === true) return dt;
-    else return true;
+    return _isDate(val, format, retDate, this.settings);
   }
   isTime(val, retTime) {
-    if (val == null) return false;
-    let max;
-    let strVal = String(val).toUpperCase();
-    const am = strVal.indexOf("AM") >= 0;
-    const pm = strVal.indexOf("PM") >= 0;
-    const ampm = pm || am;
-    if (ampm) max = 12;
-    else max = 24;
-    strVal = strVal.replace("AM", "").replace("PM", "").trim();
-    const tmp = strVal.split(":");
-    const tmp0 = tmp[0] ?? "", tmp1 = tmp[1] ?? "", tmp2 = tmp[2] ?? "";
-    let h = parseInt(tmp0 || "0");
-    const m = parseInt(tmp1 || "0"), s = parseInt(tmp2 || "0");
-    if ((!ampm || tmp.length !== 1) && tmp.length !== 2 && tmp.length !== 3) {
-      return false;
-    }
-    if (tmp0 === "" || h < 0 || h > max || !this.isInt(tmp0) || tmp0.length > 2) {
-      return false;
-    }
-    if (tmp.length > 1 && (tmp1 === "" || m < 0 || m > 59 || !this.isInt(tmp1) || tmp1.length !== 2)) {
-      return false;
-    }
-    if (tmp.length > 2 && (tmp2 === "" || s < 0 || s > 59 || !this.isInt(tmp2) || tmp2.length !== 2)) {
-      return false;
-    }
-    if (!ampm && max === h && (m !== 0 || s !== 0)) {
-      return false;
-    }
-    if (ampm && tmp.length === 1 && h === 0) {
-      return false;
-    }
-    if (retTime === true) {
-      if (pm && h !== 12) h += 12;
-      if (am && h === 12) h += 12;
-      return {
-        hours: h,
-        minutes: m,
-        seconds: s
-      };
-    }
-    return true;
+    return _isTime(val, retTime);
   }
   isDateTime(val, format, retDate) {
-    if (val instanceof Date) {
-      if (retDate !== true) return true;
-      return val;
-    }
-    const intVal = parseInt(String(val));
-    if (intVal === val) {
-      if (intVal < 0) return false;
-      else if (retDate !== true) return true;
-      else return new Date(intVal);
-    }
-    const strVal = String(val);
-    const tmp = strVal.indexOf(" ");
-    if (tmp < 0) {
-      if (strVal.indexOf("T") < 0 || String(new Date(strVal)) == "Invalid Date") return false;
-      else if (retDate !== true) return true;
-      else return new Date(strVal);
-    } else {
-      if (format == null) format = this.settings.datetimeFormat;
-      const formats = format.split("|");
-      const values = [strVal.substr(0, tmp), strVal.substr(tmp).trim()];
-      if (formats[0] != null) formats[0] = formats[0].trim();
-      if (formats[1]) formats[1] = formats[1].trim();
-      const tmp1 = this.isDate(values[0], formats[0], true);
-      const tmp2 = this.isTime(values[1], true);
-      if (tmp1 !== false && tmp2 !== false) {
-        if (retDate !== true) return true;
-        const dt1 = tmp1;
-        const t2 = tmp2;
-        dt1.setHours(t2.hours);
-        dt1.setMinutes(t2.minutes);
-        dt1.setSeconds(t2.seconds);
-        return dt1;
-      } else {
-        return false;
-      }
-    }
+    return _isDateTime(val, format, retDate, this.settings);
   }
   age(dateStr) {
-    let d1;
-    if (dateStr === "" || dateStr == null) return "";
-    if (dateStr instanceof Date) {
-      d1 = dateStr;
-    } else if (typeof dateStr === "number" || typeof dateStr === "string" && parseInt(dateStr) == dateStr && parseInt(dateStr) > 0) {
-      d1 = new Date(parseInt(String(dateStr)));
-    } else {
-      d1 = new Date(String(dateStr));
-    }
-    if (String(d1) === "Invalid Date") return "";
-    const d2 = /* @__PURE__ */ new Date();
-    const sec = (d2.getTime() - d1.getTime()) / 1e3;
-    let amount = 0;
-    let type = "";
-    if (sec < 0) {
-      amount = 0;
-      type = "sec";
-    } else if (sec < 60) {
-      amount = Math.floor(sec);
-      type = "sec";
-      if (sec < 0) {
-        amount = 0;
-        type = "sec";
-      }
-    } else if (sec < 60 * 60) {
-      amount = Math.floor(sec / 60);
-      type = "min";
-    } else if (sec < 24 * 60 * 60) {
-      amount = Math.floor(sec / 60 / 60);
-      type = "hour";
-    } else if (sec < 30 * 24 * 60 * 60) {
-      amount = Math.floor(sec / 24 / 60 / 60);
-      type = "day";
-    } else if (sec < 365 * 24 * 60 * 60) {
-      amount = Math.floor(sec / 30 / 24 / 60 / 60 * 10) / 10;
-      type = "month";
-    } else if (sec < 365 * 4 * 24 * 60 * 60) {
-      amount = Math.floor(sec / 365 / 24 / 60 / 60 * 10) / 10;
-      type = "year";
-    } else if (sec >= 365 * 4 * 24 * 60 * 60) {
-      amount = Math.floor(sec / 365.25 / 24 / 60 / 60 * 10) / 10;
-      type = "year";
-    }
-    return amount + " " + type + (amount > 1 ? "s" : "");
+    return _age(dateStr);
   }
   interval(value) {
-    let ret = "";
-    if (value < 100) {
-      ret = "< 0.01 sec";
-    } else if (value < 1e3) {
-      ret = Math.floor(value / 10) / 100 + " sec";
-    } else if (value < 1e4) {
-      ret = Math.floor(value / 100) / 10 + " sec";
-    } else if (value < 6e4) {
-      ret = Math.floor(value / 1e3) + " secs";
-    } else if (value < 36e5) {
-      ret = Math.floor(value / 6e4) + " mins";
-    } else if (value < 864e5) {
-      ret = Math.floor(value / 36e5 * 10) / 10 + " hours";
-    } else if (value < 2628e6) {
-      ret = Math.floor(value / 864e5 * 10) / 10 + " days";
-    } else if (value < 31536e6) {
-      ret = Math.floor(value / 2628e6 * 10) / 10 + " months";
-    } else {
-      ret = Math.floor(value / 31536e5) / 10 + " years";
-    }
-    return ret;
+    return _interval(value);
   }
   date(dateStr) {
     if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
@@ -3170,60 +3243,13 @@ var Utils = class {
     return parseFloat(String(val)).toLocaleString(this.settings.locale, options);
   }
   formatDate(dateStr, format) {
-    if (!format) format = this.settings.dateFormat;
-    if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
-    let dt = new Date(dateStr);
-    if (this.isInt(dateStr)) dt = new Date(Number(dateStr));
-    if (String(dt) === "Invalid Date") return "";
-    const year = dt.getFullYear();
-    const month = dt.getMonth();
-    const date = dt.getDate();
-    return format.toLowerCase().replace("month", this.settings.fullmonths[month] ?? "").replace("mon", this.settings.shortmonths[month] ?? "").replace(/yyyy/g, ("000" + year).slice(-4)).replace(/yyy/g, ("000" + year).slice(-4)).replace(/yy/g, ("0" + year).slice(-2)).replace(/(^|[^a-z$])y/g, "$1" + year).replace(/mm/g, ("0" + (month + 1)).slice(-2)).replace(/dd/g, ("0" + date).slice(-2)).replace(/th/g, date == 1 ? "st" : "th").replace(/th/g, date == 2 ? "nd" : "th").replace(/th/g, date == 3 ? "rd" : "th").replace(/(^|[^a-z$])m/g, "$1" + (month + 1)).replace(/(^|[^a-z$])d/g, "$1" + date);
+    return _formatDate(dateStr, format, this.settings);
   }
   formatTime(dateStr, format) {
-    if (!format) format = this.settings.timeFormat;
-    if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
-    let dt = new Date(dateStr);
-    if (this.isInt(dateStr)) dt = new Date(Number(dateStr));
-    if (this.isTime(dateStr)) {
-      const tmp = this.isTime(dateStr, true);
-      dt = /* @__PURE__ */ new Date();
-      dt.setHours(tmp.hours);
-      dt.setMinutes(tmp.minutes);
-    }
-    if (String(dt) === "Invalid Date") return "";
-    if (format == "h12") format = "hh:mi pm";
-    let type = "am";
-    let hour = dt.getHours();
-    const h24 = dt.getHours();
-    let min = dt.getMinutes();
-    let sec = dt.getSeconds();
-    if (min < 10) min = "0" + min;
-    if (sec < 10) sec = "0" + sec;
-    if (format.indexOf("am") !== -1 || format.indexOf("pm") !== -1) {
-      if (hour >= 12) type = "pm";
-      if (hour > 12) hour = hour - 12;
-      if (hour === 0) hour = 12;
-    }
-    const hourStr = String(hour);
-    const minStr = String(min);
-    const secStr = String(sec);
-    const h24Str = String(h24);
-    return format.toLowerCase().replace("am", type).replace("pm", type).replace("hhh", Number(hour) < 10 ? "0" + hourStr : hourStr).replace("hh24", h24 < 10 ? "0" + h24Str : h24Str).replace("h24", h24Str).replace("hh", hourStr).replace("mm", minStr).replace("mi", minStr).replace("ss", secStr).replace(/(^|[^a-z$])h/g, "$1" + hourStr).replace(/(^|[^a-z$])m/g, "$1" + minStr).replace(/(^|[^a-z$])s/g, "$1" + secStr);
+    return _formatTime(dateStr, format, this.settings);
   }
   formatDateTime(dateStr, format) {
-    let fmt;
-    if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
-    if (typeof format !== "string") {
-      fmt = [this.settings.dateFormat, this.settings.timeFormat];
-    } else {
-      fmt = format.split("|");
-      if (fmt[0] != null) fmt[0] = fmt[0].trim();
-      fmt[1] = fmt.length > 1 ? (fmt[1] ?? "").trim() : this.settings.timeFormat;
-    }
-    if (fmt[1] === "h12") fmt[1] = "h:m pm";
-    if (fmt[1] === "h24") fmt[1] = "h24:m";
-    return this.formatDate(dateStr, fmt[0]) + " " + this.formatTime(dateStr, fmt[1]);
+    return _formatDateTime(dateStr, format, this.settings);
   }
   stripSpaces(html) {
     return stripSpaces(html);
