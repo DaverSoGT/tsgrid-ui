@@ -1,4 +1,4 @@
-/* tsgrid-ui 1.0.x (nightly) (5/13/2026, 10:54:35 PM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 1.0.x (nightly) (5/14/2026, 12:10:16 AM) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -3042,6 +3042,59 @@ function _date(dateStr, settings, deps) {
   return '<span title="' + dd1 + " " + time2 + '">' + dsp + "</span>";
 }
 
+// src/tsutils-locale.ts
+async function _locale(locale, keepPhrases, noMerge, settings, deps) {
+  if (Array.isArray(locale)) {
+    let mergedSettings = deps.extend({}, settings, { phrases: {} });
+    const localeArr = locale;
+    const proms = [];
+    const files = {};
+    localeArr.forEach((file, ind) => {
+      if (file.length === 5) {
+        file = "locale/" + file.toLowerCase() + ".json";
+        localeArr[ind] = file;
+      }
+      proms.push(_locale(file, true, false, mergedSettings, deps));
+    });
+    const res = await Promise.allSettled(proms);
+    res.forEach((r) => {
+      if (r.status === "fulfilled" && r.value.kind === "load") {
+        files[r.value.file] = r.value.data;
+      }
+    });
+    localeArr.forEach((file) => {
+      mergedSettings = deps.extend({}, mergedSettings, files[file] ?? {});
+    });
+    return { kind: "void", settings: mergedSettings };
+  }
+  if (!locale) locale = "en-us";
+  if (typeof locale === "object") {
+    const mergedSettings = deps.extend({}, settings, TsLocale, locale);
+    return { kind: "merge", settings: mergedSettings };
+  }
+  let localeStr = locale;
+  if (localeStr.length === 5) {
+    localeStr = "locale/" + localeStr.toLowerCase() + ".json";
+  }
+  try {
+    const res = await deps.fetch(localeStr, { method: "GET" });
+    const data = await res.json();
+    if (noMerge !== true) {
+      if (keepPhrases) {
+        const newSettings = deps.extend({}, settings, data);
+        return { kind: "load", file: localeStr, data, settings: newSettings };
+      } else {
+        const newSettings = deps.extend({}, settings, TsLocale, { phrases: {} }, data);
+        return { kind: "load", file: localeStr, data, settings: newSettings };
+      }
+    }
+    return { kind: "load", file: localeStr, data };
+  } catch (err) {
+    console.log("ERROR: Cannot load locale " + localeStr);
+    throw err;
+  }
+}
+
 // src/tsutils.ts
 var query7 = query;
 var Utils = class {
@@ -3525,52 +3578,13 @@ var Utils = class {
     return this.execTemplate(translation, params);
   }
   locale(locale, keepPhrases, noMerge) {
-    return new Promise((resolve, reject) => {
-      if (Array.isArray(locale)) {
-        this.settings.phrases = {};
-        const proms = [];
-        const files = {};
-        const localeArr = locale;
-        localeArr.forEach((file, ind) => {
-          if (file.length === 5) {
-            file = "locale/" + file.toLowerCase() + ".json";
-            localeArr[ind] = file;
-          }
-          proms.push(this.locale(file, true, false));
-        });
-        Promise.allSettled(proms).then((res) => {
-          res.forEach((r) => {
-            if (r.value) files[r.value.file] = r.value.data;
-          });
-          localeArr.forEach((file) => {
-            this.settings = this.extend({}, this.settings, files[file]);
-          });
-          resolve();
-        });
-        return;
-      }
-      if (!locale) locale = "en-us";
-      if (typeof locale === "object") {
-        this.settings = this.extend({}, this.settings, TsLocale, locale);
-        return;
-      }
-      let localeStr = locale;
-      if (localeStr.length === 5) {
-        localeStr = "locale/" + localeStr.toLowerCase() + ".json";
-      }
-      fetch(localeStr, { method: "GET" }).then((res) => res.json()).then((data) => {
-        if (noMerge !== true) {
-          if (keepPhrases) {
-            this.settings = this.extend({}, this.settings, data);
-          } else {
-            this.settings = this.extend({}, this.settings, TsLocale, { phrases: {} }, data);
-          }
-        }
-        resolve({ file: localeStr, data });
-      }).catch((err) => {
-        console.log("ERROR: Cannot load locale " + localeStr);
-        reject(err);
-      });
+    const deps = {
+      extend: this.extend.bind(this),
+      fetch: globalThis.fetch.bind(globalThis)
+    };
+    return _locale(locale, keepPhrases, noMerge, this.settings, deps).then((result) => {
+      if (result.settings) this.settings = result.settings;
+      return result.kind === "load" ? { file: result.file, data: result.data } : void 0;
     });
   }
   scrollBarSize() {

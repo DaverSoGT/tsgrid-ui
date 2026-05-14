@@ -2,6 +2,69 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.7.0 — 2026-05-14
+
+### Refactor
+
+- **`locale()` extraction — `LocaleDeps` deps-injection pattern**: Extracted the `TsUtils.locale()` method body (62 LOC, the largest remaining cluster in `tsutils.ts`) into `_locale()` in `src/tsutils-locale.ts` via a new minimal `LocaleDeps` interface (`{ extend: (target, ...sources) => object; fetch: (url, init?) => Promise<Response> }`). Class method `locale()` becomes a 4-line delegator: `return _locale(locale, keepPhrases, noMerge, this.settings, { extend: this.extend.bind(this), fetch: globalThis.fetch.bind(globalThis) }).then(result => { if (result.settings) this.settings = result.settings; return result.kind === 'load' ? { file: result.file, data: result.data } : undefined })`. Public signature `TsUtils.locale(locale, keepPhrases?, noMerge?): Promise<{ file; data } | void>` is **byte-identical** to v2.6.0. `vi.spyOn(TsUtils.prototype, 'locale')` continues to work (prototype delegator — INV-SPY PASS). Follows the v2.3 `MessageDeps` / v2.6 `DateDeps` canonical patterns. Array-form branch uses **direct `_locale()` recursion** (not delegator round-trip — design OQ-2/D2) to keep the internal call graph leaf-friendly.
+  - `LocaleDeps` / `LocaleResult` are **internal** types backing the deps-injection delegation pattern. They are NOT exported through `src/index.ts` barrel (INV-L7-DEPS-INTERNAL PASS; INV-7 byte-identical barrel maintained). Consumers of `TsUtils.locale()` are unaffected.
+
+### Fixed
+
+- **Object-form `Utils.locale({...})` Promise hang (R-LOC-4 / INV-L7-OBJFIX)**: The v2.6.0 `locale()` body had `if (typeof locale === 'object') { this.settings = this.extend({}, this.settings, TsLocale, locale); return }` — the bare `return` inside the `new Promise((resolve, reject) => {...})` executor neither called `resolve()` nor `reject()`, so the Promise hung **forever** for any object-form input. v2.7.0 replaces the bare `return` with a value-returning path: the extracted `async function _locale()` returns `{ kind: 'merge', settings: mergedSettings }` for the object branch; the delegator unwraps to `undefined` (matching the original public contract for object form). `await Utils.locale({ dateFormat: 'dd.mm.yyyy' })` now resolves within ~1 ms (was: pending forever). Covered by test `T-LOC-1` with `vitest timeout: 1000`.
+
+### Tests
+
+- Added 10-case safety-net suite for `_locale()` in `test/unit/tsutils-locale.test.ts` committed as Phase 4 RED before extraction (INV-TDD PASS — `c7e64b43` < `dda197ad` < `32538179`):
+  - **T-LOC-1** — object-form `_locale({ dateFormat: 'dd.mm.yyyy' })` resolves within 1 s with `{ kind: 'merge', settings.dateFormat: 'dd.mm.yyyy' }` (INV-L7-OBJFIX gate)
+  - **T-LOC-2** — 5-char string `'ru-ru'` auto-expanded to `'locale/ru-ru.json'` before `deps.fetch`
+  - **T-LOC-3** — Full-path string `'locale/ru-ru.json'` passed verbatim (no double-expansion)
+  - **T-LOC-4** — `keepPhrases=true` preserves pre-existing phrase keys in returned settings
+  - **T-LOC-5** — `keepPhrases=false` (default) executes the TsLocale-merge branch; documents `R-LOC-V26-PRESERVED` (see Known Issues)
+  - **T-LOC-6** — `noMerge=true` returns `{ kind: 'load', file, data }` without including merged settings
+  - **T-LOC-7** — Array form `['en-us', 'ru-ru']` triggers N fetch calls and resolves `{ kind: 'void' }` (delegator maps to `undefined`)
+  - **T-LOC-8** — `deps.fetch` rejection re-throws and rejects the returned Promise
+  - **T-LOC-9** — Design constraint: T-LOC-2..T-LOC-8 pass in jsdom **without** a global `fetch` polyfill (proven by T-LOC-2..T-LOC-8 collectively)
+  - **T-LOC-10** — `vi.spyOn(TsUtils, 'locale')` observes exactly one call when `TsUtils.locale('en-us')` is invoked (INV-SPY / INV-L7-DELEGATOR gate)
+- Total Vitest tests: **297/297 GREEN** (v2.6.0 baseline: 288/288).
+
+### Bundle
+
+Delta vs v2.6.0 baseline:
+
+| Artifact | v2.6.0 | v2.7.0 | Δ bytes | Δ % |
+|----------|--------|--------|---------|-----|
+| `dist/tsgrid-ui.js` (CJS) | 946,686 B | 947,274 B | +588 B | +0.0621% |
+| `dist/tsgrid-ui.es6.js` (ESM) | 944,878 B | 945,466 B | +588 B | +0.0622% |
+| `dist/tsgrid-ui.min.js` (CJS min) | 508,954 B | 509,260 B | +306 B | +0.0601% |
+| `dist/tsgrid-ui.es6.min.js` (ESM min) | 507,819 B | 508,125 B | +306 B | +0.0603% |
+| `dist/tsgrid-ui.d.ts` | 94,446 B | 94,446 B | 0 B | 0.0000% |
+| `dist/tsgrid-ui.css` | 246,980 B | 246,980 B | 0 B | 0.0000% |
+| `dist/tsgrid-ui.min.css` | 229,707 B | 229,707 B | 0 B | 0.0000% |
+
+All within ±2% gate. PASSED. The JS bundles grew by ~0.06% (the new `_locale` function body + deps wiring); the `d.ts` is **byte-identical** to v2.6.0 (INV-L7-API PASS — `locale(` signature unchanged, `LocaleDeps`/`LocaleResult` declared `@internal` and stripped by tsup `stripInternal: true`). CSS/min.css unchanged (no css edits in v2.7).
+
+### BC
+
+- `TsUtils.locale(locale, keepPhrases?, noMerge?): Promise<{ file: string; data: unknown } | void>` — signature and (now-resolving) runtime behavior **BYTE-IDENTICAL** to v2.6.0 for all string/array inputs. **Object-form input changes**: previously hung forever (effectively unusable); now resolves with `undefined` after merging. Existing call sites using string/array inputs work unchanged; existing call sites using object-form were necessarily broken (Promise never settled) and now begin working.
+- `src/index.ts` barrel — **byte-identical** to v2.6.0 (INV-7 PASS).
+- `LocaleDeps` / `LocaleResult` — NEW **internal** types. NOT exported through `src/index.ts` barrel (INV-L7-DEPS-INTERNAL PASS). `LocaleResult` declared `/** @internal */` and stripped from the rolled d.ts. `LocaleDeps` is type-only at the delegator call site and does not affect the d.ts surface.
+- SEMVER MINOR. BC verdict: NONE for string/array inputs; BUGFIX for object-form input (R-LOC-4).
+
+### Known issues
+
+- **R-LOC-2** (deferred from v2.6 — confirmed still present): Array-form input `await Utils.locale(['en-us', 'ru-ru'])` MUTATES the caller's input array (each 5-char code is rewritten in-place to `'locale/xx-xx.json'`). Preserved verbatim in v2.7. Candidate fix in v2.8.
+- **R-LOC-V26-PRESERVED** (newly documented): `keepPhrases=false` branch in v2.6.0 had comment "clear phrases from language before merging" but the implementation `extend({}, settings, TsLocale, { phrases: {} }, data)` does **not** actually clear pre-existing phrase keys — `extend` is deep, and `extend(existingPhrases, {})` is a no-op. Pre-existing phrase keys survive the merge in both v2.6.0 and v2.7.0. v2.7 scope was constrained to **one** behavior change (R-LOC-4 — object-form hang), so this latent behavior is preserved verbatim with `T-LOC-5` documenting the actual semantics. Candidate fix in v2.8.
+- **R-LOC-3** (carry-forward from v2.6): Locale extraction does NOT unblock formatter extraction. The `format()` family still has its own deps-injection requirement; will be tackled separately in v2.8 via a `FormatterDeps` cluster.
+
+### Internal
+
+- `src/tsutils-locale.ts` is a **leaf module** (INV-L7-LEAF PASS): zero runtime imports from `./tsbase.js` or `./tsutils.js`. Only `import type { TsUISettings } from './tsutils.js'` (erased at emit) and `import { TsLocale } from './tslocale.js'` (zero-dep data leaf). DAG depth unchanged.
+- INV-9 (zero `this.` in extracted function body) PASS.
+- INV-LINT-INV8 canary: `src/tsutils-*.ts` ESLint glob continues to cover the new file (verified by inserting `void arguments.length;` → `pnpm lint` EXIT 1 → revert → EXIT 0).
+
+---
+
 ## v2.6.0 — 2026-05-13
 
 ### Refactor
