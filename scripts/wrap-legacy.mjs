@@ -22,6 +22,8 @@ const ROOT = path.resolve(__dirname, '..')
 // ---------------------------------------------------------------------------
 const DIST_JS        = path.join(ROOT, 'dist', 'tsgrid-ui.js')
 const DIST_JS_TMP    = path.join(ROOT, 'dist', 'tsgrid-ui.js.tmp')
+const DIST_JS_MIN    = path.join(ROOT, 'dist', 'tsgrid-ui.min.js')
+const DIST_JS_MIN_TMP = path.join(ROOT, 'dist', 'tsgrid-ui.min.js.tmp')
 // Stale ESM artifact left over before tsup outExtension() was forced to .js.
 // tsup emits dist/tsgrid-ui.es6.js (not .mjs). Remove idempotently on every run.
 const STALE_ES6_MJS  = path.join(ROOT, 'dist', 'tsgrid-ui.es6.mjs')
@@ -134,10 +136,31 @@ function stripCjsArtifacts(code) {
     let result = code
 
     // ── Strip: module.exports = __toCommonJS(<varname>); ──────────────────────
-    // This is the primary crash point. esbuild emits exactly one such line.
-    const moduleExportsRe = /^module\.exports = __toCommonJS\([^)]+\);\s*$/m
+    // This is the primary crash point. esbuild emits exactly one such statement.
+    //
+    // R-WRAP-1 AUDIT (Phase 1, v2.4 SDD):
+    //   Non-minified output: esbuild emits `module.exports = __toCommonJS(varname);`
+    //   on its own line. The anchored regex with /m flag matches.
+    //
+    //   Minified output (tsgrid-ui.min.js): esbuild renames internal helpers to
+    //   short single-char names (e.g. __toCommonJS → `ui`, exports var → `_i`).
+    //   It also removes spaces, yielding `module.exports=ui(_i);` embedded
+    //   inside a larger compound line with no surrounding newlines. The anchored
+    //   regex cannot match. A generic non-anchored pattern
+    //   `module\.exports\s*=\s*\w+\(\w+\);` handles both forms.
+    //
+    //   Strategy: try anchored (non-min) first, then generic non-anchored (min).
+    //
+    const moduleExportsRe        = /^module\.exports = __toCommonJS\([^)]+\);\s*$/m
+    const moduleExportsReGeneric = /module\.exports\s*=\s*\w+\(\w+\);/
     if (moduleExportsRe.test(result)) {
         result = result.replace(moduleExportsRe, '')
+    } else if (moduleExportsReGeneric.test(result)) {
+        result = result.replace(moduleExportsReGeneric, '')
+        process.stderr.write(
+            '[wrap-legacy] INFO: used generic pattern to strip `module.exports=<fn>(<var>);` ' +
+            '— minified output uses mangled names and compound lines.\n'
+        )
     } else {
         process.stderr.write(
             '[wrap-legacy] WARNING: expected `module.exports = __toCommonJS(...)` ' +
@@ -178,6 +201,16 @@ async function main() {
         console.log('[wrap-legacy] Done: dist/tsgrid-ui.js')
     } catch (err) {
         console.error('[wrap-legacy] ERROR:', err.message)
+        process.exit(1)
+    }
+
+    console.log('[wrap-legacy] Wrapping dist/tsgrid-ui.min.js with legacy IIFE...')
+
+    try {
+        await wrapFile(DIST_JS_MIN, DIST_JS_MIN_TMP)
+        console.log('[wrap-legacy] Done: dist/tsgrid-ui.min.js')
+    } catch (err) {
+        console.error('[wrap-legacy] ERROR (min):', err.message)
         process.exit(1)
     }
 }

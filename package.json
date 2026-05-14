@@ -44,6 +44,8 @@
   "style": "dist/tsgrid-ui.css",
   "files": [
     "dist/",
+    "dist/tsgrid-ui.min.js",
+    "dist/tsgrid-ui.es6.min.js",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
