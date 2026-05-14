@@ -51,6 +51,7 @@ export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-
 import { transition as _transition, lock as _lock, unlock as _unlock, getSize as _getSize, getStrDimentions as _getStrDimentions, getStrWidth as _getStrWidth, getStrHeight as _getStrHeight, bindEvents as _bindEvents } from './tsutils-dom.js'
 import type { TsLockOptions } from './tsutils-dom.js'
 export type { TsLockOptions } from './tsutils-dom.js'
+import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime } from './tsutils-datetime.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
