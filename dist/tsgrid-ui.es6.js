@@ -2987,6 +2987,25 @@ function _formatDateTime(dateStr, format, settings) {
   if (fmt[1] === "h24") fmt[1] = "h24:m";
   return _formatDate(dateStr, fmt[0], settings) + " " + _formatTime(dateStr, fmt[1], settings);
 }
+function _date(dateStr, settings, deps) {
+  if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
+  let d1 = new Date(dateStr);
+  if (isInt(dateStr)) d1 = new Date(Number(dateStr));
+  if (String(d1) === "Invalid Date") return "";
+  const months = settings.shortmonths;
+  const d2 = /* @__PURE__ */ new Date();
+  const d3 = /* @__PURE__ */ new Date();
+  d3.setTime(d3.getTime() - 864e5);
+  const dd1 = months[d1.getMonth()] + " " + d1.getDate() + ", " + d1.getFullYear();
+  const dd2 = months[d2.getMonth()] + " " + d2.getDate() + ", " + d2.getFullYear();
+  const dd3 = months[d3.getMonth()] + " " + d3.getDate() + ", " + d3.getFullYear();
+  const time = d1.getHours() - (d1.getHours() > 12 ? 12 : 0) + ":" + (d1.getMinutes() < 10 ? "0" : "") + d1.getMinutes() + " " + (d1.getHours() >= 12 ? "pm" : "am");
+  const time2 = d1.getHours() - (d1.getHours() > 12 ? 12 : 0) + ":" + (d1.getMinutes() < 10 ? "0" : "") + d1.getMinutes() + ":" + (d1.getSeconds() < 10 ? "0" : "") + d1.getSeconds() + " " + (d1.getHours() >= 12 ? "pm" : "am");
+  let dsp = dd1;
+  if (dd1 === dd2) dsp = time;
+  if (dd1 === dd3) dsp = deps.lang("Yesterday");
+  return '<span title="' + dd1 + " " + time2 + '">' + dsp + "</span>";
+}
 
 // src/tsutils.ts
 var query7 = query;
@@ -3203,23 +3222,7 @@ var Utils = class {
     return _interval(value);
   }
   date(dateStr) {
-    if (dateStr === "" || dateStr == null || typeof dateStr === "object" && !dateStr.getMonth) return "";
-    let d1 = new Date(dateStr);
-    if (this.isInt(dateStr)) d1 = new Date(Number(dateStr));
-    if (String(d1) === "Invalid Date") return "";
-    const months = this.settings.shortmonths;
-    const d2 = /* @__PURE__ */ new Date();
-    const d3 = /* @__PURE__ */ new Date();
-    d3.setTime(d3.getTime() - 864e5);
-    const dd1 = months[d1.getMonth()] + " " + d1.getDate() + ", " + d1.getFullYear();
-    const dd2 = months[d2.getMonth()] + " " + d2.getDate() + ", " + d2.getFullYear();
-    const dd3 = months[d3.getMonth()] + " " + d3.getDate() + ", " + d3.getFullYear();
-    const time = d1.getHours() - (d1.getHours() > 12 ? 12 : 0) + ":" + (d1.getMinutes() < 10 ? "0" : "") + d1.getMinutes() + " " + (d1.getHours() >= 12 ? "pm" : "am");
-    const time2 = d1.getHours() - (d1.getHours() > 12 ? 12 : 0) + ":" + (d1.getMinutes() < 10 ? "0" : "") + d1.getMinutes() + ":" + (d1.getSeconds() < 10 ? "0" : "") + d1.getSeconds() + " " + (d1.getHours() >= 12 ? "pm" : "am");
-    let dsp = dd1;
-    if (dd1 === dd2) dsp = time;
-    if (dd1 === dd3) dsp = this.lang("Yesterday");
-    return '<span title="' + dd1 + " " + time2 + '">' + dsp + "</span>";
+    return _date(dateStr, this.settings, { lang: this.lang.bind(this) });
   }
   formatSize(sizeStr) {
     if (!this.isFloat(sizeStr) || sizeStr === "") return "";

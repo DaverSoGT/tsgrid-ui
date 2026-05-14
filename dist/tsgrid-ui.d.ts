@@ -394,6 +394,41 @@ interface TsLockOptions {
 }
 
 /**
+ * TsUtils date-time sub-module — Phase 5b of v2.5 SDD.
+ * DAG position: leaf module (no tsbase/tsutils imports).
+ *
+ * Imports:
+ *   ./tsutils-type-guards.js — isInt as _isInt (needed by isDate, isTime, formatDate, formatTime)
+ *   ./tsutils.js             — type-only import type { TsUISettings } (TS erases at emit)
+ *                              Precedent: tsutils-type-guards.ts:9, tsutils-message.ts:26
+ *
+ * INV-4: MUST NOT import from tsbase.ts or tsutils.ts at runtime.
+ * INV-8: No arguments.length usage.
+ * INV-9: No this.X in exported function bodies.
+ *
+ * 4-space indent convention.
+ *
+ * OQ-2 (TsTimeResult): local non-exported interface `TsTimeResult` defined inline
+ *   here (structurally identical to tsutils.ts copy). Avoids back-import of a
+ *   non-exported type; the class delegator in tsutils.ts casts via `as boolean | TsTimeResult`.
+ *
+ * R-DT-3 (settings reference): `settings` is passed as a reference to `this.settings`
+ *   from delegators — never cloned. TsLocale mutations to fullmonths/shortmonths/dateFormat
+ *   etc. flow through without restart.
+ *
+ * R-DT-2 / R-DT-8 (intra-cluster calls): _isDateTime calls _isDate + _isTime directly
+ *   as module-level function refs. _formatDateTime calls _formatDate + _formatTime directly.
+ *   _formatTime calls _isTime directly. Zero this.X inside any extracted body.
+ */
+
+/** Return value from _isTime() / TsUtils.isTime() when retTime === true — single canonical declaration (v2.6 dedup) */
+interface TsTimeResult {
+    hours: number;
+    minutes: number;
+    seconds: number;
+}
+
+/**
  * Part of TsUi 2.0 library
  *  - Dependencies: mQuery, TsUtils, TsBase, TsLocale
  *
@@ -461,12 +496,6 @@ interface TsFormatterExtra {
 }
 /** Signature of a grid-cell formatter function */
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string;
-/** Return value from TsUtils.isTime() when retTime === true */
-interface TsTimeResult {
-    hours: number;
-    minutes: number;
-    seconds: number;
-}
 
 /** A normalized menu item */
 interface TsMenuItem {

@@ -33,8 +33,8 @@ import { isInt as _isInt } from './tsutils-type-guards.js'
 // Local types (non-exported — structurally identical to tsutils.ts TsTimeResult)
 // ---------------------------------------------------------------------------
 
-/** Return value from _isTime() when retTime === true (OQ-2: inline literal, not re-imported) */
-interface TsTimeResult {
+/** Return value from _isTime() / TsUtils.isTime() when retTime === true — single canonical declaration (v2.6 dedup) */
+export interface TsTimeResult {
     hours: number
     minutes: number
     seconds: number

@@ -52,6 +52,7 @@ import { transition as _transition, lock as _lock, unlock as _unlock, getSize as
 import type { TsLockOptions } from './tsutils-dom.js'
 export type { TsLockOptions } from './tsutils-dom.js'
 import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime, _date } from './tsutils-datetime.js'
+import type { TsTimeResult } from './tsutils-datetime.js'
 
 // TsUtils always calls query() with a selector (never a callback) so the return is always Query.
 // any: query() overload returns void|Query when called with a callback; we only use selector calls here
@@ -99,15 +100,11 @@ interface TsFormatterExtra {
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string
 
 
-/** Return value from TsUtils.isTime() when retTime === true */
-interface TsTimeResult {
-    hours: number
-    minutes: number
-    seconds: number
-}
-
 /** RGB(A) color as returned by TsUtils.parseColor() — defined in tsutils-color, re-exported here for barrel compatibility */
 export type { TsColorRgb } from './tsutils-color.js'
+
+/** Return value from TsUtils.isTime() — defined in tsutils-datetime, re-exported here for barrel compatibility */
+export type { TsTimeResult } from './tsutils-datetime.js'
 
 /** Options for TsUtils.clone() — defined in tsutils-data, re-exported here for barrel compatibility */
 export type { TsCloneOptions } from './tsutils-data.js'
