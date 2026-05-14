@@ -3127,6 +3127,7 @@ var Utils = class {
    * Constructs the MessageDeps object for the _message() delegator.
    * Called once per message() invocation — captures `this` at call time.
    * Per design §C.5 / §C.2.
+   * @internal
    */
   _msgDeps() {
     return {
@@ -3144,6 +3145,7 @@ var Utils = class {
    * Per design §C.3.
    * normButtons closure: uses inline lambda that binds this.lang and this.settings
    * at call time — preserving the call-time timing semantics (design §C.3 caveat).
+   * @internal
    */
   _confirmDeps() {
     return {
@@ -3158,6 +3160,7 @@ var Utils = class {
    * Constructs the PromptDeps object for the _prompt() delegator.
    * Per design §C.3.
    * lang is bound at call time so deps.lang('Ok') uses current locale.
+   * @internal
    */
   _promptDeps() {
     return {

@@ -97,11 +97,18 @@ export default defineConfig([
     },
     // -----------------------------------------------------------------------
     // .d.ts rollup — dist/tsgrid-ui.d.ts (single canonical name)
+    // stripInternal: true — strips @internal-tagged declarations from output
+    // (Phase 3 of v2.4 SDD: prune private/internal surface from .d.ts)
     // -----------------------------------------------------------------------
     {
         entry: { 'tsgrid-ui': 'src/index.ts' },
         format: ['cjs'],
-        dts: { only: true },
+        dts: {
+            only: true,
+            compilerOptions: {
+                stripInternal: true,
+            },
+        },
         outDir: 'dist',
         target: 'es2022',
         outExtension() {

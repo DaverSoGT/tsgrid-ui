@@ -83,7 +83,9 @@ export interface TsUISettings {
     [key: string]: unknown   // locale files can add arbitrary keys; unknown forces cast at use-sites
 }
 
-/** Extra data passed to grid cell formatters */
+/** Extra data passed to grid cell formatters
+ * @internal
+ */
 interface TsFormatterExtra {
     value: unknown
     params?: unknown
@@ -91,7 +93,9 @@ interface TsFormatterExtra {
     [key: string]: unknown
 }
 
-/** Signature of a grid-cell formatter function */
+/** Signature of a grid-cell formatter function
+ * @internal
+ */
 type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string
 
 /** Options for TsUtils.lock() */
@@ -103,7 +107,9 @@ export interface TsLockOptions {
     onClick?: () => void
 }
 
-/** Return value from TsUtils.isTime() when retTime === true */
+/** Return value from TsUtils.isTime() when retTime === true
+ * @internal
+ */
 interface TsTimeResult {
     hours: number
     minutes: number
@@ -1001,6 +1007,7 @@ class Utils {
      * Constructs the MessageDeps object for the _message() delegator.
      * Called once per message() invocation — captures `this` at call time.
      * Per design §C.5 / §C.2.
+     * @internal
      */
     private _msgDeps(): MessageDeps {
         return {
@@ -1019,6 +1026,7 @@ class Utils {
      * Per design §C.3.
      * normButtons closure: uses inline lambda that binds this.lang and this.settings
      * at call time — preserving the call-time timing semantics (design §C.3 caveat).
+     * @internal
      */
     private _confirmDeps(): ConfirmDeps {
         return {
@@ -1034,6 +1042,7 @@ class Utils {
      * Constructs the PromptDeps object for the _prompt() delegator.
      * Per design §C.3.
      * lang is bound at call time so deps.lang('Ok') uses current locale.
+     * @internal
      */
     private _promptDeps(): PromptDeps {
         return {

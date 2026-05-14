@@ -182,8 +182,6 @@ interface TsEventPayload<TDetail = unknown> {
     isCancelled: boolean;
     /** Reference to the widget that triggered this event. CIRCULAR — do not serialize. */
     owner: unknown;
-    /** @internal — Promise resolved when listeners settle; do not depend on shape. */
-    complete?: Promise<unknown>;
 }
 interface TsEventData {
     type?: string | null;
@@ -433,15 +431,6 @@ interface TsUISettings {
     locale?: string;
     [key: string]: unknown;
 }
-/** Extra data passed to grid cell formatters */
-interface TsFormatterExtra {
-    value: unknown;
-    params?: unknown;
-    record?: unknown;
-    [key: string]: unknown;
-}
-/** Signature of a grid-cell formatter function */
-type TsFormatter = (record: TsFormatterExtra, extra?: TsFormatterExtra) => string;
 /** Options for TsUtils.lock() */
 interface TsLockOptions {
     msg?: string | number;
@@ -449,12 +438,6 @@ interface TsLockOptions {
     opacity?: number;
     bgColor?: string;
     onClick?: () => void;
-}
-/** Return value from TsUtils.isTime() when retTime === true */
-interface TsTimeResult {
-    hours: number;
-    minutes: number;
-    seconds: number;
 }
 
 /** A normalized menu item */
@@ -512,25 +495,6 @@ declare class Utils {
     transition(div_old: HTMLElement, div_new: HTMLElement, type: string, callBack?: () => void): Promise<void>;
     lock(box: unknown, options?: TsLockOptions | string, ...rest: unknown[]): void;
     unlock(box: unknown, speed?: number): void;
-    /**
-     * Constructs the MessageDeps object for the _message() delegator.
-     * Called once per message() invocation — captures `this` at call time.
-     * Per design §C.5 / §C.2.
-     */
-    private _msgDeps;
-    /**
-     * Constructs the ConfirmDeps object for the _confirm() delegator.
-     * Per design §C.3.
-     * normButtons closure: uses inline lambda that binds this.lang and this.settings
-     * at call time — preserving the call-time timing semantics (design §C.3 caveat).
-     */
-    private _confirmDeps;
-    /**
-     * Constructs the PromptDeps object for the _prompt() delegator.
-     * Per design §C.3.
-     * lang is bound at call time so deps.lang('Ok') uses current locale.
-     */
-    private _promptDeps;
     /**
      * Opens a context message, similar in parameters as TsPopup.open()
      *
@@ -1509,17 +1473,6 @@ declare class TsLayout extends TsBase {
  *
  * @module types
  */
-/**
- * Creates a branded (nominal) type from a base type K and brand tag T.
- *
- * @example
- *   type UserId = Brand<number, 'UserId'>
- *
- * @internal
- */
-type Brand<K, T> = K & {
-    readonly __brand: T;
-};
 /**
  * A record identifier value — the `recid` field used across TsGrid records.
  * Can be either a string or a number at runtime; branded to prevent mixing
