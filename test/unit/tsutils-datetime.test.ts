@@ -28,6 +28,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsUtils } from '../../src/tsutils.js'
+// @ts-expect-error — P4 RED: _date and DateDeps implemented at Phase 5a
+import { _date } from '../../src/tsutils-datetime.js'
 
 // Snapshot of mutable settings — restore between tests so locale/grouping
 // changes don't leak across cases. Pattern from w2utils.test.ts lines 6-9.
@@ -390,6 +392,82 @@ describe('delegation spy — isDateTime → isDate (OQ-5 / INV-SPY pre-P5b)', ()
     it('vi.spyOn(TsUtils, isDate) does not error', () => {
         const spy = vi.spyOn(TsUtils, 'isDate')
         expect(() => TsUtils.isDate('5/13/2026')).not.toThrow()
+        spy.mockRestore()
+    })
+})
+
+// ---------------------------------------------------------------------------
+// _date() — Phase 4 RED safety-net tests (v2.6 SDD)
+//
+// T-DATE-1 through T-DATE-7 per spec Test Contract §Thread-B.
+// Clock-sensitive tests (T-DATE-4, T-DATE-5) use vi.useFakeTimers() per
+// INV-DATE-TIMEFREEZE and design §B-D4 (R-LOC-6 TZ tolerance via regex).
+//
+// deps mock uses identity function so T-DATE-5 asserts literal 'Yesterday'.
+// ---------------------------------------------------------------------------
+
+describe('_date()', () => {
+    // Identity deps mock — proves deps.lang was called with the phrase (T-DATE-5)
+    const deps = { lang: (phrase: string) => phrase }
+
+    beforeEach(() => {
+        vi.useFakeTimers()
+    })
+
+    afterEach(() => {
+        vi.useRealTimers()
+    })
+
+    // T-DATE-1: empty string → empty string
+    it('T-DATE-1: returns empty string for empty string input', () => {
+        expect(_date('', TsUtils.settings, deps)).toBe('')
+    })
+
+    // T-DATE-2: null → empty string
+    it('T-DATE-2: returns empty string for null input', () => {
+        expect(_date(null, TsUtils.settings, deps)).toBe('')
+    })
+
+    // T-DATE-3: invalid date string → empty string
+    it('T-DATE-3: returns empty string for invalid date string', () => {
+        expect(_date('not-a-date', TsUtils.settings, deps)).toBe('')
+    })
+
+    // T-DATE-4: today branch (frozen clock) → time-of-day string wrapped in <span>
+    // Regex assertion is TZ-tolerant per design §B-D4 / R-LOC-6
+    it('T-DATE-4: returns time string in span for today\'s date (frozen clock)', () => {
+        vi.setSystemTime(new Date('2026-05-13T12:00:00Z'))
+        const out = _date('2026-05-13T12:00:00Z', TsUtils.settings, deps)
+        expect(out).toMatch(/<span title="[^"]+">[\d]{1,2}:\d{2} (am|pm)<\/span>/)
+        expect(out).not.toContain('Yesterday')
+    })
+
+    // T-DATE-5: yesterday branch (frozen clock) → 'Yesterday' literal via deps.lang
+    // Exact body content assertion proves deps.lang('Yesterday') was invoked
+    it('T-DATE-5: returns Yesterday in span for yesterday\'s date (frozen clock)', () => {
+        vi.setSystemTime(new Date('2026-05-13T12:00:00Z'))
+        const out = _date('2026-05-12T12:00:00Z', TsUtils.settings, deps)
+        expect(out).toMatch(/<span title="May 12, 2026 [^"]+">Yesterday<\/span>/)
+    })
+
+    // T-DATE-6: unix timestamp (number, older than yesterday) → span with formatted date
+    it('T-DATE-6: returns span with date for unix timestamp (older date)', () => {
+        const out = _date(1715601600, TsUtils.settings, deps)
+        expect(out).toMatch(/<span title="[^"]+">([^<]+)<\/span>/)
+        expect(out).not.toContain('Yesterday')
+    })
+
+    // T-DATE-7: older date string → span with month-day-year
+    it('T-DATE-7: returns span with date for older date string', () => {
+        const out = _date('2024-01-15', TsUtils.settings, deps)
+        expect(out).toMatch(/<span title="[^"]+">([^<]+)<\/span>/)
+        expect(out).not.toContain('Yesterday')
+    })
+
+    // INV-SPY: vi.spyOn(TsUtils, 'date') must continue to work after delegator wiring
+    it('INV-SPY: vi.spyOn(TsUtils, \'date\') does not error', () => {
+        const spy = vi.spyOn(TsUtils, 'date')
+        expect(spy).toBeDefined()
         spy.mockRestore()
     })
 })
