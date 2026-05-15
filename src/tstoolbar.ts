@@ -206,7 +206,12 @@ class TsToolbar extends TsBase {
                 this.items.push(newItem)
             } else {
                 const middle = this.get(id, true)
-                this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle))
+                if (middle == null) {
+                    console.warn(`TsToolbar: insert anchor id "${id}" not found; appending instead.`)
+                    this.items.push(newItem)
+                } else {
+                    this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle))
+                }
             }
             newItem.line = newItem.line ?? 1
             if (skipRefresh !== true) this.refresh(newItem.id)
