@@ -51,7 +51,12 @@ export default defineConfig([
         dts: false,
         // Never delete dist/ — Less-compiled CSS and iconfont live there too
         clean: false,
-        splitting: false,
+        splitting: true,
+        esbuildOptions(options) {
+            // Amendment 1: use [hash] (NOT [hash:8]) — esbuild 0.27.7 does not recognize [hash:8].
+            // [hash] expands to an 8-character UPPERCASE hex hash automatically.
+            options.chunkNames = 'chunks/[name]-[hash]'
+        },
         sourcemap: true,
         minify: false,
     },

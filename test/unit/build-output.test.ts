@@ -8,9 +8,11 @@ import { join } from 'node:path'
 const ROOT = process.cwd()
 const CHUNKS_DIR = join(ROOT, 'dist', 'chunks')
 
-// Amendment 1 correction: esbuild produces UPPERCASE hex hashes (e.g., chunk-BIB3X2TW.js).
-// Do NOT use [a-f0-9]{8} (lowercase) — that was the design's initial assumption, disproved by SPIKE 1.
-const CHUNK_FILENAME_RE = /^chunk-[A-F0-9]{8}\.js$/i
+// Amendment 1 correction: esbuild produces UPPERCASE alphanumeric hashes (e.g., chunk-BIB3X2TW.js).
+// The SPIKE findings initially described these as "hex" but empirical output shows
+// esbuild uses [A-Z0-9]{8} (full uppercase alphanumeric), not just [A-F0-9].
+// Examples from actual builds: chunk-26XP2XU3.js, chunk-QTT73B7C.js, chunk-BIB3X2TW.js.
+const CHUNK_FILENAME_RE = /^chunk-[A-Z0-9]{8}\.js$/
 
 describe('build-output chunks directory (R-CSSE-2, AC1, AC9)', () => {
     it('dist/chunks/ directory exists after pnpm build:js', () => {

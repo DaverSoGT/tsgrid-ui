@@ -7674,11 +7674,11 @@ var TsToolbar = class extends TsBase {
       pendingRefresh: {}
       // what should be refreshed with a debounce
     };
-    this._refresh = ({ effected, resize: resize2, refreshTooltip }) => {
+    this._refresh = ({ effected, resize: resize2, refreshTooltip, hideTooltip }) => {
       const options2 = this.last.pendingRefresh;
       options2.ids ??= [];
       options2.ids.push(...effected);
-      Object.assign(options2, { resize: resize2, refreshTooltip });
+      Object.assign(options2, { resize: resize2, refreshTooltip, hideTooltip });
       this._refreshDebounced();
     };
     this._refreshDebounced = TsUtils.debounce(() => {
@@ -7749,9 +7749,9 @@ var TsToolbar = class extends TsBase {
       if (newItem.type == "menu-check") {
         if (!Array.isArray(newItem.selected)) newItem.selected = [];
         if (Array.isArray(newItem.items)) {
-          newItem.items.forEach((it) => {
+          newItem.items.forEach((it, idx2, arr2) => {
             if (typeof it === "string") {
-              it = arr[idx] = { id: it, text: it };
+              it = arr2[idx2] = { id: it, text: it };
             }
             if (it.checked && !newItem.selected.includes(it.id)) newItem.selected.push(it.id);
             if (!it.checked && newItem.selected.includes(it.id)) it.checked = true;
@@ -7775,7 +7775,12 @@ var TsToolbar = class extends TsBase {
         this.items.push(newItem);
       } else {
         const middle = this.get(id, true);
-        this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle));
+        if (middle == null) {
+          console.warn(`TsToolbar: insert anchor id "${id}" not found; appending instead.`);
+          this.items.push(newItem);
+        } else {
+          this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle));
+        }
       }
       newItem.line = newItem.line ?? 1;
       if (skipRefresh !== true) this.refresh(newItem.id);
@@ -8260,7 +8265,7 @@ var TsToolbar = class extends TsBase {
       const next = parseInt(this.get(id, true)) + 1;
       let $next = query10(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : "--")}`);
       if ($next.length == 0) {
-        $next = query10(this.box).find(`.tsg-tb-line:nth-child(${it.line}`).find(".tsg-tb-right").before(html);
+        $next = query10(this.box).find(`.tsg-tb-line:nth-child(${it.line})`).find(".tsg-tb-right").before(html);
       } else {
         $next.after(html);
       }
@@ -8532,8 +8537,11 @@ var TsToolbar = class extends TsBase {
     if (it.input?.spinner || it.input?.min != null || it.input?.max != null || it.input?.step != null) {
       value = parseFloat(value);
     }
-    if (it.input?.suffix != null && String(value).substr(-it.input.suffix.length) == it.input.suffix) {
-      value = String(value).substr(0, value.length - it.input.suffix.length);
+    if (it.input?.suffix != null) {
+      const strValue = String(value);
+      if (strValue.substr(-it.input.suffix.length) == it.input.suffix) {
+        value = strValue.substr(0, strValue.length - it.input.suffix.length);
+      }
     }
     if (it.input?.min != null && it.input.min > value) {
       value = it.input.min;
@@ -8680,7 +8688,10 @@ var TsToolbar = class extends TsBase {
   mouseAction(event2, target, action, id) {
     const btn = this.get(id);
     const edata = this.trigger("mouse" + action, { target: id, item: btn, object: btn, originalEvent: event2 });
-    if (edata.isCancelled === true || btn.disabled || btn.hidden) return;
+    if (edata.isCancelled === true || btn.disabled || btn.hidden) {
+      edata.finish();
+      return;
+    }
     switch (action) {
       case "Enter":
         if (!["label", "input"].includes(btn.type)) {
