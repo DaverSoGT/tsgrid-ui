@@ -27,7 +27,20 @@ export default defineConfig([
     // sourcemap: true — ESM is not post-processed, sourcemap is safe.
     // -----------------------------------------------------------------------
     {
-        entry: { 'tsgrid-ui.es6': 'src/index.ts' },
+        entry: {
+            'tsgrid-ui.es6': 'src/index.ts',
+            'locale.es6':    'src/tslocale.ts',
+            'base.es6':      'src/tsbase.ts',
+            'utils.es6':     'src/tsutils.ts',
+            'popup.es6':     'src/tspopup.ts',
+            'tooltip.es6':   'src/tstooltip.ts',
+            'tabs.es6':      'src/tstabs.ts',
+            'toolbar.es6':   'src/tstoolbar.ts',
+            'sidebar.es6':   'src/tssidebar.ts',
+            'field.es6':     'src/tsfield.ts',
+            'layout.es6':    'src/tslayout.ts',
+            'form.es6':      'src/tsform.ts',
+        },
         format: ['esm'],
         outDir: 'dist',
         target: 'es2022',
@@ -101,7 +114,20 @@ export default defineConfig([
     // (Phase 3 of v2.4 SDD: prune private/internal surface from .d.ts)
     // -----------------------------------------------------------------------
     {
-        entry: { 'tsgrid-ui': 'src/index.ts' },
+        entry: {
+            'tsgrid-ui': 'src/index.ts',
+            'locale':    'src/tslocale.ts',
+            'base':      'src/tsbase.ts',
+            'utils':     'src/tsutils.ts',
+            'popup':     'src/tspopup.ts',
+            'tooltip':   'src/tstooltip.ts',
+            'tabs':      'src/tstabs.ts',
+            'toolbar':   'src/tstoolbar.ts',
+            'sidebar':   'src/tssidebar.ts',
+            'field':     'src/tsfield.ts',
+            'layout':    'src/tslayout.ts',
+            'form':      'src/tsform.ts',
+        },
         format: ['cjs'],
         dts: {
             only: true,

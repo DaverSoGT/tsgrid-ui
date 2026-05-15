@@ -35,11 +35,23 @@
   "types": "dist/tsgrid-ui.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/tsgrid-ui.d.ts",
-      "import": "./dist/tsgrid-ui.es6.js",
+      "types":   "./dist/tsgrid-ui.d.ts",
+      "import":  "./dist/tsgrid-ui.es6.js",
       "require": "./dist/tsgrid-ui.js"
     },
-    "./css": "./dist/tsgrid-ui.css"
+    "./locale":  { "types": "./dist/locale.d.ts",  "import": "./dist/locale.es6.js"  },
+    "./base":    { "types": "./dist/base.d.ts",    "import": "./dist/base.es6.js"    },
+    "./utils":   { "types": "./dist/utils.d.ts",   "import": "./dist/utils.es6.js"   },
+    "./popup":   { "types": "./dist/popup.d.ts",   "import": "./dist/popup.es6.js"   },
+    "./tooltip": { "types": "./dist/tooltip.d.ts", "import": "./dist/tooltip.es6.js" },
+    "./tabs":    { "types": "./dist/tabs.d.ts",    "import": "./dist/tabs.es6.js"    },
+    "./toolbar": { "types": "./dist/toolbar.d.ts", "import": "./dist/toolbar.es6.js" },
+    "./sidebar": { "types": "./dist/sidebar.d.ts", "import": "./dist/sidebar.es6.js" },
+    "./field":   { "types": "./dist/field.d.ts",   "import": "./dist/field.es6.js"   },
+    "./layout":  { "types": "./dist/layout.d.ts",  "import": "./dist/layout.es6.js"  },
+    "./form":    { "types": "./dist/form.d.ts",    "import": "./dist/form.es6.js"    },
+    "./css":          "./dist/tsgrid-ui.css",
+    "./package.json": "./package.json"
   },
   "style": "dist/tsgrid-ui.css",
   "files": [
