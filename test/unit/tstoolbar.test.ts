@@ -246,3 +246,59 @@ describe('TsToolbar S-3 — menu-check function items seed selected at insert', 
         expect(item.selected).toEqual(['a'])
     })
 })
+
+// ── Smell-6 — remove(sub-id) on group sub-item must splice from group.items ───
+//
+// get(id, true) returns the sub-item's index within group.items when the match is
+// inside a group. remove() then splices this.items at that index, deleting the
+// WRONG top-level item. Fix: get(id, true) returns the GROUP's top-level index;
+// remove() detects top-level vs group sub-item and splices from the right array.
+
+describe('TsToolbar Smell-6 — remove(sub-id) on group sub-item removes from group', () => {
+    it('splices the group sub-item without corrupting top-level items', () => {
+        const box = mountBox('tb-smell6a')
+        const toolbar = new TsToolbar({ name: 'smell6a', box, items: [
+            { id: 'first', type: 'button', text: 'First' },         // index 0 — must NOT be touched
+            { id: 'grp', type: 'group', items: [                    // index 1 — group, must remain
+                { id: 'sub-a', type: 'button', text: 'A' },
+                { id: 'sub-b', type: 'button', text: 'B' },
+            ]},
+            { id: 'last', type: 'button', text: 'Last' },           // index 2 — must remain
+        ]})
+        const effected = toolbar.remove('sub-a')
+        // Top-level array untouched in length + identity
+        expect((toolbar as any).items.length).toBe(3)
+        expect((toolbar as any).items[0].id).toBe('first')
+        expect((toolbar as any).items[1].id).toBe('grp')
+        expect((toolbar as any).items[2].id).toBe('last')
+        // Group's items shrunk by one, correct sub-item removed
+        const grp = (toolbar as any).items[1]
+        expect(grp.items.length).toBe(1)
+        expect(grp.items[0].id).toBe('sub-b')
+        // remove() return contract (number of items effected)
+        expect(effected).toBe(1)
+    })
+
+    it('remove() of an unknown id is a no-op and returns 0', () => {
+        const box = mountBox('tb-smell6b')
+        const toolbar = new TsToolbar({ name: 'smell6b', box, items: [
+            { id: 'first', type: 'button', text: 'First' },
+            { id: 'grp', type: 'group', items: [{ id: 'sub-a', type: 'button', text: 'A' }]},
+        ]})
+        const effected = toolbar.remove('nope')
+        expect((toolbar as any).items.length).toBe(2)
+        expect(effected).toBe(0)
+    })
+
+    it('remove() on a plain top-level item still works (regression guard)', () => {
+        const box = mountBox('tb-smell6c')
+        const toolbar = new TsToolbar({ name: 'smell6c', box, items: [
+            { id: 'btn1', type: 'button', text: 'A' },
+            { id: 'btn2', type: 'button', text: 'B' },
+        ]})
+        const effected = toolbar.remove('btn1')
+        expect((toolbar as any).items.length).toBe(1)
+        expect((toolbar as any).items[0].id).toBe('btn2')
+        expect(effected).toBe(1)
+    })
+})

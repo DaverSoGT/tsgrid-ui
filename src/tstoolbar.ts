@@ -243,7 +243,18 @@ class TsToolbar extends TsBase {
             query(this.box).find('#tb_'+ this.name +'_item_'+ TsUtils.escapeId(it.id)).remove()
             // remove from array
             const ind = this.get(it.id, true)
-            if (ind != null) this.items.splice(ind, 1)
+            if (ind != null) {
+                const top = this.items[ind]
+                if (top.id === it.id) {
+                    // top-level match → splice from this.items
+                    this.items.splice(ind, 1)
+                } else if (top.type === 'group' && Array.isArray(top.items)) {
+                    // group sub-item match → splice from group.items, leave top-level intact
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const subIdx = top.items.findIndex((s: any) => s && s.id === it.id)
+                    if (subIdx !== -1) top.items.splice(subIdx, 1)
+                }
+            }
         })
         this.resize()
         return effected
@@ -299,7 +310,14 @@ class TsToolbar extends TsBase {
                 if (returnIndex == true) return i1; else return it
             } else if (it.type == 'group') {
                 const sub = this.get(id, returnIndex, it.items)
-                if (sub != null) return sub
+                if (sub != null) {
+                    // When returning an index for a group sub-item match, return the
+                    // GROUP's top-level index in this.items (i1), not the sub-item's
+                    // index within it.items. Callers (insert/remove/refresh) splice
+                    // against this.items, so they need the top-level position.
+                    if (returnIndex === true) return i1
+                    return sub
+                }
             }
         }
         return null
