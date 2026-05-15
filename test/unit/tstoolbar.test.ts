@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsToolbar } from '../../src/tstoolbar.js'
+import { Tooltip } from '../../src/tstooltip.js'
 
 function mountBox(id = 'tb-host'): HTMLElement {
     const el = document.createElement('div')
@@ -127,5 +128,121 @@ describe('TsToolbar BUG-4 — activeEvents lifecycle', () => {
         toolbar.mouseAction(fakeEvent, fakeTarget, 'Enter', 'en')
         toolbar.mouseAction(fakeEvent, fakeTarget, 'Leave', 'en')
         expect(toolbar.activeEvents.length).toBe(0)
+    })
+})
+
+// ── S-2 — setCount() must not recurse infinitely for structural item types ─────
+//
+// setCount() else-branch calls this.set(id, { count }) then recurses unconditionally.
+// For structural types (break/spacer/html/input/group) getItemHTML never emits a
+// .tsg-tb-count > span, so btn.length stays 0 after refresh — infinite recursion.
+// The fix re-queries the count span after set() and returns early when still absent.
+
+describe('TsToolbar S-2 — setCount recursion guard for structural types', () => {
+    const structuralTypes: Array<{ type: string, id: string }> = [
+        { type: 'break',  id: 'br' },
+        { type: 'spacer', id: 'sp' },
+        { type: 'html',   id: 'h1' },
+        { type: 'input',  id: 'in' },
+        { type: 'group',  id: 'gr' },
+    ]
+    for (const { type, id } of structuralTypes) {
+        it(`does not recurse infinitely for type "${type}"`, () => {
+            const box = mountBox(`tb-s2-${type}`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const items: any[] = [{ id, type }]
+            if (type === 'group') items[0].items = [{ id: 'child', type: 'button' }]
+            const toolbar = new TsToolbar({ name: `s2-${type}`, box, items })
+            // Depth-cap guard: catch runaway recursion before jsdom crashes the worker
+            let depth = 0
+            const orig = toolbar.setCount.bind(toolbar)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(toolbar as any).setCount = (...args: any[]) => {
+                if (++depth > 5) throw new Error('setCount recursion exceeded 5 — guard regressed')
+                try { return orig(...args) } finally { depth-- }
+            }
+            expect(() => toolbar.setCount(id, 5)).not.toThrow()
+            // item.count side-effect from this.set() must still be set
+            expect((toolbar.get(id) as any).count).toBe(5)
+        })
+    }
+
+    it('still works for count-capable type "button"', () => {
+        const box = mountBox('tb-s2-button')
+        const toolbar = new TsToolbar({ name: 's2-btn', box, items: [{ id: 'b', type: 'button', text: 'B' }] })
+        expect(() => toolbar.setCount('b', 7, 'red-badge')).not.toThrow()
+        expect((toolbar.get('b') as any).count).toBe(7)
+        expect((toolbar as any).last.badge['b']).toEqual({ className: 'red-badge', style: '' })
+    })
+})
+
+// ── S-1 — destroy() must close open overlays before unmounting ────────────────
+//
+// destroy() calls unmount() which sets this.box = null. TsTooltip overlays live
+// in document.body (not in the toolbar box), so innerHTML clearing does not remove
+// them. The fix calls TsTooltip.hide(name+'-tooltip') and TsTooltip.hide(name+'-drop')
+// BEFORE the .tsg-scroll-wrapper guard so hideDrop fires while this.box is still live.
+
+describe('TsToolbar S-1 — destroy() closes overlays', () => {
+    it('removes -drop entry from Tooltip.active after destroy with open drop overlay', () => {
+        vi.useFakeTimers()
+        const box = mountBox('tb-s1a')
+        const toolbar = new TsToolbar({ name: 's1a', box, items: [
+            { id: 'd', type: 'drop', text: 'D', html: '<div>menu</div>' },
+        ] })
+        // Open the dropdown — setTimeout(0) inside click() registers the overlay
+        toolbar.click('d', new MouseEvent('click'))
+        // Flush the setTimeout(0) so the overlay is registered in Tooltip.active
+        vi.advanceTimersByTime(1)
+        // Now destroy — should close overlays before unmounting
+        expect(() => toolbar.destroy()).not.toThrow()
+        expect((Tooltip.active as any)['s1a-drop']).toBeUndefined()
+        expect((Tooltip.active as any)['s1a-tooltip']).toBeUndefined()
+    })
+
+    it('never-rendered toolbar destroy() does not throw', () => {
+        // No box passed — render() guard skips DOM creation; this.box stays null
+        const toolbar = new TsToolbar({ name: 's1b', items: [{ id: 'x', type: 'button' }] })
+        expect(() => toolbar.destroy()).not.toThrow()
+    })
+})
+
+// ── S-3 — menu-check insert() must seed selected from function-based items ────
+//
+// When newItem.items is a function, the checked→selected reconciliation block in
+// insert() is gated on Array.isArray(newItem.items) and is entirely skipped.
+// newItem.selected remains [] until the first click(). The fix adds an else-if that
+// calls items(newItem) once, runs the same reconciliation, and discards the result.
+
+describe('TsToolbar S-3 — menu-check function items seed selected at insert', () => {
+    it('reconciles checked → selected when items is a function', () => {
+        const toolbar = new TsToolbar({ name: 's3a', items: [] })
+        toolbar.insert(null, {
+            id: 'mc',
+            type: 'menu-check',
+            items: () => [
+                { id: 'a', text: 'A', checked: true },
+                { id: 'b', text: 'B' },
+                { id: 'c', text: 'C', checked: true },
+            ],
+        })
+        const item = toolbar.get('mc') as any
+        expect(item.selected).toEqual(['a', 'c'])
+        // function reference must be preserved — live evaluation on menu open is unchanged
+        expect(typeof item.items).toBe('function')
+    })
+
+    it('still works when items is an array (regression guard on existing branch)', () => {
+        const toolbar = new TsToolbar({ name: 's3b', items: [] })
+        toolbar.insert(null, {
+            id: 'mc',
+            type: 'menu-check',
+            items: [
+                { id: 'a', text: 'A', checked: true },
+                { id: 'b', text: 'B' },
+            ],
+        })
+        const item = toolbar.get('mc') as any
+        expect(item.selected).toEqual(['a'])
     })
 })

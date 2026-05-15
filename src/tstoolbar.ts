@@ -188,6 +188,18 @@ class TsToolbar extends TsBase {
                         if (!it.checked && newItem.selected.includes(it.id)) it.checked = true
                         if (it.checked == null) it.checked = false
                     })
+                } else if (typeof newItem.items === 'function') {
+                    // Eager-once reconciliation: evaluate items() to seed `selected` from `checked` at insert time.
+                    // The function reference is preserved on newItem.items; live evaluation on menu open is unchanged.
+                    // Side effects in items() will fire ONCE here (in addition to every menu open as today).
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const materialized = newItem.items(newItem)
+                    if (Array.isArray(materialized)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        materialized.forEach((it: any) => {
+                            if (it && it.checked && !newItem.selected.includes(it.id)) newItem.selected.push(it.id)
+                        })
+                    }
                 }
             } else if (newItem.type == 'menu-radio') {
                 if (Array.isArray(newItem.items)) {
@@ -309,6 +321,10 @@ class TsToolbar extends TsBase {
             item.count = count
         } else {
             this.set(id, { count: count })
+            // base case: re-query after refresh; if the item type does not render
+            // a count span (break / spacer / html / input / group), stop recursing.
+            const after = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`)
+            if (after.length === 0) return
             this.setCount(id, count, className, style) // to update styles
         }
     }
@@ -847,6 +863,10 @@ class TsToolbar extends TsBase {
         // event before
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
+        // close any open overlays BEFORE unmount so hideDrop runs on a live toolbar
+        // (synchronous; covers both rendered + never-rendered cases — TsTooltip.hide() is a no-op on missing overlay)
+        TsTooltip.hide(this.name + '-tooltip')
+        TsTooltip.hide(this.name + '-drop')
         // clean up
         if (query(this.box).find('.tsg-scroll-wrapper').length > 0) {
             this.unmount()
