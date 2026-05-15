@@ -31,6 +31,57 @@
 import { readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { resolve, join, relative, isAbsolute } from 'node:path'
 
+// --- Schema v2 helpers (β gate: pkg.version >= 2.8.0 triggers schema v2) ---
+
+function parseSemver(v) {
+    const [base] = v.split('-')
+    const [maj, min, pat] = base.split('.').map(n => parseInt(n, 10))
+    return { maj, min, pat }
+}
+
+function semverGte(a, b) {
+    if (a.maj !== b.maj) return a.maj > b.maj
+    if (a.min !== b.min) return a.min > b.min
+    return a.pat >= b.pat
+}
+
+// Amendment #983: 11 subpaths (./grid deferred to Phase 3 with splitting:true)
+const SUBPATH_INVENTORY = [
+    { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 3763,   forecastPct: 0.4  },
+    { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 39260,  forecastPct: 4.2  },
+    { name: 'utils',   sourceFile: 'src/tsutils.ts',   forecastBytes: 127798, forecastPct: 13.5 },
+    { name: 'popup',   sourceFile: 'src/tspopup.ts',   forecastBytes: 159764, forecastPct: 16.9 },
+    { name: 'tooltip', sourceFile: 'src/tstooltip.ts', forecastBytes: 244730, forecastPct: 25.9 },
+    { name: 'tabs',    sourceFile: 'src/tstabs.ts',    forecastBytes: 268677, forecastPct: 28.4 },
+    { name: 'toolbar', sourceFile: 'src/tstoolbar.ts', forecastBytes: 288775, forecastPct: 30.5 },
+    { name: 'sidebar', sourceFile: 'src/tssidebar.ts', forecastBytes: 306622, forecastPct: 32.4 },
+    { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 313303, forecastPct: 33.1 },
+    { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 354536, forecastPct: 37.5 },
+    { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 468649, forecastPct: 49.6 },
+]
+
+function buildSubpathsBlock(cwd) {
+    const subpaths = {}
+    for (const sp of SUBPATH_INVENTORY) {
+        const outputFile = `dist/${sp.name}.es6.js`
+        const abs = join(cwd, outputFile)
+        let totalBytes
+        try { totalBytes = statSync(abs).size }
+        catch {
+            process.stderr.write(`ERROR: subpath bundle missing: ${outputFile}. Run pnpm build:js first.\n`)
+            process.exit(1)
+        }
+        subpaths[sp.name] = {
+            totalBytes,
+            sourceFile: sp.sourceFile,
+            outputFile,
+            forecastBytes: sp.forecastBytes,
+            forecastPct:   sp.forecastPct,
+        }
+    }
+    return subpaths
+}
+
 const CWD       = process.cwd()
 // tsup 8.5.1 writes metafile as dist/metafile-esm.json (not dist/<entry>.meta.json)
 const META_PATH = join(CWD, 'dist', 'metafile-esm.json')
@@ -210,6 +261,13 @@ const snapshot = {
         inputBytes:  totalsInput,
         outputBytes: totalsOutput,
     },
+}
+
+// --- Schema v2 gate (β: implicit from pkg.version) ---
+const pkgSemver = parseSemver(pkg.version)
+if (semverGte(pkgSemver, { maj: 2, min: 8, pat: 0 })) {
+    snapshot.schemaVersion = 2
+    snapshot.subpaths = buildSubpathsBlock(CWD)
 }
 
 // --- Write output ---

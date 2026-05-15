@@ -1,6 +1,6 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.7.1",
+  "version": "2.8.0",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css"
