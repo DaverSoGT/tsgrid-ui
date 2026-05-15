@@ -28,7 +28,7 @@
  *   4  wrong cwd (package.json.name !== "tsgrid-ui")
  */
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { resolve, join, relative, isAbsolute } from 'node:path'
 
 const CWD       = process.cwd()
@@ -106,9 +106,18 @@ if (!outputKey) {
     process.exit(1)
 }
 const outputBundle = meta.outputs[outputKey]
-const totalBytes   = outputBundle.bytes ?? 0
+
+// Use actual on-disk file size (tsup may add banners not counted in esbuild metafile bytes)
+const outputFilePath = join(CWD, outputKey)
+let totalBytes
+try {
+    totalBytes = statSync(outputFilePath).size
+} catch {
+    // Fall back to metafile-reported bytes if file not found on disk
+    totalBytes = outputBundle.bytes ?? 0
+}
 if (totalBytes === 0) {
-    process.stderr.write('ERROR: outputBundle.bytes is 0 — metafile may be empty or build failed.\n')
+    process.stderr.write('ERROR: outputBundle size is 0 — metafile may be empty or build failed.\n')
     process.exit(1)
 }
 

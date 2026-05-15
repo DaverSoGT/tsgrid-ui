@@ -18,7 +18,7 @@
  *   2  wrong cwd (package.json.name !== "tsgrid-ui")
  */
 
-import { readFileSync, mkdirSync, writeFileSync } from 'node:fs'
+import { readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 
 const CWD         = process.cwd()
@@ -62,7 +62,13 @@ if (!outputKey) {
     process.exit(1)
 }
 const outputBundle = meta.outputs[outputKey]
-const totalBytes   = outputBundle.bytes ?? 0
+// Use actual on-disk file size (tsup may add banners not counted in esbuild metafile bytes)
+let totalBytes
+try {
+    totalBytes = statSync(join(CWD, outputKey)).size
+} catch {
+    totalBytes = outputBundle.bytes ?? 0
+}
 
 // --- Build per-module table from inputs map ---
 const inputsMap = outputBundle.inputs || {}

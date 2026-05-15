@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "tsgridUiVersion": "2.7.1",
+  "generatedAt": "2026-05-15T01:27:15.690Z",
+  "generator": {
+    "tool": "tsup",
+    "toolVersion": "8.5.1",
+    "esbuildMetafile": true
+  },
+  "scope": {
+    "format": "esm",
+    "minified": false,
+    "entry": "src/index.ts",
+    "output": "dist/tsgrid-ui.es6.js",
+    "splitting": false,
+    "sourcemap": true
+  },
+  "outputBundle": {
+    "path": "dist/tsgrid-ui.es6.js",
+    "totalBytes": 945470,
+    "imports": []
+  },
+  "modules": [
+    {
+      "path": "src/grid-columns.ts",
+      "bytes": 4867,
+      "bytesInOutput": 2609,
+      "imports": [
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-data.ts",
+      "bytes": 61145,
+      "bytesInOutput": 42261,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-edit.ts",
+      "bytes": 21766,
+      "bytesInOutput": 14381,
+      "imports": [
+        "src/query.ts",
+        "src/tsfield.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-interaction.ts",
+      "bytes": 58430,
+      "bytesInOutput": 41330,
+      "imports": [
+        "src/query.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-render.ts",
+      "bytes": 139325,
+      "bytesInOutput": 103809,
+      "imports": [
+        "src/query.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-search.ts",
+      "bytes": 56550,
+      "bytesInOutput": 39727,
+      "imports": [
+        "src/query.ts",
+        "src/tsfield.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-selection.ts",
+      "bytes": 23356,
+      "bytesInOutput": 16415,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-state.ts",
+      "bytes": 17691,
+      "bytesInOutput": 11115,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 2046,
+      "bytesInOutput": 0,
+      "imports": [
+        "src/tsbase.ts",
+        "src/tsfield.ts",
+        "src/tsform.ts",
+        "src/tsgrid.ts",
+        "src/tslayout.ts",
+        "src/tslocale.ts",
+        "src/tspopup.ts",
+        "src/tssidebar.ts",
+        "src/tstabs.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/query.ts",
+      "bytes": 26345,
+      "bytesInOutput": 17002,
+      "imports": []
+    },
+    {
+      "path": "src/tsbase.ts",
+      "bytes": 18849,
+      "bytesInOutput": 11233,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils-data.ts",
+        "src/tsutils-registry.ts",
+        "src/tsutils-type-guards.ts"
+      ]
+    },
+    {
+      "path": "src/tsfield.ts",
+      "bytes": 118688,
+      "bytesInOutput": 68573,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tsform.ts",
+      "bytes": 136689,
+      "bytesInOutput": 87354,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tsfield.ts",
+        "src/tstabs.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tsgrid.ts",
+      "bytes": 116885,
+      "bytesInOutput": 68334,
+      "imports": [
+        "src/grid-columns.ts",
+        "src/grid-data.ts",
+        "src/grid-edit.ts",
+        "src/grid-interaction.ts",
+        "src/grid-render.ts",
+        "src/grid-search.ts",
+        "src/grid-selection.ts",
+        "src/grid-state.ts",
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tslayout.ts",
+      "bytes": 62776,
+      "bytesInOutput": 41814,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tstabs.ts",
+        "src/tstoolbar.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tslocale.ts",
+      "bytes": 5141,
+      "bytesInOutput": 3763,
+      "imports": []
+    },
+    {
+      "path": "src/tspopup.ts",
+      "bytes": 46090,
+      "bytesInOutput": 31966,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tssidebar.ts",
+      "bytes": 90759,
+      "bytesInOutput": 61892,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tstabs.ts",
+      "bytes": 32678,
+      "bytesInOutput": 23947,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tstoolbar.ts",
+      "bytes": 63459,
+      "bytesInOutput": 44045,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tstooltip.ts",
+      "bytes": 178240,
+      "bytesInOutput": 116932,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-color.ts",
+      "bytes": 6328,
+      "bytesInOutput": 3877,
+      "imports": []
+    },
+    {
+      "path": "src/tsutils-data.ts",
+      "bytes": 16861,
+      "bytesInOutput": 8712,
+      "imports": [
+        "src/tsutils-type-guards.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-datetime.ts",
+      "bytes": 21617,
+      "bytesInOutput": 12645,
+      "imports": [
+        "src/tsutils-type-guards.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-dom.ts",
+      "bytes": 22459,
+      "bytesInOutput": 13198,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils-data.ts",
+        "src/tsutils-string.ts",
+        "src/tsutils-type-guards.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-locale.ts",
+      "bytes": 7631,
+      "bytesInOutput": 1838,
+      "imports": [
+        "src/tslocale.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-marker.ts",
+      "bytes": 10440,
+      "bytesInOutput": 5008,
+      "imports": [
+        "src/query.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-message.ts",
+      "bytes": 36500,
+      "bytesInOutput": 16292,
+      "imports": [
+        "src/query.ts",
+        "src/tsbase.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-notify.ts",
+      "bytes": 5473,
+      "bytesInOutput": 2243,
+      "imports": [
+        "src/query.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-registry.ts",
+      "bytes": 1656,
+      "bytesInOutput": 468,
+      "imports": [
+        "src/tsutils-type-guards.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-string.ts",
+      "bytes": 6624,
+      "bytesInOutput": 4408,
+      "imports": [
+        "src/tsutils-data.ts"
+      ]
+    },
+    {
+      "path": "src/tsutils-type-guards.ts",
+      "bytes": 2733,
+      "bytesInOutput": 1845,
+      "imports": []
+    },
+    {
+      "path": "src/tsutils.ts",
+      "bytes": 39541,
+      "bytesInOutput": 25266,
+      "imports": [
+        "src/query.ts",
+        "src/tslocale.ts",
+        "src/tsutils-color.ts",
+        "src/tsutils-data.ts",
+        "src/tsutils-datetime.ts",
+        "src/tsutils-dom.ts",
+        "src/tsutils-locale.ts",
+        "src/tsutils-marker.ts",
+        "src/tsutils-message.ts",
+        "src/tsutils-notify.ts",
+        "src/tsutils-registry.ts",
+        "src/tsutils-string.ts",
+        "src/tsutils-type-guards.ts"
+      ]
+    }
+  ],
+  "totals": {
+    "modules": 33,
+    "inputBytes": 1459638,
+    "outputBytes": 945470
+  }
+}
