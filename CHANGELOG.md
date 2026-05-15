@@ -52,6 +52,50 @@ All notable changes to **TsGrid UI** will be documented in this file.
   plus expanded parametric tests via `it.each`).
 - `tsup.config.analyze.ts`: UNCHANGED (INV-ANALYZE-ISOLATION PASS).
 
+## v2.10.0 — 2026-05-15
+
+### Tree-shake-friendly lazy singletons
+
+`TsPopup`, `TsTooltip`, `TsMenu`, `TsColor`, and `TsDate` now defer their underlying class
+construction until first use via a Proxy-based lazy-init pattern. Consumers that import
+`tsgrid-ui/popup` or `tsgrid-ui/tooltip` but do NOT call any method get a smaller bundle —
+bundlers respecting `sideEffects` can now eliminate the constructor bodies.
+
+- `package.json#sideEffects[]` no longer lists `./dist/popup.es6.js` or `./dist/tooltip.es6.js`.
+- Public API unchanged: same imports, same method calls, same `instanceof`, same `vi.spyOn` behavior.
+- Internal: new `src/lazy-singleton.ts` helper, named export `__test_internals` on `tspopup.ts`
+  and `tstooltip.ts` for construction-count assertions.
+
+Not changed in this release (deferred to future cycles):
+- `TsUtils` stays eager — its constructor reads `navigator` and `localStorage` (real side-effects
+  regardless of timing).
+- SSR safety remains future work.
+- `Tooltip.observeRemove = new MutationObserver(...)` static field is unchanged.
+
+### Implementation
+
+- `src/lazy-singleton.ts` (NEW): `lazySingleton<T>(factory, protoRef): T` — Proxy helper with
+  `get`, `set`, `has`, `ownKeys`, `getOwnPropertyDescriptor`, `defineProperty`, `getPrototypeOf`
+  traps. Factory invoked at most once; `getPrototypeOf` returns `protoRef.prototype` without
+  materializing to preserve `instanceof` semantics without triggering construction.
+- `src/tspopup.ts`: `TsPopup = lazySingleton<TsDialog>(...)` replaces `new TsDialog()`.
+- `src/tstooltip.ts`: four `lazySingleton(...)` calls replace `new Tooltip()` / `new MenuTooltip()`
+  / `new ColorTooltip()` / `new DateTooltip()`.
+
+### Tests
+
+- `test/unit/singleton-lazy-init.test.ts` (NEW): T-LAZY-1..8 covering deferred construction,
+  exactly-once guarantee, singleton identity, `vi.spyOn` forwarding, `TsUtils.lang` init-chain
+  safety, and `instanceof` invariant.
+- `test/unit/package-json.test.ts`: updated to assert 7-entry `sideEffects[]` and version 2.10.0.
+- `test/unit/bundle-snapshot.test.ts`: added R-SLI-DESIGN-3 ctor-marker assertions for
+  `popup.es6.js` and `tooltip.es6.js` stubs.
+
+### BC
+
+- Public API surface: **purely additive**. All existing imports and call sites work unchanged.
+- SEMVER MINOR per SemVer §7. No breaking changes.
+
 ## v2.9.0 — 2026-05-15
 
 ### Added

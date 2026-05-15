@@ -1,12 +1,10 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css",
     "./dist/utils.es6.js",
-    "./dist/popup.es6.js",
-    "./dist/tooltip.es6.js",
     "./dist/tsgrid-ui.es6.js",
     "./dist/tsgrid-ui.es6.min.js",
     "./dist/tsgrid-ui.js",
