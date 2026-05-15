@@ -119,6 +119,58 @@ effective consumer sizes. Effective consumer size = stub + transitive chunk unio
 
 ---
 
+## Schema v3 — v2.10.0 additions (`subpathEffective`)
+
+Schema v3 was extended in v2.10.0 with a new top-level `subpathEffective` block (sibling to `subpaths`). This block captures, per subpath, the transitive chunk closure and byte metrics.
+
+**Note**: `subpathEffective` is present from v2.10.0 onward. It is absent from `v2.7.1-baseline.json`, `v2.8.0-baseline.json`, and `v2.8.1-baseline.json`. Code reading multiple baselines MUST guard for its absence with `snap.subpathEffective ?? {}`.
+
+### `subpathEffective` field shape
+
+Each entry in `subpathEffective` contains:
+
+| Field | Type | Meaning |
+|-------|------|---------|
+| `stubPath` | `string` | POSIX path to the subpath ESM stub, relative to repo root (e.g. `"dist/popup.es6.js"`) |
+| `stubBytes` | `number` | On-disk byte size of the stub file |
+| `chunks` | `array` | Sorted lexicographic list of all chunk objects transitively reachable from the stub (see below) |
+| `chunks[].path` | `string` | Chunk path relative to cwd, POSIX format (e.g. `"dist/chunks/chunk-XXXXXXXX.js"`) |
+| `chunks[].bytes` | `number` | Chunk size from the esbuild metafile (`metafile.outputs[chunkPath].bytes`) |
+| `chunks[].lazyDeferred` | `boolean` | `true` iff the chunk's ctor body is deferred via `lazySingleton` Proxy (heuristic — see below) |
+| `chunkBytes` | `number` | `sum(chunks[].bytes)` |
+| `loadedBytes` | `number` | `stubBytes + chunkBytes` — total bytes the JS engine must parse when importing this subpath |
+| `executedBytes` | `number` | `stubBytes + sum(chunk.bytes where !lazyDeferred)` — bytes whose ctor body runs before any consumer interaction |
+| `effectiveBytes` | `number` | Alias of `loadedBytes` — present for AC wording compatibility |
+
+**Path format**: all paths in `chunks[].path` are relative-to-cwd POSIX strings (e.g. `"dist/chunks/chunk-3NYH6545.js"`), consistent with `outputBundle.imports[]` in the existing schema.
+
+**Chunk sort order**: `chunks[]` is sorted lexicographically by `path` before serialization, ensuring determinism across runs.
+
+**`lazyDeferred` heuristic**: a chunk is flagged `lazyDeferred: true` when its content matches known ctor-body marker regexes for the `lazySingleton` Proxy pattern (introduced in v2.10.0 Cycle 5):
+- Popup chunk: contains `this.handleResize =` AND `this.status = "closed"`
+- Tooltip chunk: contains `this.defaults =` AND `screenMargin`
+
+If these markers change (due to refactoring), `lazyDeferred` silently becomes `false` and `executedBytes === loadedBytes`. The test `./popup executedBytes is strictly less than loadedBytes` catches this regression. Update the marker regexes in `detectLazyDeferred()` in `scripts/bundle-snapshot.mjs` when lazy-singleton sites change.
+
+---
+
+## Lazy-singleton: loaded vs executed bytes
+
+The v2.10.0 release (Cycle 5) introduced a `lazySingleton` Proxy for `TsPopup` and `TsTooltip`. This creates a meaningful gap between bytes loaded and bytes executed:
+
+**Before v2.10.0 (Cycle 4)**: importing `tsgrid-ui/popup` loaded ~158 KB and executed ~158 KB — the TsDialog ctor body ran immediately at import time.
+
+**v2.10.0+ (Cycle 5)**: the same import loads ~162 KB but executes only ~130 KB. The TsDialog ctor body (~32 KB, `chunk-6UCGFWIQ.js`) sits behind a `lazySingleton` Proxy and runs only when a property is first accessed (e.g. `popup.open()`).
+
+The `subpathEffective` block reports both numbers:
+- `loadedBytes` — what the network and JS parser must process
+- `executedBytes` — what runs synchronously before any consumer interaction
+- `effectiveBytes` — alias for `loadedBytes` (canonical measurement of consumer load cost)
+
+The difference (`loadedBytes - executedBytes`) quantifies the ctor-deferral benefit: bytes whose initialization is pushed to first use rather than import time.
+
+---
+
 ## Schema v3 — v2.8.1 additions (Opt-C deferral)
 
 Schema v3 extends v2 with the following **sole additions**:
@@ -191,6 +243,46 @@ pnpm bundle:snapshot -- --version=vX.Y.Z
 ```
 
 The double-dash (`--`) is required — pnpm uses `--` to separate its own flags from script arguments.
+
+---
+
+## Refreshing the baseline per release
+
+Run this workflow once per release to commit a new versioned baseline:
+
+1. **Tag the release on `master`** (e.g. `git tag v2.11.0`). Confirm `package.json` version matches the tag — the snapshot script's RS-4 gate (exit code 6) enforces schema-version consistency between `--version` and the working tree.
+
+2. **Run the snapshot command**:
+   ```bash
+   pnpm bundle:snapshot -- --version=v2.11.0
+   # → runs tsup --config tsup.config.analyze.ts, then writes reports/bundle/v2.11.0-baseline.json
+   ```
+   The double-dash (`--`) is required — pnpm uses it to separate its own flags from script arguments.
+
+3. **Verify determinism**: run the snapshot command a second time and confirm the only diff is `generatedAt`:
+   ```bash
+   pnpm bundle:snapshot -- --version=v2.11.0
+   git diff reports/bundle/v2.11.0-baseline.json
+   # Expected diff: only the generatedAt timestamp line
+   ```
+
+4. **Run unit tests** to confirm the new baseline passes all structural assertions:
+   ```bash
+   pnpm test:unit -- bundle-snapshot
+   ```
+
+5. **Commit as a single chore** (work-unit commit grouping):
+   ```bash
+   git add reports/bundle/v2.11.0-baseline.json reports/bundle/README.md
+   git commit -m "chore(bundle): commit v2.11.0 baseline snapshot"
+   ```
+
+6. **Freeze-once policy (INV-BBI-5)**: once a versioned baseline is committed, do NOT overwrite it. If re-running the script targets the same version (`--version=v2.11.0`) from the same codebase, the script will regenerate a byte-identical file (modulo `generatedAt`). Regenerating for a different codebase state produces non-comparable numbers and invalidates the baseline as a frozen reference. Checkout the matching git tag if a fresh baseline for an older version is truly required.
+
+**When `subpathEffective` is absent**: baselines generated before v2.10.0 (`v2.7.1`, `v2.8.0`, `v2.8.1`) do not have a `subpathEffective` key. Code comparing or visualizing multiple baselines MUST guard:
+```js
+const effective = snap.subpathEffective ?? {}
+```
 
 ---
 
