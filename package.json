@@ -63,6 +63,7 @@
   "style": "dist/tsgrid-ui.css",
   "files": [
     "dist/",
+    "!dist/metafile-esm.json",
     "dist/tsgrid-ui.min.js",
     "dist/tsgrid-ui.es6.min.js",
     "LICENSE",
