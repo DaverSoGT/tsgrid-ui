@@ -1,6 +1,6 @@
-// RED test: bundle-snapshot schemaVersion=3 with Opt-C deferral (R-CSSE-4/6, AC6, AC8)
+// bundle-snapshot schemaVersion=3 with Opt-C deferral (R-CSSE-4/6, AC6, AC8)
 // Amendment 1: chunks block is NOT in schema v3 (Opt C). This test asserts its ABSENCE.
-// This file is intentionally RED until T-CSSE-8 (MEASURE: regen v2.8.1-baseline.json).
+// v2.10.0 addition: R-SLI-DESIGN-3 ctor-marker assertions for popup + tooltip stubs.
 import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -43,6 +43,19 @@ describe('bundle-snapshot schema v3 — Opt-C deferral (R-CSSE-4 amended, AC6, A
                 ).toBeUndefined()
             }
         }
+    })
+
+    // R-SLI-DESIGN-3: popup stub must not contain TsDialog ctor body markers
+    it('R-SLI-DESIGN-3: popup.es6.js stub does not contain TsDialog ctor body markers', () => {
+        const popupStub = readFileSync(join(ROOT, 'dist', 'popup.es6.js'), 'utf8')
+        expect(popupStub).not.toMatch(/this\.handleResize\s*=/)
+        expect(popupStub).not.toMatch(/this\.status\s*=\s*['"]closed['"]/)
+    })
+
+    // R-SLI-DESIGN-3: tooltip stub must not contain Tooltip ctor body markers
+    it('R-SLI-DESIGN-3: tooltip.es6.js stub does not contain Tooltip ctor body markers', () => {
+        const tooltipStub = readFileSync(join(ROOT, 'dist', 'tooltip.es6.js'), 'utf8')
+        expect(tooltipStub).not.toMatch(/this\.defaults\s*=\s*\{[\s\S]*?screenMargin/)
     })
 
     // Determinism: two consecutive snapshot runs must produce structurally identical JSON.
