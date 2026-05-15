@@ -25,38 +25,35 @@ the esbuild metafile are not representative of the shipped CJS artifact (the wra
 overhead), making them non-comparable to ESM numbers without careful normalization. CJS analysis is
 deferred to a future cycle.
 
-### `splitting: false` per-export limitation
+### `splitting: true` — v2.8.1+ (Phase 4 / cycle 4)
 
-This project builds with `splitting: false` (no code-splitting). This means the esbuild metafile
-produces a **single output chunk** (`dist/tsgrid-ui.es6.js`) containing all modules flattened together.
+As of v2.8.1, the ESM non-min block uses `splitting: true`. esbuild extracts shared code into
+`dist/chunks/chunk-<8CHAR>.js` files. With 12 entry points, 10 chunks are produced.
 
-The `modules[].bytesInOutput` values represent each source module's **byte contribution to the single
-output chunk** — not individual treeshakeable entry-point slices. As a result:
+The `modules[].bytesInOutput` values in `v2.8.1-baseline.json` now represent the monolith entry's
+contribution (since the analyze config uses the same 12-entry setup as prod).
 
-- You can see which `src/*.ts` files contribute the most bytes to the monolithic bundle.
-- You CANNOT infer "what happens if I import only `TsGrid`" from these numbers alone — that measurement
-  requires `splitting: true` and subpath exports (Phase 2+ work).
+**v2.8.0 and earlier** used `splitting: false` — the `modules[]` array measured each module's
+byte contribution to the single monolithic output. This measurement is preserved in
+`v2.8.0-baseline.json` (schema v2, frozen per INV-BBI-5).
 
 ---
 
-## Subpath duplication semantics with `splitting: false`
+## Subpath semantics with `splitting: true` (v2.8.1+)
 
-With `splitting: false` (the current configuration through v2.8.x), each subpath bundle
-(`dist/{name}.es6.js`) is **self-contained**: it inlines all transitive dependencies.
+With `splitting: true`, each subpath dist file (`dist/{name}.es6.js`) is a **tiny import stub**
+(118–371 B) that re-exports from shared chunks in `dist/chunks/`.
 
-This means:
-- `dist/popup.es6.js` contains `tsbase.ts`, `query.ts`, `tsutils.ts`, and `tspopup.ts` code
-  inlined together — not shared with other subpath bundles.
-- A consumer importing two subpaths (e.g. `tsgrid-ui/popup` + `tsgrid-ui/tooltip`) will
-  receive duplicate copies of shared modules (`query.ts`, `tsbase.ts`, `tsutils.ts`, etc.)
-  **unless** their bundler deduplicates by module identity.
+- A consumer importing two subpaths (e.g. `tsgrid-ui/popup` + `tsgrid-ui/form`) loads only
+  the **union of their chunks** — shared chunks are loaded once, not duplicated.
+- This produces measurable savings for multi-subpath consumers:
+  - SC-A (popup + form): 19.8% reduction
+  - SC-B (popup + tooltip + tabs): 54.9% reduction
+  - See `reports/bundle/v2.8.1-splitting-savings.md` for full scenario table.
 
-**Most modern bundlers DO deduplicate**: esbuild, Rollup, Vite, webpack 5+, and Parcel 2+
-all dedupe ESM modules by canonical URL/path. Consumers using these bundlers pay only one
-copy of shared modules even when importing multiple subpaths.
-
-**`splitting: true`** (planned for v2.9 / Phase 3) will eliminate this at the source by
-emitting shared chunks.
+**Note**: `dist/{name}.es6.js` stub sizes in `v2.8.1-baseline.json` are very small (118–371 B)
+because all module code moved to chunks. The `forecastBytes` values reflect stub sizes, NOT
+effective consumer sizes. Effective consumer size = stub + transitive chunk union.
 
 ---
 
@@ -119,6 +116,42 @@ emitting shared chunks.
   }
 }
 ```
+
+---
+
+## Schema v3 — v2.8.1 additions (Opt-C deferral)
+
+Schema v3 extends v2 with the following **sole additions**:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `schemaVersion` | `3` | Bumped from 2 to signal splitting:true is active |
+| `scope.splitting` | `true` | Honestly reflects the active config (`splitting: true` in ESM non-min block) |
+
+**No chunks block in schema v3.** Chunk-level tracking (`chunks` dictionary, `chunkImports[]`
+per subpath, `chunksTotalBytes`) was deferred to cycle 5+ per Amendment 1, Opt C decision.
+
+**Reasons for deferral**:
+1. esbuild's `[name]` token is hardcoded to `"chunk"` for all auto-generated shared chunks —
+   no semantic names are available without a post-build rename script (Option W1, deferred).
+2. Stable key normalization (strip hash suffix) produces collisions when all chunks are named
+   `chunk-<HASH>` (every key would be `chunks/chunk.js`).
+3. Singleton refactor (cycle 5) is the natural point to revisit: after refactoring the 3
+   side-effectful singletons, chunk topology may change significantly, making cycle 5 the
+   correct time to introduce chunk tracking alongside semantic naming.
+
+**Implications for consumers of this JSON**:
+- Code reading `v2.8.1-baseline.json` MUST check `schemaVersion` before assuming field presence.
+- The `chunks` key is ABSENT at schema v3 — do not treat its absence as a parse error.
+- The `subpaths` block is present (inherited from schema v2) and measures stub file sizes
+  (118–371 B each), NOT the effective consumer size (stub + transitive chunks).
+
+**Out-of-scope items** (context for future implementors):
+- `OUT-CSSE-6`: Chunk-level tracking (stable keys, `chunks` block, `chunkImports[]`) — deferred to cycle 5+.
+- `OUT-CSSE-7`: Semantic chunk naming via post-build rename script (Option W1) — deferred.
+
+**Schema selection (β gate)**: `scripts/bundle-snapshot.mjs` emits schemaVersion 3 IFF
+`pkg.version >= 2.8.1`. Versions in `[2.8.0, 2.8.1)` emit schemaVersion 2. Below 2.8.0: schema v1.
 
 ---
 
@@ -186,18 +219,17 @@ shared code with the production pipeline, making byte-identical production build
 | `outDir` | All blocks (currently `dist`) |
 | `sourcemap` | ESM non-min block (currently `true`) |
 | `outExtension` | ESM non-min block (returns `{ js: '.js' }`) |
-| `splitting` | All blocks (currently `false`) |
+| `splitting` | ESM non-min block (currently `true`); CJS blocks remain `false` |
+| `esbuildOptions.chunkNames` | ESM non-min block (`'chunks/[name]-[hash]'`; must NOT use `[hash:8]`) |
 
-**You MUST manually mirror the change in `tsup.config.analyze.ts`.** Drift is silent — there is no
-automation to detect it. Unmitigated drift manifests as `bytesInOutput` shifts in future baselines
-that are not explained by source code changes.
+**You MUST manually mirror the change in `tsup.config.analyze.ts`.** Drift is detected at snapshot
+regen time by the Q5 assertion in `bundle-snapshot.mjs` (exit code 5 on mismatch), but NOT at
+build time. Fix any drift before running `pnpm bundle:snapshot`.
 
 ### Phase 3+ schema bumps
 
-If Phase 3 (`splitting: true`) changes the dist structure (chunk files, different output paths),
-`scripts/bundle-snapshot.mjs` will emit schemaVersion 3. Phase 3 spec will define the v3 delta.
-The `subpaths[*].totalBytes` measurement strategy may change if chunk files replace monolithic
-subpath bundles.
+`scripts/bundle-snapshot.mjs` will emit schemaVersion 3 for v2.8.1+ (done — see schema v3 section below).
+Phase 4+ may introduce schemaVersion 4 if chunk-level tracking lands (OUT-CSSE-6, deferred to cycle 5+).
 
 ---
 

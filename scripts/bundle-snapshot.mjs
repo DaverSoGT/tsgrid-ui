@@ -26,12 +26,14 @@
  *   2  --version flag missing or invalid format
  *   3  path-normalization assertion fails (absolute path or Windows drive letter detected)
  *   4  wrong cwd (package.json.name !== "tsgrid-ui")
+ *   5  tsup config mirror assertion fails (Q5: splitting:true or chunkNames template drift)
+ *   6  schema version conflict (--version flag implies different schema than pkg.version gate)
  */
 
 import { readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { resolve, join, relative, isAbsolute } from 'node:path'
 
-// --- Schema v2 helpers (β gate: pkg.version >= 2.8.0 triggers schema v2) ---
+// --- Schema v2/v3 helpers ---
 
 function parseSemver(v) {
     const [base] = v.split('-')
@@ -45,19 +47,33 @@ function semverGte(a, b) {
     return a.pat >= b.pat
 }
 
+// Maps a semver to the schemaVersion it would produce.
+// v1: < 2.8.0, v2: >= 2.8.0 < 2.8.1, v3: >= 2.8.1
+function schemaVersionFor(semver) {
+    if (semverGte(semver, { maj: 2, min: 8, pat: 1 })) return 3
+    if (semverGte(semver, { maj: 2, min: 8, pat: 0 })) return 2
+    return 1
+}
+
 // Amendment #983: 11 subpaths (./grid deferred to Phase 3 with splitting:true)
+// Cycle 4 (v2.8.1): forecastBytes updated to post-splitting stub sizes.
+// With splitting:true, each subpath dist file is a tiny import stub (118-371 B)
+// that re-exports from dist/chunks/*.js. The forecastPct is relative to the
+// monolith dist/tsgrid-ui.es6.js (340,952 B post-splitting).
+// Note: forecastBytes measures ONLY the stub file, not the transitive chunk size.
+// Consumer effective size = stub + union of consumed chunk bytes.
 const SUBPATH_INVENTORY = [
-    { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 3763,   forecastPct: 0.4  },
-    { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 39260,  forecastPct: 4.2  },
-    { name: 'utils',   sourceFile: 'src/tsutils.ts',   forecastBytes: 127798, forecastPct: 13.5 },
-    { name: 'popup',   sourceFile: 'src/tspopup.ts',   forecastBytes: 159764, forecastPct: 16.9 },
-    { name: 'tooltip', sourceFile: 'src/tstooltip.ts', forecastBytes: 244730, forecastPct: 25.9 },
-    { name: 'tabs',    sourceFile: 'src/tstabs.ts',    forecastBytes: 268677, forecastPct: 28.4 },
-    { name: 'toolbar', sourceFile: 'src/tstoolbar.ts', forecastBytes: 288775, forecastPct: 30.5 },
-    { name: 'sidebar', sourceFile: 'src/tssidebar.ts', forecastBytes: 306622, forecastPct: 32.4 },
-    { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 313303, forecastPct: 33.1 },
-    { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 354536, forecastPct: 37.5 },
-    { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 468649, forecastPct: 49.6 },
+    { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 118,  forecastPct: 0.0 },
+    { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 164,  forecastPct: 0.0 },
+    { name: 'utils',   sourceFile: 'src/tsutils.ts',   forecastBytes: 231,  forecastPct: 0.1 },
+    { name: 'popup',   sourceFile: 'src/tspopup.ts',   forecastBytes: 322,  forecastPct: 0.1 },
+    { name: 'tooltip', sourceFile: 'src/tstooltip.ts', forecastBytes: 316,  forecastPct: 0.1 },
+    { name: 'tabs',    sourceFile: 'src/tstabs.ts',    forecastBytes: 260,  forecastPct: 0.1 },
+    { name: 'toolbar', sourceFile: 'src/tstoolbar.ts', forecastBytes: 269,  forecastPct: 0.1 },
+    { name: 'sidebar', sourceFile: 'src/tssidebar.ts', forecastBytes: 269,  forecastPct: 0.1 },
+    { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 263,  forecastPct: 0.1 },
+    { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 340,  forecastPct: 0.1 },
+    { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 371,  forecastPct: 0.1 },
 ]
 
 function buildSubpathsBlock(cwd) {
@@ -135,6 +151,49 @@ if (pkg.version && pkg.version !== versionNumeric) {
 
 // Read tsup version from devDependencies
 const tsupVersion = (pkg.devDependencies?.tsup ?? '').replace(/[\^~]/, '')
+
+// --- RS-4 gate: schema version conflict detection (exit code 6) ---
+// Prevents emitting the wrong schema for a historic version label.
+// e.g. running --version=v2.7.1 from a v2.8.1 working tree would emit schemaVersion:3
+// into a "v2.7.1" baseline, which is misleading and frozen (INV-BBI-5).
+const pkgSemverForGate = parseSemver(pkg.version)
+const requestedSchemaV = schemaVersionFor(parseSemver(versionNumeric))
+const pkgSchemaV       = schemaVersionFor(pkgSemverForGate)
+if (requestedSchemaV !== pkgSchemaV) {
+    process.stderr.write(
+        `ERROR: Cannot regenerate ${version} baseline from a v${pkg.version} working tree. ` +
+        `Schema gate would emit schemaVersion ${pkgSchemaV}, but ${version} baseline expects schemaVersion ${requestedSchemaV}. ` +
+        `Frozen baselines are committed (INV-BBI-5); checkout the matching git tag if a fresh baseline is truly required.\n`
+    )
+    process.exit(6)
+}
+
+// --- Q5 assertion: tsup config mirror (exit code 5) ---
+// Both tsup.config.ts and tsup.config.analyze.ts MUST contain splitting:true
+// and the correct chunkNames template. Fires if INV-ANALYZE-ISOLATION drift is detected.
+// Only checked when schema v3 is active (splitting:true is a v3+ requirement).
+if (pkgSchemaV >= 3) {
+    const tsupProdSrc    = readFileSync(join(CWD, 'tsup.config.ts'), 'utf8')
+    const tsupAnalyzeSrc = readFileSync(join(CWD, 'tsup.config.analyze.ts'), 'utf8')
+
+    const CHUNK_NAMES_TEMPLATE = 'chunks/[name]-[hash]'
+
+    const prodHasSplitting    = /splitting:\s*true/.test(tsupProdSrc)
+    const analyzeHasSplitting = /splitting:\s*true/.test(tsupAnalyzeSrc)
+    const prodHasChunkNames    = tsupProdSrc.includes(CHUNK_NAMES_TEMPLATE)
+    const analyzeHasChunkNames = tsupAnalyzeSrc.includes(CHUNK_NAMES_TEMPLATE)
+
+    if (!(prodHasSplitting && analyzeHasSplitting && prodHasChunkNames && analyzeHasChunkNames)) {
+        process.stderr.write(
+            'ERROR: tsup config mirror assertion failed (Q5, INV-ANALYZE-ISOLATION). ' +
+            'Both tsup.config.ts and tsup.config.analyze.ts must contain ' +
+            '`splitting: true` and the chunkNames template "' + CHUNK_NAMES_TEMPLATE + '".\n' +
+            `  tsup.config.ts     — splitting:true=${prodHasSplitting}, chunkNames=${prodHasChunkNames}\n` +
+            `  tsup.config.analyze.ts — splitting:true=${analyzeHasSplitting}, chunkNames=${analyzeHasChunkNames}\n`
+        )
+        process.exit(5)
+    }
+}
 
 // --- Load metafile ---
 let meta
@@ -263,11 +322,24 @@ const snapshot = {
     },
 }
 
-// --- Schema v2 gate (β: implicit from pkg.version) ---
-const pkgSemver = parseSemver(pkg.version)
+// --- Schema v2 gate (β: pkg.version >= 2.8.0) ---
+const pkgSemver = pkgSemverForGate  // already parsed above for RS-4 gate
 if (semverGte(pkgSemver, { maj: 2, min: 8, pat: 0 })) {
     snapshot.schemaVersion = 2
     snapshot.subpaths = buildSubpathsBlock(CWD)
+}
+
+// --- Schema v3 gate (β: pkg.version >= 2.8.1) ---
+// schemaVersion 3: splitting:true active in ESM non-min block. chunk files are produced
+// under dist/chunks/ but are not tracked per-chunk in the baseline (chunk-level tracking
+// deferred to cycle 5+ per Amendment 1 Opt C, pending singleton refactor and semantic
+// naming resolution). Existing subpaths block and outputBundle fields are unchanged from v2.
+if (semverGte(pkgSemver, { maj: 2, min: 8, pat: 1 })) {
+    snapshot.schemaVersion = 3
+    snapshot.scope.splitting = true
+    // NOTE: no chunks block in schema v3 (Opt C deferral — see Amendment 1 #1003).
+    // The chunks === undefined assertion in bundle-snapshot.test.ts is LOAD-BEARING
+    // negative coverage. Do not add a chunks block here without a spec amendment.
 }
 
 // --- Write output ---
