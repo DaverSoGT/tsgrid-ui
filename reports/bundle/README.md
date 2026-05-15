@@ -60,6 +60,24 @@ emitting shared chunks.
 
 ---
 
+## Chunk `.d.ts` files (tsup-internal)
+
+`dist/` may contain hash-suffixed `.d.ts` files such as `query-CKGg5Ugv.d.ts` or
+`tsutils-message-CogFtVtO.d.ts`. These are tsup's internal chunks emitted when multiple
+`dts: only` block entries reference shared TypeScript declarations.
+
+- **Required**: yes — subpath `.d.ts` files (`popup.d.ts`, `field.d.ts`, etc.) `import` from these
+  chunks. Removing them breaks consumer type resolution.
+- **Deterministic**: yes — filenames and content are byte-stable across consecutive rebuilds of the
+  same source.
+- **Not stable across tsup upgrades**: the hash suffix depends on tsup's internal chunking algorithm.
+  A future tsup major version may change the hash, requiring a `dist/` rebuild + commit. Document the
+  new chunk names here when that happens.
+- **Phase 3 forward note**: when `splitting: true` lands, these chunks become shared ESM chunks too
+  (visible in `.es6.js` output files). Update this section then.
+
+---
+
 ## Schema reference (`v{X.Y.Z}-baseline.json`)
 
 ```jsonc
