@@ -1097,8 +1097,11 @@ class TsToolbar extends TsBase {
             value = parseFloat(value)
         }
         // remove suffix if it is there
-        if (it.input?.suffix != null && String(value).substr(-it.input.suffix.length) == it.input.suffix) {
-            value = String(value).substr(0, value.length - it.input.suffix.length)
+        if (it.input?.suffix != null) {
+            const strValue = String(value)
+            if (strValue.substr(-it.input.suffix.length) == it.input.suffix) {
+                value = strValue.substr(0, strValue.length - it.input.suffix.length)
+            }
         }
         // min/max
         if (it.input?.min != null && it.input.min > value) {
