@@ -100,3 +100,32 @@ describe('TsToolbar BUG-3 — insert appends to end-of-line', () => {
         expect(node).not.toBeNull()
     })
 })
+
+// ── BUG-4 — mouseAction must call edata.finish() on early return ─────────────
+//
+// Before the fix: btn.disabled causes an early return at line 1265.
+// edata.finish() at line 1290 is never reached.
+// Each mouseAction call on a disabled item pushes one TsEvent to activeEvents and
+// never removes it → activeEvents grows indefinitely.
+
+describe('TsToolbar BUG-4 — activeEvents lifecycle', () => {
+    it('activeEvents is empty after 100 Enter/Leave cycles on a disabled item', () => {
+        const toolbar = new TsToolbar({ name: 'tb4a', items: [{ id: 'dis', type: 'button', disabled: true }] })
+        const fakeEvent = new MouseEvent('mouseenter')
+        const fakeTarget = document.createElement('div')
+        for (let i = 0; i < 100; i++) {
+            toolbar.mouseAction(fakeEvent, fakeTarget, 'Enter', 'dis')
+            toolbar.mouseAction(fakeEvent, fakeTarget, 'Leave', 'dis')
+        }
+        expect(toolbar.activeEvents.length).toBe(0)
+    })
+
+    it('activeEvents is empty after Enter/Leave on an enabled item', () => {
+        const toolbar = new TsToolbar({ name: 'tb4b', items: [{ id: 'en', type: 'button' }] })
+        const fakeEvent = new MouseEvent('mouseenter')
+        const fakeTarget = document.createElement('div')
+        toolbar.mouseAction(fakeEvent, fakeTarget, 'Enter', 'en')
+        toolbar.mouseAction(fakeEvent, fakeTarget, 'Leave', 'en')
+        expect(toolbar.activeEvents.length).toBe(0)
+    })
+})

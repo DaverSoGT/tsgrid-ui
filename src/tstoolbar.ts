@@ -1262,7 +1262,7 @@ class TsToolbar extends TsBase {
     mouseAction(event: any, target: any, action: any, id: any): void { // any: mouse event and toolbar item ids are heterogeneous
         const btn = this.get(id)
         const edata = this.trigger('mouse' + action, { target: id, item: btn, object: btn, originalEvent: event })
-        if (edata.isCancelled === true || btn.disabled || btn.hidden) return
+        if (edata.isCancelled === true || btn.disabled || btn.hidden) { edata.finish(); return }
         switch (action) {
             case 'Enter':
                 if (!['label', 'input'].includes(btn.type)) {
