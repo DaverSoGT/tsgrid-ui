@@ -32,6 +32,7 @@
 
 import { readFileSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
 import { resolve, join, relative, isAbsolute } from 'node:path'
+import { pathToFileURL } from 'node:url'
 
 // --- Schema v2/v3 helpers ---
 
@@ -97,6 +98,103 @@ function buildSubpathsBlock(cwd) {
     }
     return subpaths
 }
+
+// ---------------------------------------------------------------------------
+// ESM main guard — allows importing algorithm helpers (buildSubpathEffectiveBlock,
+// bfsChunkClosure, detectLazyDeferred) from tests without triggering CLI side-effects.
+// ---------------------------------------------------------------------------
+
+export function bfsChunkClosure(meta, stubKey) {
+    const visited = new Set()
+    const queue   = [stubKey]
+    const closure = new Set()
+    while (queue.length > 0) {
+        const cur = queue.shift()
+        for (const imp of (meta.outputs[cur]?.imports ?? [])) {
+            const impPath = (typeof imp === 'string') ? imp : imp.path
+            if (!impPath || impPath.includes('node_modules')) continue
+            if (visited.has(impPath)) continue
+            visited.add(impPath)
+            closure.add(impPath)
+            queue.push(impPath)
+        }
+    }
+    return closure
+}
+
+export function detectLazyDeferred(chunkPath, cwd, contentCache) {
+    if (!contentCache.has(chunkPath)) {
+        try {
+            const abs = join(cwd, chunkPath)
+            contentCache.set(chunkPath, readFileSync(abs, 'utf8'))
+        } catch {
+            contentCache.set(chunkPath, '')
+        }
+    }
+    const content = contentCache.get(chunkPath) ?? ''
+
+    // Popup markers (TsDialog ctor body — v2.10.0 lazy-singleton)
+    const isPopup = /this\.handleResize\s*=/.test(content) &&
+        /this\.status\s*=\s*['"]closed['"]/.test(content)
+
+    // Tooltip markers (Tooltip ctor body — v2.10.0 lazy-singleton)
+    const isTooltip = /this\.defaults\s*=/.test(content) &&
+        /screenMargin/.test(content)
+
+    return isPopup || isTooltip
+}
+
+export function buildSubpathEffectiveBlock(meta, packageExports, cwd) {
+    const contentCache = new Map()
+    const out = {}
+    for (const sp of SUBPATH_INVENTORY) {
+        const stubKey = `dist/${sp.name}.es6.js`
+        const stubMetaEntry = meta.outputs[stubKey]
+        if (!stubMetaEntry) {
+            process.stderr.write(`ERROR: subpath stub not found in metafile: ${stubKey}. Check tsup.config.analyze.ts entry list.\n`)
+            process.exit(1)
+        }
+        let stubBytes
+        try {
+            stubBytes = statSync(join(cwd, stubKey)).size
+        } catch {
+            stubBytes = stubMetaEntry.bytes ?? 0
+        }
+        const closure = bfsChunkClosure(meta, stubKey)
+        const chunks = [...closure]
+            .map(p => {
+                const normalizedP = p.replace(/\\/g, '/')
+                const chunkMeta   = meta.outputs[p]
+                const chunkBytes  = chunkMeta?.bytes ?? 0
+                // Size threshold omitted: content markers are specific enough to avoid false positives.
+                // Only the popup and tooltip ctor-body chunks match the known marker regexes.
+                const isLazy      = detectLazyDeferred(p, cwd, contentCache)
+                return {
+                    path:         normalizedP,
+                    bytes:        chunkBytes,
+                    lazyDeferred: isLazy,
+                }
+            })
+            .sort((a, b) => a.path.localeCompare(b.path))
+
+        const chunkBytes    = chunks.reduce((s, c) => s + c.bytes, 0)
+        const loadedBytes   = stubBytes + chunkBytes
+        const executedBytes = stubBytes + chunks.reduce((s, c) => c.lazyDeferred ? s : s + c.bytes, 0)
+
+        out[sp.name] = {
+            stubPath:       stubKey.replace(/\\/g, '/'),
+            stubBytes,
+            chunks,
+            chunkBytes,
+            loadedBytes,
+            executedBytes,
+            effectiveBytes: loadedBytes,
+        }
+    }
+    return out
+}
+
+if (import.meta.url === pathToFileURL(process.argv[1]).href) {
 
 const CWD       = process.cwd()
 // tsup 8.5.1 writes metafile as dist/metafile-esm.json (not dist/<entry>.meta.json)
@@ -340,6 +438,7 @@ if (semverGte(pkgSemver, { maj: 2, min: 8, pat: 1 })) {
     // NOTE: no chunks block in schema v3 (Opt C deferral — see Amendment 1 #1003).
     // The chunks === undefined assertion in bundle-snapshot.test.ts is LOAD-BEARING
     // negative coverage. Do not add a chunks block here without a spec amendment.
+    snapshot.subpathEffective = buildSubpathEffectiveBlock(meta, pkg.exports, CWD)  // R-BBI-B1, design §3.1
 }
 
 // --- Write output ---
@@ -350,3 +449,5 @@ writeFileSync(outPath, JSON.stringify(snapshot, null, 2) + '\n', 'utf8')
 process.stdout.write(
     `[bundle-snapshot] Wrote ${outPath.replace(/\\/g, '/')} (${totalsModules} modules, ${totalBytes.toLocaleString()} total bytes).\n`
 )
+
+} // end ESM main guard
