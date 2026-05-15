@@ -964,6 +964,7 @@ class TsToolbar extends TsBase {
                         )
                     }</span>`
                 }
+            // falls through
             case 'menu':
             case 'menu-check':
             case 'menu-radio':
