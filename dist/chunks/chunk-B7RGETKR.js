@@ -153,10 +153,6 @@ var TsToolbar = class extends TsBase {
         console.log('ERROR: The parameter "id" is required but not supplied.', item);
         return;
       }
-      if (item.type == null) {
-        console.log('ERROR: The parameter "type" is required but not supplied.', item);
-        return;
-      }
       if (!TsUtils.checkUniqueId(item.id, this.items, "toolbar", this.name)) return;
       const newItem = TsUtils.extend({}, this.item_template, item);
       if (newItem.type == "group" && Array.isArray(newItem.items)) {
@@ -175,6 +171,13 @@ var TsToolbar = class extends TsBase {
             if (!it.checked && newItem.selected.includes(it.id)) it.checked = true;
             if (it.checked == null) it.checked = false;
           });
+        } else if (typeof newItem.items === "function") {
+          const materialized = newItem.items(newItem);
+          if (Array.isArray(materialized)) {
+            materialized.forEach((it) => {
+              if (it && it.checked && !newItem.selected.includes(it.id)) newItem.selected.push(it.id);
+            });
+          }
         }
       } else if (newItem.type == "menu-radio") {
         if (Array.isArray(newItem.items)) {
@@ -215,7 +218,15 @@ var TsToolbar = class extends TsBase {
       effected++;
       query2(this.box).find("#tb_" + this.name + "_item_" + TsUtils.escapeId(it.id)).remove();
       const ind = this.get(it.id, true);
-      if (ind != null) this.items.splice(ind, 1);
+      if (ind != null) {
+        const top = this.items[ind];
+        if (top.id === it.id) {
+          this.items.splice(ind, 1);
+        } else if (top.type === "group" && Array.isArray(top.items)) {
+          const subIdx = top.items.findIndex((s) => s && s.id === it.id);
+          if (subIdx !== -1) top.items.splice(subIdx, 1);
+        }
+      }
     });
     this.resize();
     return effected;
@@ -271,7 +282,10 @@ var TsToolbar = class extends TsBase {
         else return it;
       } else if (it.type == "group") {
         const sub = this.get(id, returnIndex, it.items);
-        if (sub != null) return sub;
+        if (sub != null) {
+          if (returnIndex === true) return i1;
+          return sub;
+        }
       }
     }
     return null;
@@ -290,6 +304,8 @@ var TsToolbar = class extends TsBase {
       item.count = count;
     } else {
       this.set(id, { count });
+      const after = query2(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`);
+      if (after.length === 0) return;
       this.setCount(id, count, className, style);
     }
   }
@@ -741,6 +757,8 @@ var TsToolbar = class extends TsBase {
   destroy() {
     const edata = this.trigger("destroy", { target: this.name });
     if (edata.isCancelled === true) return;
+    TsTooltip.hide(this.name + "-tooltip");
+    TsTooltip.hide(this.name + "-drop");
     if (query2(this.box).find(".tsg-scroll-wrapper").length > 0) {
       this.unmount();
     }
@@ -806,6 +824,7 @@ var TsToolbar = class extends TsBase {
           }
           text = `<span style="color: ${color}">${item.text ? TsUtils.lang(item.text) : item.backColor ? `<b style="background-color: ${bcolor ?? "transparent"}; padding: 2px 5px; border-radius: 3px;">Ab</b>` : "<b>Ab</b>"}</span>`;
         }
+      // falls through
       case "menu":
       case "menu-check":
       case "menu-radio":
@@ -890,7 +909,7 @@ var TsToolbar = class extends TsBase {
       }
       case "group": {
         html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-group"
-                    style="display: flex; ${item.hidden ? "display: none" : ""}; ${item.style ? item.style : ""}">`;
+                    style="display: ${item.hidden ? "none" : "flex"}; ${item.style ? item.style : ""}">`;
         if (Array.isArray(item.items)) {
           item.items.forEach((it) => {
             html += this.getItemHTML(it);
@@ -1141,4 +1160,4 @@ var TsToolbar = class extends TsBase {
 export {
   TsToolbar
 };
-//# sourceMappingURL=chunk-Y2TJMQYJ.js.map
+//# sourceMappingURL=chunk-B7RGETKR.js.map

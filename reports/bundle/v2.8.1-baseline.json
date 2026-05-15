@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "tsgridUiVersion": "2.8.1",
-  "generatedAt": "2026-05-15T17:05:50.885Z",
+  "generatedAt": "2026-05-15T19:41:11.599Z",
   "generator": {
     "tool": "tsup",
     "toolVersion": "8.5.1",
@@ -21,14 +21,14 @@
     "imports": [
       "dist/chunks/chunk-26XP2XU3.js",
       "dist/chunks/chunk-3NYH6545.js",
-      "dist/chunks/chunk-52GT6557.js",
+      "dist/chunks/chunk-B7RGETKR.js",
       "dist/chunks/chunk-BIB3X2TW.js",
+      "dist/chunks/chunk-C257V46G.js",
       "dist/chunks/chunk-DXZJHS4M.js",
+      "dist/chunks/chunk-I2UYB6ST.js",
       "dist/chunks/chunk-IYF3Q7GX.js",
       "dist/chunks/chunk-OFASTA2A.js",
       "dist/chunks/chunk-OMLGN735.js",
-      "dist/chunks/chunk-QTT73B7C.js",
-      "dist/chunks/chunk-Y2TJMQYJ.js",
       "dist/chunks/chunk-YBY52G2U.js"
     ]
   },
