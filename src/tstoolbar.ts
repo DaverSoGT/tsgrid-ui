@@ -309,6 +309,10 @@ class TsToolbar extends TsBase {
             item.count = count
         } else {
             this.set(id, { count: count })
+            // base case: re-query after refresh; if the item type does not render
+            // a count span (break / spacer / html / input / group), stop recursing.
+            const after = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(id)} .tsg-tb-count > span`)
+            if (after.length === 0) return
             this.setCount(id, count, className, style) // to update styles
         }
     }

@@ -129,3 +129,48 @@ describe('TsToolbar BUG-4 — activeEvents lifecycle', () => {
         expect(toolbar.activeEvents.length).toBe(0)
     })
 })
+
+// ── S-2 — setCount() must not recurse infinitely for structural item types ─────
+//
+// setCount() else-branch calls this.set(id, { count }) then recurses unconditionally.
+// For structural types (break/spacer/html/input/group) getItemHTML never emits a
+// .tsg-tb-count > span, so btn.length stays 0 after refresh — infinite recursion.
+// The fix re-queries the count span after set() and returns early when still absent.
+
+describe('TsToolbar S-2 — setCount recursion guard for structural types', () => {
+    const structuralTypes: Array<{ type: string, id: string }> = [
+        { type: 'break',  id: 'br' },
+        { type: 'spacer', id: 'sp' },
+        { type: 'html',   id: 'h1' },
+        { type: 'input',  id: 'in' },
+        { type: 'group',  id: 'gr' },
+    ]
+    for (const { type, id } of structuralTypes) {
+        it(`does not recurse infinitely for type "${type}"`, () => {
+            const box = mountBox(`tb-s2-${type}`)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const items: any[] = [{ id, type }]
+            if (type === 'group') items[0].items = [{ id: 'child', type: 'button' }]
+            const toolbar = new TsToolbar({ name: `s2-${type}`, box, items })
+            // Depth-cap guard: catch runaway recursion before jsdom crashes the worker
+            let depth = 0
+            const orig = toolbar.setCount.bind(toolbar)
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(toolbar as any).setCount = (...args: any[]) => {
+                if (++depth > 5) throw new Error('setCount recursion exceeded 5 — guard regressed')
+                try { return orig(...args) } finally { depth-- }
+            }
+            expect(() => toolbar.setCount(id, 5)).not.toThrow()
+            // item.count side-effect from this.set() must still be set
+            expect((toolbar.get(id) as any).count).toBe(5)
+        })
+    }
+
+    it('still works for count-capable type "button"', () => {
+        const box = mountBox('tb-s2-button')
+        const toolbar = new TsToolbar({ name: 's2-btn', box, items: [{ id: 'b', type: 'button', text: 'B' }] })
+        expect(() => toolbar.setCount('b', 7, 'red-badge')).not.toThrow()
+        expect((toolbar.get('b') as any).count).toBe(7)
+        expect((toolbar as any).last.badge['b']).toEqual({ className: 'red-badge', style: '' })
+    })
+})
