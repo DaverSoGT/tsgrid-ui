@@ -163,10 +163,6 @@ class TsToolbar extends TsBase {
                 console.log('ERROR: The parameter "id" is required but not supplied.', item)
                 return
             }
-            if (item.type == null) {
-                console.log('ERROR: The parameter "type" is required but not supplied.', item)
-                return
-            }
             if (!TsUtils.checkUniqueId(item.id, this.items, 'toolbar', this.name)) return
             // add item
             const newItem = TsUtils.extend({}, this.item_template, item)
