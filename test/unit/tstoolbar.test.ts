@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsToolbar } from '../../src/tstoolbar.js'
-import { Tooltip } from '../../src/tstooltip.js'
+import { Tooltip, TsTooltip } from '../../src/tstooltip.js'
 
 function mountBox(id = 'tb-host'): HTMLElement {
     const el = document.createElement('div')
@@ -300,5 +300,88 @@ describe('TsToolbar Smell-6 — remove(sub-id) on group sub-item removes from gr
         expect((toolbar as any).items.length).toBe(1)
         expect((toolbar as any).items[0].id).toBe('btn2')
         expect(effected).toBe(1)
+    })
+})
+
+// ── TsToolbar T-TOG — toggle() flips checked state ──────────────────────────
+describe('TsToolbar T-TOG — toggle() flips checked state', () => {
+    it('T-TOG-1: flips checked false→true and true→false on a check item', () => {
+        const toolbar = new TsToolbar({ name: 'tog1', items: [
+            { id: 'c', type: 'check', text: 'C', checked: false },
+        ]})
+        const e1 = toolbar.toggle('c')
+        expect((toolbar.get('c') as any).checked).toBe(true)
+        expect(e1).toEqual(['c'])
+        const e2 = toolbar.toggle('c')
+        expect((toolbar.get('c') as any).checked).toBe(false)
+        expect(e2).toEqual(['c'])
+    })
+
+    it('T-TOG-2: radio items warn and are skipped (not in effected)', () => {
+        const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+        const toolbar = new TsToolbar({ name: 'tog2', items: [
+            { id: 'r', type: 'radio', group: 'g1', text: 'R', checked: true },
+        ]})
+        const effected = toolbar.toggle('r')
+        expect(warn).toHaveBeenCalled()
+        expect(String(warn.mock.calls[0][0])).toMatch(/radio/i)
+        expect((toolbar.get('r') as any).checked).toBe(true) // unchanged
+        expect(effected).toEqual([])
+    })
+
+    it('T-TOG-3: drop type closes overlay via TsTooltip.hide on checked→unchecked', () => {
+        vi.useFakeTimers()
+        const box = mountBox('tb-tog3')
+        const toolbar = new TsToolbar({ name: 'tog3', box, items: [
+            { id: 'd', type: 'drop', text: 'D', html: '<div>menu</div>' },
+        ]})
+        toolbar.click('d', new MouseEvent('click'))
+        vi.advanceTimersByTime(1)
+        expect((Tooltip.active as any)['tog3-drop']).toBeDefined()
+        const hideSpy = vi.spyOn(TsTooltip, 'hide')
+        toolbar.toggle('d')
+        expect(hideSpy).toHaveBeenCalledWith('tog3-drop')
+        expect((toolbar.get('d') as any).checked).toBe(false)
+    })
+
+    it('T-TOG-4: group recurses into children; group id not in effected', () => {
+        const toolbar = new TsToolbar({ name: 'tog4', items: [
+            { id: 'grp', type: 'group', items: [
+                { id: 'g-a', type: 'check', text: 'A', checked: false },
+                { id: 'g-b', type: 'check', text: 'B', checked: true },
+            ]},
+        ]})
+        const effected = toolbar.toggle('grp')
+        expect((toolbar.get('g-a') as any).checked).toBe(true)
+        expect((toolbar.get('g-b') as any).checked).toBe(false)
+        expect(effected).not.toContain('grp')
+        expect(effected).toEqual(expect.arrayContaining(['g-a', 'g-b']))
+    })
+
+    it('T-TOG-5: missing ids skipped; multi-id is independent', () => {
+        const toolbar = new TsToolbar({ name: 'tog5', items: [
+            { id: 'a', type: 'check', text: 'A', checked: false },
+            { id: 'b', type: 'check', text: 'B', checked: true },
+        ]})
+        const effected = toolbar.toggle('a', 'missing', 'b')
+        expect(effected).toEqual(['a', 'b'])
+        expect((toolbar.get('a') as any).checked).toBe(true)
+        expect((toolbar.get('b') as any).checked).toBe(false)
+    })
+
+    it('T-TOG-6: returns string[] (never null/undefined) and fires no events', () => {
+        const onClick = vi.fn()
+        const onChange = vi.fn()
+        const toolbar = new TsToolbar({ name: 'tog6', items: [
+            { id: 'a', type: 'check', text: 'A' },
+        ], onClick, onChange })
+        const r1 = toolbar.toggle()                          // no args
+        const r2 = toolbar.toggle('not-there')               // missing
+        const r3 = toolbar.toggle('a')                       // hit
+        expect(Array.isArray(r1)).toBe(true); expect(r1).toEqual([])
+        expect(Array.isArray(r2)).toBe(true); expect(r2).toEqual([])
+        expect(Array.isArray(r3)).toBe(true); expect(r3).toEqual(['a'])
+        expect(onClick).not.toHaveBeenCalled()
+        expect(onChange).not.toHaveBeenCalled()
     })
 })

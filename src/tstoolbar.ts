@@ -479,6 +479,62 @@ class TsToolbar extends TsBase {
         return effected
     }
 
+    /**
+     * Toggle the `checked` state of one or more items.
+     *
+     * State management only — does NOT fire events (no `onClick`, no `onChange`)
+     * and does NOT open drop / menu / color overlays. For full UI interaction
+     * including opening pickers, call `click(id)` instead.
+     *
+     * Per-item behaviour:
+     *   - button / check / html / spacer / break: flips `it.checked`.
+     *   - drop / menu / menu-radio / menu-check / color / text-color: if currently
+     *     checked, closes the toolbar's `-drop` overlay via `TsTooltip.hide` before
+     *     flipping. Same overlay-close path as `uncheck()`. Never opens overlays.
+     *   - radio: emits `console.warn` and is skipped (would leave the group with
+     *     no checked member). Use `check()` / `uncheck()` for radios.
+     *   - group: recurses into `it.items` and toggles each child individually; the
+     *     group container itself is never in the effected list.
+     *   - sub-id with `:` notation: skipped (same guard as siblings).
+     *   - missing id: silently skipped.
+     *
+     * @param args  ids of items to toggle. Varargs, independent per id.
+     * @returns     array of ids whose checked state actually flipped. Never `undefined`.
+     */
+    // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    toggle(...args: any[]): any[] {
+        // any: array of heterogeneous runtime values; TsToolbar item shape varies by `type` at runtime
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const effected: any[] = []
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        args.flat().forEach((item: any) => { // any: item id can be string or number
+            const it = this.get(item)
+            if (!it || String(item).indexOf(':') != -1) return
+            if (it.type == 'radio') {
+                console.warn(`TsToolbar.toggle: radio items are not supported, use check()/uncheck() instead. Item: ${item}`)
+                return
+            }
+            if (it.type == 'group') {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const childIds = it.items.map((itm: any) => itm.id) // any: group items are dynamic
+                const childEffected = this.toggle(...childIds)
+                effected.push(...childEffected)
+                return
+            }
+            // Capture intended final value before potential overlay-close side-effects
+            const newChecked = !it.checked
+            // Mirror uncheck(): close overlay BEFORE flipping checked → false
+            if (['menu', 'menu-radio', 'menu-check', 'drop', 'color', 'text-color'].includes(it.type) && it.checked) {
+                TsTooltip.hide(this.name + '-drop')
+            }
+            it.checked = newChecked
+            effected.push(String(item).split(':')[0])
+        })
+        this._refresh({ effected }) // debounced, needed for speed
+        return effected
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     click(id: any, event?: any): void { // any: id can be string or number; event is MouseEvent or similar
         // click on menu items
