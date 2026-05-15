@@ -4,6 +4,23 @@ All notable changes to **TsGrid UI** will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed (build)
+- `scripts/wrap-legacy.mjs`: `buildHeader()` is now deterministic — per-build
+  `new Date().toLocaleString('en-us')` timestamp removed. Version string is now
+  read dynamically from `package.json` via `readFile + JSON.parse` (was stale
+  hardcoded `1.0.x (nightly)`). CJS dist artifacts (`dist/tsgrid-ui.js`,
+  `dist/tsgrid-ui.min.js`) are now bit-identical across consecutive rebuilds
+  on unchanged source.
+- Anti-regression: new Vitest unit test at `test/unit/wrap-legacy.test.ts`
+  guards against reintroduction of `new Date(`, `Date.now(`, `Math.random(`
+  in the post-build script.
+
+### Notes (build)
+- SEMVER: chore — no version bump.
+- Supersedes the CJS-SHA Option-B caveat from the bundle-baseline-instrumentation
+  cycle (spec #960 INV-BBI-1). Future cycles MAY assume strict CJS-SHA equality
+  across all 5 dist artifacts.
+
 ### Added (tooling)
 - `pnpm bundle:analyze` — generate esbuild metafile + per-module advisory summary (`reports/bundle/latest.md`, gitignored).
 - `pnpm bundle:snapshot -- --version=vX.Y.Z` — write committed baseline JSON to `reports/bundle/<version>-baseline.json`.

@@ -18,6 +18,18 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 
 // ---------------------------------------------------------------------------
+// Read package.json version once at script load.
+// Throws on missing/malformed package.json — build fails loudly rather than
+// emitting a stale or empty version string. See INV-WLD-1/3/4 (spec #967).
+// ---------------------------------------------------------------------------
+const PKG_JSON_PATH = path.resolve(ROOT, 'package.json')
+const _pkgRaw       = JSON.parse(await readFile(PKG_JSON_PATH, 'utf8'))
+if (typeof _pkgRaw.version !== 'string' || _pkgRaw.version.length === 0) {
+    throw new Error(`[wrap-legacy] package.json is missing a string 'version' field at ${PKG_JSON_PATH}`)
+}
+const PKG_VERSION = _pkgRaw.version
+
+// ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
 const DIST_JS        = path.join(ROOT, 'dist', 'tsgrid-ui.js')
@@ -59,11 +71,11 @@ if (global) {
 });`
 
 // ---------------------------------------------------------------------------
-// Header comment — matches the gulpfile.js comments.tsgrid template
+// Header comment — deterministic; version read from package.json at load.
+// No timestamp, no locale, no random — see INV-WLD-1/3/4 (spec #967).
 // ---------------------------------------------------------------------------
 function buildHeader() {
-    const ts = new Date().toLocaleString('en-us')
-    return `/* tsgrid-ui 1.0.x (nightly) (${ts}) (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n`
+    return `/* tsgrid-ui ${PKG_VERSION} (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n`
 }
 
 // ---------------------------------------------------------------------------
