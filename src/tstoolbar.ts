@@ -1067,7 +1067,7 @@ class TsToolbar extends TsBase {
             }
             case 'group': {
                 html = `<div id="tb_${this.name}_item_${item.id}" class="tsg-tb-group"
-                    style="display: flex; ${(item.hidden ? 'display: none' : '')}; ${(item.style ? item.style : '')}">`
+                    style="display: ${(item.hidden ? 'none' : 'flex')}; ${(item.style ? item.style : '')}">`
                 if (Array.isArray(item.items)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     item.items.forEach((it: any) => { // any: item shape is dynamic
