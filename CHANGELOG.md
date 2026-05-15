@@ -52,9 +52,56 @@ All notable changes to **TsGrid UI** will be documented in this file.
   plus expanded parametric tests via `it.each`).
 - `tsup.config.analyze.ts`: UNCHANGED (INV-ANALYZE-ISOLATION PASS).
 
-## [Unreleased]
+## v2.9.0 — 2026-05-15
 
-### Added (v2.8.1)
+### Added
+
+- **`TsToolbar.toggle(...args): any[]` — new public API** (`src/tstoolbar.ts:481`): flips the `checked` state of one or more items without firing events or opening overlays. Complements `check()` / `uncheck()` / `click()`:
+  - `button` / `check` / `html` / `spacer` / `break`: flip `it.checked`.
+  - `drop` / `menu` / `menu-radio` / `menu-check` / `color` / `text-color`: if currently checked, closes the toolbar's `-drop` overlay via `TsTooltip.hide` before flipping (mirrors `uncheck()` overlay-close path). Never opens overlays.
+  - `radio`: `console.warn` + skip. Use `check()` / `uncheck()` for radios.
+  - `group`: recurses into `it.items`; the container itself is never in the effected list.
+  - `sub-id` with `:` notation and missing ids: silently skipped.
+  - Returns the array of ids whose state actually flipped (never `undefined`).
+  - State-only — does NOT fire `onClick` or `onChange`.
+
+### Fixed (toolbar polish-lifecycle)
+
+- `setCount` no longer recurses into non-count item types — guarded at function entry (`7d721185`).
+- `destroy()` now closes pending overlays before unmount, preventing detached tooltip refs (`01752f36`).
+- `menu-check` items now seed `selected` from `it.items` function-form returns at insert time (`712a1bac`).
+
+### Fixed (toolbar polish-api)
+
+- `get(id, true)` and `remove()` now compute the correct sub-item index inside group containers (`8a522974`, Smell 6).
+
+### Refactor (toolbar polish-api)
+
+- Removed unreachable `item.type==null` guard in toolbar render path (`50c8f2ea`, Smell 2).
+
+### Style (toolbar polish-api)
+
+- Single display value emitted for hidden-group sub-items (`2418f929`, Smell 4).
+- Intentional switch fall-through explicitly annotated (`577bd566`, Smell 3).
+
+### Build / Dist
+
+- Removed orphan chunks from analyze build (`459b8202`, closes WARNING-V1).
+- Rebuilt CJS dist with v2.8.1 banner (`48960492`, closes WARNING-V2).
+- Rebuilt `dist/` after polish-api merge — restored coherence (`35fd76ba`, closes WARNING-V4).
+
+### BC
+
+- Public API surface: **purely additive**. `TsToolbar.toggle()` is new; all existing methods unchanged.
+- SEMVER MINOR (new public API on `TsToolbar`).
+
+### Internal
+
+- Verify-pass for v2.8.1 (`2bcb55a3`) was completed on the `feature/v2.8.1-chunk-splitting-side-effects` branch before polish-lifecycle (3 fixes), polish-api Smells (2/3/4/6), and `toggle()` API landed on master. v2.9.0 packages those post-verify additions as a minor release.
+
+## v2.8.1 — 2026-05-15
+
+### Added
 
 #### Bundle
 
@@ -92,11 +139,11 @@ All notable changes to **TsGrid UI** will be documented in this file.
   npm must ensure `dist/chunks/*.js` files are present. The `package.json files` array
   already covers `dist/` recursively; no additional configuration needed.
 
-### BC (v2.8.1)
+### BC
 
 - Public API surface: **purely additive**. All existing `import` paths are unchanged.
   `dist/chunks/` is a new subdirectory but is an implementation detail — not a public API.
-- SEMVER PATCH (v2.8.1). No breaking changes.
+- SEMVER PATCH. No breaking changes.
 
 ---
 
