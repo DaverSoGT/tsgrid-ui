@@ -1,9 +1,16 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.8.0",
+  "version": "2.8.1",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
-    "./dist/tsgrid-ui.min.css"
+    "./dist/tsgrid-ui.min.css",
+    "./dist/utils.es6.js",
+    "./dist/popup.es6.js",
+    "./dist/tooltip.es6.js",
+    "./dist/tsgrid-ui.es6.js",
+    "./dist/tsgrid-ui.es6.min.js",
+    "./dist/tsgrid-ui.js",
+    "./dist/tsgrid-ui.min.js"
   ],
   "title": "TsGrid UI: TypeScript-native UI component library",
   "description": "TypeScript-native UI components: data grid, forms, fields, layout, sidebar, tabs, toolbar, popup, tooltip. ESM + CJS dual bundle, .d.ts rollup, zero runtime dependencies.",
