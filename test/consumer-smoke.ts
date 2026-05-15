@@ -189,29 +189,26 @@ void _SP_TsTooltip; void _SP_TsMenu; void _SP_TsColor; void _SP_TsDate; void _SP
 void _SP_TsTabs; void _SP_TsToolbar; void _SP_TsSidebar; void _SP_TsField
 void _SP_TsLayout; void _SP_TsForm
 
-// 11 type-only-import probes (per design §6 Resolution 1 — class-as-type fallback for 5 subpaths)
-import type { TsLocaleSettings }              from 'tsgrid-ui/locale'
-import type { TsEventData }                   from 'tsgrid-ui/base'
-import type { TsMessageOptions }              from 'tsgrid-ui/utils'
-import type { TsPopup as _SPT_TsPopup }       from 'tsgrid-ui/popup'    // class-as-type (no public type export)
-import type { TsMenu as _SPT_TsMenu }         from 'tsgrid-ui/tooltip'  // class-as-type
-import type { TsTabs as _SPT_TsTabs }         from 'tsgrid-ui/tabs'     // class-as-type
-import type { TsToolbar as _SPT_TsToolbar }   from 'tsgrid-ui/toolbar'  // class-as-type
-import type { TsSidebarRefreshOptions }       from 'tsgrid-ui/sidebar'
-import type { TsFieldOptions }                from 'tsgrid-ui/field'
-import type { TsLayoutPanel }                 from 'tsgrid-ui/layout'
-import type { TsForm as _SPT_TsForm }         from 'tsgrid-ui/form'     // class-as-type
-const _t_locale : TsLocaleSettings | undefined = undefined ; void _t_locale
-const _t_base   : TsEventData      | undefined = undefined ; void _t_base
-const _t_utils  : TsMessageOptions | undefined = undefined ; void _t_utils
-const _t_popup  : _SPT_TsPopup     | undefined = undefined ; void _t_popup
-const _t_tt     : _SPT_TsMenu      | undefined = undefined ; void _t_tt
-const _t_tabs   : _SPT_TsTabs      | undefined = undefined ; void _t_tabs
-const _t_tb     : _SPT_TsToolbar   | undefined = undefined ; void _t_tb
-const _t_sb     : TsSidebarRefreshOptions | undefined = undefined ; void _t_sb
-const _t_field  : TsFieldOptions   | undefined = undefined ; void _t_field
-const _t_lay    : TsLayoutPanel    | undefined = undefined ; void _t_lay
-const _t_form   : _SPT_TsForm      | undefined = undefined ; void _t_form
+// 11 type-only-import probes (per design §6 Resolution 1 — class-as-type via typeof for const exports)
+import type { TsLocaleSettings }    from 'tsgrid-ui/locale'
+import type { TsEventData }         from 'tsgrid-ui/base'
+import type { TsMessageOptions }    from 'tsgrid-ui/utils'
+import type { TsSidebarRefreshOptions } from 'tsgrid-ui/sidebar'
+import type { TsFieldOptions }      from 'tsgrid-ui/field'
+import type { TsLayoutPanel }       from 'tsgrid-ui/layout'
+// popup, tooltip, tabs, toolbar, form: TsPopup/TsMenu/TsTabs/TsToolbar/TsForm are const exports,
+// use typeof of the already-imported value binding for type-only validation
+const _t_locale : TsLocaleSettings          | undefined = undefined ; void _t_locale
+const _t_base   : TsEventData               | undefined = undefined ; void _t_base
+const _t_utils  : TsMessageOptions          | undefined = undefined ; void _t_utils
+const _t_popup  : typeof _SP_TsPopup        | undefined = undefined ; void _t_popup
+const _t_tt     : typeof _SP_TsMenu         | undefined = undefined ; void _t_tt
+const _t_tabs   : typeof _SP_TsTabs         | undefined = undefined ; void _t_tabs
+const _t_tb     : typeof _SP_TsToolbar      | undefined = undefined ; void _t_tb
+const _t_sb     : TsSidebarRefreshOptions   | undefined = undefined ; void _t_sb
+const _t_field  : TsFieldOptions            | undefined = undefined ; void _t_field
+const _t_lay    : TsLayoutPanel             | undefined = undefined ; void _t_lay
+const _t_form   : typeof _SP_TsForm         | undefined = undefined ; void _t_form
 
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only

@@ -30,6 +30,18 @@ if (typeof _pkgRaw.version !== 'string' || _pkgRaw.version.length === 0) {
 const PKG_VERSION = _pkgRaw.version
 
 // ---------------------------------------------------------------------------
+// SUBPATH CONSTRAINT (v2.8.0+): This script wraps ONLY the two CJS files
+// emitted from src/index-legacy.ts (dist/tsgrid-ui.js, dist/tsgrid-ui.min.js).
+// ESM subpath bundles (dist/{popup,form,...}.es6.js) are NOT post-processed
+// because v2.8.0 ships subpaths as ESM-only (INV-SX-5, OQ-SX-6 → Phase 4).
+//
+// If a future maintainer adds `require:` conditions to subpath entries in
+// package.json, those CJS subpath bundles will be SHIPPED UNWRAPPED unless
+// this script is extended with per-subpath IIFE wrappers (distinct symbol
+// sets per subpath). This is deferred to Phase 4 (cjs-subpath-modernization).
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // Paths
 // ---------------------------------------------------------------------------
 const DIST_JS        = path.join(ROOT, 'dist', 'tsgrid-ui.js')

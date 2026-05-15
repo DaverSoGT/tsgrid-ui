@@ -39,6 +39,27 @@ output chunk** — not individual treeshakeable entry-point slices. As a result:
 
 ---
 
+## Subpath duplication semantics with `splitting: false`
+
+With `splitting: false` (the current configuration through v2.8.x), each subpath bundle
+(`dist/{name}.es6.js`) is **self-contained**: it inlines all transitive dependencies.
+
+This means:
+- `dist/popup.es6.js` contains `tsbase.ts`, `query.ts`, `tsutils.ts`, and `tspopup.ts` code
+  inlined together — not shared with other subpath bundles.
+- A consumer importing two subpaths (e.g. `tsgrid-ui/popup` + `tsgrid-ui/tooltip`) will
+  receive duplicate copies of shared modules (`query.ts`, `tsbase.ts`, `tsutils.ts`, etc.)
+  **unless** their bundler deduplicates by module identity.
+
+**Most modern bundlers DO deduplicate**: esbuild, Rollup, Vite, webpack 5+, and Parcel 2+
+all dedupe ESM modules by canonical URL/path. Consumers using these bundlers pay only one
+copy of shared modules even when importing multiple subpaths.
+
+**`splitting: true`** (planned for v2.9 / Phase 3) will eliminate this at the source by
+emitting shared chunks.
+
+---
+
 ## Schema reference (`v{X.Y.Z}-baseline.json`)
 
 ```jsonc
@@ -80,6 +101,25 @@ output chunk** — not individual treeshakeable entry-point slices. As a result:
   }
 }
 ```
+
+---
+
+## Schema v2 — v2.8.0 additions
+
+Schema v2 extends v1 with a top-level `subpaths` block keyed by subpath short name.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `subpaths.{name}.totalBytes` | number | On-disk file size of `dist/{name}.es6.js` after build |
+| `subpaths.{name}.sourceFile` | string | Source entry file (e.g. `"src/tslocale.ts"`) |
+| `subpaths.{name}.outputFile` | string | Output file path |
+| `subpaths.{name}.forecastBytes` | number | Analytical forecast from transitive closure analysis |
+| `subpaths.{name}.forecastPct` | number | Forecast as % of monolith (informational) |
+
+**Schema selection (β gate)**: `scripts/bundle-snapshot.mjs` emits schemaVersion 2 IFF
+`pkg.version >= 2.8.0`. Lower versions emit schemaVersion 1 unchanged (SC-SX-18).
+
+Phase 3+ scripts MUST check `schemaVersion` before reading the `subpaths` block.
 
 ---
 
@@ -133,6 +173,13 @@ shared code with the production pipeline, making byte-identical production build
 **You MUST manually mirror the change in `tsup.config.analyze.ts`.** Drift is silent — there is no
 automation to detect it. Unmitigated drift manifests as `bytesInOutput` shifts in future baselines
 that are not explained by source code changes.
+
+### Phase 3+ schema bumps
+
+If Phase 3 (`splitting: true`) changes the dist structure (chunk files, different output paths),
+`scripts/bundle-snapshot.mjs` will emit schemaVersion 3. Phase 3 spec will define the v3 delta.
+The `subpaths[*].totalBytes` measurement strategy may change if chunk files replace monolithic
+subpath bundles.
 
 ---
 
