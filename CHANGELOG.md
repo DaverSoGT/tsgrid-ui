@@ -54,6 +54,52 @@ All notable changes to **TsGrid UI** will be documented in this file.
 
 ## [Unreleased]
 
+### Added (v2.8.1)
+
+#### Bundle
+
+- **`sideEffects` per-file map** — `package.json` now declares an explicit 9-entry
+  `sideEffects` array, enabling webpack and rollup to tree-shake unused subpaths:
+  - Side-effectful (must load): `tsgrid-ui.css`, `tsgrid-ui.min.css`,
+    `utils.es6.js`, `popup.es6.js`, `tooltip.es6.js`, `tsgrid-ui.es6.js`,
+    `tsgrid-ui.es6.min.js`, `tsgrid-ui.js`, `tsgrid-ui.min.js`.
+  - Implicitly pure (may tree-shake): `locale.es6.js`, `base.es6.js`,
+    `tabs.es6.js`, `toolbar.es6.js`, `sidebar.es6.js`, `field.es6.js`,
+    `layout.es6.js`, `form.es6.js`, and all `dist/chunks/*.js`.
+  - **IMPORTANT**: esbuild (and therefore vite, tsup) does **NOT** honor
+    `package.json sideEffects`. Only webpack and rollup benefit from this field.
+    esbuild's own tree-shaking is based solely on static analysis of ESM imports.
+
+- **ESM shared chunks under `dist/chunks/`** — `splitting: true` is now active in the
+  ESM non-min block (`tsup.config.ts` block 1). esbuild extracts shared code into
+  `dist/chunks/chunk-<8CHAR>.js` files automatically. With 12 entry points, 10 chunks
+  are produced. Consumers importing multiple subpaths load shared code once.
+
+- **Multi-subpath byte savings** (webpack/rollup consumers):
+  - SC-A (`./popup` + `./form`): **19.8% reduction** (627,883 B → 503,563 B effective)
+  - SC-B (`./popup` + `./tooltip` + `./tabs`): **54.9% reduction** (672,606 B → 303,119 B)
+  - SC-C (`./locale` only): +123 B overhead (+3.2%, well within ≤1 KB canary threshold)
+  - SC-D (monolith `.`): +2,348 B overhead (+0.25%, within ±2% AC10 allowance)
+  - Full scenario table: `reports/bundle/v2.8.1-splitting-savings.md`
+
+- **Cycle 5 forward reference** — `dist/utils.es6.js`, `dist/popup.es6.js`, and
+  `dist/tooltip.es6.js` remain in the `sideEffects` array because their constructors
+  run module-level side effects at import time (global singleton registration).
+  Cycle 5 (singleton lazy-init refactor) will remove these from the array, unlocking
+  additional savings for esbuild/vite consumers that currently cannot benefit.
+
+- **`dist/chunks/` must ship with the package** — consumers installing tsgrid-ui from
+  npm must ensure `dist/chunks/*.js` files are present. The `package.json files` array
+  already covers `dist/` recursively; no additional configuration needed.
+
+### BC (v2.8.1)
+
+- Public API surface: **purely additive**. All existing `import` paths are unchanged.
+  `dist/chunks/` is a new subdirectory but is an implementation detail — not a public API.
+- SEMVER PATCH (v2.8.1). No breaking changes.
+
+---
+
 ### Fixed (build)
 - `scripts/wrap-legacy.mjs`: `buildHeader()` is now deterministic — per-build
   `new Date().toLocaleString('en-us')` timestamp removed. Version string is now
