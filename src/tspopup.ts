@@ -25,6 +25,7 @@
 import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
+import { lazySingleton } from './lazy-singleton.js'
 // any: query() returns Query|void but is always used in chain; cast once here
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
@@ -1027,5 +1028,11 @@ function TsPrompt(label: any, title?: any, callBack?: any): any { // any: label/
     return prom
 }
 
-const TsPopup = new TsDialog()
+let _TsDialogCtorCount = 0
+const TsPopup = lazySingleton<TsDialog>(() => { _TsDialogCtorCount++; return new TsDialog() }, TsDialog)
 export { TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog }
+// DO NOT remove — used by test/unit/singleton-lazy-init.test.ts to assert lazy-init invariants.
+export const __test_internals = {
+    get tsDialogCtorCount() { return _TsDialogCtorCount },
+    reset() { _TsDialogCtorCount = 0 },
+}
