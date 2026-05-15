@@ -107,11 +107,11 @@ class TsToolbar extends TsBase {
          * obect and then call _refreshDebounced(), which will do it withing 15 ms. However, if new items are added
          * they will not cause multiple unnecessary refreshes
          */
-        this._refresh = ({ effected, resize, refreshTooltip }) => {
+        this._refresh = ({ effected, resize, refreshTooltip, hideTooltip }) => {
             const options = this.last.pendingRefresh
             options.ids ??= []
             options.ids.push(...effected)
-            Object.assign(options, { resize, refreshTooltip })
+            Object.assign(options, { resize, refreshTooltip, hideTooltip })
             this._refreshDebounced()
         }
         this._refreshDebounced = TsUtils.debounce(() => {
@@ -180,7 +180,7 @@ class TsToolbar extends TsBase {
                 if (!Array.isArray(newItem.selected)) newItem.selected = []
                 if (Array.isArray(newItem.items)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    newItem.items.forEach((it: any) => { // any: menu item shape is dynamic
+                    newItem.items.forEach((it: any, idx: any, arr: any) => { // any: menu item shape is dynamic
                         if (typeof it === 'string') {
                             it = arr[idx] = { id: it, text: it }
                         }
@@ -206,7 +206,12 @@ class TsToolbar extends TsBase {
                 this.items.push(newItem)
             } else {
                 const middle = this.get(id, true)
-                this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle))
+                if (middle == null) {
+                    console.warn(`TsToolbar: insert anchor id "${id}" not found; appending instead.`)
+                    this.items.push(newItem)
+                } else {
+                    this.items = this.items.slice(0, middle).concat([newItem], this.items.slice(middle))
+                }
             }
             newItem.line = newItem.line ?? 1
             if (skipRefresh !== true) this.refresh(newItem.id)
@@ -768,7 +773,7 @@ class TsToolbar extends TsBase {
             const next = parseInt(this.get(id, true)) + 1
             let $next = query(this.box).find(`#tb_${this.name}_item_${TsUtils.escapeId(this.items[next] ? this.items[next].id : '--')}`) // "--" is needed or it will insert wrong
             if ($next.length == 0) {
-                $next = query(this.box).find(`.tsg-tb-line:nth-child(${it.line}`).find('.tsg-tb-right').before(html)
+                $next = query(this.box).find(`.tsg-tb-line:nth-child(${it.line})`).find('.tsg-tb-right').before(html)
             } else {
                 $next.after(html)
             }
@@ -1092,8 +1097,11 @@ class TsToolbar extends TsBase {
             value = parseFloat(value)
         }
         // remove suffix if it is there
-        if (it.input?.suffix != null && String(value).substr(-it.input.suffix.length) == it.input.suffix) {
-            value = String(value).substr(0, value.length - it.input.suffix.length)
+        if (it.input?.suffix != null) {
+            const strValue = String(value)
+            if (strValue.substr(-it.input.suffix.length) == it.input.suffix) {
+                value = strValue.substr(0, strValue.length - it.input.suffix.length)
+            }
         }
         // min/max
         if (it.input?.min != null && it.input.min > value) {
@@ -1262,7 +1270,7 @@ class TsToolbar extends TsBase {
     mouseAction(event: any, target: any, action: any, id: any): void { // any: mouse event and toolbar item ids are heterogeneous
         const btn = this.get(id)
         const edata = this.trigger('mouse' + action, { target: id, item: btn, object: btn, originalEvent: event })
-        if (edata.isCancelled === true || btn.disabled || btn.hidden) return
+        if (edata.isCancelled === true || btn.disabled || btn.hidden) { edata.finish(); return }
         switch (action) {
             case 'Enter':
                 if (!['label', 'input'].includes(btn.type)) {
