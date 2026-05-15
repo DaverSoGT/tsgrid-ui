@@ -61,6 +61,8 @@
     "build:css": "gulp less && gulp icons",
     "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs",
     "build": "pnpm build:css && pnpm build:js",
+    "bundle:analyze": "tsup --config tsup.config.analyze.ts && node scripts/bundle-analyze.mjs",
+    "bundle:snapshot": "tsup --config tsup.config.analyze.ts && node scripts/bundle-snapshot.mjs",
     "smoke": "playwright test",
     "smoke:update": "playwright test --update-snapshots",
     "consumer-smoke": "tsc --noEmit --project test/tsconfig.json",

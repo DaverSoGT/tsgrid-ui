@@ -1,7 +1,7 @@
 /* tsgrid-ui — analyze-only tsup config
  *
  * SCOPE: ESM non-min entry ONLY. This config exists SOLELY to emit
- * dist/tsgrid-ui.es6.meta.json (esbuild metafile) for bundle composition
+ * dist/metafile-esm.json (esbuild metafile, tsup 8.5.1 naming) for bundle composition
  * analysis. It is INVOKED ONLY by `pnpm bundle:analyze` and is NEVER
  * referenced by `pnpm build:js` or any production code path.
  *

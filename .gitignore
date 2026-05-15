@@ -24,3 +24,7 @@ test/smoke/__results__/
 .agents/
 .claude/
 skills-lock.json
+# Bundle analysis artifacts (regenerated on `pnpm bundle:analyze`)
+dist/*.meta.json
+dist/metafile-esm.json
+reports/bundle/latest.md
