@@ -319,4 +319,12 @@ declare const TsMenu: MenuTooltip;
 declare const TsColor: ColorTooltip;
 declare const TsDate: DateTooltip;
 
-export { Tooltip, TsColor, TsDate, TsMenu, TsTooltip };
+declare const __test_internals: {
+    readonly tooltipCtorCount: number;
+    readonly menuCtorCount: number;
+    readonly colorCtorCount: number;
+    readonly dateCtorCount: number;
+    reset(): void;
+};
+
+export { Tooltip, TsColor, TsDate, TsMenu, TsTooltip, __test_internals };

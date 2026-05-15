@@ -1,6 +1,6 @@
 import {
   TsTooltip
-} from "./chunk-OFASTA2A.js";
+} from "./chunk-FAIRNXQR.js";
 import {
   TsUtils
 } from "./chunk-3NYH6545.js";
@@ -674,4 +674,4 @@ var TsTabs = class extends TsBase {
 export {
   TsTabs
 };
-//# sourceMappingURL=chunk-OMLGN735.js.map
+//# sourceMappingURL=chunk-GZFWK4LZ.js.map

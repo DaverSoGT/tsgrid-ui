@@ -1,4 +1,7 @@
 import {
+  lazySingleton
+} from "./chunk-EQK6JAHT.js";
+import {
   TsUtils
 } from "./chunk-3NYH6545.js";
 import {
@@ -2965,16 +2968,53 @@ var DateTooltip = class extends Tooltip {
     return ret;
   }
 };
-var TsTooltip = new Tooltip();
-var TsMenu = new MenuTooltip();
-var TsColor = new ColorTooltip();
-var TsDate = new DateTooltip();
+var _tooltipCtorCount = 0;
+var _menuCtorCount = 0;
+var _colorCtorCount = 0;
+var _dateCtorCount = 0;
+var TsTooltip = lazySingleton(() => {
+  _tooltipCtorCount++;
+  return new Tooltip();
+}, Tooltip);
+var TsMenu = lazySingleton(() => {
+  _menuCtorCount++;
+  return new MenuTooltip();
+}, MenuTooltip);
+var TsColor = lazySingleton(() => {
+  _colorCtorCount++;
+  return new ColorTooltip();
+}, ColorTooltip);
+var TsDate = lazySingleton(() => {
+  _dateCtorCount++;
+  return new DateTooltip();
+}, DateTooltip);
+var __test_internals = {
+  get tooltipCtorCount() {
+    return _tooltipCtorCount;
+  },
+  get menuCtorCount() {
+    return _menuCtorCount;
+  },
+  get colorCtorCount() {
+    return _colorCtorCount;
+  },
+  get dateCtorCount() {
+    return _dateCtorCount;
+  },
+  reset() {
+    _tooltipCtorCount = 0;
+    _menuCtorCount = 0;
+    _colorCtorCount = 0;
+    _dateCtorCount = 0;
+  }
+};
 
 export {
   Tooltip,
   TsTooltip,
   TsMenu,
   TsColor,
-  TsDate
+  TsDate,
+  __test_internals
 };
-//# sourceMappingURL=chunk-OFASTA2A.js.map
+//# sourceMappingURL=chunk-FAIRNXQR.js.map

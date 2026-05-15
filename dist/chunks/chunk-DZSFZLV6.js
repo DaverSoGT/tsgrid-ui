@@ -1,7 +1,7 @@
 import {
   TsMenu,
   TsTooltip
-} from "./chunk-OFASTA2A.js";
+} from "./chunk-FAIRNXQR.js";
 import {
   TsUtils
 } from "./chunk-3NYH6545.js";
@@ -1635,4 +1635,4 @@ var TsSidebar = class extends TsBase {
 export {
   TsSidebar
 };
-//# sourceMappingURL=chunk-BIB3X2TW.js.map
+//# sourceMappingURL=chunk-DZSFZLV6.js.map

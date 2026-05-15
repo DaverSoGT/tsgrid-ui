@@ -1,4 +1,4 @@
-/* tsgrid-ui 2.9.0 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 2.10.0 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -3797,6 +3797,35 @@ var Utils = class {
 };
 var TsUtils = new Utils();
 
+// src/lazy-singleton.ts
+function lazySingleton(factory, protoRef) {
+  let _impl = null;
+  const materialize = () => _impl ??= factory();
+  return new Proxy({}, {
+    get(_t, prop, receiver) {
+      return Reflect.get(materialize(), prop, receiver);
+    },
+    set(_t, prop, value, _receiver) {
+      return Reflect.set(materialize(), prop, value, materialize());
+    },
+    has(_t, prop) {
+      return Reflect.has(materialize(), prop);
+    },
+    ownKeys() {
+      return Reflect.ownKeys(materialize());
+    },
+    getOwnPropertyDescriptor(_t, prop) {
+      return Reflect.getOwnPropertyDescriptor(materialize(), prop);
+    },
+    defineProperty(_t, prop, desc) {
+      return Reflect.defineProperty(materialize(), prop, desc);
+    },
+    getPrototypeOf() {
+      return protoRef.prototype;
+    }
+  });
+}
+
 // src/tspopup.ts
 var query8 = query;
 var TsDialog = class extends TsBase {
@@ -4628,7 +4657,11 @@ function TsPrompt(label, title, callBack) {
   });
   return prom;
 }
-var TsPopup = new TsDialog();
+var _TsDialogCtorCount = 0;
+var TsPopup = lazySingleton(() => {
+  _TsDialogCtorCount++;
+  return new TsDialog();
+}, TsDialog);
 
 // src/tstooltip.ts
 var query9 = query;
@@ -7589,10 +7622,26 @@ var DateTooltip = class extends Tooltip {
     return ret;
   }
 };
-var TsTooltip = new Tooltip();
-var TsMenu = new MenuTooltip();
-var TsColor = new ColorTooltip();
-var TsDate = new DateTooltip();
+var _tooltipCtorCount = 0;
+var _menuCtorCount = 0;
+var _colorCtorCount = 0;
+var _dateCtorCount = 0;
+var TsTooltip = lazySingleton(() => {
+  _tooltipCtorCount++;
+  return new Tooltip();
+}, Tooltip);
+var TsMenu = lazySingleton(() => {
+  _menuCtorCount++;
+  return new MenuTooltip();
+}, MenuTooltip);
+var TsColor = lazySingleton(() => {
+  _colorCtorCount++;
+  return new ColorTooltip();
+}, ColorTooltip);
+var TsDate = lazySingleton(() => {
+  _dateCtorCount++;
+  return new DateTooltip();
+}, DateTooltip);
 
 // src/tstoolbar.ts
 var query10 = query;

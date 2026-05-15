@@ -1,4 +1,7 @@
 import {
+  lazySingleton
+} from "./chunk-EQK6JAHT.js";
+import {
   TsUtils
 } from "./chunk-3NYH6545.js";
 import {
@@ -837,13 +840,26 @@ function TsPrompt(label, title, callBack) {
   });
   return prom;
 }
-var TsPopup = new TsDialog();
+var _TsDialogCtorCount = 0;
+var TsPopup = lazySingleton(() => {
+  _TsDialogCtorCount++;
+  return new TsDialog();
+}, TsDialog);
+var __test_internals = {
+  get tsDialogCtorCount() {
+    return _TsDialogCtorCount;
+  },
+  reset() {
+    _TsDialogCtorCount = 0;
+  }
+};
 
 export {
   TsDialog,
   TsAlert,
   TsConfirm,
   TsPrompt,
-  TsPopup
+  TsPopup,
+  __test_internals
 };
-//# sourceMappingURL=chunk-YBY52G2U.js.map
+//# sourceMappingURL=chunk-6UCGFWIQ.js.map

@@ -89,4 +89,9 @@ declare function TsConfirm(msg: any, title?: any, callBack?: any): any;
 declare function TsPrompt(label: any, title?: any, callBack?: any): any;
 declare const TsPopup: TsDialog;
 
-export { TsAlert, TsConfirm, TsDialog, TsPopup, TsPrompt };
+declare const __test_internals: {
+    readonly tsDialogCtorCount: number;
+    reset(): void;
+};
+
+export { TsAlert, TsConfirm, TsDialog, TsPopup, TsPrompt, __test_internals };
