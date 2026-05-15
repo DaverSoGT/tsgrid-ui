@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsToolbar } from '../../src/tstoolbar.js'
+import { Tooltip } from '../../src/tstooltip.js'
 
 function mountBox(id = 'tb-host'): HTMLElement {
     const el = document.createElement('div')
@@ -172,5 +173,36 @@ describe('TsToolbar S-2 — setCount recursion guard for structural types', () =
         expect(() => toolbar.setCount('b', 7, 'red-badge')).not.toThrow()
         expect((toolbar.get('b') as any).count).toBe(7)
         expect((toolbar as any).last.badge['b']).toEqual({ className: 'red-badge', style: '' })
+    })
+})
+
+// ── S-1 — destroy() must close open overlays before unmounting ────────────────
+//
+// destroy() calls unmount() which sets this.box = null. TsTooltip overlays live
+// in document.body (not in the toolbar box), so innerHTML clearing does not remove
+// them. The fix calls TsTooltip.hide(name+'-tooltip') and TsTooltip.hide(name+'-drop')
+// BEFORE the .tsg-scroll-wrapper guard so hideDrop fires while this.box is still live.
+
+describe('TsToolbar S-1 — destroy() closes overlays', () => {
+    it('removes -drop entry from Tooltip.active after destroy with open drop overlay', () => {
+        vi.useFakeTimers()
+        const box = mountBox('tb-s1a')
+        const toolbar = new TsToolbar({ name: 's1a', box, items: [
+            { id: 'd', type: 'drop', text: 'D', html: '<div>menu</div>' },
+        ] })
+        // Open the dropdown — setTimeout(0) inside click() registers the overlay
+        toolbar.click('d', new MouseEvent('click'))
+        // Flush the setTimeout(0) so the overlay is registered in Tooltip.active
+        vi.advanceTimersByTime(1)
+        // Now destroy — should close overlays before unmounting
+        expect(() => toolbar.destroy()).not.toThrow()
+        expect((Tooltip.active as any)['s1a-drop']).toBeUndefined()
+        expect((Tooltip.active as any)['s1a-tooltip']).toBeUndefined()
+    })
+
+    it('never-rendered toolbar destroy() does not throw', () => {
+        // No box passed — render() guard skips DOM creation; this.box stays null
+        const toolbar = new TsToolbar({ name: 's1b', items: [{ id: 'x', type: 'button' }] })
+        expect(() => toolbar.destroy()).not.toThrow()
     })
 })

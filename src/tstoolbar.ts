@@ -851,6 +851,10 @@ class TsToolbar extends TsBase {
         // event before
         const edata = this.trigger('destroy', { target: this.name })
         if (edata.isCancelled === true) return
+        // close any open overlays BEFORE unmount so hideDrop runs on a live toolbar
+        // (synchronous; covers both rendered + never-rendered cases — TsTooltip.hide() is a no-op on missing overlay)
+        TsTooltip.hide(this.name + '-tooltip')
+        TsTooltip.hide(this.name + '-drop')
         // clean up
         if (query(this.box).find('.tsg-scroll-wrapper').length > 0) {
             this.unmount()
