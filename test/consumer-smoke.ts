@@ -165,6 +165,54 @@ void _formHandler
 // Untyped handler: no annotation required — inference continues to work (Req 4.4)
 _gridInst.onSearch = (event) => { void event }
 
+// ===========================================================================
+// v2.8.0 subpath exports — runtime + type-only probes (INV-SX-3, REQ-SX-6)
+// Amendment #983: 11 subpaths (./grid deferred to Phase 3)
+// ===========================================================================
+
+// 11 named-import probes (runtime side — proves dist/{name}.es6.js resolves)
+import { TsLocale as _SP_TsLocale }                                                                          from 'tsgrid-ui/locale'
+import { TsBase as _SP_TsBase, TsEvent as _SP_TsEvent, toSafeEvent as _SP_toSafeEvent }                     from 'tsgrid-ui/base'
+import { TsUi as _SP_TsUi, TsUtils as _SP_TsUtils, query as _SP_query }                                     from 'tsgrid-ui/utils'
+import { TsPopup as _SP_TsPopup, TsAlert as _SP_TsAlert, TsConfirm as _SP_TsConfirm, TsPrompt as _SP_TsPrompt, TsDialog as _SP_TsDialog } from 'tsgrid-ui/popup'
+import { TsTooltip as _SP_TsTooltip, TsMenu as _SP_TsMenu, TsColor as _SP_TsColor, TsDate as _SP_TsDate, Tooltip as _SP_Tooltip }        from 'tsgrid-ui/tooltip'
+import { TsTabs as _SP_TsTabs }       from 'tsgrid-ui/tabs'
+import { TsToolbar as _SP_TsToolbar } from 'tsgrid-ui/toolbar'
+import { TsSidebar as _SP_TsSidebar } from 'tsgrid-ui/sidebar'
+import { TsField as _SP_TsField }     from 'tsgrid-ui/field'
+import { TsLayout as _SP_TsLayout }   from 'tsgrid-ui/layout'
+import { TsForm as _SP_TsForm }       from 'tsgrid-ui/form'
+void _SP_TsLocale; void _SP_TsBase; void _SP_TsEvent; void _SP_toSafeEvent
+void _SP_TsUi; void _SP_TsUtils; void _SP_query
+void _SP_TsPopup; void _SP_TsAlert; void _SP_TsConfirm; void _SP_TsPrompt; void _SP_TsDialog
+void _SP_TsTooltip; void _SP_TsMenu; void _SP_TsColor; void _SP_TsDate; void _SP_Tooltip
+void _SP_TsTabs; void _SP_TsToolbar; void _SP_TsSidebar; void _SP_TsField
+void _SP_TsLayout; void _SP_TsForm
+
+// 11 type-only-import probes (per design §6 Resolution 1 — class-as-type fallback for 5 subpaths)
+import type { TsLocaleSettings }              from 'tsgrid-ui/locale'
+import type { TsEventData }                   from 'tsgrid-ui/base'
+import type { TsMessageOptions }              from 'tsgrid-ui/utils'
+import type { TsPopup as _SPT_TsPopup }       from 'tsgrid-ui/popup'    // class-as-type (no public type export)
+import type { TsMenu as _SPT_TsMenu }         from 'tsgrid-ui/tooltip'  // class-as-type
+import type { TsTabs as _SPT_TsTabs }         from 'tsgrid-ui/tabs'     // class-as-type
+import type { TsToolbar as _SPT_TsToolbar }   from 'tsgrid-ui/toolbar'  // class-as-type
+import type { TsSidebarRefreshOptions }       from 'tsgrid-ui/sidebar'
+import type { TsFieldOptions }                from 'tsgrid-ui/field'
+import type { TsLayoutPanel }                 from 'tsgrid-ui/layout'
+import type { TsForm as _SPT_TsForm }         from 'tsgrid-ui/form'     // class-as-type
+const _t_locale : TsLocaleSettings | undefined = undefined ; void _t_locale
+const _t_base   : TsEventData      | undefined = undefined ; void _t_base
+const _t_utils  : TsMessageOptions | undefined = undefined ; void _t_utils
+const _t_popup  : _SPT_TsPopup     | undefined = undefined ; void _t_popup
+const _t_tt     : _SPT_TsMenu      | undefined = undefined ; void _t_tt
+const _t_tabs   : _SPT_TsTabs      | undefined = undefined ; void _t_tabs
+const _t_tb     : _SPT_TsToolbar   | undefined = undefined ; void _t_tb
+const _t_sb     : TsSidebarRefreshOptions | undefined = undefined ; void _t_sb
+const _t_field  : TsFieldOptions   | undefined = undefined ; void _t_field
+const _t_lay    : TsLayoutPanel    | undefined = undefined ; void _t_lay
+const _t_form   : _SPT_TsForm      | undefined = undefined ; void _t_form
+
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only
 // ---------------------------------------------------------------------------
