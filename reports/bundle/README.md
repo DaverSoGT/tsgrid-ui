@@ -136,6 +136,11 @@ that are not explained by source code changes.
 
 ---
 
+> **Update (post wrap-legacy-determinism cycle)**: CJS SHAs
+> (`dist/tsgrid-ui.js`, `dist/tsgrid-ui.min.js`) are now strictly comparable
+> across rebuilds. The Option-B Relaxed-Intent waiver recorded in the
+> bundle-baseline-instrumentation cycle (INV-BBI-1) no longer applies.
+
 ## Known gaps
 
 1. **CJS IIFE bytes not measured** — deferred to a future cycle (Phase 6+). Pre-wrap state ≠ shipped artifact.
