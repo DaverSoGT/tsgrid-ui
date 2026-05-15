@@ -54,6 +54,29 @@ declare class TsToolbar extends TsBase {
     disable(...args: any[]): any[];
     check(...args: any[]): any[];
     uncheck(...args: any[]): any[];
+    /**
+     * Toggle the `checked` state of one or more items.
+     *
+     * State management only — does NOT fire events (no `onClick`, no `onChange`)
+     * and does NOT open drop / menu / color overlays. For full UI interaction
+     * including opening pickers, call `click(id)` instead.
+     *
+     * Per-item behaviour:
+     *   - button / check / html / spacer / break: flips `it.checked`.
+     *   - drop / menu / menu-radio / menu-check / color / text-color: if currently
+     *     checked, closes the toolbar's `-drop` overlay via `TsTooltip.hide` before
+     *     flipping. Same overlay-close path as `uncheck()`. Never opens overlays.
+     *   - radio: emits `console.warn` and is skipped (would leave the group with
+     *     no checked member). Use `check()` / `uncheck()` for radios.
+     *   - group: recurses into `it.items` and toggles each child individually; the
+     *     group container itself is never in the effected list.
+     *   - sub-id with `:` notation: skipped (same guard as siblings).
+     *   - missing id: silently skipped.
+     *
+     * @param args  ids of items to toggle. Varargs, independent per id.
+     * @returns     array of ids whose checked state actually flipped. Never `undefined`.
+     */
+    toggle(...args: any[]): any[];
     click(id: any, event?: any): void;
     scroll(direction?: any, line?: any, instant?: any): Promise<void>;
     render(box?: any): number | undefined;
