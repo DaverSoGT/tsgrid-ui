@@ -1,0 +1,236 @@
+{
+  "schemaVersion": 3,
+  "tsgridUiVersion": "2.8.1",
+  "generatedAt": "2026-05-15T16:54:45.593Z",
+  "generator": {
+    "tool": "tsup",
+    "toolVersion": "8.5.1",
+    "esbuildMetafile": true
+  },
+  "scope": {
+    "format": "esm",
+    "minified": false,
+    "entry": "src/index.ts",
+    "output": "dist/tsgrid-ui.es6.js",
+    "splitting": true,
+    "sourcemap": true
+  },
+  "outputBundle": {
+    "path": "dist/tsgrid-ui.es6.js",
+    "totalBytes": 340952,
+    "imports": [
+      "dist/chunks/chunk-26XP2XU3.js",
+      "dist/chunks/chunk-3NYH6545.js",
+      "dist/chunks/chunk-44QRFHF7.js",
+      "dist/chunks/chunk-BIB3X2TW.js",
+      "dist/chunks/chunk-DXZJHS4M.js",
+      "dist/chunks/chunk-GQAFAXR6.js",
+      "dist/chunks/chunk-HFFXB5H2.js",
+      "dist/chunks/chunk-IYF3Q7GX.js",
+      "dist/chunks/chunk-OFASTA2A.js",
+      "dist/chunks/chunk-OMLGN735.js",
+      "dist/chunks/chunk-YBY52G2U.js"
+    ]
+  },
+  "modules": [
+    {
+      "path": "src/grid-columns.ts",
+      "bytes": 4867,
+      "bytesInOutput": 2609,
+      "imports": [
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-data.ts",
+      "bytes": 61145,
+      "bytesInOutput": 42223,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-edit.ts",
+      "bytes": 21766,
+      "bytesInOutput": 14365,
+      "imports": [
+        "src/query.ts",
+        "src/tsfield.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-interaction.ts",
+      "bytes": 58430,
+      "bytesInOutput": 41286,
+      "imports": [
+        "src/query.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-render.ts",
+      "bytes": 139325,
+      "bytesInOutput": 103645,
+      "imports": [
+        "src/query.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-search.ts",
+      "bytes": 56550,
+      "bytesInOutput": 39694,
+      "imports": [
+        "src/query.ts",
+        "src/tsfield.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-selection.ts",
+      "bytes": 23356,
+      "bytesInOutput": 16380,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/grid-state.ts",
+      "bytes": 17691,
+      "bytesInOutput": 11108,
+      "imports": [
+        "src/query.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/index.ts",
+      "bytes": 2046,
+      "bytesInOutput": 0,
+      "imports": [
+        "src/tsbase.ts",
+        "src/tsfield.ts",
+        "src/tsform.ts",
+        "src/tsgrid.ts",
+        "src/tslayout.ts",
+        "src/tslocale.ts",
+        "src/tspopup.ts",
+        "src/tssidebar.ts",
+        "src/tstabs.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    },
+    {
+      "path": "src/tsgrid.ts",
+      "bytes": 116885,
+      "bytesInOutput": 68332,
+      "imports": [
+        "src/grid-columns.ts",
+        "src/grid-data.ts",
+        "src/grid-edit.ts",
+        "src/grid-interaction.ts",
+        "src/grid-render.ts",
+        "src/grid-search.ts",
+        "src/grid-selection.ts",
+        "src/grid-state.ts",
+        "src/query.ts",
+        "src/tsbase.ts",
+        "src/tsutils.ts"
+      ]
+    }
+  ],
+  "totals": {
+    "modules": 10,
+    "inputBytes": 502061,
+    "outputBytes": 340952
+  },
+  "subpaths": {
+    "locale": {
+      "totalBytes": 118,
+      "sourceFile": "src/tslocale.ts",
+      "outputFile": "dist/locale.es6.js",
+      "forecastBytes": 3763,
+      "forecastPct": 0.4
+    },
+    "base": {
+      "totalBytes": 164,
+      "sourceFile": "src/tsbase.ts",
+      "outputFile": "dist/base.es6.js",
+      "forecastBytes": 39260,
+      "forecastPct": 4.2
+    },
+    "utils": {
+      "totalBytes": 231,
+      "sourceFile": "src/tsutils.ts",
+      "outputFile": "dist/utils.es6.js",
+      "forecastBytes": 127798,
+      "forecastPct": 13.5
+    },
+    "popup": {
+      "totalBytes": 322,
+      "sourceFile": "src/tspopup.ts",
+      "outputFile": "dist/popup.es6.js",
+      "forecastBytes": 159764,
+      "forecastPct": 16.9
+    },
+    "tooltip": {
+      "totalBytes": 316,
+      "sourceFile": "src/tstooltip.ts",
+      "outputFile": "dist/tooltip.es6.js",
+      "forecastBytes": 244730,
+      "forecastPct": 25.9
+    },
+    "tabs": {
+      "totalBytes": 260,
+      "sourceFile": "src/tstabs.ts",
+      "outputFile": "dist/tabs.es6.js",
+      "forecastBytes": 268677,
+      "forecastPct": 28.4
+    },
+    "toolbar": {
+      "totalBytes": 269,
+      "sourceFile": "src/tstoolbar.ts",
+      "outputFile": "dist/toolbar.es6.js",
+      "forecastBytes": 288775,
+      "forecastPct": 30.5
+    },
+    "sidebar": {
+      "totalBytes": 269,
+      "sourceFile": "src/tssidebar.ts",
+      "outputFile": "dist/sidebar.es6.js",
+      "forecastBytes": 306622,
+      "forecastPct": 32.4
+    },
+    "field": {
+      "totalBytes": 263,
+      "sourceFile": "src/tsfield.ts",
+      "outputFile": "dist/field.es6.js",
+      "forecastBytes": 313303,
+      "forecastPct": 33.1
+    },
+    "layout": {
+      "totalBytes": 340,
+      "sourceFile": "src/tslayout.ts",
+      "outputFile": "dist/layout.es6.js",
+      "forecastBytes": 354536,
+      "forecastPct": 37.5
+    },
+    "form": {
+      "totalBytes": 371,
+      "sourceFile": "src/tsform.ts",
+      "outputFile": "dist/form.es6.js",
+      "forecastBytes": 468649,
+      "forecastPct": 49.6
+    }
+  }
+}
