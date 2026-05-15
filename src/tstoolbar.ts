@@ -107,11 +107,11 @@ class TsToolbar extends TsBase {
          * obect and then call _refreshDebounced(), which will do it withing 15 ms. However, if new items are added
          * they will not cause multiple unnecessary refreshes
          */
-        this._refresh = ({ effected, resize, refreshTooltip }) => {
+        this._refresh = ({ effected, resize, refreshTooltip, hideTooltip }) => {
             const options = this.last.pendingRefresh
             options.ids ??= []
             options.ids.push(...effected)
-            Object.assign(options, { resize, refreshTooltip })
+            Object.assign(options, { resize, refreshTooltip, hideTooltip })
             this._refreshDebounced()
         }
         this._refreshDebounced = TsUtils.debounce(() => {
