@@ -2,56 +2,6 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
-## v2.8.0 — 2026-05-14
-
-### Added
-
-- **Subpath exports** — 11 new `package.json` export entries enable tree-shakable imports
-  (amendment #983: `./grid` deferred to Phase 3 pending `splitting:true` code-split):
-  - `tsgrid-ui/locale` → `TsLocale` (~3,843 B, 99.6% smaller than barrel)
-  - `tsgrid-ui/base` → `TsBase`, `TsEvent`, `toSafeEvent` (~32,135 B, 96.6% smaller)
-  - `tsgrid-ui/utils` → `TsUi`, `TsUtils`, `query` (~127,812 B, 86.5% smaller)
-  - `tsgrid-ui/popup` → `TsPopup`, `TsAlert`, `TsConfirm`, `TsPrompt`, `TsDialog` (~159,775 B, 83.1% smaller)
-  - `tsgrid-ui/tooltip` → `TsTooltip`, `TsMenu`, `TsColor`, `TsDate`, `Tooltip` (~244,488 B, 74.1% smaller)
-  - `tsgrid-ui/tabs` → `TsTabs` (~268,343 B, 71.6% smaller)
-  - `tsgrid-ui/toolbar` → `TsToolbar` (~288,428 B, 69.5% smaller)
-  - `tsgrid-ui/sidebar` → `TsSidebar` (~306,229 B, 67.6% smaller)
-  - `tsgrid-ui/field` → `TsField` (~312,704 B, 66.9% smaller)
-  - `tsgrid-ui/layout` → `TsLayout` (~354,172 B, 62.5% smaller)
-  - `tsgrid-ui/form` → `TsForm` (~468,108 B, 50.5% smaller)
-- **`./package.json` export** — enables tooling that reads package metadata at runtime.
-- **`reports/bundle/v2.8.0-baseline.json`** — schemaVersion 2; per-subpath empirical byte
-  measurements. Phase 2 gate for the v3.0 tree-shakable roadmap.
-- Grid users continue using the barrel import (`tsgrid-ui`); `./grid` subpath export deferred
-  to Phase 3 once `splitting:true` reduces transitive duplication.
-
-### Bundle
-
-- Monolith `tsgrid-ui` entry unchanged at 945,470 bytes (byte-identical to v2.7.1).
-- Subpath bundles emitted with `splitting: false`; shared modules re-emitted per subpath.
-  Most modern bundlers deduplicate transparently (esbuild, Rollup, Vite, webpack 5+, Parcel 2+).
-- `splitting: true` shared-chunk optimization planned for v2.9 / Phase 3.
-- Dist artifact count: 7 → 29 files (+11 ESM subpath bundles + 11 `.d.ts` files).
-
-### BC
-
-- Public API surface: **purely additive**. The `"."` barrel entry is byte-identical to v2.7.1.
-- `dist/tsgrid-ui.es6.js` SHA: byte-identical to v2.7.1 (INV-SX-6 PASS).
-- `src/index.ts` barrel: byte-identical to v2.7.1 (INV-7 PASS).
-- No `require:` condition on subpaths — CJS consumers continue using `'tsgrid-ui'` barrel.
-  CJS subpaths planned for Phase 4 (requires `wrap-legacy.mjs` per-symbol refactoring).
-- No barrel deprecation: `'tsgrid-ui'` barrel is fully supported with zero deprecation markers.
-- SEMVER MINOR per SemVer §7. No breaking changes.
-
-### Tests
-
-- `test/unit/subpath-exports.test.ts` (NEW) — 3 groups: exports shape, dist existence,
-  bundle floor. All 3 groups GREEN from Phase 6 onward.
-- `test/consumer-smoke.ts` — extended with 11 named-import probes + 11 type-only probes.
-- Total Vitest tests: **352/352 GREEN** (v2.7.1 baseline: 301/301 — +13 new assertions
-  plus expanded parametric tests via `it.each`).
-- `tsup.config.analyze.ts`: UNCHANGED (INV-ANALYZE-ISOLATION PASS).
-
 ## v2.10.0 — 2026-05-15
 
 ### Tree-shake-friendly lazy singletons
@@ -218,6 +168,56 @@ Not changed in this release (deferred to future cycles):
 ### Internal
 - Zero new devDependencies. Zero changes to `src/`. Zero changes to `dist/*.js` on production builds (byte-identical, verified via `shasum` gate).
 - SEMVER: chore / no version bump. Next version bump (v2.8.0) reserved for Phase 2 (subpath exports).
+
+## v2.8.0 — 2026-05-14
+
+### Added
+
+- **Subpath exports** — 11 new `package.json` export entries enable tree-shakable imports
+  (amendment #983: `./grid` deferred to Phase 3 pending `splitting:true` code-split):
+  - `tsgrid-ui/locale` → `TsLocale` (~3,843 B, 99.6% smaller than barrel)
+  - `tsgrid-ui/base` → `TsBase`, `TsEvent`, `toSafeEvent` (~32,135 B, 96.6% smaller)
+  - `tsgrid-ui/utils` → `TsUi`, `TsUtils`, `query` (~127,812 B, 86.5% smaller)
+  - `tsgrid-ui/popup` → `TsPopup`, `TsAlert`, `TsConfirm`, `TsPrompt`, `TsDialog` (~159,775 B, 83.1% smaller)
+  - `tsgrid-ui/tooltip` → `TsTooltip`, `TsMenu`, `TsColor`, `TsDate`, `Tooltip` (~244,488 B, 74.1% smaller)
+  - `tsgrid-ui/tabs` → `TsTabs` (~268,343 B, 71.6% smaller)
+  - `tsgrid-ui/toolbar` → `TsToolbar` (~288,428 B, 69.5% smaller)
+  - `tsgrid-ui/sidebar` → `TsSidebar` (~306,229 B, 67.6% smaller)
+  - `tsgrid-ui/field` → `TsField` (~312,704 B, 66.9% smaller)
+  - `tsgrid-ui/layout` → `TsLayout` (~354,172 B, 62.5% smaller)
+  - `tsgrid-ui/form` → `TsForm` (~468,108 B, 50.5% smaller)
+- **`./package.json` export** — enables tooling that reads package metadata at runtime.
+- **`reports/bundle/v2.8.0-baseline.json`** — schemaVersion 2; per-subpath empirical byte
+  measurements. Phase 2 gate for the v3.0 tree-shakable roadmap.
+- Grid users continue using the barrel import (`tsgrid-ui`); `./grid` subpath export deferred
+  to Phase 3 once `splitting:true` reduces transitive duplication.
+
+### Bundle
+
+- Monolith `tsgrid-ui` entry unchanged at 945,470 bytes (byte-identical to v2.7.1).
+- Subpath bundles emitted with `splitting: false`; shared modules re-emitted per subpath.
+  Most modern bundlers deduplicate transparently (esbuild, Rollup, Vite, webpack 5+, Parcel 2+).
+- `splitting: true` shared-chunk optimization planned for v2.9 / Phase 3.
+- Dist artifact count: 7 → 29 files (+11 ESM subpath bundles + 11 `.d.ts` files).
+
+### BC
+
+- Public API surface: **purely additive**. The `"."` barrel entry is byte-identical to v2.7.1.
+- `dist/tsgrid-ui.es6.js` SHA: byte-identical to v2.7.1 (INV-SX-6 PASS).
+- `src/index.ts` barrel: byte-identical to v2.7.1 (INV-7 PASS).
+- No `require:` condition on subpaths — CJS consumers continue using `'tsgrid-ui'` barrel.
+  CJS subpaths planned for Phase 4 (requires `wrap-legacy.mjs` per-symbol refactoring).
+- No barrel deprecation: `'tsgrid-ui'` barrel is fully supported with zero deprecation markers.
+- SEMVER MINOR per SemVer §7. No breaking changes.
+
+### Tests
+
+- `test/unit/subpath-exports.test.ts` (NEW) — 3 groups: exports shape, dist existence,
+  bundle floor. All 3 groups GREEN from Phase 6 onward.
+- `test/consumer-smoke.ts` — extended with 11 named-import probes + 11 type-only probes.
+- Total Vitest tests: **352/352 GREEN** (v2.7.1 baseline: 301/301 — +13 new assertions
+  plus expanded parametric tests via `it.each`).
+- `tsup.config.analyze.ts`: UNCHANGED (INV-ANALYZE-ISOLATION PASS).
 
 ## v2.7.1 — 2026-05-14
 
