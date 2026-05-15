@@ -188,6 +188,18 @@ class TsToolbar extends TsBase {
                         if (!it.checked && newItem.selected.includes(it.id)) it.checked = true
                         if (it.checked == null) it.checked = false
                     })
+                } else if (typeof newItem.items === 'function') {
+                    // Eager-once reconciliation: evaluate items() to seed `selected` from `checked` at insert time.
+                    // The function reference is preserved on newItem.items; live evaluation on menu open is unchanged.
+                    // Side effects in items() will fire ONCE here (in addition to every menu open as today).
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const materialized = newItem.items(newItem)
+                    if (Array.isArray(materialized)) {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        materialized.forEach((it: any) => {
+                            if (it && it.checked && !newItem.selected.includes(it.id)) newItem.selected.push(it.id)
+                        })
+                    }
                 }
             } else if (newItem.type == 'menu-radio') {
                 if (Array.isArray(newItem.items)) {

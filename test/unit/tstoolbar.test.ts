@@ -206,3 +206,43 @@ describe('TsToolbar S-1 — destroy() closes overlays', () => {
         expect(() => toolbar.destroy()).not.toThrow()
     })
 })
+
+// ── S-3 — menu-check insert() must seed selected from function-based items ────
+//
+// When newItem.items is a function, the checked→selected reconciliation block in
+// insert() is gated on Array.isArray(newItem.items) and is entirely skipped.
+// newItem.selected remains [] until the first click(). The fix adds an else-if that
+// calls items(newItem) once, runs the same reconciliation, and discards the result.
+
+describe('TsToolbar S-3 — menu-check function items seed selected at insert', () => {
+    it('reconciles checked → selected when items is a function', () => {
+        const toolbar = new TsToolbar({ name: 's3a', items: [] })
+        toolbar.insert(null, {
+            id: 'mc',
+            type: 'menu-check',
+            items: () => [
+                { id: 'a', text: 'A', checked: true },
+                { id: 'b', text: 'B' },
+                { id: 'c', text: 'C', checked: true },
+            ],
+        })
+        const item = toolbar.get('mc') as any
+        expect(item.selected).toEqual(['a', 'c'])
+        // function reference must be preserved — live evaluation on menu open is unchanged
+        expect(typeof item.items).toBe('function')
+    })
+
+    it('still works when items is an array (regression guard on existing branch)', () => {
+        const toolbar = new TsToolbar({ name: 's3b', items: [] })
+        toolbar.insert(null, {
+            id: 'mc',
+            type: 'menu-check',
+            items: [
+                { id: 'a', text: 'A', checked: true },
+                { id: 'b', text: 'B' },
+            ],
+        })
+        const item = toolbar.get('mc') as any
+        expect(item.selected).toEqual(['a'])
+    })
+})
