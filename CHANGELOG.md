@@ -2,6 +2,19 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## [Unreleased]
+
+### Added (tooling)
+- `pnpm bundle:analyze` — generate esbuild metafile + per-module advisory summary (`reports/bundle/latest.md`, gitignored).
+- `pnpm bundle:snapshot -- --version=vX.Y.Z` — write committed baseline JSON to `reports/bundle/<version>-baseline.json`.
+- `tsup.config.analyze.ts` — analyze-only tsup config (single ESM-non-min block + `metafile: true`); structurally isolated from `tsup.config.ts` (INV-ANALYZE-ISOLATION).
+- `reports/bundle/v2.7.1-baseline.json` — v2.7.1 ESM-non-min per-module byte composition. This artifact unlocks Phase 2 (subpath exports) acceptance testing (INV-CYCLE-1-HARD-GATE).
+- `reports/bundle/README.md` — schema + scope documentation.
+
+### Internal
+- Zero new devDependencies. Zero changes to `src/`. Zero changes to `dist/*.js` on production builds (byte-identical, verified via `shasum` gate).
+- SEMVER: chore / no version bump. Next version bump (v2.8.0) reserved for Phase 2 (subpath exports).
+
 ## v2.7.1 — 2026-05-14
 
 ### Fixed
