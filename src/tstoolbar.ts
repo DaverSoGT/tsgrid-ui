@@ -180,7 +180,7 @@ class TsToolbar extends TsBase {
                 if (!Array.isArray(newItem.selected)) newItem.selected = []
                 if (Array.isArray(newItem.items)) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    newItem.items.forEach((it: any) => { // any: menu item shape is dynamic
+                    newItem.items.forEach((it: any, idx: any, arr: any) => { // any: menu item shape is dynamic
                         if (typeof it === 'string') {
                             it = arr[idx] = { id: it, text: it }
                         }
