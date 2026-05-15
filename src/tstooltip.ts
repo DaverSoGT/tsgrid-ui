@@ -22,6 +22,7 @@
 import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
+import { lazySingleton } from './lazy-singleton.js'
 
 // TsTooltip always calls query() with a selector (never a callback), so return is always Query.
 // any: query() overload returns void when called with a callback; we only use selector calls here
@@ -3665,9 +3666,21 @@ class DateTooltip extends Tooltip {
     }
 }
 
-const TsTooltip = new Tooltip()
-const TsMenu    = new MenuTooltip()
-const TsColor   = new ColorTooltip()
-const TsDate    = new DateTooltip()
+let _tooltipCtorCount = 0
+let _menuCtorCount = 0
+let _colorCtorCount = 0
+let _dateCtorCount = 0
+const TsTooltip = lazySingleton<Tooltip>(() => { _tooltipCtorCount++; return new Tooltip() }, Tooltip)
+const TsMenu    = lazySingleton<MenuTooltip>(() => { _menuCtorCount++; return new MenuTooltip() }, MenuTooltip)
+const TsColor   = lazySingleton<ColorTooltip>(() => { _colorCtorCount++; return new ColorTooltip() }, ColorTooltip)
+const TsDate    = lazySingleton<DateTooltip>(() => { _dateCtorCount++; return new DateTooltip() }, DateTooltip)
 
 export { TsTooltip, TsColor, TsMenu, TsDate, Tooltip }
+// DO NOT remove — used by test/unit/singleton-lazy-init.test.ts to assert lazy-init invariants.
+export const __test_internals = {
+    get tooltipCtorCount() { return _tooltipCtorCount },
+    get menuCtorCount() { return _menuCtorCount },
+    get colorCtorCount() { return _colorCtorCount },
+    get dateCtorCount() { return _dateCtorCount },
+    reset() { _tooltipCtorCount = 0; _menuCtorCount = 0; _colorCtorCount = 0; _dateCtorCount = 0 },
+}
