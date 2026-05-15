@@ -56,18 +56,24 @@ function schemaVersionFor(semver) {
 }
 
 // Amendment #983: 11 subpaths (./grid deferred to Phase 3 with splitting:true)
+// Cycle 4 (v2.8.1): forecastBytes updated to post-splitting stub sizes.
+// With splitting:true, each subpath dist file is a tiny import stub (118-371 B)
+// that re-exports from dist/chunks/*.js. The forecastPct is relative to the
+// monolith dist/tsgrid-ui.es6.js (340,952 B post-splitting).
+// Note: forecastBytes measures ONLY the stub file, not the transitive chunk size.
+// Consumer effective size = stub + union of consumed chunk bytes.
 const SUBPATH_INVENTORY = [
-    { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 3763,   forecastPct: 0.4  },
-    { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 39260,  forecastPct: 4.2  },
-    { name: 'utils',   sourceFile: 'src/tsutils.ts',   forecastBytes: 127798, forecastPct: 13.5 },
-    { name: 'popup',   sourceFile: 'src/tspopup.ts',   forecastBytes: 159764, forecastPct: 16.9 },
-    { name: 'tooltip', sourceFile: 'src/tstooltip.ts', forecastBytes: 244730, forecastPct: 25.9 },
-    { name: 'tabs',    sourceFile: 'src/tstabs.ts',    forecastBytes: 268677, forecastPct: 28.4 },
-    { name: 'toolbar', sourceFile: 'src/tstoolbar.ts', forecastBytes: 288775, forecastPct: 30.5 },
-    { name: 'sidebar', sourceFile: 'src/tssidebar.ts', forecastBytes: 306622, forecastPct: 32.4 },
-    { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 313303, forecastPct: 33.1 },
-    { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 354536, forecastPct: 37.5 },
-    { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 468649, forecastPct: 49.6 },
+    { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 118,  forecastPct: 0.0 },
+    { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 164,  forecastPct: 0.0 },
+    { name: 'utils',   sourceFile: 'src/tsutils.ts',   forecastBytes: 231,  forecastPct: 0.1 },
+    { name: 'popup',   sourceFile: 'src/tspopup.ts',   forecastBytes: 322,  forecastPct: 0.1 },
+    { name: 'tooltip', sourceFile: 'src/tstooltip.ts', forecastBytes: 316,  forecastPct: 0.1 },
+    { name: 'tabs',    sourceFile: 'src/tstabs.ts',    forecastBytes: 260,  forecastPct: 0.1 },
+    { name: 'toolbar', sourceFile: 'src/tstoolbar.ts', forecastBytes: 269,  forecastPct: 0.1 },
+    { name: 'sidebar', sourceFile: 'src/tssidebar.ts', forecastBytes: 269,  forecastPct: 0.1 },
+    { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 263,  forecastPct: 0.1 },
+    { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 340,  forecastPct: 0.1 },
+    { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 371,  forecastPct: 0.1 },
 ]
 
 function buildSubpathsBlock(cwd) {
