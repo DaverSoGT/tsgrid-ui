@@ -8,6 +8,15 @@ function mountBox(id = 'tb-host'): HTMLElement {
     return el
 }
 
+// jsdom does not implement ResizeObserver — provide a no-op stub so render() doesn't throw
+if (typeof globalThis.ResizeObserver === 'undefined') {
+    globalThis.ResizeObserver = class {
+        observe() { /* no-op */ }
+        unobserve() { /* no-op */ }
+        disconnect() { /* no-op */ }
+    } as unknown as typeof ResizeObserver
+}
+
 beforeEach(() => {
     document.body.innerHTML = ''
     vi.restoreAllMocks()
@@ -58,5 +67,36 @@ describe('TsToolbar BUG-1 — hideTooltip forwarding', () => {
         vi.advanceTimersByTime(20)
         // Only 1 call: from refresh() at line 760 — NOT from the hideTooltip path
         expect(spy).toHaveBeenCalledTimes(1)
+    })
+})
+
+// ── BUG-3 — close malformed nth-child selector ───────────────────────────────
+//
+// refresh() uses `.tsg-tb-line:nth-child(${it.line}` (missing closing paren).
+// When adding a new item that is the last on a line, $next.length === 0 and the code
+// falls into the malformed selector path — the item is never inserted in the DOM.
+// After the fix the selector becomes `.tsg-tb-line:nth-child(${it.line})`.
+
+describe('TsToolbar BUG-3 — insert appends to end-of-line', () => {
+    it('renders a newly added item in the DOM when it is last on the line', () => {
+        const box = mountBox('tb-bug3a')
+        // Render toolbar with the box — first item creates the line container
+        const toolbar = new TsToolbar({ name: 'bug3a', box, items: [{ id: 'first', type: 'button', text: 'A' }] })
+        // Add a second item — it will be the last on line 1, triggering the nth-child path
+        toolbar.add({ id: 'second', type: 'button', text: 'B' })
+        const node = document.querySelector('#tb_bug3a_item_second')
+        expect(node).not.toBeNull()
+    })
+
+    it('renders an item inserted before an existing sibling in the DOM', () => {
+        const box = mountBox('tb-bug3b')
+        const toolbar = new TsToolbar({ name: 'bug3b', box, items: [
+            { id: 'a', type: 'button', text: 'A' },
+            { id: 'b', type: 'button', text: 'B' },
+        ] })
+        // Insert before 'b' — 'mid' has a next sibling, so uses the normal path
+        toolbar.insert('b', { id: 'mid', type: 'button', text: 'M' })
+        const node = document.querySelector('#tb_bug3b_item_mid')
+        expect(node).not.toBeNull()
     })
 })
