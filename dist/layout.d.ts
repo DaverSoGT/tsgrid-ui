@@ -1,4 +1,4 @@
-import { T as TsMessageProm } from './tsutils-message-CogFtVtO.js';
+import { a as TsMessageProm } from './tsutils-message-BC0wOHZs.js';
 import { TsBase } from './base.js';
 import { TsTabs } from './tabs.js';
 import { TsToolbar } from './toolbar.js';
