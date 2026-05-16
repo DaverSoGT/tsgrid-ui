@@ -1,6 +1,6 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.11.0",
+  "version": "2.12.0",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css",
@@ -8,7 +8,16 @@
     "./dist/tsgrid-ui.es6.js",
     "./dist/tsgrid-ui.es6.min.js",
     "./dist/tsgrid-ui.js",
-    "./dist/tsgrid-ui.min.js"
+    "./dist/tsgrid-ui.min.js",
+    "./dist/field.css",
+    "./dist/form.css",
+    "./dist/grid.css",
+    "./dist/layout.css",
+    "./dist/popup.css",
+    "./dist/sidebar.css",
+    "./dist/tabs.css",
+    "./dist/toolbar.css",
+    "./dist/tooltip.css"
   ],
   "title": "TsGrid UI: TypeScript-native UI component library",
   "description": "TypeScript-native UI components: data grid, forms, fields, layout, sidebar, tabs, toolbar, popup, tooltip. ESM + CJS dual bundle, .d.ts rollup, zero runtime dependencies.",
@@ -57,7 +66,16 @@
     "./form":    { "types": "./dist/form.d.ts",    "import": "./dist/form.es6.js"    },
     "./grid":    { "types": "./dist/grid.d.ts",    "import": "./dist/grid.es6.js"    },
     "./css":          "./dist/tsgrid-ui.css",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./field.css":    "./dist/field.css",
+    "./form.css":     "./dist/form.css",
+    "./grid.css":     "./dist/grid.css",
+    "./layout.css":   "./dist/layout.css",
+    "./popup.css":    "./dist/popup.css",
+    "./sidebar.css":  "./dist/sidebar.css",
+    "./tabs.css":     "./dist/tabs.css",
+    "./toolbar.css":  "./dist/toolbar.css",
+    "./tooltip.css":  "./dist/tooltip.css"
   },
   "style": "dist/tsgrid-ui.css",
   "files": [
