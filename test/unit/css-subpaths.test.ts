@@ -28,13 +28,23 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         expect(existsSync(join(ROOT, 'dist', `${name}.css`))).toBe(true)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 500KB (font sanity)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 10KB (compiled content sanity)', (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
         const size = statSync(cssPath).size
-        // Font base64 (~600KB) dominates; a file < 500KB means woff was NOT included.
-        // This guards proposal risk #2 — woff duplication acknowledged.
-        expect(size).toBeGreaterThan(500 * 1024)
+        // Each per-widget file includes icon woff (~3KB base64) + widget rules.
+        // A file < 10KB would mean something went wrong with the compile.
+        // Note: the OpenSans font (~200KB) lives only in tsgrid-ui.less (monolith entry).
+        // Per-widget entries import icons.less (icon font only), not the OpenSans font.
+        expect(size).toBeGreaterThan(10 * 1024)
+    })
+
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains icon font (woff base64 — duplication confirmed)', (name) => {
+        const cssPath = join(ROOT, 'dist', `${name}.css`)
+        if (!existsSync(cssPath)) return
+        const css = readFileSync(cssPath, 'utf8')
+        // Confirms icons.less was imported — the icon woff data URI is present
+        expect(css).toContain('data:application/x-font-woff')
     })
 
     it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains expected sentinel selector', (name) => {

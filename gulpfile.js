@@ -20,7 +20,16 @@ let tasks = {
             'dist/tsgrid-ui.js',
             'dist/tsgrid-ui.min.js',
             'dist/tsgrid-ui.css',
-            'dist/tsgrid-ui.min.css'
+            'dist/tsgrid-ui.min.css',
+            'dist/grid.css',
+            'dist/form.css',
+            'dist/tooltip.css',
+            'dist/popup.css',
+            'dist/sidebar.css',
+            'dist/tabs.css',
+            'dist/toolbar.css',
+            'dist/layout.css',
+            'dist/field.css',
         ]
         return del(files)
     },
@@ -37,6 +46,28 @@ let tasks = {
             .pipe(gulp.dest('dist/'))
             .pipe(cleanCSS())
             .pipe(rename({ suffix: '.min' }))
+            .pipe(header(comments.tsgrid))
+            .pipe(gulp.dest('dist/'))
+    },
+
+    widgets(cb) {
+        const WIDGET_ENTRIES = [
+            'src/less/entries/grid.less',
+            'src/less/entries/form.less',
+            'src/less/entries/tooltip.less',
+            'src/less/entries/popup.less',
+            'src/less/entries/sidebar.less',
+            'src/less/entries/tabs.less',
+            'src/less/entries/toolbar.less',
+            'src/less/entries/layout.less',
+            'src/less/entries/field.less',
+        ]
+        return gulp.src(WIDGET_ENTRIES, { base: 'src/less/entries' })
+            .on('error', function (err) {
+                console.log(err.toString())
+                this.emit('end')
+            })
+            .pipe(less())
             .pipe(header(comments.tsgrid))
             .pipe(gulp.dest('dist/'))
     },
@@ -183,9 +214,9 @@ let tasks = {
 
 // Gulp owns: clean, less, icons, locales, watch (Less/icons only).
 // JS bundling lives in tsup.config.ts (driven by `pnpm build:js`).
-exports.default = gulp.series(tasks.clean, tasks.less)
+exports.default = gulp.series(tasks.clean, tasks.less, tasks.widgets)
 exports.dev     = tasks.watch
 exports.clean   = tasks.clean
-exports.less    = gulp.series(tasks.less)
+exports.less    = gulp.series(tasks.less, tasks.widgets)
 exports.icons   = gulp.series(tasks.icons, tasks.less)
 exports.locales = tasks.locales
