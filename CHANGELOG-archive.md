@@ -1,0 +1,104 @@
+# Changelog Archive — Pre-v2.0.0
+
+This file preserves the historical changelog entries for **TsGrid UI v1.x**
+(the initial hard-fork release from w2ui v2.1) and the pre-fork history
+pointer.
+
+Entries for **v2.0.0 and later** live in [CHANGELOG.md](CHANGELOG.md).
+
+This file is kept in the repository for reference but is **not** included in
+the published npm tarball. The full git history (including the pre-fork w2ui
+v2.1 chain) remains under the `master` branch.
+
+---
+
+## v1.0.1 — 2026-05-09 — Consumer DX fixes
+
+Patch release driven by integrating tsgrid-ui v1.0.0 in a real Angular 21 standalone project. Three changes, no breaking, no API removals.
+
+### Added — `sideEffects` declaration
+
+`package.json` now declares `"sideEffects": ["./dist/tsgrid-ui.css", "./dist/tsgrid-ui.min.css"]`. Modern bundlers (esbuild, Vite, webpack 5+, Rollup) can now tree-shake widgets the consumer does not import. Importing only `TsGrid` no longer drags `TsForm`, `TsLayout`, `TsSidebar`, `TsTabs`, `TsPopup`, `TsTooltip` into the final bundle.
+
+### Added — public type exports
+
+The barrel `src/index.ts` previously re-exported only the **classes** (`TsGrid`, `TsForm`, etc.). Auxiliary interfaces and types lived in `dist/tsgrid-ui.d.ts` but were inaccessible — consumers had to type their inputs as `any` or import from internal paths. v1.0.1 re-exports the full public type surface:
+
+- **TsGrid**: `TsGridRecord`, `TsGridColumn`, `TsGridSearch`, `TsGridSortData`, `TsGridSelection`, `TsGridCellSelection`, `TsGridRange`, `TsGridRangeEndpoint`, `TsGridGroupBy`
+- **TsField**: `TsFieldOptions`, `TsFieldElement`, `TsFieldNumericOptions`, `TsFieldColorOptions`, `TsFieldDateOptions`, `TsFieldTimeOptions`, `TsFieldDateTimeOptions`, `TsFieldListOptions`, `TsFieldEnumOptions`, `TsFieldFileOptions`
+- **TsLayout**: `TsLayoutPanel`, `TsPanelType`, `TsPanelContent`
+- **TsSidebar**: `TsSidebarRefreshOptions`, `TsSidebarUpdateOptions`, `TsSidebarSetCountOptions`, `TsSidebarFindOptions`, `TsSidebarSortOptions`
+- **TsLocale / TsUtils**: `TsLocaleSettings`, `TsMessageProm`, `TsMessageWhere`, `TsMessageOptions`, `TsMenuItem`, `TsColorRgb`, `TsLockOptions`, `TsCloneOptions`
+- **Common**: `RecId`, `TsEventData`, `TsEventPayload`
+
+Consumers can now write `import type { TsGridColumn, TsGridRecord } from 'tsgrid-ui'` and get full autocomplete + type checking.
+
+### Added — `TsEventPayload` interface and `toSafeEvent()` helper
+
+The per-class event-handler signatures (`onSelect: (event: CustomEvent) => void`) are misleading: the runtime always passes a `TsEvent` instance from the TsBase event system, **not** a DOM `CustomEvent`. The real payload contains a circular reference (`event.owner` ↔ `widget.activeEvents[]`), so calling `JSON.stringify(event)` throws "Converting circular structure to JSON". This breaks reactive state in any framework: Angular signals + JsonPipe, React state + Redux DevTools, Vue ref + Pinia, etc.
+
+This release adds:
+
+- **`interface TsEventPayload<TDetail>`** — accurate shape of the object passed to handlers, with the `owner` field documented as circular and unsafe to serialize. The misleading `(event: CustomEvent) => void` per-class declarations remain for backwards compatibility and will be corrected in v2.0.
+- **`function toSafeEvent(event)`** — extracts a JSON-serializable subset (`type`, `phase`, `detail`, `isStopped`, `isCancelled`) for use in reactive state.
+
+```ts
+import { toSafeEvent } from 'tsgrid-ui'
+
+grid.on('select', (event) => {
+    mySignal.set(toSafeEvent(event)) // safe to JSON.stringify
+})
+```
+
+### Bundle-size impact
+
+A v1.0.0 → v1.0.1 bundle delta measurement in a fresh Angular 21 standalone project consuming only `TsGrid` was planned but never completed — the v1.0.1 column was never filled in. The effort was superseded in v2.x by the formal bundle-snapshot methodology (`scripts/bundle-snapshot.mjs` + `reports/bundle/*.json`).
+
+For v1.0.0 baseline, raw `main.js` was **506.18 KB** and gzip was **121.90 KB** in the Angular 21 demo. v1.0.1 numbers are unrecorded.
+
+## v1.0.0 — 2026-05-08 — Hard Fork from w2ui v2.1
+
+This is the initial public release of **TsGrid UI**, a hard fork of [w2ui](https://github.com/vitmalina/w2ui) by Vit Malina. See [README — Acknowledgments](README.md#acknowledgments) for the relationship to upstream and [MIGRATION-FROM-W2UI.md](MIGRATION-FROM-W2UI.md) for the complete renaming map if you're coming from w2ui.
+
+### Identity changes (vs upstream w2ui v2.x)
+
+- **Package name**: `w2ui` → `tsgrid-ui` (npm public registry).
+- **Version reset**: starts at 1.0.0 (this is project v1; upstream w2ui continues independently).
+- **JS globals renamed**: `w2grid` → `TsGrid`, `w2form` → `TsForm`, `w2field` → `TsField`, `w2layout` → `TsLayout`, `w2sidebar` → `TsSidebar`, `w2tabs` → `TsTabs`, `w2toolbar` → `TsToolbar`, `w2tooltip` → `TsTooltip`, `w2popup` → `TsPopup`. Helpers: `w2alert`/`w2confirm`/`w2prompt`/`w2color`/`w2date`/`w2menu`/`Dialog`/`w2utils`/`w2base`/`w2event`/`w2locale` → `TsAlert`/`TsConfirm`/`TsPrompt`/`TsColor`/`TsDate`/`TsMenu`/`TsDialog`/`TsUtils`/`TsBase`/`TsEvent`/`TsLocale`. Registry `w2ui` → `TsUi`. `query` and `Tooltip` (class name) kept unchanged.
+- **TypeScript types renamed**: all `W2*Foo` types → `TsFoo` (e.g. `W2GridColumn` → `TsGridColumn`, `W2GridCellSelection` → `TsGridCellSelection`). Brand types `RecId`, `LayoutPanelId`, `FieldName` are kept (semantic, not library-tied).
+- **CSS class prefix**: `.w2ui-*` → `.tsg-*` (~1500 reemplazos across source and stylesheets).
+- **iconfont**: family name `w2ui-font` → `tsgrid-font`; classes `w2ui-icon-*` → `tsg-icon-*`.
+- **dist filenames**: `dist/w2ui.{js,es6.js,d.ts,css}` → `dist/tsgrid-ui.{js,es6.js,d.ts,css}` (and minified variants).
+- **jQuery compatibility shim removed**: `w2compat.ts` was deleted. TsGrid is ESM-native and does not register `$.fn.w2grid` etc. If you need jQuery support, use upstream w2ui.
+- **Repo cleanup**: `demos/`, `server/`, `baseline/`, `es6mods/`, `libs/` moved to `legacy/` (excluded from npm publish).
+- **License**: dual copyright — preserves `(c) 2014 Vit Malina` per MIT terms, adds `(c) 2026 DaverSoGT` for the fork.
+
+### Inherited from the w2ui v2.1 TypeScript port (pre-fork)
+
+These changes were applied to the local v2.1 baseline before the fork; they are preserved verbatim in TsGrid v1.0:
+
+- **Full TypeScript-native source**: 17 `.ts` files (14 widgets + 2 barrels + 1 types), zero `.js` in `src/`.
+- **Strict mode**: `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noPropertyAccessFromIndexSignature`. Zero `@ts-nocheck`.
+- **Bundler**: tsup (esbuild) for JS — dual ESM + CJS + `.d.ts` rollup. Gulp retains Less + iconfont.
+- **`.d.ts` rollup**: single file with all public exports.
+- **Branded primitive types**: `RecId`, `LayoutPanelId`, `FieldName` (compile-only, zero runtime cost).
+- **Discriminated `getSelection`**: `TsGrid.getSelectionRows()` + `TsGrid.getSelectionCells()` typed methods plus a back-compat wrapper that returns `RecId[] | number[] | TsGridCellSelection[]` (no longer `any[]`).
+- **Vitest unit test suite**: 84 tests across `TsUtils` helpers, `TsBase` event system, and `types` brands.
+- **Playwright smoke harness**: 38 tests across all widgets at three viewport sizes.
+- **Consumer-smoke gate**: independent `tsc --noEmit` of the public API surface as a consumer would import it.
+- **Bug fixes uncovered during the TS port**:
+  - `'fuction'` typo in `prepareParams()` (silently ignored custom-function `dataType`).
+  - Two `??` always-left branches in `w2form` and `w2grid` save error handlers.
+  - Type mismatch in `w2grid` line-number column fallback (`{ field: col_ind }` number → string).
+  - `w2sidebar.getNodeHTML()` referenced `window.self` instead of the local instance.
+- **Behavioral notes preserved**:
+  - `TsForm` input/textarea handlers use delegated-event objects (`{ delegate: 'input, textarea' }`).
+  - `TsUtils.locale()` returns `Promise<{ file, data } | void>`.
+
+---
+
+## Pre-fork history (w2ui v2.x)
+
+The pre-fork local commit chain (53 ts-port commits + 16 follow-up commits leading up to v2.1 final) is preserved in git history under the same `master` branch. See git log between the initial port commit and the F1 sealing commit (`d90c038e`) for detail.
+
+For upstream w2ui releases (v1.x stable, v2.0 RC), refer to [vitmalina/w2ui releases](https://github.com/vitmalina/w2ui/releases).
