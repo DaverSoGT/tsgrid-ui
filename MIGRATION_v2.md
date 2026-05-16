@@ -176,3 +176,62 @@ git push origin v2.0.0
 pnpm publish --access public --tag latest
 gh release create v2.0.0 --title "v2.0.0 — TsGrid v2 decomposition" --notes-from-tag
 ```
+
+---
+
+## v2.12.0 — Per-widget CSS import pattern
+
+v2.12.0 adds nine per-widget CSS subpath exports. No breaking changes — this is additive only.
+
+### New import pattern
+
+```ts
+// Before (still works — recommended for most consumers)
+import 'tsgrid-ui/css'
+
+// After v2.12.0 — optional per-widget imports
+import 'tsgrid-ui/grid.css'
+import 'tsgrid-ui/form.css'
+import 'tsgrid-ui/tooltip.css'
+import 'tsgrid-ui/popup.css'
+import 'tsgrid-ui/sidebar.css'
+import 'tsgrid-ui/tabs.css'
+import 'tsgrid-ui/toolbar.css'
+import 'tsgrid-ui/layout.css'
+import 'tsgrid-ui/field.css'
+```
+
+Each per-widget CSS file is self-contained: it includes the widget's Less rules plus the shared
+`variables`, `mixins`, `icons`, `common` (where applicable), and `buttons` (where applicable)
+partials. File sizes range from 15 KB (popup, sidebar) to 56 KB (grid).
+
+### When to use per-widget CSS
+
+Use per-widget imports when:
+- You render only a subset of widgets (e.g., only `TsGrid` and `TsForm`) and want granular HTTP
+  cache control — a style change to the grid does not invalidate the cached form CSS.
+- You are building a micro-frontend where different teams own different widget CSS files.
+
+Continue using `tsgrid-ui/css` (the monolith) when:
+- You render most or all widgets on the same page (simpler, no duplication cost).
+- You want a single cache entry for all styles.
+
+### Known limitation: icon glyphs
+
+Per-widget CSS files include the icon woff font (the `.tsg-icon-*` symbol font, ~3 KB) but do NOT
+include the OpenSans text font that is embedded in the monolith. More importantly: if you import
+ONLY per-widget CSS and skip `tsgrid-ui/css` entirely, **icon glyphs (sort arrows, checkboxes,
+calendar icons, etc.) will appear as empty boxes**.
+
+To avoid this, either:
+1. Also import `tsgrid-ui/css` for the icon and text fonts (zero overhead if you code-split CSS by route).
+2. Provide the OpenSans font and a compatible icon font via your own pipeline or CDN.
+
+A dedicated `tsgrid-ui/icons.css` subpath is planned for a future cycle to allow importing only
+the fonts without the full monolith.
+
+### No migration required
+
+This is a SEMVER MINOR release. No existing import paths change. The only required action is:
+- If you want to use per-widget imports: add the new `import 'tsgrid-ui/<widget>.css'` statements.
+- If you are satisfied with the monolith: no changes needed.

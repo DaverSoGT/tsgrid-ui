@@ -2,6 +2,85 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.12.0 — 2026-05-16
+
+### Added: per-widget CSS subpaths (`tsgrid-ui/grid.css`, `tsgrid-ui/form.css`, etc.)
+
+Nine new CSS subpath exports are now available. Consumers can import CSS for individual widgets
+instead of (or in addition to) the monolith `tsgrid-ui/css`.
+
+```ts
+// Option A — monolith (unchanged, still recommended for most consumers)
+import 'tsgrid-ui/css'
+
+// Option B — per-widget (granular cache control, explicit dependency)
+import 'tsgrid-ui/grid.css'
+import 'tsgrid-ui/form.css'
+import 'tsgrid-ui/tooltip.css'
+import 'tsgrid-ui/popup.css'
+import 'tsgrid-ui/sidebar.css'
+import 'tsgrid-ui/tabs.css'
+import 'tsgrid-ui/toolbar.css'
+import 'tsgrid-ui/layout.css'
+import 'tsgrid-ui/field.css'
+```
+
+Each subpath resolves to a standalone compiled CSS file in `dist/<widget>.css`.
+The exports are plain string mappings (no `import`/`require` conditions — raw CSS).
+
+### Implementation
+
+3-PR chained delivery:
+
+- **PR 1** (`refactor(less): extract variables to src/less/src/variables.less`): extracted all 123
+  `@<name>: <value>;` Less variable declarations from `src/less/tsgrid-ui.less` into a new shared
+  partial `src/less/src/variables.less`. The monolith CSS (`dist/tsgrid-ui.css`) remains
+  byte-stable after extraction (verified by the v2.11.0 fixture test).
+- **PR 2** (`build(less): per-widget entry points + gulp wiring`): created 9 Less compile entry
+  points in `src/less/entries/` (one per widget), each importing `variables`, `mixins`, `icons`,
+  and the widget's own rules. Added `tasks.widgets` to gulpfile.js with an explicit file list and
+  `{ base: 'src/less/entries' }`. Built 9 new `dist/<widget>.css` files.
+- **PR 3** (`feat(exports): add 9 per-widget CSS subpaths (v2.12.0)`): added 9 `"./field.css"`
+  through `"./tooltip.css"` entries to `package.json#exports` (plain strings, no conditions) and 9
+  corresponding `"./dist/<widget>.css"` entries to `package.json#sideEffects` (alphabetical, appended
+  after existing 7). Bumped version to `2.12.0`. Generated `reports/bundle/v2.12.0-baseline.json`
+  (schema v3, 12 JS subpath entries, CSS excluded from bundle tracking by design).
+
+### Known limitations
+
+- **Icon glyphs require the monolith CSS (or explicit icon font import).** Each per-widget CSS file
+  includes the icon woff base64 (`~3 KB`, the icon-symbol font from `icons.less`), but does NOT
+  include the OpenSans TrueType font (`~200 KB`) that is embedded only in the monolith
+  (`tsgrid-ui/css`). However, the critical consequence is about icon glyphs specifically:
+  widgets use `.tsg-icon-*` classes that map to the icon font characters (arrows, checkboxes,
+  calendar glyphs, etc.). If you import ONLY `tsgrid-ui/grid.css` and do NOT import
+  `tsgrid-ui/css`, **icon glyphs will not render** — you will see empty boxes instead of icons.
+  The fix is to either also import `tsgrid-ui/css`, or provide an external icon font.
+  A dedicated `tsgrid-ui/icons.css` subpath (extracting only the icon font) is tracked for a
+  future `font-externalization` cycle.
+- **Per-widget CSS file sizes are 14 KB–56 KB each** (field: 31 KB, form: 32 KB, grid: 56 KB,
+  layout: 26 KB, popup: 15 KB, sidebar: 15 KB, tabs: 27 KB, toolbar: 30 KB, tooltip: 47 KB).
+  Shared rules (`.tsg-spinner`, `.tsg-scroll-*`, `.tsg-lock`) are duplicated across files that need
+  them — this is intentional for self-containment and noted as a design-accepted limitation.
+- **No `.min.css` variants**: only unminified per-widget CSS ships in this cycle. Modern bundlers
+  (Vite, webpack production) minify CSS at build time, so pre-minified variants would be redundant
+  for most consumers. `.min.css` variants are deferred to a future cycle.
+- **OpenSans font duplication**: the OpenSans `@font-face` block (~200 KB TTF base64) lives only in
+  the monolith `tsgrid-ui.less` entry, not in per-widget entries. This is by design — the OpenSans
+  font is a global concern (body text, inputs) and does not make sense as a per-widget dependency.
+  The monolith remains the correct single-import choice for full-page applications.
+- **CSS subpaths are excluded from `bundle-snapshot` tracking**: `reports/bundle/v2.12.0-baseline.json`
+  tracks only the 12 JS subpaths (same as v2.11.0). CSS observability (gzipped size, selector
+  count) is deferred to a future schema v4 cycle.
+
+### BC
+
+- **Purely additive**. All existing imports (`import 'tsgrid-ui/css'`, all JS subpaths, the barrel)
+  are unchanged. No removals, no renames, no behavior changes.
+- `package.json#exports` grows from 15 to 24 keys. All 15 existing keys are byte-identical.
+- `package.json#sideEffects` grows from 7 to 16 entries. The first 7 entries are unchanged.
+- SEMVER MINOR per SemVer §7. No breaking changes.
+
 ## v2.11.0 — 2026-05-15
 
 ### Added: `tsgrid-ui/grid` ESM subpath

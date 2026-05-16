@@ -47,6 +47,42 @@ grid.render('#mygrid')
 <div id="mygrid" style="width: 600px; height: 300px;"></div>
 ```
 
+## Per-component CSS
+
+Starting in **v2.12.0**, individual per-widget CSS subpaths are available. There are two import patterns:
+
+**Monolith (recommended for most consumers)**
+
+```ts
+import 'tsgrid-ui/css'  // ~700 KB — all widgets + fonts in one import
+```
+
+Use this when you render multiple widgets on the same page and want simplicity. One import, all styles.
+
+**Per-widget (granular cache control)**
+
+```ts
+import 'tsgrid-ui/grid.css'     // 56 KB — grid styles only
+import 'tsgrid-ui/form.css'     // 32 KB — form styles only
+import 'tsgrid-ui/tooltip.css'  // 47 KB
+import 'tsgrid-ui/popup.css'    // 15 KB
+import 'tsgrid-ui/sidebar.css'  // 15 KB
+import 'tsgrid-ui/tabs.css'     // 27 KB
+import 'tsgrid-ui/toolbar.css'  // 30 KB
+import 'tsgrid-ui/layout.css'   // 26 KB
+import 'tsgrid-ui/field.css'    // 31 KB
+```
+
+Use this when you import only a subset of widgets and want CSS cache granularity — each widget's
+styles are cached independently, so a change to the grid style does not invalidate the form cache.
+
+**Important limitation**: per-widget CSS files include the icon woff font (~3 KB icon symbols) but
+do NOT include the OpenSans text font embedded in the monolith. If you use ONLY per-widget CSS
+imports and none of your pages import `tsgrid-ui/css`, **icon glyphs (sort arrows, checkbox marks,
+calendar icons, etc.) will not render**. To fix: also import `tsgrid-ui/css`, or provide the
+OpenSans font via a CDN or your own font pipeline. A dedicated `tsgrid-ui/icons.css` subpath is
+planned for a future release.
+
 ## Components
 
 | Class       | Purpose                                        |
