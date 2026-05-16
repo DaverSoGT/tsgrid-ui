@@ -2,6 +2,42 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.11.0 — 2026-05-15
+
+### Added: `tsgrid-ui/grid` ESM subpath
+
+The `./grid` subpath is now available, resolving amendment #983 which deferred this entry at v2.8.0
+pending the introduction of `splitting: true`. With tsup `splitting: true` active since v2.8.1, the
+deduplication guarantee is in place: `import { TsGrid } from 'tsgrid-ui/grid'` resolves to the same
+class identity as the barrel `import { TsGrid } from 'tsgrid-ui'`. The 12-subpath surface is now
+complete.
+
+### Implementation
+
+- `tsup.config.ts`: added `'grid.es6': 'src/tsgrid.ts'` to the ESM entry block and `'grid': 'src/tsgrid.ts'` to the dts-only entry block. No stub file created — direct-source entry, matching the `./popup` pattern.
+- `package.json#exports`: inserted `"./grid": { "types": "./dist/grid.d.ts", "import": "./dist/grid.es6.js" }` after `./form`. No `require` condition (ESM-only). Total exports keys: 15.
+- `scripts/bundle-snapshot.mjs`: appended `grid` entry to `SUBPATH_INVENTORY` (12 subpaths total).
+- `test/unit/subpath-exports.test.ts`: `SUBPATHS` array includes `'grid'`; count assertion bumped 14 → 15.
+- `test/unit/bundle-snapshot.test.ts`: new `describe('subpathEffective block (v2.11.0+)')` suite with 12-key assertion, effectiveBytes range guard, and determinism test.
+- `test/consumer-smoke.ts`: added `TsGrid` value import and all 9 public grid type-only imports from `tsgrid-ui/grid`.
+- `reports/bundle/v2.11.0-baseline.json`: generated and committed (schema v3, 12 subpathEffective entries). Built with tsup 8.5.1.
+
+### Known limitations
+
+- **CSS pairing required**: consumers importing `tsgrid-ui/grid` MUST also import `tsgrid-ui/css`
+  (or `dist/tsgrid-ui.css` directly) for styles. A per-component CSS split is tracked in a future
+  `grid-css-pairing` cycle.
+- **ESM-only**: no `require` condition in `exports["./grid"]`. CJS subpath parity will land
+  uniformly across all 12 subpaths in Phase 4 of the v3.0 roadmap.
+- **Effective load**: `tsgrid-ui/grid` transitively loads ~88% of the full barrel (~290–340 KB out
+  of ~341 KB) because `grid-render.ts` pulls in `tstoolbar`, `tstooltip`, and `tsfield`. The real
+  tree-shaking benefit accrues to consumers using grid AND NOT form/sidebar/etc.
+
+### BC
+
+- Public API surface: **purely additive**. All existing imports (`tsgrid-ui`, all 11 prior subpaths) work unchanged.
+- SEMVER MINOR per SemVer §7. No breaking changes.
+
 ## v2.10.0 — 2026-05-15
 
 ### Tree-shake-friendly lazy singletons

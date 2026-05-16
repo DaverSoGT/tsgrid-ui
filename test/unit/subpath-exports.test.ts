@@ -3,24 +3,24 @@
 // Group 2 — dist artifacts: SKIPS (no dist yet).
 // Group 3 — bundle floor: SKIPS (no v2.8.0-baseline.json yet).
 //
-// Amendment #983: ./grid removed from v2.8.0 inventory. 11 subpaths, 14 total keys.
+// Cycle 6 (v2.11.0): ./grid reintroduced. 12 subpaths, 15 total keys.
 import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = process.cwd()
 
-// Amendment #983: 11 subpaths (./grid deferred to Phase 3)
+// Cycle 6: 12 subpaths (./grid reintroduced from amendment #983 deferral)
 const SUBPATHS = [
-    'base', 'field', 'form', 'layout', 'locale',
+    'base', 'field', 'form', 'grid', 'layout', 'locale',
     'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip', 'utils',
 ] as const
 
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
 describe('subpath-exports — package.json shape', () => {
-    it('has exactly 14 exports keys (INV-SX-4, amendment #983: 11 subpaths)', () => {
-        expect(Object.keys(pkg.exports)).toHaveLength(14)
+    it('has exactly 15 exports keys (Cycle 6: 12 subpaths + ".", "./css", "./package.json")', () => {
+        expect(Object.keys(pkg.exports)).toHaveLength(15)
     })
 
     it('"." entry is byte-identical shape (INV-SX-6)', () => {
@@ -84,12 +84,14 @@ describe('subpath-exports — bundle floor (skipped if no baseline)', () => {
         const b = JSON.parse(readFileSync(baselinePath, 'utf8'))
         expect(b.schemaVersion).toBe(2)
         expect(typeof b.subpaths).toBe('object')
-        // Amendment #983: 11 subpaths (not 12 — ./grid omitted)
+        // v2.8.0 baseline anchors 11 subpaths; grid is a v2.11.0 addition.
         expect(Object.keys(b.subpaths)).toHaveLength(11)
     })
 
     it.skipIf(!baselineExists).each(SUBPATHS)('subpaths.%s.totalBytes < 756,376 (INV-SX-1)', (name) => {
         const b = JSON.parse(readFileSync(baselinePath, 'utf8'))
+        // v2.8.0 baseline anchors 11 subpaths; grid is a v2.11.0 addition — skip gracefully.
+        if (!b.subpaths[name]) return
         expect(b.subpaths[name].totalBytes).toBeLessThan(756376)
     })
 

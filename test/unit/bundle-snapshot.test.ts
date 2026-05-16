@@ -93,11 +93,13 @@ describe('bundle-snapshot schema v3 — Opt-C deferral (R-CSSE-4 amended, AC6, A
 // ---------------------------------------------------------------------------
 
 const V210_BASELINE_PATH = join(ROOT, 'reports', 'bundle', 'v2.10.0-baseline.json')
-const EXPECTED_SUBPATH_KEYS = ['base', 'field', 'form', 'layout', 'locale', 'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip', 'utils']
+const V211_BASELINE_PATH = join(ROOT, 'reports', 'bundle', 'v2.11.0-baseline.json')
+const EXPECTED_SUBPATH_KEYS_V211 = ['base', 'field', 'form', 'grid', 'layout', 'locale', 'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip', 'utils']
 const REQUIRED_ENTRY_FIELDS = ['stubPath', 'stubBytes', 'chunks', 'chunkBytes', 'loadedBytes', 'executedBytes', 'effectiveBytes'] as const
 const REQUIRED_CHUNK_FIELDS = ['path', 'bytes', 'lazyDeferred'] as const
 
 describe('subpathEffective block (v2.10.0+)', () => {
+    const EXPECTED_SUBPATH_KEYS_V210 = ['base', 'field', 'form', 'layout', 'locale', 'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip', 'utils']
     let snap: any
 
     beforeAll(() => {
@@ -121,10 +123,10 @@ describe('subpathEffective block (v2.10.0+)', () => {
         expect(snap.schemaVersion).toBe(3)
     })
 
-    // T-BBI-3: all 11 subpath entries present (T-02 RED)
+    // T-BBI-3: all 11 subpath entries present (v2.10.0 anchor — 11 keys, no grid)
     it('subpathEffective contains exactly 11 subpath keys (sorted)', () => {
         expect(snap.subpathEffective).toBeDefined()
-        expect(Object.keys(snap.subpathEffective).sort()).toEqual(EXPECTED_SUBPATH_KEYS)
+        expect(Object.keys(snap.subpathEffective).sort()).toEqual(EXPECTED_SUBPATH_KEYS_V210)
     })
 
     // T-BBI-4: each entry has required fields (T-02 RED)
@@ -199,11 +201,104 @@ describe('subpathEffective block (v2.10.0+)', () => {
     })
 
     // T-06: determinism — subpathEffective deep-equal across two runs (T-06 RED)
+    // Note: only meaningful when pkg.version === '2.10.0'. On later working trees,
+    // SUBPATH_INVENTORY has changed so regenerating the baseline produces different output —
+    // this is expected cross-version divergence, not a non-determinism failure.
+    // Determinism for v2.11.0+ is covered in the 'subpathEffective block (v2.11.0+)' suite.
     it('subpathEffective is stable across two consecutive snapshot runs', { timeout: 120_000 }, () => {
-        if (!existsSync(V210_BASELINE_PATH)) return
+        const pkgVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version
+        if (!existsSync(V210_BASELINE_PATH) || pkgVersion !== '2.10.0') return
         const before = JSON.parse(readFileSync(V210_BASELINE_PATH, 'utf8')).subpathEffective
         execSync('pnpm bundle:snapshot --version=v2.10.0', { cwd: ROOT, stdio: 'pipe' })
         const after = JSON.parse(readFileSync(V210_BASELINE_PATH, 'utf8')).subpathEffective
+        expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Cycle 6 (v2.11.0): subpathEffective block for the ./grid reintroduction
+// Maps to T-GSR-4, T-GSR-5, T-GSR-6, T-GSR-7, R-GSR-11
+// Guards skipped gracefully when v2.11.0-baseline.json is absent (pre-build).
+// ---------------------------------------------------------------------------
+
+describe('subpathEffective block (v2.11.0+)', () => {
+    let snap: any
+
+    beforeAll(() => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        snap = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8'))
+    }, 120_000)
+
+    // T-GSR-5: file exists
+    it('reports/bundle/v2.11.0-baseline.json exists', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        expect(existsSync(V211_BASELINE_PATH)).toBe(true)
+    })
+
+    // T-GSR-5: version and schema fields
+    it('tsgridUiVersion is "2.11.0" and schemaVersion is 3', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        expect(snap.tsgridUiVersion).toBe('2.11.0')
+        expect(snap.schemaVersion).toBe(3)
+    })
+
+    // T-GSR-4: 12 subpath keys including grid
+    it('subpathEffective contains exactly 12 subpath keys (sorted)', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        expect(snap.subpathEffective).toBeDefined()
+        expect(Object.keys(snap.subpathEffective).sort()).toEqual(EXPECTED_SUBPATH_KEYS_V211)
+    })
+
+    // T-GSR-5: every entry has required fields with correct types
+    it('every subpathEffective entry has required fields with correct types', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        for (const [name, entry] of Object.entries(snap.subpathEffective as Record<string, any>)) {
+            for (const k of REQUIRED_ENTRY_FIELDS) {
+                expect(entry, `${name} missing field "${k}"`).toHaveProperty(k)
+            }
+            expect(typeof entry.stubPath, `${name}.stubPath must be string`).toBe('string')
+            expect(typeof entry.stubBytes, `${name}.stubBytes must be number`).toBe('number')
+            expect(entry.stubBytes, `${name}.stubBytes must be > 0`).toBeGreaterThan(0)
+            expect(Array.isArray(entry.chunks), `${name}.chunks must be array`).toBe(true)
+            expect(typeof entry.chunkBytes, `${name}.chunkBytes must be number`).toBe('number')
+            expect(entry.chunkBytes, `${name}.chunkBytes must be >= 0`).toBeGreaterThanOrEqual(0)
+            expect(typeof entry.effectiveBytes, `${name}.effectiveBytes must be number`).toBe('number')
+            expect(entry.effectiveBytes, `${name}.effectiveBytes must be > 0`).toBeGreaterThan(0)
+            expect(entry.effectiveBytes, `${name}: effectiveBytes !== stubBytes + chunkBytes`).toBe(entry.stubBytes + entry.chunkBytes)
+            expect(entry.loadedBytes, `${name}: loadedBytes !== stubBytes + chunkBytes`).toBe(entry.stubBytes + entry.chunkBytes)
+            expect(entry.executedBytes, `${name}: executedBytes must be <= loadedBytes`).toBeLessThanOrEqual(entry.loadedBytes)
+            for (const c of entry.chunks) {
+                for (const k of REQUIRED_CHUNK_FIELDS) {
+                    expect(c, `${name} chunk missing field "${k}"`).toHaveProperty(k)
+                }
+            }
+        }
+    })
+
+    // T-GSR-4: ./grid entry has required fields
+    it('./grid effectiveBytes is in [200_000, 350_000] (88% of barrel ≈ 290–340 KB)', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        const grid = snap.subpathEffective.grid
+        expect(grid.effectiveBytes).toBeGreaterThanOrEqual(200_000)
+        expect(grid.effectiveBytes).toBeLessThanOrEqual(350_000)
+    })
+
+    // T-GSR-4: ./grid has at least one transitive chunk
+    it('./grid chunks[] has at least 1 entry', () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        const grid = snap.subpathEffective.grid
+        expect(grid.chunks.length).toBeGreaterThanOrEqual(1)
+        for (const c of grid.chunks) {
+            expect(c.path).toMatch(/^dist\/chunks\/chunk-[A-Z0-9]+\.js$/)
+        }
+    })
+
+    // T-GSR-7: determinism — subpathEffective./grid numeric fields stable across two runs
+    it('subpathEffective is stable across two consecutive snapshot runs', { timeout: 120_000 }, () => {
+        if (!existsSync(V211_BASELINE_PATH)) return
+        const before = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8')).subpathEffective
+        execSync('pnpm bundle:snapshot --version=v2.11.0', { cwd: ROOT, stdio: 'pipe' })
+        const after = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8')).subpathEffective
         expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
     })
 })

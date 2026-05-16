@@ -37,6 +37,7 @@ export default defineConfig({
         'field.es6':     'src/tsfield.ts',
         'layout.es6':    'src/tslayout.ts',
         'form.es6':      'src/tsform.ts',
+        'grid.es6':      'src/tsgrid.ts',
     },
     format: ['esm'],
     outDir: 'dist',

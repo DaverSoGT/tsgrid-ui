@@ -167,10 +167,10 @@ _gridInst.onSearch = (event) => { void event }
 
 // ===========================================================================
 // v2.8.0 subpath exports — runtime + type-only probes (INV-SX-3, REQ-SX-6)
-// Amendment #983: 11 subpaths (./grid deferred to Phase 3)
+// Cycle 6: 12 subpaths (./grid reintroduced).
 // ===========================================================================
 
-// 11 named-import probes (runtime side — proves dist/{name}.es6.js resolves)
+// 12 named-import probes (runtime side — proves dist/{name}.es6.js resolves)
 import { TsLocale as _SP_TsLocale }                                                                          from 'tsgrid-ui/locale'
 import { TsBase as _SP_TsBase, TsEvent as _SP_TsEvent, toSafeEvent as _SP_toSafeEvent }                     from 'tsgrid-ui/base'
 import { TsUi as _SP_TsUi, TsUtils as _SP_TsUtils, query as _SP_query }                                     from 'tsgrid-ui/utils'
@@ -182,14 +182,15 @@ import { TsSidebar as _SP_TsSidebar } from 'tsgrid-ui/sidebar'
 import { TsField as _SP_TsField }     from 'tsgrid-ui/field'
 import { TsLayout as _SP_TsLayout }   from 'tsgrid-ui/layout'
 import { TsForm as _SP_TsForm }       from 'tsgrid-ui/form'
+import { TsGrid as _SP_TsGrid }       from 'tsgrid-ui/grid'
 void _SP_TsLocale; void _SP_TsBase; void _SP_TsEvent; void _SP_toSafeEvent
 void _SP_TsUi; void _SP_TsUtils; void _SP_query
 void _SP_TsPopup; void _SP_TsAlert; void _SP_TsConfirm; void _SP_TsPrompt; void _SP_TsDialog
 void _SP_TsTooltip; void _SP_TsMenu; void _SP_TsColor; void _SP_TsDate; void _SP_Tooltip
 void _SP_TsTabs; void _SP_TsToolbar; void _SP_TsSidebar; void _SP_TsField
-void _SP_TsLayout; void _SP_TsForm
+void _SP_TsLayout; void _SP_TsForm; void _SP_TsGrid
 
-// 11 type-only-import probes (per design §6 Resolution 1 — class-as-type via typeof for const exports)
+// 12 type-only-import probes (per design §6 Resolution 1 — class-as-type via typeof for const exports)
 import type { TsLocaleSettings }    from 'tsgrid-ui/locale'
 import type { TsEventData }         from 'tsgrid-ui/base'
 import type { TsMessageOptions }    from 'tsgrid-ui/utils'
@@ -209,6 +210,20 @@ const _t_sb     : TsSidebarRefreshOptions   | undefined = undefined ; void _t_sb
 const _t_field  : TsFieldOptions            | undefined = undefined ; void _t_field
 const _t_lay    : TsLayoutPanel             | undefined = undefined ; void _t_lay
 const _t_form   : typeof _SP_TsForm         | undefined = undefined ; void _t_form
+// grid type-only probes (R-GSR-3, T-GSR-2)
+import type {
+    TsGridRecord, TsGridColumn, TsGridSearch, TsGridSortData,
+    TsGridSelection, TsGridCellSelection, TsGridRange, TsGridRangeEndpoint, TsGridGroupBy,
+} from 'tsgrid-ui/grid'
+const _t_grid_record    : TsGridRecord        | undefined = undefined ; void _t_grid_record
+const _t_grid_column    : TsGridColumn        | undefined = undefined ; void _t_grid_column
+const _t_grid_search    : TsGridSearch        | undefined = undefined ; void _t_grid_search
+const _t_grid_sort      : TsGridSortData      | undefined = undefined ; void _t_grid_sort
+const _t_grid_selection : TsGridSelection     | undefined = undefined ; void _t_grid_selection
+const _t_grid_cellsel   : TsGridCellSelection | undefined = undefined ; void _t_grid_cellsel
+const _t_grid_range     : TsGridRange         | undefined = undefined ; void _t_grid_range
+const _t_grid_rangeend  : TsGridRangeEndpoint | undefined = undefined ; void _t_grid_rangeend
+const _t_grid_groupby   : TsGridGroupBy       | undefined = undefined ; void _t_grid_groupby
 
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only

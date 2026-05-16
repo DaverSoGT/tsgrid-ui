@@ -40,6 +40,7 @@ export default defineConfig([
             'field.es6':     'src/tsfield.ts',
             'layout.es6':    'src/tslayout.ts',
             'form.es6':      'src/tsform.ts',
+            'grid.es6':      'src/tsgrid.ts',
         },
         format: ['esm'],
         outDir: 'dist',
@@ -132,6 +133,7 @@ export default defineConfig([
             'field':     'src/tsfield.ts',
             'layout':    'src/tslayout.ts',
             'form':      'src/tsform.ts',
+            'grid':      'src/tsgrid.ts',
         },
         format: ['cjs'],
         dts: {

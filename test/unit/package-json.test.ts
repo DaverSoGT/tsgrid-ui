@@ -54,7 +54,7 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.10.0 (singleton-lazy-init release)', () => {
-        expect(pkg.version).toBe('2.10.0')
+    it('package version is 2.11.0 (grid-subpath-reintroduction release)', () => {
+        expect(pkg.version).toBe('2.11.0')
     })
 })

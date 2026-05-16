@@ -1,6 +1,6 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.10.0",
+  "version": "2.11.0",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css",
@@ -55,6 +55,7 @@
     "./field":   { "types": "./dist/field.d.ts",   "import": "./dist/field.es6.js"   },
     "./layout":  { "types": "./dist/layout.d.ts",  "import": "./dist/layout.es6.js"  },
     "./form":    { "types": "./dist/form.d.ts",    "import": "./dist/form.es6.js"    },
+    "./grid":    { "types": "./dist/grid.d.ts",    "import": "./dist/grid.es6.js"    },
     "./css":          "./dist/tsgrid-ui.css",
     "./package.json": "./package.json"
   },

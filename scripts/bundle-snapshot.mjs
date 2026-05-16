@@ -56,7 +56,7 @@ function schemaVersionFor(semver) {
     return 1
 }
 
-// Amendment #983: 11 subpaths (./grid deferred to Phase 3 with splitting:true)
+// Cycle 6 (v2.11.0): ./grid reintroduced. 12 subpaths total.
 // Cycle 4 (v2.8.1): forecastBytes updated to post-splitting stub sizes.
 // With splitting:true, each subpath dist file is a tiny import stub (118-371 B)
 // that re-exports from dist/chunks/*.js. The forecastPct is relative to the
@@ -75,6 +75,7 @@ const SUBPATH_INVENTORY = [
     { name: 'field',   sourceFile: 'src/tsfield.ts',   forecastBytes: 263,  forecastPct: 0.1 },
     { name: 'layout',  sourceFile: 'src/tslayout.ts',  forecastBytes: 340,  forecastPct: 0.1 },
     { name: 'form',    sourceFile: 'src/tsform.ts',    forecastBytes: 371,  forecastPct: 0.1 },
+    { name: 'grid',    sourceFile: 'src/tsgrid.ts',    forecastBytes: 500,  forecastPct: 0.1 },
 ]
 
 function buildSubpathsBlock(cwd) {
