@@ -29,9 +29,10 @@ complete.
   `grid-css-pairing` cycle.
 - **ESM-only**: no `require` condition in `exports["./grid"]`. CJS subpath parity will land
   uniformly across all 12 subpaths in Phase 4 of the v3.0 roadmap.
-- **Effective load**: `tsgrid-ui/grid` transitively loads ~88% of the full barrel (~290–340 KB out
-  of ~341 KB) because `grid-render.ts` pulls in `tstoolbar`, `tstooltip`, and `tsfield`. The real
-  tree-shaking benefit accrues to consumers using grid AND NOT form/sidebar/etc.
+- **Effective load**: `tsgrid-ui/grid` transitively loads ~704 KB of shared chunks (measured in
+  v2.11.0 baseline) because `grid-render.ts` pulls in `tstoolbar`, `tstooltip`, and `tsfield`. The
+  real tree-shaking benefit accrues to consumers using grid AND NOT form/sidebar/etc. who can avoid
+  loading those transitive deps.
 
 ### BC
 
