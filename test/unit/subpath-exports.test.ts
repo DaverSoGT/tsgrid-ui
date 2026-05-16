@@ -19,8 +19,8 @@ const SUBPATHS = [
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
 describe('subpath-exports — package.json shape', () => {
-    it('has exactly 15 exports keys (Cycle 6: 12 subpaths + ".", "./css", "./package.json")', () => {
-        expect(Object.keys(pkg.exports)).toHaveLength(15)
+    it('has exactly 24 exports keys (v2.12.0: 15 existing + 9 per-widget CSS subpaths)', () => {
+        expect(Object.keys(pkg.exports)).toHaveLength(24)
     })
 
     it('"." entry is byte-identical shape (INV-SX-6)', () => {
@@ -73,6 +73,18 @@ describe('subpath-exports — dist artifacts (skipped if no build)', () => {
         expect(existsSync(p)).toBe(true)
         expect(statSync(p).size).toBeGreaterThan(0)
         expect(readFileSync(p, 'utf8')).toMatch(/\bexport\b/)
+    })
+})
+
+describe('subpath-exports — CSS subpaths (v2.12.0 grid-css-pairing)', () => {
+    const CSS_SUBPATHS = ['grid', 'form', 'tooltip', 'popup', 'sidebar', 'tabs', 'toolbar', 'layout', 'field']
+
+    it.each(CSS_SUBPATHS)('"./%s.css" entry maps to ./dist/%s.css', (name) => {
+        expect(pkg.exports[`./${name}.css`]).toBe(`./dist/${name}.css`)
+    })
+
+    it.each(CSS_SUBPATHS)('"./%s.css" export value is a plain string (no conditions object)', (name) => {
+        expect(typeof pkg.exports[`./${name}.css`]).toBe('string')
     })
 })
 

@@ -6,12 +6,15 @@ import { join } from 'node:path'
 const ROOT = process.cwd()
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
-// Spec Q2: the exact 7-entry sideEffects list (v2.10.0 — popup + tooltip removed).
+// Spec Q2: the exact 16-entry sideEffects list (v2.12.0 — 9 per-widget CSS entries added).
 // utils stays (side-effectful: reads navigator/localStorage at construction).
 // popup and tooltip are now lazy-init — safe to tree-shake.
 // locale and base are NOT in the array (pure ESM — safe to tree-shake).
 // All chunk files (dist/chunks/*.js) are implicitly pure and must NOT appear here.
+// v2.12.0: 9 per-widget CSS entries appended in alphabetical order (field, form, grid, layout,
+//   popup, sidebar, tabs, toolbar, tooltip). CSS files are always side-effectful.
 const EXPECTED_SIDE_EFFECTS: string[] = [
+    // v2.10.0 — JS singleton + monolith CSS (UNCHANGED ordering)
     './dist/tsgrid-ui.css',
     './dist/tsgrid-ui.min.css',
     './dist/utils.es6.js',
@@ -19,6 +22,16 @@ const EXPECTED_SIDE_EFFECTS: string[] = [
     './dist/tsgrid-ui.es6.min.js',
     './dist/tsgrid-ui.js',
     './dist/tsgrid-ui.min.js',
+    // v2.12.0 — per-widget CSS (NEW, alphabetical)
+    './dist/field.css',
+    './dist/form.css',
+    './dist/grid.css',
+    './dist/layout.css',
+    './dist/popup.css',
+    './dist/sidebar.css',
+    './dist/tabs.css',
+    './dist/toolbar.css',
+    './dist/tooltip.css',
 ]
 
 describe('package.json sideEffects (R-CSSE-1)', () => {
@@ -26,8 +39,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(Array.isArray(pkg.sideEffects)).toBe(true)
     })
 
-    it('sideEffects has exactly 7 entries (popup + tooltip removed in v2.10.0)', () => {
-        expect(pkg.sideEffects).toHaveLength(7)
+    it('sideEffects has exactly 16 entries (7 existing + 9 per-widget CSS added in v2.12.0)', () => {
+        expect(pkg.sideEffects).toHaveLength(16)
     })
 
     it('sideEffects contains ./dist/utils.es6.js (singleton — side-effectful)', () => {
@@ -54,7 +67,7 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.11.0 (grid-subpath-reintroduction release)', () => {
-        expect(pkg.version).toBe('2.11.0')
+    it('package version is 2.12.0 (grid-css-pairing release)', () => {
+        expect(pkg.version).toBe('2.12.0')
     })
 })

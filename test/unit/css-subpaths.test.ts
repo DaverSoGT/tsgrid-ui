@@ -3,6 +3,7 @@ import { existsSync, statSync, readFileSync } from 'fs'
 import { join } from 'path'
 
 const ROOT = join(__dirname, '../..')
+const V212_BASELINE_PATH = join(ROOT, 'reports', 'bundle', 'v2.12.0-baseline.json')
 
 const distExists = existsSync(join(ROOT, 'dist'))
 
@@ -67,5 +68,59 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         if (!existsSync(cssPath)) return
         const css = readFileSync(cssPath, 'utf8')
         expect(css).toContain('.tsg-scroll')
+    })
+})
+
+// ---------------------------------------------------------------------------
+// package.json wiring assertions (R-GCP-1, R-GCP-2, R-GCP-3) — RED until PR 3 GREEN step
+// ---------------------------------------------------------------------------
+
+const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
+
+describe('css-subpaths — package.json wiring (R-GCP-2/3)', () => {
+    it.each(CSS_SUBPATHS)('"./%s.css" export maps to "./dist/%s.css"', (name) => {
+        expect(pkg.exports[`./${name}.css`]).toBe(`./dist/${name}.css`)
+    })
+
+    it.each(CSS_SUBPATHS)('"./%s.css" export is a plain string value (no conditions object)', (name) => {
+        expect(typeof pkg.exports[`./${name}.css`]).toBe('string')
+    })
+
+    it.each(CSS_SUBPATHS)('sideEffects contains "./dist/%s.css"', (name) => {
+        expect(pkg.sideEffects).toContain(`./dist/${name}.css`)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Monolith unchanged assertions (R-GCP-6, R-GCP-11)
+// ---------------------------------------------------------------------------
+
+describe('css-subpaths — monolith unchanged (R-GCP-6/R-GCP-11)', () => {
+    it('"./css" export still maps to ./dist/tsgrid-ui.css', () => {
+        expect(pkg.exports['./css']).toBe('./dist/tsgrid-ui.css')
+    })
+
+    it.skipIf(!distExists)('dist/tsgrid-ui.css still exists', () => {
+        expect(existsSync(join(ROOT, 'dist', 'tsgrid-ui.css'))).toBe(true)
+    })
+
+    it.skipIf(!distExists)('dist/tsgrid-ui.min.css still exists', () => {
+        expect(existsSync(join(ROOT, 'dist', 'tsgrid-ui.min.css'))).toBe(true)
+    })
+})
+
+// ---------------------------------------------------------------------------
+// Bundle-snapshot invariant (R-GCP-20, T-GCP-15) — CSS keys must NOT appear
+// in subpathEffective. Skips gracefully if v2.12.0-baseline.json not yet generated.
+// ---------------------------------------------------------------------------
+
+describe('css-subpaths — bundle-snapshot invariant (R-GCP-20)', () => {
+    it('v2.12.0 baseline contains no CSS keys in subpathEffective', () => {
+        if (!existsSync(V212_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V212_BASELINE_PATH, 'utf8'))
+        const cssNames = CSS_SUBPATHS.map(n => `${n}.css`)
+        for (const name of cssNames) {
+            expect(Object.keys(snap.subpathEffective)).not.toContain(name)
+        }
     })
 })

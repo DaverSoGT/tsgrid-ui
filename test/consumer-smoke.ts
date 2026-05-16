@@ -226,6 +226,21 @@ const _t_grid_rangeend  : TsGridRangeEndpoint | undefined = undefined ; void _t_
 const _t_grid_groupby   : TsGridGroupBy       | undefined = undefined ; void _t_grid_groupby
 
 // ---------------------------------------------------------------------------
+// v2.12.0 grid-css-pairing — per-widget CSS subpaths (side-effect imports)
+// These validate that TypeScript's module resolver accepts each CSS subpath
+// via the package.json export map. No named imports — pure side-effect form.
+// ---------------------------------------------------------------------------
+import 'tsgrid-ui/grid.css'
+import 'tsgrid-ui/form.css'
+import 'tsgrid-ui/tooltip.css'
+import 'tsgrid-ui/popup.css'
+import 'tsgrid-ui/sidebar.css'
+import 'tsgrid-ui/tabs.css'
+import 'tsgrid-ui/toolbar.css'
+import 'tsgrid-ui/layout.css'
+import 'tsgrid-ui/field.css'
+
+// ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only
 // ---------------------------------------------------------------------------
 export {}

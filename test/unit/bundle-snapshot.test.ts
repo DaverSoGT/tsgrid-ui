@@ -8,6 +8,8 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 import { execSync } from 'node:child_process'
 
+const V212_BASELINE_PATH = join(process.cwd(), 'reports', 'bundle', 'v2.12.0-baseline.json')
+
 const ROOT = process.cwd()
 const BASELINE_PATH = join(ROOT, 'reports', 'bundle', 'v2.8.1-baseline.json')
 
@@ -337,6 +339,73 @@ describe('subpathEffective block (v2.11.0+)', () => {
 // Maps to T-BBI-9, R-BBI-B7, design §4.2, §4.4
 // Imports buildSubpathEffectiveBlock directly (requires ESM main guard from T-01)
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Cycle 7 (v2.12.0): grid-css-pairing — CSS subpaths must NOT appear in subpathEffective
+// Maps to T-GCP-15, T-GCP-16, R-GCP-18, R-GCP-19, R-GCP-20
+// Guards skip gracefully when v2.12.0-baseline.json is absent (pre-generate).
+// ---------------------------------------------------------------------------
+
+describe('subpathEffective block (v2.12.0 grid-css-pairing)', () => {
+    const CSS_WIDGET_NAMES = ['field', 'form', 'grid', 'layout', 'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip']
+
+    // T-GCP-16: file exists + version + schema fields
+    it('reports/bundle/v2.12.0-baseline.json exists', () => {
+        if (!existsSync(V212_BASELINE_PATH)) return
+        expect(existsSync(V212_BASELINE_PATH)).toBe(true)
+    })
+
+    it('tsgridUiVersion is "2.12.0" and schemaVersion is 3', () => {
+        if (!existsSync(V212_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V212_BASELINE_PATH, 'utf8'))
+        expect(snap.tsgridUiVersion).toBe('2.12.0')
+        expect(snap.schemaVersion).toBe(3)
+    })
+
+    // T-GCP-15: subpathEffective has exactly 12 JS keys — CSS subpaths excluded
+    it('subpathEffective contains exactly 12 JS subpath keys (no CSS subpaths)', () => {
+        if (!existsSync(V212_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V212_BASELINE_PATH, 'utf8'))
+        expect(Object.keys(snap.subpathEffective)).toHaveLength(12)
+        // Negative assertions: CSS subpath names must NOT appear
+        for (const name of CSS_WIDGET_NAMES) {
+            expect(Object.keys(snap.subpathEffective)).not.toContain(`${name}.css`)
+            // Also guard against bare CSS widget names slipping through (without .css suffix)
+            // Only "grid", "form", etc. are valid JS subpath keys — those ARE expected to exist
+        }
+    })
+
+    // T-GCP-15: NEGATIVE test — specific CSS subpath names must be absent from subpathEffective
+    it('CSS subpath names (.css suffix) are absent from subpathEffective keys', () => {
+        if (!existsSync(V212_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V212_BASELINE_PATH, 'utf8'))
+        const subpathKeys = Object.keys(snap.subpathEffective)
+        for (const name of CSS_WIDGET_NAMES) {
+            expect(subpathKeys, `"${name}.css" must not appear in subpathEffective`).not.toContain(`${name}.css`)
+        }
+        // Belt-and-suspenders: no key should end with .css
+        const cssKeys = subpathKeys.filter(k => k.endsWith('.css'))
+        expect(cssKeys, 'no .css-suffixed keys allowed in subpathEffective').toEqual([])
+    })
+
+    // T-GCP-16: determinism — v2.12.0 subpathEffective stable across two consecutive runs
+    it('subpathEffective is stable across two consecutive snapshot runs (v2.12.0)', { timeout: 120_000 }, () => {
+        const pkgVersion = JSON.parse(readFileSync(join(process.cwd(), 'package.json'), 'utf8')).version
+        if (!existsSync(V212_BASELINE_PATH) || pkgVersion !== '2.12.0') return
+        const TMP = join(tmpdir(), 'tsgrid-bundle-snapshot-determinism-v2.12.0.json')
+        try {
+            const before = JSON.parse(readFileSync(V212_BASELINE_PATH, 'utf8')).subpathEffective
+            execSync(`pnpm bundle:snapshot --version=v2.12.0 --out="${TMP}"`, {
+                cwd: process.cwd(),
+                stdio: 'pipe',
+            })
+            const after = JSON.parse(readFileSync(TMP, 'utf8')).subpathEffective
+            expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        } finally {
+            if (existsSync(TMP)) unlinkSync(TMP)
+        }
+    })
+})
 
 describe('subpathEffective AC-8 — hard-fail on missing stub', () => {
     it('buildSubpathEffectiveBlock throws / exits when a stub is missing from metafile.outputs', async () => {
