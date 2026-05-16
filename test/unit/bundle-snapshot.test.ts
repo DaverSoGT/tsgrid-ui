@@ -3,8 +3,9 @@
 // v2.10.0 addition: R-SLI-DESIGN-3 ctor-marker assertions for popup + tooltip stubs.
 // v2.10.0 addition: subpathEffective block (T-BBI-3 through T-BBI-9, T-01 main guard).
 import { describe, it, expect, beforeAll } from 'vitest'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, unlinkSync } from 'node:fs'
 import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 import { execSync } from 'node:child_process'
 
 const ROOT = process.cwd()
@@ -77,13 +78,20 @@ describe('bundle-snapshot schema v3 — Opt-C deferral (R-CSSE-4 amended, AC6, A
             const { generatedAt: _ts, ...rest } = snap
             return rest
         }
-        const before = stripTimestamp(JSON.parse(readFileSync(BASELINE_PATH, 'utf8')))
-        execSync('pnpm bundle:snapshot --version=v2.8.1', {
-            cwd: ROOT,
-            stdio: 'pipe',
-        })
-        const after = stripTimestamp(JSON.parse(readFileSync(BASELINE_PATH, 'utf8')))
-        expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        // Write to an OS-tmpdir path via --out= so the committed baseline file
+        // is never mutated by this determinism check (#1080).
+        const TMP = join(tmpdir(), 'tsgrid-bundle-snapshot-determinism-v2.8.1.json')
+        try {
+            const before = stripTimestamp(JSON.parse(readFileSync(BASELINE_PATH, 'utf8')))
+            execSync(`pnpm bundle:snapshot --version=v2.8.1 --out="${TMP}"`, {
+                cwd: ROOT,
+                stdio: 'pipe',
+            })
+            const after = stripTimestamp(JSON.parse(readFileSync(TMP, 'utf8')))
+            expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        } finally {
+            if (existsSync(TMP)) unlinkSync(TMP)
+        }
     })
 })
 
@@ -208,10 +216,17 @@ describe('subpathEffective block (v2.10.0+)', () => {
     it('subpathEffective is stable across two consecutive snapshot runs', { timeout: 120_000 }, () => {
         const pkgVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version
         if (!existsSync(V210_BASELINE_PATH) || pkgVersion !== '2.10.0') return
-        const before = JSON.parse(readFileSync(V210_BASELINE_PATH, 'utf8')).subpathEffective
-        execSync('pnpm bundle:snapshot --version=v2.10.0', { cwd: ROOT, stdio: 'pipe' })
-        const after = JSON.parse(readFileSync(V210_BASELINE_PATH, 'utf8')).subpathEffective
-        expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        // Write to an OS-tmpdir path via --out= so the committed baseline file
+        // is never mutated by this determinism check (#1080).
+        const TMP = join(tmpdir(), 'tsgrid-bundle-snapshot-determinism-v2.10.0.json')
+        try {
+            const before = JSON.parse(readFileSync(V210_BASELINE_PATH, 'utf8')).subpathEffective
+            execSync(`pnpm bundle:snapshot --version=v2.10.0 --out="${TMP}"`, { cwd: ROOT, stdio: 'pipe' })
+            const after = JSON.parse(readFileSync(TMP, 'utf8')).subpathEffective
+            expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        } finally {
+            if (existsSync(TMP)) unlinkSync(TMP)
+        }
     })
 })
 
@@ -295,13 +310,25 @@ describe('subpathEffective block (v2.11.0+)', () => {
         }
     })
 
-    // T-GSR-7: determinism — subpathEffective./grid numeric fields stable across two runs
+    // T-GSR-7: determinism — subpathEffective./grid numeric fields stable across two runs.
+    // Note: only meaningful when pkg.version === '2.11.0'. On later working trees,
+    // SUBPATH_INVENTORY may have changed so regenerating the baseline would produce
+    // different output — that is expected cross-version divergence, not a non-determinism
+    // failure. Determinism for v2.12.0+ will be covered in its own suite.
     it('subpathEffective is stable across two consecutive snapshot runs', { timeout: 120_000 }, () => {
-        if (!existsSync(V211_BASELINE_PATH)) return
-        const before = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8')).subpathEffective
-        execSync('pnpm bundle:snapshot --version=v2.11.0', { cwd: ROOT, stdio: 'pipe' })
-        const after = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8')).subpathEffective
-        expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        const pkgVersion = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8')).version
+        if (!existsSync(V211_BASELINE_PATH) || pkgVersion !== '2.11.0') return
+        // Write to an OS-tmpdir path via --out= so the committed baseline file
+        // is never mutated by this determinism check (#1080).
+        const TMP = join(tmpdir(), 'tsgrid-bundle-snapshot-determinism-v2.11.0.json')
+        try {
+            const before = JSON.parse(readFileSync(V211_BASELINE_PATH, 'utf8')).subpathEffective
+            execSync(`pnpm bundle:snapshot --version=v2.11.0 --out="${TMP}"`, { cwd: ROOT, stdio: 'pipe' })
+            const after = JSON.parse(readFileSync(TMP, 'utf8')).subpathEffective
+            expect(JSON.stringify(after, null, 2)).toBe(JSON.stringify(before, null, 2))
+        } finally {
+            if (existsSync(TMP)) unlinkSync(TMP)
+        }
     })
 })
 
