@@ -58,6 +58,7 @@ src/
 - **No build after changes** unless user explicitly authorizes
 - **Indent**: 4 spaces (ESLint enforced)
 - **Branch flow**: master is mainline, tags `v*` for releases, `origin` = DaverSoGT/tsgrid-ui, `upstream` = vitmalina/w2ui (preserved for cherry-picks)
+- **CHANGELOG — additive-with-caveat pattern**: when a release is SemVer MINOR/PATCH ("purely additive", no breaking changes) but a consumer who adopts the new feature in isolation may experience a non-obvious consequence (a subset import missing functionality, a smaller artifact lacking a dependency, an optional behavior that needs extra setup), the entry MUST include a **Known Limitations** section that documents the caveat with: (a) what the consumer literally sees when they hit the limitation, (b) the workaround or fallback path, (c) the tracker for future resolution if any. Mirror the limitation to `README.md` and `MIGRATION_v2.md` for the same release. Template reference: v2.12.0 icon-glyph entry (`CHANGELOG.md` L49-60) — the per-widget CSS subpaths ship without OpenSans, so icon glyphs render as empty boxes unless the consumer also imports the monolith. Do NOT bury the caveat under generic notes; surface it at the top of Known Limitations.
 
 ## Active session preferences
 - Mode: **automatic** — chain phases back-to-back, show only final result per phase
