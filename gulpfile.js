@@ -35,6 +35,7 @@ let tasks = {
     },
 
     less(cb) {
+        const out = process.env.TSGRID_CSS_OUT || 'dist/'
         return gulp
             .src(['src/less/*.less'])
             .on('error', function (err) {
@@ -43,14 +44,15 @@ let tasks = {
             })
             .pipe(less())
             .pipe(header(comments.tsgrid))
-            .pipe(gulp.dest('dist/'))
+            .pipe(gulp.dest(out))
             .pipe(cleanCSS())
             .pipe(rename({ suffix: '.min' }))
             .pipe(header(comments.tsgrid))
-            .pipe(gulp.dest('dist/'))
+            .pipe(gulp.dest(out))
     },
 
     widgets(cb) {
+        const out = process.env.TSGRID_CSS_OUT || 'dist/'
         const WIDGET_ENTRIES = [
             'src/less/entries/grid.less',
             'src/less/entries/form.less',
@@ -69,7 +71,7 @@ let tasks = {
             })
             .pipe(less())
             .pipe(header(comments.tsgrid))
-            .pipe(gulp.dest('dist/'))
+            .pipe(gulp.dest(out))
     },
 
     icons(cb) {
