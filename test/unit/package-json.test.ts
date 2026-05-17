@@ -70,4 +70,13 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
     it('package version is 2.12.0 (grid-css-pairing release)', () => {
         expect(pkg.version).toBe('2.12.0')
     })
+
+    // R-GCP-4 regression guard: files[] must not exclude per-widget CSS
+    // (verify report #1088 W-1). The 9 new dist/<widget>.css files ship via the
+    // implicit "dist/" glob; any future regression that adds "!dist/*.css" (or
+    // a narrower !dist/<widget>.css) would silently drop them from the tarball.
+    it('files[] has no !dist/*.css exclusion pattern (R-GCP-4 regression guard)', () => {
+        const cssExclusions = pkg.files.filter((f: string) => /^!dist.*\.css$/.test(f))
+        expect(cssExclusions).toEqual([])
+    })
 })

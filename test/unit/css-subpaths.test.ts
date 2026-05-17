@@ -107,6 +107,18 @@ describe('css-subpaths — monolith unchanged (R-GCP-6/R-GCP-11)', () => {
     it.skipIf(!distExists)('dist/tsgrid-ui.min.css still exists', () => {
         expect(existsSync(join(ROOT, 'dist', 'tsgrid-ui.min.css'))).toBe(true)
     })
+
+    // T-GCP-12: monolith byte-stability vs v2.11.0 fixture (modulo dated header).
+    // Rescues the regression guard lost when test/unit/less-extraction.test.ts was
+    // deleted in slice 2 commit bb211b6c without replacement (verify report #1088 W-2).
+    // The fixture test/fixtures/tsgrid-ui-v2.11.0.css is the v2.11.0 baseline anchor;
+    // any drift from variables.less, mixins.less, or partial imports MUST fail this check.
+    it.skipIf(!distExists)('dist/tsgrid-ui.css byte-stable vs v2.11.0 fixture (modulo dated header)', () => {
+        const stripHeader = (s: string) => s.replace(/^\/\* tsgrid-ui[^\n]*\n/, '')
+        const monolith = readFileSync(join(ROOT, 'dist', 'tsgrid-ui.css'), 'utf8')
+        const fixture  = readFileSync(join(ROOT, 'test', 'fixtures', 'tsgrid-ui-v2.11.0.css'), 'utf8')
+        expect(stripHeader(monolith)).toEqual(stripHeader(fixture))
+    })
 })
 
 // ---------------------------------------------------------------------------
