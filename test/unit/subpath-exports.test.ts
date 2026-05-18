@@ -80,6 +80,26 @@ describe('subpath-exports — dist artifacts (skipped if no build)', () => {
     })
 })
 
+// ---------------------------------------------------------------------------
+// barrel-removal (v3.0.0): T-SX-2, T-SX-3 (R-BR-3, R-SCI-9)
+// T-SX-2: "." removed; T-SX-3: "./icons" present.
+// Count stays 24: -1 for "." removal, +1 for "./icons" addition.
+// ---------------------------------------------------------------------------
+describe('subpath-exports — v3.0.0 barrel-removal assertions (T-SX-2, T-SX-3)', () => {
+    it('T-SX-2: pkg.exports["."] is undefined (removed in v3.0.0 — R-BR-3)', () => {
+        expect(pkg.exports['.']).toBeUndefined()
+    })
+
+    it('T-SX-3: pkg.exports["./icons"] is defined with correct shape (R-SCI-9)', () => {
+        expect(pkg.exports['./icons']).toBeDefined()
+        expect(pkg.exports['./icons']).toMatchObject({
+            types:   './dist/icons.d.ts',
+            import:  './dist/icons.es6.js',
+            require: './dist/icons.js',
+        })
+    })
+})
+
 describe('subpath-exports — CSS subpaths (v2.12.0 grid-css-pairing)', () => {
     const CSS_SUBPATHS = ['grid', 'form', 'tooltip', 'popup', 'sidebar', 'tabs', 'toolbar', 'layout', 'field']
 

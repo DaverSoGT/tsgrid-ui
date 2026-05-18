@@ -126,6 +126,27 @@ describe('package.json barrel-deprecation assertions (T-BD-10, T-BD-11)', () => 
 })
 
 // ---------------------------------------------------------------------------
+// barrel-removal (v3.0.0): T-PKG-1..T-PKG-3 (R-BR-3, R-BR-4, R-BR-8, R-SCI-9, R-SCI-11)
+// ---------------------------------------------------------------------------
+describe('package.json barrel-removal assertions (v3.0.0)', () => {
+    it('T-PKG-1: package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle allow-list)', () => {
+        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    })
+
+    it('T-PKG-2: package.json#exports["./icons"] is defined (R-SCI-9)', () => {
+        expect(pkg.exports['./icons']).toBeDefined()
+    })
+
+    it('T-PKG-3: package.json#sideEffects does NOT contain ./dist/icons.es6.js (R-SCI-11, INV-4)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/icons.es6.js')
+    })
+
+    it('T-PKG-3b: package.json#sideEffects does NOT contain ./dist/icons.js (R-SCI-11, INV-4)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/icons.js')
+    })
+})
+
+// ---------------------------------------------------------------------------
 // font-externalization (v2.14.0): T-FE-10..T-FE-13 (R-FE-8, R-FE-9, R-FE-11, R-FE-12)
 // ---------------------------------------------------------------------------
 describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () => {
