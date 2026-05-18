@@ -107,7 +107,7 @@
     "consumer-smoke-cjs": "node test/consumer-smoke-cjs.js",
     "test:unit": "vitest run --passWithNoTests",
     "test:unit:watch": "vitest",
-    "verify": "pnpm build && pnpm lint && pnpm typecheck && pnpm consumer-smoke && pnpm consumer-smoke-cjs && pnpm test:unit && pnpm smoke",
+    "verify": "pnpm build:js && pnpm lint && pnpm typecheck && pnpm consumer-smoke && pnpm consumer-smoke-cjs && pnpm test:unit && pnpm smoke",
     "test": "pnpm lint && pnpm typecheck",
     "dev": "tsup --watch"
   },
