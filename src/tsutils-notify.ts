@@ -9,6 +9,7 @@
  * - query from ./query.js  (DOM helper, leaf module)
  */
 import { query as _query, Query } from './query.js'
+import { crossIcon } from './icons.js'
 
 // query() overload returns void|Query when called with a callback; notify only uses selector calls.
 // Cast to always return Query so chained calls don't need type guards — matches tsutils.ts pattern.
@@ -85,7 +86,7 @@ export function notify(
                     <div id="tsg-notify" style="${where == document.body ? 'position: fixed' : ''}">
                         <div class="${opts['class'] ?? ''} ${opts['error'] ? 'tsg-notify-error' : ''} ${opts['success'] ? 'tsg-notify-success' : ''}">
                             ${textStr}
-                            <span class="tsg-notify-close tsg-icon-cross"></span>
+                            <span class="tsg-notify-close">${crossIcon({ label: 'Close', size: 16 })}</span>
                         </div>
                     </div>`
             query(where).append(html)

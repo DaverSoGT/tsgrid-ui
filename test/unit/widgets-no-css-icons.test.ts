@@ -31,9 +31,10 @@
  *     icon: 'tsg-icon-{name}' data assignments in tsgrid.ts toolbar defaults ARE
  *     in scope: they feed the toolbar renderer which uses them as CSS classes.
  *
- * Widget files in scope (9 files per R-SCI-12):
+ * Widget files in scope (10 files per R-SCI-12 + v3.0.1 hotfix):
  *   src/tsgrid.ts, src/grid-render.ts, src/tspopup.ts, src/tstooltip.ts,
- *   src/tsfield.ts, src/tsform.ts, src/tstoolbar.ts, src/tstabs.ts, src/tssidebar.ts
+ *   src/tsfield.ts, src/tsform.ts, src/tstoolbar.ts, src/tstabs.ts, src/tssidebar.ts,
+ *   src/tsutils-notify.ts (added in v3.0.1 — closes v3.0.0 coverage hole)
  *
  * Additionally: src/grid-search.ts (grid search helper with icon data).
  */
@@ -163,6 +164,13 @@ describe('T-SCI-15: widget source files have no tsg-icon-{name} CSS class inject
         // findCssIconViolations only checks the 18 icon names; 'selected' is not among them.
         const violations = findCssIconViolations(src)
         expect(violations, `tssidebar.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
+    })
+
+    // --- src/tsutils-notify.ts (added in v3.0.1 — closes v3.0.0 coverage hole) ---
+    it('src/tsutils-notify.ts has no tsg-icon-{name} class injection', () => {
+        const src = readFileSync(join(ROOT, 'src', 'tsutils-notify.ts'), 'utf8')
+        const violations = findCssIconViolations(src)
+        expect(violations, `tsutils-notify.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
     })
 })
 
