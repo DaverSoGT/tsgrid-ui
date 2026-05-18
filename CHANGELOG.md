@@ -2,6 +2,36 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.15.0 — 2026-05-17
+
+### Deprecated
+
+- **`tsgrid-ui` flat barrel is deprecated** (R-BD-1..R-BD-6, R-BD-11). Importing from `tsgrid-ui` (e.g., `import { TsGrid } from 'tsgrid-ui'`) is now marked `@deprecated` in TypeScript declarations. Consumers will see IDE strikethrough on every barrel-sourced name. The barrel STILL WORKS in v2.x — `exports["."]` is unchanged, no signatures change, zero runtime behavior change in production. **Removal target: v3.0** (no calendar date; version-anchored). See [MIGRATION_v2.md#v2150--barrel-deprecation](MIGRATION_v2.md#v2150--barrel-deprecation) for the per-widget migration table.
+- A one-time **dev-mode console warning** fires at module evaluation when the barrel is imported. Guarded by `typeof process !== 'undefined' && process?.env?.NODE_ENV !== 'production'`, so production bundles (Vite/webpack/esbuild) DCE-eliminate it. Warning includes the migration URL and the v3.0 removal covenant.
+- The CJS/IIFE barrel (`src/index-legacy.ts` → `dist/tsgrid-ui.js`) carries the same `@deprecated` JSDoc but NO runtime warning. `process.env` is unreliable in browser IIFE contexts; deprecation signaling for IIFE consumers is documentation-only.
+
+### Added
+
+- **Branded utility types are now accessible via `tsgrid-ui/utils`** (R-TG-1, R-TG-2). `Brand`, `RecId`, `LayoutPanelId`, and `FieldName` are re-exported from `src/tsutils.ts` and appear in `dist/utils.d.ts`. This closes the single subpath coverage gap that previously left these types reachable only via the (now-deprecated) flat barrel. Consumers can `import type { RecId } from 'tsgrid-ui/utils'`.
+
+### Changed
+
+- **`README.md` Quick Start** now uses `import { TsGrid } from 'tsgrid-ui/grid'` as the canonical example. The previous barrel-form example is removed. A brief migration note links to MIGRATION_v2.md.
+- **`MIGRATION_v2.md`** gains a `## v2.15.0 — Barrel Deprecation` section with the complete widget→subpath migration table, codemod regex hint, and v3.0 removal covenant. The contradicting "SUPPORTED — stable public API: `import { TsGrid } from 'tsgrid-ui'`" line in the BC-2 (deep imports) section is replaced with the subpath-canonical form.
+- **`scripts/patch-deprecated.mjs`** added as a post-build step in `build:js`. tsup/rollup-dts strips JSDoc from re-export statements in the rolled-up `dist/tsgrid-ui.d.ts`; this script patches `@deprecated` JSDoc back above each export line after every build (G-2 gate).
+
+### Known Limitations
+
+1. **One-time warn fires per module instance, not per process**. In simple consumer setups (one bundler entry point), this means "once per page load." In code-splitting bundlers that emit multiple chunks each containing the `tsgrid-ui` barrel module, the warning may fire 2× (rarely more). This is informational, not safety-critical; the warning is intentionally non-throwing.
+2. **CJS/IIFE barrel deprecation is JSDoc-only**. `src/index-legacy.ts` consumers (browser `<script>` and Node CJS `require('tsgrid-ui')`) get the `@deprecated` JSDoc but no runtime signal. Browsers don't expose `process.env`; falling back to a `localStorage` flag or unconditional `console.warn` was rejected for safety/noise tradeoffs. IIFE consumers should consult MIGRATION_v2.md directly.
+3. **The `Brand<K, T>` utility type was `@internal`-tagged at the source declaration site** (`src/types.ts`) but the tag was removed in v2.15.0 to enable the `tsgrid-ui/utils` re-export (R-TG-2). With `stripInternal: true` in tsup, `@internal` declarations are stripped from `.d.ts` outputs. Consumers who derive their own branded types may import `Brand` from `tsgrid-ui/utils`.
+
+### Breaking Changes
+
+None. v2.15.0 is a purely additive release. All existing imports continue to work. The barrel remains in `exports["."]`. No public function or class signatures change. No `exports` map keys are removed.
+
+---
+
 ## v2.14.0 — 2026-05-17
 
 ### Changed

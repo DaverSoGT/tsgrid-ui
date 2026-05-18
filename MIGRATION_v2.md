@@ -204,12 +204,16 @@ import { someHelper } from 'tsgrid-ui/src/tsgrid'
 import { someHelper } from 'tsgrid-ui/src/grid-columns'
 ```
 
-Always import from the public barrel:
+Always import from the canonical per-widget subpath:
 
 ```ts
-// SUPPORTED — stable public API
-import { TsGrid, TsEventPayload } from 'tsgrid-ui'
+// SUPPORTED — stable public API (v2.15.0+)
+import { TsGrid } from 'tsgrid-ui/grid'
+import type { TsEventPayload } from 'tsgrid-ui/base'
 ```
+
+> The flat `tsgrid-ui` barrel still works in v2.x but is **deprecated** as of v2.15.0
+> and **will be removed in v3.0**. See the section below for the migration table.
 
 ---
 
@@ -293,4 +297,64 @@ the fonts without the full monolith.
 
 This is a SEMVER MINOR release. No existing import paths change. The only required action is:
 - If you want to use per-widget imports: add the new `import 'tsgrid-ui/<widget>.css'` statements.
+
+---
+
+## v2.15.0 — Barrel Deprecation
+
+The flat barrel `import { ... } from 'tsgrid-ui'` is **deprecated** as of v2.15.0 and **will be removed in v3.0**. There is no calendar date for v3.0 — the removal is version-anchored, not time-anchored.
+
+### Why
+
+Per-widget subpaths (introduced in v2.8.0 and completed in v2.13.0) enable tree-shaking. Importing from the flat barrel forces consumers' bundlers to retain the full 700 KB module graph even when they only use one widget. Subpath imports give consumers per-widget granularity and unlock the multi-entry build that v2.x has been promising since v2.0.
+
+### What you'll see
+
+1. **IDE strikethrough** on every named import from `tsgrid-ui` (powered by `@deprecated` JSDoc on each re-export).
+2. **One dev-mode console warning** per process at module load:
+   ```
+   [tsgrid-ui] Importing from "tsgrid-ui" (the flat barrel) is deprecated as of v2.15.0 ...
+   ```
+   Dead-code-eliminated in production bundles. Guarded by `process.env.NODE_ENV !== 'production'`.
+3. **No runtime behavior change** — the barrel still re-exports everything and resolves identically. Production consumers see ZERO change.
+
+### Migration table
+
+| Barrel import (deprecated) | Replace with |
+|---|---|
+| `import { TsUi, TsUtils, query } from 'tsgrid-ui'` | `from 'tsgrid-ui/utils'` |
+| `import { TsLocale } from 'tsgrid-ui'` | `from 'tsgrid-ui/locale'` |
+| `import { TsEvent, TsBase, toSafeEvent } from 'tsgrid-ui'` | `from 'tsgrid-ui/base'` |
+| `import { TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog } from 'tsgrid-ui'` | `from 'tsgrid-ui/popup'` |
+| `import { TsTooltip, TsMenu, TsColor, TsDate, Tooltip } from 'tsgrid-ui'` | `from 'tsgrid-ui/tooltip'` |
+| `import { TsToolbar } from 'tsgrid-ui'` | `from 'tsgrid-ui/toolbar'` |
+| `import { TsSidebar } from 'tsgrid-ui'` | `from 'tsgrid-ui/sidebar'` |
+| `import { TsTabs } from 'tsgrid-ui'` | `from 'tsgrid-ui/tabs'` |
+| `import { TsLayout } from 'tsgrid-ui'` | `from 'tsgrid-ui/layout'` |
+| `import { TsGrid } from 'tsgrid-ui'` | `from 'tsgrid-ui/grid'` |
+| `import { TsForm } from 'tsgrid-ui'` | `from 'tsgrid-ui/form'` |
+| `import { TsField } from 'tsgrid-ui'` | `from 'tsgrid-ui/field'` |
+| `import type { RecId, LayoutPanelId, FieldName, Brand } from 'tsgrid-ui'` | `from 'tsgrid-ui/utils'` (NEW in v2.15.0) |
+| `import type { TsEventData, TsEventPayload } from 'tsgrid-ui'` | `from 'tsgrid-ui/base'` |
+| `import type { TsGridRecord, TsGridColumn, ... } from 'tsgrid-ui'` | `from 'tsgrid-ui/grid'` |
+| `import type { TsFieldOptions, TsFieldElement, ... } from 'tsgrid-ui'` | `from 'tsgrid-ui/field'` |
+| `import type { TsLayoutPanel, TsPanelType, TsPanelContent } from 'tsgrid-ui'` | `from 'tsgrid-ui/layout'` |
+| `import type { TsSidebar* } from 'tsgrid-ui'` | `from 'tsgrid-ui/sidebar'` |
+| `import type { TsLocaleSettings } from 'tsgrid-ui'` | `from 'tsgrid-ui/locale'` |
+| `import type { TsMessage*, TsMenuItem, TsColorRgb, TsLockOptions, TsCloneOptions } from 'tsgrid-ui'` | `from 'tsgrid-ui/utils'` |
+
+### Codemod regex hint
+
+For codebases with many barrel imports, a one-shot regex substitution gets you most of the way (review diffs manually):
+
+```bash
+# PowerShell + sd (https://github.com/chmln/sd)
+sd "from 'tsgrid-ui'" "from 'tsgrid-ui/<subpath>'" path/to/your/src/**/*.ts
+```
+
+Replace `<subpath>` per the table above. Most consumer codebases import 1–3 widgets, so 1–3 sd passes are typical.
+
+### Removal target
+
+**v3.0** (no calendar date; version-anchored). v3.0 will remove `exports["."]` from `package.json`, breaking `import 'tsgrid-ui'` for ESM and `require('tsgrid-ui')` for CJS. The IIFE monolith (`dist/tsgrid-ui.js` for `<script>` tag consumers) may live longer than `exports["."]` — that decision is deferred to the v3.0 design cycle.
 - If you are satisfied with the monolith: no changes needed.

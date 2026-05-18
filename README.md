@@ -25,7 +25,7 @@ pnpm add tsgrid-ui
 ## Quick start
 
 ```ts
-import { TsGrid } from 'tsgrid-ui'
+import { TsGrid } from 'tsgrid-ui/grid'
 import 'tsgrid-ui/css'
 
 const grid = new TsGrid({
@@ -42,6 +42,8 @@ const grid = new TsGrid({
 })
 grid.render('#mygrid')
 ```
+
+> Per-widget subpaths (`tsgrid-ui/<widget>`) are the canonical import shape as of **v2.15.0** and enable tree-shaking. The flat `tsgrid-ui` barrel is deprecated and will be removed in **v3.0** — see [MIGRATION_v2.md#v2150--barrel-deprecation](MIGRATION_v2.md#v2150--barrel-deprecation).
 
 ```html
 <div id="mygrid" style="width: 600px; height: 300px;"></div>
