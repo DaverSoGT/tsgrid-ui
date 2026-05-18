@@ -40,6 +40,8 @@ TypeScript-native UI component library, ESM-first, dual ESM/CJS bundle, zero run
 
 **Important**: `dist/` is versioned in git deliberately for traceability. Building regenerates `dist/tsgrid-ui.{js,es6.js,d.ts,css,min.css}` + iconfont. `gulp icons` is non-deterministic in woff metadata (~2 bytes change per run) — accepted noise.
 
+**Why `pnpm verify` calls `pnpm build:js` and not `pnpm build`**: the verify chain MUST leave the working tree clean (bug #1080 anchor — see `test/unit/build-determinism.test.ts`). `pnpm build:css` invokes `gulp icons` whose woff metadata mutates per run, which would dirty `dist/` mid-verify and cause downstream byte-stability tests (`tarball-contents`, `css-subpaths` byte-stable check) to fail spuriously. The CSS pipeline is exercised separately by `test/unit/build-determinism.test.ts` (which runs `gulp less` into a tmpdir, NOT `gulp icons`). Closing this gap end-to-end requires the future `font-externalization` cycle to deterministically generate the icon woff (e.g. fixed timestamp, sorted glyph order) — tracked as tech-debt carry-forward from verify reports #1088 (W-3) and #1104 (W-3). Until that cycle ships, keep verify as `build:js`-only.
+
 ## Source layout
 ```
 src/
