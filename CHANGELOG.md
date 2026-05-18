@@ -2,6 +2,55 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v3.0.0 — 2026-05-18
+
+### Breaking Changes
+
+1. **Flat barrel removed** (`exports["."]` deleted from `package.json`). `import { TsGrid } from 'tsgrid-ui'` throws `ERR_PACKAGE_PATH_NOT_EXPORTED`. Migrate to `import { TsGrid } from 'tsgrid-ui/grid'`. See [MIGRATION_v3.md#v300--barrel-removed](MIGRATION_v3.md#v300--barrel-removed) for the full per-widget table.
+
+2. **IIFE monolith bundles removed** (`dist/tsgrid-ui.js`, `dist/tsgrid-ui.min.js`). Browser `<script src="...tsgrid-ui.min.js">` consumers must migrate to `<script type="module">` with subpath ESM imports. See [MIGRATION_v3.md#v300--iife-globals](MIGRATION_v3.md#v300--iife-globals).
+
+3. **`.tsg-icon-{name}` CSS background-image rules removed from `icons.less`**. The 18 named icon CSS classes (`tsg-icon-box`, `tsg-icon-check`, `tsg-icon-columns`, `tsg-icon-cross`, `tsg-icon-drop`, `tsg-icon-empty`, `tsg-icon-expand`, `tsg-icon-collapse`, `tsg-icon-eye-dropper`, `tsg-icon-info`, `tsg-icon-paste`, `tsg-icon-pencil`, `tsg-icon-plus`, `tsg-icon-reload`, `tsg-icon-search`, `tsg-icon-settings`, `tsg-icon-colors`, `tsg-icon-chevron-down`) no longer render icons. Use functions from `tsgrid-ui/icons` instead. See [MIGRATION_v3.md#v300--icon-api](MIGRATION_v3.md#v300--icon-api).
+
+4. **CSS border-trick expand/collapse chevrons removed from `common.less`**. The `.tsg-icon-expand` and `.tsg-icon-collapse` CSS border-triangle rules are deleted. The `tsform.ts` and `grid-render.ts` renderers now use inline SVG (`expandIcon()` / `collapseIcon()`). Consumer CSS that targeted `.tsg-icon-expand::before` or `.tsg-icon-collapse::before` will no longer match.
+
+### Removed
+
+- `exports["."]` (flat barrel) from `package.json`
+- `dist/tsgrid-ui.js` and `dist/tsgrid-ui.min.js` (IIFE monolith bundles)
+- `background-image:` rules for 18 named icons from `src/less/src/icons.less`
+- `.tsg-icon-expand` / `.tsg-icon-collapse` border-trick rules from `src/less/src/common.less`
+- `src/less/icons/svg/drop-inverted.svg` (replaced by `color: #fff` + `fill="currentColor"` pattern)
+
+### Added
+
+- **`tsgrid-ui/icons` subpath** — 18 icon functions (`boxIcon`, `checkIcon`, `chevronDownIcon`, `collapseIcon`, `colorsIcon`, `columnsIcon`, `crossIcon`, `dropIcon`, `emptyIcon`, `expandIcon`, `eyeDropperIcon`, `infoIcon`, `pasteIcon`, `pencilIcon`, `plusIcon`, `reloadIcon`, `searchIcon`, `settingsIcon`). Each returns an `<svg>` HTML string. Supports `opts.label` (sets `aria-label`), `opts.size` (default 16px), `opts.class`.
+- **3 new SVG source files**: `src/less/icons/svg/expand.svg`, `collapse.svg`, `chevron-down.svg`.
+- **`test/fixtures/tsgrid-ui-v3.0.0.css`** — new byte-stable CSS fixture anchor (replaces v2.14.0 fixture). Reflects removal of per-icon background-image SVG data URI blobs.
+- **`MIGRATION_v3.md`** — full v3.0 migration guide with per-section anchors.
+
+### Changed
+
+- All 8 widget renderers (`tsgrid`, `grid-render`, `grid-search`, `tsfield`, `tsform`, `tspopup`, `tstooltip`) now import named icon functions from `./icons.js` and emit inline `<svg>` strings instead of CSS class name strings.
+- `package.json` version: `3.0.0-rc.1` → `3.0.0`.
+- Per-widget CSS files (`dist/grid.css`, `dist/popup.css`, etc.) are smaller — no SVG data URI blobs for per-icon background-image rules.
+- Drop icon hover state in grid column header uses `color: #fff` on the parent `span.tsg-icon-drop` rather than a separate white-fill SVG data URI.
+- Smoke test fixtures (`test/smoke/*.html`) migrated from IIFE `<script>` to `<script type="module">` with subpath ESM imports.
+
+### Migration
+
+See [MIGRATION_v3.md](MIGRATION_v3.md) for the step-by-step guide covering all four breaking surfaces.
+
+**Quick summary**: if you followed v2.15.0 deprecation notices, you have already migrated barrel imports. For icons, replace `'tsg-icon-{name}'` strings with `{name}Icon()` call results — the [MIGRATION_v3.md icon table](MIGRATION_v3.md#v300--icon-api) lists all 18 mappings.
+
+### Known Limitations
+
+1. **Compat shim remains**: `[class^="tsg-icon-"]:before { content: "" }` is kept in `icons.less` to prevent stale cached font-glyph pseudo-content. Adds < 50 bytes. Planned removal in v4.0.
+2. **CJS consumers unaffected**: CJS subpath exports (`require('tsgrid-ui/grid')` etc.) still work. Only the flat barrel `require('tsgrid-ui')` is removed.
+3. **Per-widget CSS still includes shared rules**: Each per-widget CSS file (e.g. `dist/grid.css`) inlines shared rules like `.tsg-spinner`, `.tsg-scroll`. This is expected behavior — deduplication is a build-level concern for consumers who bundle multiple widget CSS files.
+
+---
+
 ## v2.15.0 — 2026-05-17
 
 ### Deprecated

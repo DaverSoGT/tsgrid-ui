@@ -7,12 +7,10 @@ TypeScript-native UI component library: data grid, forms, fields, layout, sideba
 [![npm version](https://img.shields.io/npm/v/tsgrid-ui.svg)](https://www.npmjs.com/package/tsgrid-ui)
 [![license](https://img.shields.io/npm/l/tsgrid-ui.svg)](LICENSE)
 
-> **v2.0 is a breaking release.** Event handler types changed (`CustomEvent` →
-> `TsEventPayload`) and the internal `src/tsgrid.ts` has been decomposed into 8 sibling
-> modules. The public API is unchanged — barrel consumers need no updates. Consumers who
-> explicitly annotated handlers with `CustomEvent` must apply a one-line codemod. No bundle
-> reduction is claimed. See [MIGRATION_v2.md](MIGRATION_v2.md) for the codemod regex,
-> full migration guide, and release checklist.
+> **v3.0 is a MAJOR release.** The flat `tsgrid-ui` barrel (`import { TsGrid } from 'tsgrid-ui'`),
+> the IIFE bundle (`dist/tsgrid-ui.js`), and the `.tsg-icon-{name}` CSS background-image rules
+> are removed. Migrate to per-widget subpath imports and `tsgrid-ui/icons` functions.
+> See [MIGRATION_v3.md](MIGRATION_v3.md) for the full guide.
 
 ## Install
 
@@ -43,11 +41,29 @@ const grid = new TsGrid({
 grid.render('#mygrid')
 ```
 
-> Per-widget subpaths (`tsgrid-ui/<widget>`) are the canonical import shape as of **v2.15.0** and enable tree-shaking. The flat `tsgrid-ui` barrel is deprecated and will be removed in **v3.0** — see [MIGRATION_v2.md#v2150--barrel-deprecation](MIGRATION_v2.md#v2150--barrel-deprecation).
-
 ```html
 <div id="mygrid" style="width: 600px; height: 300px;"></div>
 ```
+
+## Icons
+
+v3.0 ships 18 named icon functions via `tsgrid-ui/icons`:
+
+```ts
+import { checkIcon, crossIcon, searchIcon } from 'tsgrid-ui/icons'
+
+// Basic use (decorative — aria-hidden="true" emitted automatically)
+const html = `<span class="tsg-icon">${searchIcon()}</span>`
+
+// Interactive use — pass label for accessibility
+const closeBtn = `<button>${crossIcon({ label: 'Close dialog' })}</button>`
+
+// Custom size
+const bigCheck = checkIcon({ size: 24, label: 'Confirmed' })
+```
+
+All icons use `fill="currentColor"` — set `color:` on the parent to theme them.
+See [MIGRATION_v3.md#v300--icon-api](MIGRATION_v3.md#v300--icon-api) for the full 18-icon table.
 
 ## CommonJS Usage
 
@@ -73,7 +89,7 @@ import { TsLocale } from 'tsgrid-ui/locale'
 import { TsUtils }  from 'tsgrid-ui/utils'
 ```
 
-**CJS subpath imports are Node.js only.** Browser `<script>` consumers must continue using `dist/tsgrid-ui.min.js` (the IIFE monolith). For multi-subpath CJS consumers, prefer `require('tsgrid-ui')` (the CJS monolith) to avoid duplicated transitive code — each subpath file inlines all its dependencies because `splitting: false` is required for CJS output.
+**CJS subpath imports are Node.js only.** Browser consumers should use `<script type="module">` with subpath ESM imports — the IIFE monolith (`dist/tsgrid-ui.min.js`) is removed in v3.0. See [MIGRATION_v3.md#v300--iife-globals](MIGRATION_v3.md#v300--iife-globals) for the browser migration guide. For multi-subpath CJS consumers, note that each subpath file inlines all its dependencies because `splitting: false` is required for CJS output.
 
 **Pure-Node consumers must provide a DOM environment** (jsdom / happy-dom or equivalent stubs) before the `require()` call resolves — tsgrid-ui references `document`, `window`, `Node`, `Event`, `MutationObserver`, `navigator`, `localStorage`, and `self` at module-load time because it targets browsers as its primary runtime. Calling `require('tsgrid-ui/grid')` in a bare Node process without these polyfills throws at load. See [CHANGELOG v2.13.0 Known Limitations](CHANGELOG.md) for the full list and `test/consumer-smoke-cjs.js` for a working stub example.
 
@@ -106,12 +122,12 @@ import 'tsgrid-ui/field.css'    // 31 KB
 Use this when you import only a subset of widgets and want CSS cache granularity — each widget's
 styles are cached independently, so a change to the grid style does not invalidate the form cache.
 
-**Important limitation**: per-widget CSS files include the icon woff font (~3 KB icon symbols) but
-do NOT include the OpenSans text font embedded in the monolith. If you use ONLY per-widget CSS
-imports and none of your pages import `tsgrid-ui/css`, **icon glyphs (sort arrows, checkbox marks,
-calendar icons, etc.) will not render**. To fix: also import `tsgrid-ui/css`, or provide the
-OpenSans font via a CDN or your own font pipeline. A dedicated `tsgrid-ui/icons.css` subpath is
-planned for a future release.
+**Note**: per-widget CSS files do NOT include the OpenSans text font embedded in the monolith.
+If you use ONLY per-widget CSS imports, text rendering may differ from the monolith. To fix:
+also import `tsgrid-ui/css`, or provide OpenSans via a CDN or your own font pipeline.
+
+Icon rendering (v3.0+) is handled via inline SVG strings from `tsgrid-ui/icons` — not CSS
+background-image rules — so per-widget CSS files have no icon font dependency.
 
 ## Components
 
