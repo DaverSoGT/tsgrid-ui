@@ -19,16 +19,14 @@ const SUBPATHS = [
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
 describe('subpath-exports — package.json shape', () => {
-    it('has exactly 24 exports keys (v2.12.0: 15 existing + 9 per-widget CSS subpaths)', () => {
-        expect(Object.keys(pkg.exports)).toHaveLength(24)
+    it('has exactly 23 exports keys (v3.0.0-rc.1: 24 - 1 for "." removal; +1 for "./icons" comes in B2)', () => {
+        // v3.0.0: "." removed (-1). "./icons" added in B2 (+1). Net = 23 at B1, 24 at B2+.
+        expect(Object.keys(pkg.exports)).toHaveLength(23)
     })
 
-    it('"." entry is byte-identical shape (INV-SX-6)', () => {
-        expect(pkg.exports['.']).toEqual({
-            types:   './dist/tsgrid-ui.d.ts',
-            import:  './dist/tsgrid-ui.es6.js',
-            require: './dist/tsgrid-ui.js',
-        })
+    it('"." entry is absent (v3.0.0 — barrel removed, INV-3)', () => {
+        // v3.0.0: exports["."] is removed — consumers must use subpaths (tsgrid-ui/grid, etc.)
+        expect(pkg.exports['.']).toBeUndefined()
     })
 
     it('"./css" entry is unchanged (string)', () => {

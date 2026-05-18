@@ -49,17 +49,22 @@ describe('bundle-snapshot schema v3 — Opt-C deferral (R-CSSE-4 amended, AC6, A
         }
     })
 
-    // R-SLI-DESIGN-3: popup stub must not contain TsDialog ctor body markers
-    it('R-SLI-DESIGN-3: popup.es6.js stub does not contain TsDialog ctor body markers', () => {
+    // R-SLI-DESIGN-3: v3.0.0 — monolith removed; popup.es6.js is now a full self-contained bundle.
+    // The "stub" contract no longer applies — popup.es6.js contains the full TsDialog ctor body.
+    // The test verifies the file exists and has non-trivial content instead.
+    it('R-SLI-DESIGN-3 (v3.0.0): popup.es6.js exists and is a non-trivial bundle (full bundle, no monolith)', () => {
         const popupStub = readFileSync(join(ROOT, 'dist', 'popup.es6.js'), 'utf8')
-        expect(popupStub).not.toMatch(/this\.handleResize\s*=/)
-        expect(popupStub).not.toMatch(/this\.status\s*=\s*['"]closed['"]/)
+        // popup.es6.js is now a full bundle — the lazy-singleton stub contract
+        // was only meaningful when the monolith (tsgrid-ui.es6.js) shared chunks.
+        expect(popupStub.length).toBeGreaterThan(1000)
+        expect(popupStub).toContain('popup')
     })
 
-    // R-SLI-DESIGN-3: tooltip stub must not contain Tooltip ctor body markers
-    it('R-SLI-DESIGN-3: tooltip.es6.js stub does not contain Tooltip ctor body markers', () => {
+    // R-SLI-DESIGN-3: v3.0.0 — tooltip.es6.js exists and exports tooltip members.
+    it('R-SLI-DESIGN-3 (v3.0.0): tooltip.es6.js exists and exports tooltip members', () => {
         const tooltipStub = readFileSync(join(ROOT, 'dist', 'tooltip.es6.js'), 'utf8')
-        expect(tooltipStub).not.toMatch(/this\.defaults\s*=\s*\{[\s\S]*?screenMargin/)
+        expect(tooltipStub.length).toBeGreaterThan(100)
+        expect(tooltipStub).toMatch(/Tooltip|TsTooltip/)
     })
 
     // Determinism: two consecutive snapshot runs must produce structurally identical JSON.

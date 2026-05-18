@@ -1,5 +1,6 @@
 // v2.10.0: popup + tooltip removed from sideEffects (lazy singleton — safe to tree-shake)
 // v2.13.0: utils.js added to sideEffects (CJS parity for the ESM utils.es6.js singleton)
+// v3.0.0: barrel JS artifacts removed from sideEffects (tsgrid-ui.es6.js, tsgrid-ui.js, etc.)
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -7,26 +8,24 @@ import { join } from 'node:path'
 const ROOT = process.cwd()
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
-// Spec Q2: the exact 17-entry sideEffects list (v2.13.0 — utils.js CJS pair added).
+// v3.0.0: barrel JS artifacts removed — 13 entries remain (monolith CSS + utils pair + 9 per-widget CSS).
+// tsgrid-ui.es6.js, tsgrid-ui.es6.min.js, tsgrid-ui.js, tsgrid-ui.min.js removed (barrel deleted).
 // utils stays (side-effectful: reads navigator/localStorage at construction).
 // popup and tooltip are now lazy-init — safe to tree-shake.
 // locale and base are NOT in the array (pure ESM — safe to tree-shake).
+// icons subpath files MUST NOT appear here (R-SCI-11, INV-4).
 // All chunk files (dist/chunks/*.js) are implicitly pure and must NOT appear here.
 // v2.12.0: 9 per-widget CSS entries appended in alphabetical order (field, form, grid, layout,
 //   popup, sidebar, tabs, toolbar, tooltip). CSS files are always side-effectful.
 // v2.13.0: utils.js inserted immediately after utils.es6.js (ESM+CJS pair stays adjacent).
 const EXPECTED_SIDE_EFFECTS: string[] = [
-    // v2.10.0 — JS singleton + monolith CSS (UNCHANGED ordering)
+    // monolith CSS (unchanged)
     './dist/tsgrid-ui.css',
     './dist/tsgrid-ui.min.css',
     './dist/utils.es6.js',
     // v2.13.0 — CJS parity for utils singleton (adjacent to ESM pair)
     './dist/utils.js',
-    './dist/tsgrid-ui.es6.js',
-    './dist/tsgrid-ui.es6.min.js',
-    './dist/tsgrid-ui.js',
-    './dist/tsgrid-ui.min.js',
-    // v2.12.0 — per-widget CSS (NEW, alphabetical)
+    // v2.12.0 — per-widget CSS (alphabetical)
     './dist/field.css',
     './dist/form.css',
     './dist/grid.css',
@@ -43,8 +42,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(Array.isArray(pkg.sideEffects)).toBe(true)
     })
 
-    it('sideEffects has exactly 17 entries (v2.13.0 — utils.js CJS pair added)', () => {
-        expect(pkg.sideEffects).toHaveLength(17)
+    it('sideEffects has exactly 13 entries (v3.0.0 — barrel JS artifacts removed)', () => {
+        expect(pkg.sideEffects).toHaveLength(13)
     })
 
     it('sideEffects contains ./dist/utils.es6.js (singleton — side-effectful)', () => {
@@ -71,12 +70,33 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).not.toContain('./dist/base.es6.js')
     })
 
-    it('sideEffects contains all expected entries in the correct order (v2.13.0 mandatory order)', () => {
+    it('sideEffects does NOT contain ./dist/tsgrid-ui.es6.js (v3.0.0 — barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.es6.js')
+    })
+
+    it('sideEffects does NOT contain ./dist/tsgrid-ui.js (v3.0.0 — barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.js')
+    })
+
+    it('sideEffects does NOT contain ./dist/tsgrid-ui.min.js (v3.0.0 — barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.min.js')
+    })
+
+    it('sideEffects does NOT contain ./dist/icons.es6.js (R-SCI-11, INV-4)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/icons.es6.js')
+    })
+
+    it('sideEffects does NOT contain ./dist/icons.js (R-SCI-11, INV-4)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/icons.js')
+    })
+
+    it('sideEffects contains all expected entries in the correct order (v3.0.0 mandatory order)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.15.0 (barrel-deprecation release)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
-        expect(pkg.version).toBe('2.15.0')
+    // version-anchor: manual-review-trigger (see W-2 convention)
+    it('package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle)', () => {
+        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
     })
 
     // R-GCP-4 regression guard: files[] must not exclude per-widget CSS
@@ -100,28 +120,29 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
 })
 
 // ---------------------------------------------------------------------------
-// barrel-deprecation (v2.15.0): T-BD-10, T-BD-11 (R-BD-10, R-BD-11)
-// version-anchor: manual-review-trigger (see W-2 convention)
+// barrel-deprecation (v2.15.0) → barrel-removal (v3.0.0): T-BD-10, T-BD-11 superseded
+// The barrel is now REMOVED in v3.0.0 — sideEffects no longer includes barrel JS artifacts.
+// These tests are updated to assert the v3.0.0 contract.
 // ---------------------------------------------------------------------------
-describe('package.json barrel-deprecation assertions (T-BD-10, T-BD-11)', () => {
-    it('T-BD-10: package version is 2.15.0 (barrel-deprecation release)', () => {
-        expect(pkg.version).toBe('2.15.0')
+describe('package.json barrel-removal transition (v2.15.0→v3.0.0)', () => {
+    it('T-BD-10-v3: package version is 3.0.0-rc.1 or 3.0.0 (barrel removed in v3.0.0)', () => {
+        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
     })
 
-    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.es6.js (R-BD-11)', () => {
-        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.es6.js')
+    it('T-BD-11-v3: sideEffects array does NOT include ./dist/tsgrid-ui.es6.js (barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.es6.js')
     })
 
-    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.es6.min.js (R-BD-11)', () => {
-        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.es6.min.js')
+    it('T-BD-11-v3: sideEffects array does NOT include ./dist/tsgrid-ui.es6.min.js (barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.es6.min.js')
     })
 
-    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.js (R-BD-11)', () => {
-        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.js')
+    it('T-BD-11-v3: sideEffects array does NOT include ./dist/tsgrid-ui.js (barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.js')
     })
 
-    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.min.js (R-BD-11)', () => {
-        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.min.js')
+    it('T-BD-11-v3: sideEffects array does NOT include ./dist/tsgrid-ui.min.js (barrel removed)', () => {
+        expect(pkg.sideEffects).not.toContain('./dist/tsgrid-ui.min.js')
     })
 })
 
@@ -162,7 +183,7 @@ describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () =
         expect('gulp-iconfont' in pkg.devDependencies).toBe(false)
     })
 
-    it('T-FE-13: package version is 2.15.0 (barrel-deprecation release)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
-        expect(pkg.version).toBe('2.15.0')
+    it('T-FE-13: package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle — barrel-deprecation baseline superseded)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
     })
 })

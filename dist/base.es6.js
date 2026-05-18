@@ -2,7 +2,7 @@ import {
   TsBase,
   TsEvent,
   toSafeEvent
-} from "./chunks/chunk-DXZJHS4M.js";
+} from "./chunks/chunk-W7JZO7EX.js";
 export {
   TsBase,
   TsEvent,

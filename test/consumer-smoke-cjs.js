@@ -96,41 +96,10 @@ for (const [path, primary] of SUBPATHS) {
     }
 }
 
-// Regression guard: monolith still requireable.
-try {
-    const mono = require('tsgrid-ui')
-    if (!('TsGrid' in mono) || !('TsUi' in mono)) {
-        console.error(`FAIL: require('tsgrid-ui') monolith missing TsGrid or TsUi`)
-        failed++
-    }
-} catch (e) {
-    console.error(`FAIL: require('tsgrid-ui') threw: ${e.message}`)
-    failed++
-}
-
-// FR-3 documented behavior: cross-copy instanceof semantics.
-// We ASSERT THE DIFFERENCE — if a future refactor unifies the class
-// identities by accident, this test fails LOUDLY and the maintainer
-// must either update the docs or revert.
-try {
-    const fromSubpath = require('tsgrid-ui/grid').TsGrid
-    const fromMono    = require('tsgrid-ui').TsGrid
-    if (fromSubpath === fromMono) {
-        console.error(
-            `FAIL: TsGrid from subpath === TsGrid from monolith ` +
-            `— cross-copy classes unexpectedly unified. ` +
-            `Either intentional (update CHANGELOG + remove this assert) ` +
-            `or accidental (revert).`
-        )
-        failed++
-    }
-} catch (e) {
-    console.error(`FAIL: cross-copy probe threw: ${e.message}`)
-    failed++
-}
+// barrel removed in v3.0.0 — see MIGRATION_v3.md
 
 if (failed > 0) {
     console.error(`\nCJS subpath smoke: ${failed} failure(s)`)
     process.exit(1)
 }
-console.log(`CJS subpath smoke: 12/12 OK; monolith OK; cross-copy semantics pinned`)
+console.log(`CJS subpath smoke: 12/12 OK`)

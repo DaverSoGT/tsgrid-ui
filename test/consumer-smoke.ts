@@ -11,6 +11,7 @@
  * All assertions are pure type-level; no DOM APIs are invoked.
  *
  * v2.15.0: restructured into PRIMARY (subpath-canonical) + REGRESSION GUARD (barrel, deprecated).
+ * v3.0.0: barrel regression guard removed — src/index.ts deleted.
  */
 
 // ===========================================================================
@@ -218,20 +219,6 @@ import 'tsgrid-ui/tabs.css'
 import 'tsgrid-ui/toolbar.css'
 import 'tsgrid-ui/layout.css'
 import 'tsgrid-ui/field.css'
-
-// ===========================================================================
-// === REGRESSION GUARD: barrel still resolvable (deprecated as of v2.15.0, removed in v3.0) ===
-// Per Q3 lock: ensures src/index.ts and src/index-legacy.ts continue to expose
-// the public surface until v3.0 actually removes them.
-// Strikethrough is EXPECTED on these imports in IDE preview — @deprecated is a
-// suggestion diagnostic, NOT a tsc error. pnpm consumer-smoke exits 0 here.
-// ===========================================================================
-import { TsGrid as _BarrelTsGrid } from '../src/index.js'
-import type { RecId as _BarrelRecId } from '../src/index.js'
-void _BarrelTsGrid
-// type-level reference — proves the type is importable from the barrel (no runtime use)
-const _barrelRecIdRef: _BarrelRecId | undefined = undefined
-void _barrelRecIdRef
 
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only

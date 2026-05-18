@@ -358,3 +358,11 @@ Replace `<subpath>` per the table above. Most consumer codebases import 1–3 wi
 
 **v3.0** (no calendar date; version-anchored). v3.0 will remove `exports["."]` from `package.json`, breaking `import 'tsgrid-ui'` for ESM and `require('tsgrid-ui')` for CJS. The IIFE monolith (`dist/tsgrid-ui.js` for `<script>` tag consumers) may live longer than `exports["."]` — that decision is deferred to the v3.0 design cycle.
 - If you are satisfied with the monolith: no changes needed.
+
+
+---
+
+## v3.0.0 — Barrel removed + icon API
+
+The flat `tsgrid-ui` barrel and the `tsg-icon-{name}` CSS classes are REMOVED in v3.0.0.
+See [MIGRATION_v3.md](MIGRATION_v3.md) for the full migration guide.

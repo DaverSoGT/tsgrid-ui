@@ -110,12 +110,13 @@ describe('tarball contents (S-3 — packaging regression guard)', () => {
         expect(contents).toContain(`dist/${name}.d.ts`)
     })
 
-    it('includes the monolith JS (CJS + ESM + minified variants)', () => {
-        expect(contents).toContain('dist/tsgrid-ui.js')
-        expect(contents).toContain('dist/tsgrid-ui.es6.js')
-        expect(contents).toContain('dist/tsgrid-ui.min.js')
-        expect(contents).toContain('dist/tsgrid-ui.es6.min.js')
-        expect(contents).toContain('dist/tsgrid-ui.d.ts')
+    it('does NOT include barrel monolith JS (v3.0.0 — flat barrel removed)', () => {
+        // Barrel artifacts deleted in v3.0.0: consumers must use subpaths.
+        expect(contents).not.toContain('dist/tsgrid-ui.js')
+        expect(contents).not.toContain('dist/tsgrid-ui.es6.js')
+        expect(contents).not.toContain('dist/tsgrid-ui.min.js')
+        expect(contents).not.toContain('dist/tsgrid-ui.es6.min.js')
+        expect(contents).not.toContain('dist/tsgrid-ui.d.ts')
     })
 
     // -----------------------------------------------------------------------

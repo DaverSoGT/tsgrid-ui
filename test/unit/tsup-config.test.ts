@@ -26,11 +26,9 @@ describe('tsup Block 6 parity (R-CSP-9, R-CSP-12)', () => {
     })
 
     it('tsup.config.ts Block 6 has splitting: false', () => {
-        // The config has multiple blocks — we check the CJS subpath block
-        // has splitting: false. The Block 3/4 monolith also have splitting: false
-        // but this assertion confirms the pattern is present at all.
+        // v3.0.0: barrel blocks removed — only Block 6 (CJS subpaths) has splitting: false.
         const splitFalseCount = (PROD_CONFIG.match(/splitting:\s*false/g) || []).length
-        expect(splitFalseCount).toBeGreaterThanOrEqual(3) // Block 2 ESM min + Block 3 + Block 4 + Block 6
+        expect(splitFalseCount).toBeGreaterThanOrEqual(1) // Block 6 CJS subpaths
     })
 
     it('tsup.config.ts Block 6 references all 12 widget source files', () => {

@@ -1,15 +1,11 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.15.0",
+  "version": "3.0.0-rc.1",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css",
     "./dist/utils.es6.js",
     "./dist/utils.js",
-    "./dist/tsgrid-ui.es6.js",
-    "./dist/tsgrid-ui.es6.min.js",
-    "./dist/tsgrid-ui.js",
-    "./dist/tsgrid-ui.min.js",
     "./dist/field.css",
     "./dist/form.css",
     "./dist/grid.css",
@@ -45,15 +41,7 @@
     "esm",
     "components"
   ],
-  "main": "dist/tsgrid-ui.js",
-  "module": "dist/tsgrid-ui.es6.js",
-  "types": "dist/tsgrid-ui.d.ts",
   "exports": {
-    ".": {
-      "types":   "./dist/tsgrid-ui.d.ts",
-      "import":  "./dist/tsgrid-ui.es6.js",
-      "require": "./dist/tsgrid-ui.js"
-    },
     "./locale":  { "types": "./dist/locale.d.ts",  "import": "./dist/locale.es6.js",  "require": "./dist/locale.js"  },
     "./base":    { "types": "./dist/base.d.ts",    "import": "./dist/base.es6.js",    "require": "./dist/base.js"    },
     "./utils":   { "types": "./dist/utils.d.ts",   "import": "./dist/utils.es6.js",   "require": "./dist/utils.js"   },
@@ -82,8 +70,6 @@
   "files": [
     "dist/",
     "!dist/metafile-esm.json",
-    "dist/tsgrid-ui.min.js",
-    "dist/tsgrid-ui.es6.min.js",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
@@ -97,7 +83,7 @@
     "lint": "eslint src --ext .js,.ts",
     "typecheck": "tsc --noEmit",
     "build:css": "gulp less",
-    "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs && node scripts/patch-deprecated.mjs",
+    "build:js": "tsup --config tsup.config.ts",
     "build": "pnpm build:css && pnpm build:js",
     "bundle:analyze": "tsup --config tsup.config.analyze.ts && node scripts/bundle-analyze.mjs",
     "bundle:snapshot": "tsup --config tsup.config.analyze.ts && node scripts/bundle-snapshot.mjs",
