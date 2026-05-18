@@ -1,16 +1,20 @@
 import {
   TsField
-} from "./chunks/chunk-R4AXULV7.js";
+} from "./chunks/chunk-JZZ46ENR.js";
 import {
   TsTabs
-} from "./chunks/chunk-N55DOD22.js";
+} from "./chunks/chunk-OSEWLR4R.js";
 import {
   TsToolbar
-} from "./chunks/chunk-TG5MKSSW.js";
+} from "./chunks/chunk-FARLMTWL.js";
 import {
   TsTooltip
-} from "./chunks/chunk-6AU32QDH.js";
+} from "./chunks/chunk-E2ZPN7PC.js";
 import "./chunks/chunk-EQK6JAHT.js";
+import {
+  collapseIcon,
+  expandIcon
+} from "./chunks/chunk-OITJCF5M.js";
 import {
   TsUtils
 } from "./chunks/chunk-ZDPL4SCT.js";
@@ -844,10 +848,10 @@ var TsForm = class extends TsBase {
     }
     if (show) {
       el_next.show();
-      el.find("span").addClass("tsg-icon-collapse").removeClass("tsg-icon-expand");
+      el.find("[data-icon-toggle]").html(collapseIcon());
     } else {
       el_next.hide();
-      el.find("span").addClass("tsg-icon-expand").removeClass("tsg-icon-collapse");
+      el.find("[data-icon-toggle]").html(expandIcon());
     }
   }
   change(...args) {
@@ -1530,7 +1534,7 @@ var TsForm = class extends TsBase {
       if (field.html.group && group != field.html.group) {
         let collapsible = "";
         if (field.html.groupCollapsible) {
-          collapsible = '<span class="tsg-icon-collapse" style="width: 15px; display: inline-block; position: relative; top: -2px;"></span>';
+          collapsible = `<span data-icon-toggle style="width: 15px; display: inline-block; position: relative; top: -2px;">${collapseIcon()}</span>`;
         }
         html2 += '\n <div class="tsg-group">\n   <div class="tsg-group-title tsg-eaction" style="' + (field.html.groupTitleStyle || "") + "; " + (collapsible != "" ? "cursor: pointer; user-select: none" : "") + '"' + (collapsible != "" ? 'data-group="' + TsUtils.base64encode(field.html.group) + '"' : "") + (collapsible != "" ? 'data-click="toggleGroup|' + field.html.group + '"' : "") + ">" + collapsible + TsUtils.lang(field.html.group) + '</div>\n   <div class="tsg-group-fields" style="' + (field.html.groupStyle || "") + '">';
         group = field.html.group;

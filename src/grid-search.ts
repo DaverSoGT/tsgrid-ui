@@ -10,6 +10,7 @@ import { TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
 import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
 import { TsField } from './tsfield.js'
+import { searchIcon } from './icons.js'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const query = _queryRaw as (...args: any[]) => any // any: Query wrapper used as jQuery-like
@@ -692,7 +693,7 @@ export function searchSave(grid: TsGrid) {
                 grid.savedSearches.push({
                     id: name,
                     text: name,
-                    icon: 'tsg-icon-search',
+                    icon: searchIcon(),
                     remove: true,
                     logic: grid.last.logic,
                     data: grid.searchData

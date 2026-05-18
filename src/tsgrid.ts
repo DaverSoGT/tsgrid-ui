@@ -72,6 +72,7 @@ import * as gridData from './grid-data.js'
 import * as gridSelection from './grid-selection.js'
 import * as gridEdit from './grid-edit.js'
 import * as gridSearch from './grid-search.js'
+import { reloadIcon, columnsIcon, searchIcon, plusIcon, pencilIcon, crossIcon, checkIcon } from './icons.js'
 import * as gridInteraction from './grid-interaction.js'
 import * as gridRender from './grid-render.js'
 
@@ -662,17 +663,17 @@ class TsGrid extends TsBase {
         this.msgEmpty      = '' // if not blank, then it is message when server returns no records
 
         this.buttons = {
-            'reload'   : { type: 'button', id: 'tsg-reload', icon: 'tsg-icon-reload', tooltip: TsUtils.lang('Reload data in the list') },
-            'columns'  : { type: 'menu-check', id: 'tsg-column-on-off', icon: 'tsg-icon-columns', tooltip: TsUtils.lang('Show/hide columns'),
+            'reload'   : { type: 'button', id: 'tsg-reload', icon: reloadIcon(), tooltip: TsUtils.lang('Reload data in the list') },
+            'columns'  : { type: 'menu-check', id: 'tsg-column-on-off', icon: columnsIcon(), tooltip: TsUtils.lang('Show/hide columns'),
                 overlay: { align: 'none' }
             },
             'search'   : { type: 'html', id: 'tsg-search',
-                html: '<div class="tsg-icon tsg-icon-search tsg-search-down tsg-action" data-click="searchShowFields"></div>'
+                html: `<div class="tsg-icon tsg-search-down tsg-action" data-click="searchShowFields">${searchIcon()}</div>`
             },
-            'add'      : { type: 'button', id: 'tsg-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: 'tsg-icon-plus' },
-            'edit'     : { type: 'button', id: 'tsg-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: 'tsg-icon-pencil', batch: 1, disabled: true },
-            'delete'   : { type: 'button', id: 'tsg-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: 'tsg-icon-cross', batch: true, disabled: true },
-            'save'     : { type: 'button', id: 'tsg-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: 'tsg-icon-check' }
+            'add'      : { type: 'button', id: 'tsg-add', text: 'Add New', tooltip: TsUtils.lang('Add new record'), icon: plusIcon() },
+            'edit'     : { type: 'button', id: 'tsg-edit', text: 'Edit', tooltip: TsUtils.lang('Edit selected record'), icon: pencilIcon(), batch: 1, disabled: true },
+            'delete'   : { type: 'button', id: 'tsg-delete', text: 'Delete', tooltip: TsUtils.lang('Delete selected records'), icon: crossIcon(), batch: true, disabled: true },
+            'save'     : { type: 'button', id: 'tsg-save', text: 'Save', tooltip: TsUtils.lang('Save changed records'), icon: checkIcon() }
         }
 
         this.operators = { // for search fields
@@ -826,7 +827,7 @@ class TsGrid extends TsBase {
         if (Array.isArray(this.defaultSearches)) {
             this.defaultSearches.forEach((search, ind) => {
                 search.id = 'default-'+ ind
-                search.icon ??= 'tsg-icon-search'
+                search.icon ??= searchIcon()
             })
         }
         // check if there are saved searches in localStorage
@@ -836,7 +837,7 @@ class TsGrid extends TsBase {
                 this.savedSearches.push({
                     id: search.id ?? 'none',
                     text: search.text ?? 'none',
-                    icon: 'tsg-icon-search',
+                    icon: searchIcon(),
                     remove: true,
                     logic: search.logic ?? 'AND',
                     data: search.data ?? []

@@ -26,6 +26,7 @@ import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { lazySingleton } from './lazy-singleton.js'
+import { crossIcon, boxIcon } from './icons.js'
 // any: query() returns Query|void but is always used in chain; cast once here
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
 
@@ -236,12 +237,12 @@ class TsDialog extends TsBase {
         let titleBtns = ''
         if (options.showClose) {
             titleBtns += `<div class="tsg-popup-button tsg-popup-close">
-                        <span class="tsg-icon tsg-icon-cross tsg-eaction" data-mousedown="stop" data-click="close"></span>
+                        <span class="tsg-icon tsg-eaction" data-mousedown="stop" data-click="close">${crossIcon({ label: 'Close' })}</span>
                     </div>`
         }
         if (options.showMax) {
             titleBtns += `<div class="tsg-popup-button tsg-popup-max">
-                        <span class="tsg-icon tsg-icon-box tsg-eaction" data-mousedown="stop" data-click="toggle"></span>
+                        <span class="tsg-icon tsg-eaction" data-mousedown="stop" data-click="toggle">${boxIcon({ label: 'Toggle size' })}</span>
                     </div>`
         }
 

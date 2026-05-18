@@ -17,10 +17,11 @@
 </head>
 <body>
     <div id="hover-target">Hover me for tooltip</div>
-    <script src="../../dist/tsgrid-ui.js"></script>
-    <script>
+    <script type="module">
+        import { TsTooltip, Tooltip } from '../../dist/tooltip.es6.js'
+        window.TsTooltip = TsTooltip
+        window.Tooltip = Tooltip
         window._smokeTooltip = TsTooltip
-        window._smokeReady = true
 
         // Attach tooltip with autoShow so it shows on mouseover
         TsTooltip.attach('#hover-target', {
@@ -29,6 +30,8 @@
             position: 'top|bottom',
             autoShow: true
         })
+
+        window._smokeReady = true
     </script>
 </body>
 </html>

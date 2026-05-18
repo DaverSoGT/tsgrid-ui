@@ -11,8 +11,9 @@
 </head>
 <body>
     <div id="grid"></div>
-    <script src="../../dist/tsgrid-ui.js"></script>
-    <script>
+    <script type="module">
+        import { TsGrid } from '../../dist/grid.es6.js'
+        window.TsGrid = TsGrid
         var grid = new TsGrid({
             name: 'grid-selection',
             multiSelect: true,

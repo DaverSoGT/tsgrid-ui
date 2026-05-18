@@ -3804,6 +3804,39 @@ function lazySingleton(factory, protoRef) {
   });
 }
 
+// src/icons.ts
+function _escapeAttr(value) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function _renderSvg(viewBox, paths, opts) {
+  const fill = opts?.color ? _escapeAttr(opts.color) : "currentColor";
+  let attrs = `xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="${fill}"`;
+  if (opts?.label && opts.label.length > 0) {
+    attrs += ` role="img" aria-label="${_escapeAttr(opts.label)}"`;
+  } else {
+    attrs += ' aria-hidden="true"';
+  }
+  if (opts?.class) {
+    attrs += ` class="${_escapeAttr(opts.class)}"`;
+  }
+  if (opts?.size !== void 0) {
+    attrs += ` width="${opts.size}" height="${opts.size}"`;
+  }
+  return `<svg ${attrs}>${paths}</svg>`;
+}
+var CHECK_PATHS = '<polygon points="416 0 192 238 49 101 0 149 192 341 466 51"/>';
+var COLORS_PATHS = '<path d="M81.382 153.549c-10.829-8.96-27.059-7.424-36.045 3.379l-32.691 39.399c-8.96 10.829-7.449 27.085 3.354 36.019l201.933 167.475-97.459-213.863-39.091-32.41zM179.533 68.685l-46.592 21.222c-12.775 5.837-18.483 21.12-12.672 33.894l108.8 238.72 5.453-234.982-21.043-46.183c-5.888-12.8-21.145-18.509-33.946-12.672zM363.801 73.907c0.333-14.080-10.931-25.856-24.986-26.189l-51.2-1.178c-14.055-0.333-25.831 10.931-26.163 24.986l-6.119 262.221 107.264-209.075 1.203-50.765zM491.289 98.227l-45.543-23.373c-12.519-6.4-28.058-1.408-34.483 11.111l-163.609 318.873c-6.425 12.519-1.434 28.058 11.11 34.483l45.543 23.373c12.519 6.425 28.032 1.433 34.457-11.085l163.609-318.873c6.425-12.57 1.433-28.083-11.085-34.509zM327.654 417.101c-6.451 12.595-21.888 17.562-34.457 11.111-12.595-6.451-17.536-21.863-11.085-34.457s21.863-17.536 34.457-11.085c12.595 6.425 17.536 21.863 11.085 34.432z"/>';
+var EMPTY_PATHS = "";
+var EYE_DROPPER_PATHS = '<path d="M246.627 9.373c-12.497-12.496-32.758-12.496-45.255 0l-43.029 43.029-30.343-30.343-33.941 33.941 26.606 26.606-118.029 118.029c-2.012 2.012-2.867 4.739-2.575 7.364h-0.061v40c0 4.418 3.582 8 8 8h40c0 0 0.666 0 1 0 2.303 0 4.606-0.879 6.364-2.636l118.029-118.030 26.607 26.607 33.941-33.941-30.343-30.343 43.030-43.029c12.497-12.497 12.497-32.758 0-45.255zM43.273 240h-27.273v-27.273l117.394-117.393 27.272 27.272-117.393 117.394z"/>';
+var SEARCH_PATHS = '<path d="M496.131 435.698l-121.276-103.147c-12.537-11.283-25.945-16.463-36.776-15.963 28.628-33.534 45.921-77.039 45.921-124.588 0-106.039-85.961-192-192-192-106.038 0-192 85.961-192 192 0 106.039 85.961 192 192 192 47.549 0 91.054-17.293 124.588-45.922-0.5 10.831 4.68 24.239 15.963 36.776l103.147 121.276c17.661 19.623 46.511 21.277 64.11 3.678s15.946-46.449-3.677-64.11zM192 320c-70.692 0-128-57.308-128-128s57.308-128 128-128 128 57.308 128 128-57.307 128-128 128z"/>';
+var SETTINGS_PATHS = '<path d="M224 64v-8c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-96v64h96v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h288v-64h-288zM128 128v-64h64v64h-64zM416 216c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-288v64h288v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h96v-64h-96v-8zM320 288v-64h64v64h-64zM224 376c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-96v64h96v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h288v-64h-288v-8zM128 448v-64h64v64h-64z"/>';
+var checkIcon = (opts) => _renderSvg("-30 -30 562 412", CHECK_PATHS, opts);
+var colorsIcon = (opts) => _renderSvg("0 0 470 470", COLORS_PATHS, opts);
+var emptyIcon = (opts) => _renderSvg("-49.5 140.5 512 512", EMPTY_PATHS, opts);
+var eyeDropperIcon = (opts) => _renderSvg("0 0 256 256", EYE_DROPPER_PATHS, opts);
+var searchIcon = (opts) => _renderSvg("0 0 512 512", SEARCH_PATHS, opts);
+var settingsIcon = (opts) => _renderSvg("0 0 512 512", SETTINGS_PATHS, opts);
+
 // src/tstooltip.ts
 var query8 = query;
 var Tooltip = class _Tooltip {
@@ -4880,14 +4913,14 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
                     <span style="text-align: right"> Hex </span>
                     <input class="tsg-input final" name="hex" tabindex="107" style="width: 70px" readonly>
                     <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndUse|${name}">
-                        <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                        <span class="tsg-icon">${eyeDropperIcon({ label: "Eye dropper" })}</span>
                     </div>
                 </div>
             </div>`;
     html += `
             <div class="tsg-color-tabs">
-                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon tsg-icon-colors"></span></div>
-                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon tsg-icon-settings"></span></div>
+                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon">${colorsIcon({ label: "Colors" })}</span></div>
+                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon">${settingsIcon({ label: "Settings" })}</span></div>
                 <div style="padding: 5px; width: 100%; text-align: right;">
                     ${typeof options.html == "string" ? options.html : ""}
                 </div>
@@ -4908,7 +4941,7 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     });
     html += `
                 <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndSelect|${name}|event">
-                    <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                    <span class="tsg-icon">${eyeDropperIcon({ label: "Eye dropper" })}</span>
                 </div>
             </div>`;
     return html;
@@ -5454,7 +5487,7 @@ var MenuTooltip = class extends Tooltip {
     if (options.search) {
       topHTML += `
                 <div class="tsg-menu-search">
-                    <span class="tsg-icon tsg-icon-search"></span>
+                    <span class="tsg-icon">${searchIcon({ label: "Search" })}</span>
                     <input id="menu-search" class="tsg-input" type="text"/>
                 </div>`;
       items.forEach((item) => item.hidden = false);
@@ -5471,8 +5504,8 @@ var MenuTooltip = class extends Tooltip {
       const index = (parents.length > 0 ? parents.join("-") + "-" : "") + f;
       if (icon == null) icon = null;
       if (["radio", "check"].includes(options.type) && !Array.isArray(mitem.items) && mitem.group !== false) {
-        if (mitem.checked === true) icon = "tsg-icon-check";
-        else icon = "tsg-icon-empty";
+        if (mitem.checked === true) icon = checkIcon();
+        else icon = emptyIcon();
       }
       if (mitem.hidden !== true) {
         let txt = mitem.text;
@@ -5482,7 +5515,7 @@ var MenuTooltip = class extends Tooltip {
         if (icon) {
           const first = String(icon).trim().slice(0, 1);
           if (first == "#") {
-            icon = `<span class="tsg-icon tsg-icon-empty" style="background-color: ${icon}"></span>`;
+            icon = `<span class="tsg-icon" style="background-color: ${icon}">${emptyIcon()}</span>`;
           } else if (first !== "<") {
             icon = `<span class="tsg-icon ${icon}"></span>`;
           }
@@ -6021,7 +6054,7 @@ var MenuTooltip = class extends Tooltip {
       items2.forEach((other, ind) => {
         if (other.id == item.id) return;
         if (other.group === item.group && other.checked) {
-          menu.find(`.tsg-menu-item[index="${(parent ? parent + "-" : "") + ind}"] .tsg-icon`).removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+          menu.find(`.tsg-menu-item[index="${(parent ? parent + "-" : "") + ind}"] .tsg-icon`).html(emptyIcon());
           items2[ind].checked = false;
         }
         if (Array.isArray(other.items)) {
@@ -6033,14 +6066,14 @@ var MenuTooltip = class extends Tooltip {
       item.checked = options.type == "radio" ? true : !item.checked;
       if (item.checked) {
         if (options.type === "radio") {
-          query8(event.target).closest(".tsg-menu").find(".tsg-icon").removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+          query8(event.target).closest(".tsg-menu").find(".tsg-icon").html(emptyIcon());
         }
         if (options.type === "check" && item.group != null) {
           uncheck(options.items);
         }
-        icon.removeClass("tsg-icon-empty").addClass("tsg-icon-check");
+        icon.html(checkIcon());
       } else if (options.type === "check") {
-        icon.removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+        icon.html(emptyIcon());
       }
     }
     if (!query8(event.target).hasClass("menu-remove") && !query8(event.target).hasClass("menu-help")) {

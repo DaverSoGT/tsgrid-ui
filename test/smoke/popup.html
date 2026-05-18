@@ -13,8 +13,12 @@
     <button id="btn-open">Open Popup</button>
     <button id="btn-alert">Alert</button>
     <button id="btn-confirm">Confirm</button>
-    <script src="../../dist/tsgrid-ui.js"></script>
-    <script>
+    <script type="module">
+        import { TsPopup, TsAlert, TsConfirm, TsPrompt } from '../../dist/popup.es6.js'
+        window.TsPopup = TsPopup
+        window.TsAlert = TsAlert
+        window.TsConfirm = TsConfirm
+        window.TsPrompt = TsPrompt
         window._smokePopup = TsPopup
         window._smokeAlert = TsAlert
         window._smokeConfirm = TsConfirm

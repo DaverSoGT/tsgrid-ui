@@ -11,8 +11,9 @@
 </head>
 <body>
     <div id="layout"></div>
-    <script src="../../dist/tsgrid-ui.js"></script>
-    <script>
+    <script type="module">
+        import { TsLayout } from '../../dist/layout.es6.js'
+        window.TsLayout = TsLayout
         var layout = new TsLayout({
             name: 'smoke-layout',
             panels: [

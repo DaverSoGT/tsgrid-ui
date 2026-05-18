@@ -46,6 +46,7 @@ import { TsTabs } from './tstabs.js'
 import { TsToolbar } from './tstoolbar.js'
 import { TsTooltip as _w2tooltip } from './tstooltip.js'
 import { TsField } from './tsfield.js'
+import { collapseIcon, expandIcon } from './icons.js'
 
 // any: TsTooltip has complex show/hide overloads; cast once for clean call sites
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -928,10 +929,12 @@ class TsForm extends TsBase {
         }
         if (show) {
             el_next.show()
-            el.find('span').addClass('tsg-icon-collapse').removeClass('tsg-icon-expand')
+            // Swap inline SVG to collapse icon (section is now open/visible)
+            el.find('[data-icon-toggle]').html(collapseIcon())
         } else {
             el_next.hide()
-            el.find('span').addClass('tsg-icon-expand').removeClass('tsg-icon-collapse')
+            // Swap inline SVG to expand icon (section is now hidden)
+            el.find('[data-icon-toggle]').html(expandIcon())
         }
     }
 
@@ -1727,7 +1730,7 @@ class TsForm extends TsBase {
             if (field.html.group && (group != field.html.group)) {
                 let collapsible = ''
                 if (field.html.groupCollapsible) {
-                    collapsible = '<span class="tsg-icon-collapse" style="width: 15px; display: inline-block; position: relative; top: -2px;"></span>'
+                    collapsible = `<span data-icon-toggle style="width: 15px; display: inline-block; position: relative; top: -2px;">${collapseIcon()}</span>`
                 }
                 html += '\n <div class="tsg-group">'
                     + '\n   <div class="tsg-group-title tsg-eaction" style="'+ (field.html.groupTitleStyle || '') + '; '

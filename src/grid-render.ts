@@ -3,6 +3,7 @@ import { TsUi, TsUtils } from './tsutils.js'
 import { query as _queryRaw } from './query.js'
 import { TsToolbar } from './tstoolbar.js'
 import { TsMenu as _w2menu, TsTooltip as _w2tooltip } from './tstooltip.js'
+import { emptyIcon, searchIcon, dropIcon, expandIcon, collapseIcon, infoIcon as _infoIconFn, pasteIcon, chevronDownIcon } from './icons.js'
 
 // any: query() always returns Query at runtime; cast to any for clean duck-typing throughout TsGrid
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -404,7 +405,7 @@ export function refreshSearch(grid: TsGrid) {
             searches += `<span class="tsg-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
                 ${sf ? (sf.label ?? sf.field) : sd.field}
                 ${display}
-                <span class="icon-chevron-down"></span>
+                <span class="tsg-icon">${chevronDownIcon()}</span>
             </span>`
         })
         // clear and save
@@ -761,13 +762,13 @@ export function initColumnOnOff(grid: TsGrid) {
         const skip = TsUtils.lang('Skip') +
             `<input id="${grid.name}_skip" type="text" class="tsg-input tsg-grid-skip" value="${grid.offset}">` +
             TsUtils.lang('records')
-        items.push({ id: 'tsg-skip', text: skip, group: false, icon: 'tsg-icon-empty' })
+        items.push({ id: 'tsg-skip', text: skip, group: false, icon: emptyIcon() })
     }
     // save/restore state
     if (grid.show.saveRestoreState) {
         items.push(
-            { id: 'tsg-stateSave', text: TsUtils.lang('Save Grid State'), icon: 'tsg-icon-empty', group: false },
-            { id: 'tsg-stateReset', text: TsUtils.lang('Restore Default State'), icon: 'tsg-icon-empty', group: false }
+            { id: 'tsg-stateSave', text: TsUtils.lang('Save Grid State'), icon: emptyIcon(), group: false },
+            { id: 'tsg-stateReset', text: TsUtils.lang('Restore Default State'), icon: emptyIcon(), group: false }
         )
     }
     // any: array of heterogeneous runtime values; TsGrid record/cell shape is user-defined at runtime
@@ -1018,7 +1019,7 @@ export function initToolbar(grid: TsGrid) {
             <div class="tsg-grid-search-input">
                 ${grid.buttons['search'].html}
                 <div id="grid_${grid.name}_search_name" class="tsg-grid-search-name">
-                    <span class="name-icon tsg-icon-search"></span>
+                    <span class="name-icon tsg-icon">${searchIcon()}</span>
                     <span class="name-text"></span>
                     <span class="name-cross tsg-action" data-click="searchReset">x</span>
                 </div>
@@ -1029,7 +1030,7 @@ export function initToolbar(grid: TsGrid) {
                 >
                 <div class="tsg-search-drop tsg-action" data-click="searchOpen"
                         style="${grid.multiSearch ? '' : 'display: none'}">
-                    <span class="tsg-icon-drop"></span>
+                    <span class="tsg-icon">${dropIcon()}</span>
                 </div>
             </div>`
         grid.toolbar.items.push({
@@ -2168,26 +2169,26 @@ export function getCellHTML(grid: TsGrid, ind: number, col_ind: number, summary?
         }
         if (record.TsUi.parent_recid) {
             for (let i = 0; i < level; i++) {
-                infoBubble += '<span class="tsg-show-children tsg-icon-empty"></span>'
+                infoBubble += `<span class="tsg-show-children tsg-icon">${emptyIcon()}</span>`
             }
         }
-        const className = record.TsUi?.children?.length > 0
-            ? (record.TsUi.expanded ? 'tsg-icon-collapse' : 'tsg-icon-expand')
-            : 'tsg-icon-empty'
         if (record.TsUi?.children?.length > 0) {
-            infoBubble += `<span class="tsg-show-children ${className}"></span>`
+            const expandCollapseIcon = record.TsUi.expanded ? collapseIcon() : expandIcon()
+            infoBubble += `<span class="tsg-show-children tsg-icon">${expandCollapseIcon}</span>`
         }
     }
     // info bubble
     if (col['info'] === true) col['info'] = {}
     if (col['info'] != null) {
-        let infoIcon = 'tsg-icon-info'
+        // infoIconContent: HTML string for the info icon (default = infoIcon SVG; overridable via col.info.icon)
+        let infoIconContent = _infoIconFn()
         if (typeof col['info'].icon == 'function') {
-            infoIcon = col['info'].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary })
+            // Consumer-supplied icon: may be a CSS class string or HTML string
+            infoIconContent = col['info'].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary })
         } else if (typeof col['info'].icon == 'object') {
-            infoIcon = col['info'].icon[grid.parseField(record, col.field)] || ''
+            infoIconContent = col['info'].icon[grid.parseField(record, col.field)] || ''
         } else if (typeof col['info'].icon == 'string') {
-            infoIcon = col['info'].icon
+            infoIconContent = col['info'].icon
         }
         let infoStyle = col['info'].style || ''
         if (typeof col['info'].style == 'function') {
@@ -2197,7 +2198,11 @@ export function getCellHTML(grid: TsGrid, ind: number, col_ind: number, summary?
         } else if (typeof col['info'].style == 'string') {
             infoStyle = col['info'].style
         }
-        infoBubble += `<span class="tsg-info ${infoIcon}" style="${infoStyle}"></span>`
+        // If infoIconContent starts with '<', treat it as inline HTML; otherwise wrap in a span with class
+        const infoIconHtml = String(infoIconContent).trim().startsWith('<')
+            ? `<span class="tsg-info" style="${infoStyle}">${infoIconContent}</span>`
+            : `<span class="tsg-info ${infoIconContent}" style="${infoStyle}"></span>`
+        infoBubble += infoIconHtml
     }
     let data = value
     // if editable checkbox
@@ -2236,7 +2241,7 @@ export function getCellHTML(grid: TsGrid, ind: number, col_ind: number, summary?
     // clipboardCopy
     let clipboardIcon
     if (col.clipboardCopy){
-        clipboardIcon = '<span class="tsg-clipboard-copy tsg-icon-paste"></span>'
+        clipboardIcon = `<span class="tsg-clipboard-copy tsg-icon">${pasteIcon()}</span>`
     }
     // data
     data = '<td class="tsg-grid-data'+ (isCellSelected ? ' tsg-selected' : '') + ' ' + className +

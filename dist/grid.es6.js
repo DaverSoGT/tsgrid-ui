@@ -1,14 +1,30 @@
 import {
   TsField
-} from "./chunks/chunk-R4AXULV7.js";
+} from "./chunks/chunk-JZZ46ENR.js";
 import {
   TsToolbar
-} from "./chunks/chunk-TG5MKSSW.js";
+} from "./chunks/chunk-FARLMTWL.js";
 import {
   TsMenu,
   TsTooltip
-} from "./chunks/chunk-6AU32QDH.js";
+} from "./chunks/chunk-E2ZPN7PC.js";
 import "./chunks/chunk-EQK6JAHT.js";
+import {
+  checkIcon,
+  chevronDownIcon,
+  collapseIcon,
+  columnsIcon,
+  crossIcon,
+  dropIcon,
+  emptyIcon,
+  expandIcon,
+  infoIcon,
+  pasteIcon,
+  pencilIcon,
+  plusIcon,
+  reloadIcon,
+  searchIcon
+} from "./chunks/chunk-OITJCF5M.js";
 import {
   TsUtils
 } from "./chunks/chunk-ZDPL4SCT.js";
@@ -2887,7 +2903,7 @@ function searchSave(grid) {
         grid.savedSearches.push({
           id: name,
           text: name,
-          icon: "tsg-icon-search",
+          icon: searchIcon(),
           remove: true,
           logic: grid.last.logic,
           data: grid.searchData
@@ -4946,7 +4962,7 @@ function refreshSearch(grid) {
       searches += `<span class="tsg-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
                 ${sf ? sf.label ?? sf.field : sd.field}
                 ${display}
-                <span class="icon-chevron-down"></span>
+                <span class="tsg-icon">${chevronDownIcon()}</span>
             </span>`;
     });
     searches += `
@@ -5201,12 +5217,12 @@ function initColumnOnOff(grid) {
   }
   if (grid.show.skipRecords) {
     const skip = TsUtils.lang("Skip") + `<input id="${grid.name}_skip" type="text" class="tsg-input tsg-grid-skip" value="${grid.offset}">` + TsUtils.lang("records");
-    items.push({ id: "tsg-skip", text: skip, group: false, icon: "tsg-icon-empty" });
+    items.push({ id: "tsg-skip", text: skip, group: false, icon: emptyIcon() });
   }
   if (grid.show.saveRestoreState) {
     items.push(
-      { id: "tsg-stateSave", text: TsUtils.lang("Save Grid State"), icon: "tsg-icon-empty", group: false },
-      { id: "tsg-stateReset", text: TsUtils.lang("Restore Default State"), icon: "tsg-icon-empty", group: false }
+      { id: "tsg-stateSave", text: TsUtils.lang("Save Grid State"), icon: emptyIcon(), group: false },
+      { id: "tsg-stateReset", text: TsUtils.lang("Restore Default State"), icon: emptyIcon(), group: false }
     );
   }
   const selected = [];
@@ -5384,7 +5400,7 @@ function initToolbar(grid) {
             <div class="tsg-grid-search-input">
                 ${grid.buttons["search"].html}
                 <div id="grid_${grid.name}_search_name" class="tsg-grid-search-name">
-                    <span class="name-icon tsg-icon-search"></span>
+                    <span class="name-icon tsg-icon">${searchIcon()}</span>
                     <span class="name-text"></span>
                     <span class="name-cross tsg-action" data-click="searchReset">x</span>
                 </div>
@@ -5395,7 +5411,7 @@ function initToolbar(grid) {
                 >
                 <div class="tsg-search-drop tsg-action" data-click="searchOpen"
                         style="${grid.multiSearch ? "" : "display: none"}">
-                    <span class="tsg-icon-drop"></span>
+                    <span class="tsg-icon">${dropIcon()}</span>
                 </div>
             </div>`;
     grid.toolbar.items.push({
@@ -6334,23 +6350,23 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
     }
     if (record.TsUi.parent_recid) {
       for (let i = 0; i < level; i++) {
-        infoBubble += '<span class="tsg-show-children tsg-icon-empty"></span>';
+        infoBubble += `<span class="tsg-show-children tsg-icon">${emptyIcon()}</span>`;
       }
     }
-    const className2 = record.TsUi?.children?.length > 0 ? record.TsUi.expanded ? "tsg-icon-collapse" : "tsg-icon-expand" : "tsg-icon-empty";
     if (record.TsUi?.children?.length > 0) {
-      infoBubble += `<span class="tsg-show-children ${className2}"></span>`;
+      const expandCollapseIcon = record.TsUi.expanded ? collapseIcon() : expandIcon();
+      infoBubble += `<span class="tsg-show-children tsg-icon">${expandCollapseIcon}</span>`;
     }
   }
   if (col["info"] === true) col["info"] = {};
   if (col["info"] != null) {
-    let infoIcon = "tsg-icon-info";
+    let infoIconContent = infoIcon();
     if (typeof col["info"].icon == "function") {
-      infoIcon = col["info"].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary });
+      infoIconContent = col["info"].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary });
     } else if (typeof col["info"].icon == "object") {
-      infoIcon = col["info"].icon[grid.parseField(record, col.field)] || "";
+      infoIconContent = col["info"].icon[grid.parseField(record, col.field)] || "";
     } else if (typeof col["info"].icon == "string") {
-      infoIcon = col["info"].icon;
+      infoIconContent = col["info"].icon;
     }
     let infoStyle = col["info"].style || "";
     if (typeof col["info"].style == "function") {
@@ -6360,7 +6376,8 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
     } else if (typeof col["info"].style == "string") {
       infoStyle = col["info"].style;
     }
-    infoBubble += `<span class="tsg-info ${infoIcon}" style="${infoStyle}"></span>`;
+    const infoIconHtml = String(infoIconContent).trim().startsWith("<") ? `<span class="tsg-info" style="${infoStyle}">${infoIconContent}</span>` : `<span class="tsg-info ${infoIconContent}" style="${infoStyle}"></span>`;
+    infoBubble += infoIconHtml;
   }
   let data = value;
   if (edit && ["checkbox", "check"].indexOf(edit.type) != -1) {
@@ -6395,7 +6412,7 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
   if (isRowSelected && sel.columns[ind]?.includes(col_ind)) isCellSelected = true;
   let clipboardIcon;
   if (col.clipboardCopy) {
-    clipboardIcon = '<span class="tsg-clipboard-copy tsg-icon-paste"></span>';
+    clipboardIcon = `<span class="tsg-clipboard-copy tsg-icon">${pasteIcon()}</span>`;
   }
   data = '<td class="tsg-grid-data' + (isCellSelected ? " tsg-selected" : "") + " " + className + (isChanged ? " tsg-changed" : "") + '"    id="grid_' + grid.name + "_data_" + ind + "_" + col_ind + '" col="' + col_ind + '"    style="' + style + (col.style != null ? col.style : "") + '" ' + (col.attr != null ? col.attr : "") + attr + ((col_span ?? 0) > 1 ? 'colspan="' + col_span + '"' : "") + ">" + data + (clipboardIcon && TsUtils.stripTags(data) ? clipboardIcon : "") + "</td>";
   if (ind === -1 && summary === true) {
@@ -7323,23 +7340,23 @@ var TsGrid = class extends TsBase {
     this.msgNeedReload = "Your remote data source record count has changed, reloading from the first record.";
     this.msgEmpty = "";
     this.buttons = {
-      "reload": { type: "button", id: "tsg-reload", icon: "tsg-icon-reload", tooltip: TsUtils.lang("Reload data in the list") },
+      "reload": { type: "button", id: "tsg-reload", icon: reloadIcon(), tooltip: TsUtils.lang("Reload data in the list") },
       "columns": {
         type: "menu-check",
         id: "tsg-column-on-off",
-        icon: "tsg-icon-columns",
+        icon: columnsIcon(),
         tooltip: TsUtils.lang("Show/hide columns"),
         overlay: { align: "none" }
       },
       "search": {
         type: "html",
         id: "tsg-search",
-        html: '<div class="tsg-icon tsg-icon-search tsg-search-down tsg-action" data-click="searchShowFields"></div>'
+        html: `<div class="tsg-icon tsg-search-down tsg-action" data-click="searchShowFields">${searchIcon()}</div>`
       },
-      "add": { type: "button", id: "tsg-add", text: "Add New", tooltip: TsUtils.lang("Add new record"), icon: "tsg-icon-plus" },
-      "edit": { type: "button", id: "tsg-edit", text: "Edit", tooltip: TsUtils.lang("Edit selected record"), icon: "tsg-icon-pencil", batch: 1, disabled: true },
-      "delete": { type: "button", id: "tsg-delete", text: "Delete", tooltip: TsUtils.lang("Delete selected records"), icon: "tsg-icon-cross", batch: true, disabled: true },
-      "save": { type: "button", id: "tsg-save", text: "Save", tooltip: TsUtils.lang("Save changed records"), icon: "tsg-icon-check" }
+      "add": { type: "button", id: "tsg-add", text: "Add New", tooltip: TsUtils.lang("Add new record"), icon: plusIcon() },
+      "edit": { type: "button", id: "tsg-edit", text: "Edit", tooltip: TsUtils.lang("Edit selected record"), icon: pencilIcon(), batch: 1, disabled: true },
+      "delete": { type: "button", id: "tsg-delete", text: "Delete", tooltip: TsUtils.lang("Delete selected records"), icon: crossIcon(), batch: true, disabled: true },
+      "save": { type: "button", id: "tsg-save", text: "Save", tooltip: TsUtils.lang("Save changed records"), icon: checkIcon() }
     };
     this.operators = {
       // for search fields
@@ -7482,7 +7499,7 @@ var TsGrid = class extends TsBase {
     if (Array.isArray(this.defaultSearches)) {
       this.defaultSearches.forEach((search2, ind) => {
         search2.id = "default-" + ind;
-        search2.icon ??= "tsg-icon-search";
+        search2.icon ??= searchIcon();
       });
     }
     const data = this.cache("searches");
@@ -7491,7 +7508,7 @@ var TsGrid = class extends TsBase {
         this.savedSearches.push({
           id: search2.id ?? "none",
           text: search2.text ?? "none",
-          icon: "tsg-icon-search",
+          icon: searchIcon(),
           remove: true,
           logic: search2.logic ?? "AND",
           data: search2.data ?? []

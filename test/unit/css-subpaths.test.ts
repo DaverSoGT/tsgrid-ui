@@ -29,24 +29,24 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         expect(existsSync(join(ROOT, 'dist', `${name}.css`))).toBe(true)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 20KB (compiled content sanity)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 5KB (compiled content sanity)', (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
         const size = statSync(cssPath).size
-        // v2.14.0: Each per-widget file includes inline SVG data URIs + widget rules.
-        // SVG inline block adds ~7.7KB per file (was woff base64 ~3KB).
-        // A file < 20KB would mean something went wrong with the compile.
-        // Note: the OpenSans font (~200KB) lives only in tsgrid-ui.less (monolith entry).
-        // Per-widget entries import icons.less (SVG data URIs), not the OpenSans font.
-        expect(size).toBeGreaterThan(20 * 1024)
+        // v3.0.0: Per-icon SVG data URI background-image rules removed from icons.less (R-SCI-13).
+        // Per-widget CSS files no longer contain SVG data URI blobs; widget-specific rules remain.
+        // popup.css and sidebar.css are ~10KB; threshold updated from 20KB to 5KB.
+        // A file < 5KB would mean something went wrong with the compile.
+        expect(size).toBeGreaterThan(5 * 1024)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains SVG data URIs (v2.14.0 — duplication confirmed)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css has NO tsg-icon-{name} background-image rules (v3.0.0 — R-SCI-13)', (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
         const css = readFileSync(cssPath, 'utf8')
-        // v2.14.0: Confirms icons.less was imported — SVG data URIs are present (not woff)
-        expect(css).toContain('data:image/svg+xml')
+        // v3.0.0: .tsg-icon-{name} background-image rules are removed from icons.less (R-SCI-13).
+        // Note: other background-image data URIs (e.g. column resizer in grid.css) are allowed.
+        expect(css).not.toMatch(/\.tsg-icon-\w[\w-]*\s*\{[^}]*background-image/)
     })
 
     it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains expected sentinel selector', (name) => {
@@ -109,15 +109,15 @@ describe('css-subpaths — monolith unchanged (R-GCP-6/R-GCP-11)', () => {
         expect(existsSync(join(ROOT, 'dist', 'tsgrid-ui.min.css'))).toBe(true)
     })
 
-    // T-GCP-12: monolith byte-stability vs v2.14.0 fixture (modulo dated header).
-    // Updated from v2.11.0 fixture in v2.14.0 (font-externalization cycle) per Q5 convention:
-    // fixture renamed and regenerated to track the current CSS shape (SVG data URIs).
-    // The fixture test/fixtures/tsgrid-ui-v2.14.0.css is the v2.14.0 baseline anchor;
+    // T-GCP-12: monolith byte-stability vs v3.0.0 fixture (modulo dated header).
+    // Updated from v2.14.0 fixture in v3.0.0 (svg-component-icons cycle) per Q5 convention:
+    // fixture renamed and regenerated to track the current CSS shape (no SVG data URIs).
+    // The fixture test/fixtures/tsgrid-ui-v3.0.0.css is the v3.0.0 baseline anchor;
     // any drift from variables.less, mixins.less, or partial imports MUST fail this check.
-    it.skipIf(!distExists)('dist/tsgrid-ui.css byte-stable vs v2.14.0 fixture (modulo dated header)', () => {
+    it.skipIf(!distExists)('dist/tsgrid-ui.css byte-stable vs v3.0.0 fixture (modulo dated header)', () => {
         const stripHeader = (s: string) => s.replace(/^\/\* tsgrid-ui[^\n]*\n/, '')
         const monolith = readFileSync(join(ROOT, 'dist', 'tsgrid-ui.css'), 'utf8')
-        const fixture  = readFileSync(join(ROOT, 'test', 'fixtures', 'tsgrid-ui-v2.14.0.css'), 'utf8')
+        const fixture  = readFileSync(join(ROOT, 'test', 'fixtures', 'tsgrid-ui-v3.0.0.css'), 'utf8')
         expect(stripHeader(monolith)).toEqual(stripHeader(fixture))
     })
 })

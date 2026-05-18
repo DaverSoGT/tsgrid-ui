@@ -54,52 +54,44 @@ describe('T-FE-2: no :before glyph-content rules in icons.less (R-FE-2)', () => 
 })
 
 // ---------------------------------------------------------------------------
-// T-FE-3: exactly 15 background-image rules (R-FE-3)
+// T-FE-3: v3.0.0 — ZERO background-image rules (R-SCI-13 supersedes R-FE-3)
+// v2.14.0 had exactly 15 per-icon background-image rules.
+// v3.0.0 removes ALL background-image rules from icons.less (R-SCI-13).
 // ---------------------------------------------------------------------------
-describe('T-FE-3: exactly 15 background-image declarations in icons.less (R-FE-3)', () => {
-    it('background-image property count equals 15', () => {
+describe('T-FE-3-v3: ZERO background-image declarations in icons.less (R-SCI-13 — R-FE-3 superseded)', () => {
+    it('background-image property count equals 0 (v3.0.0 — all per-icon rules removed)', () => {
         const matches = iconsLess.match(/background-image\s*:/g) ?? []
-        expect(matches).toHaveLength(15)
+        expect(matches).toHaveLength(0)
     })
 })
 
 // ---------------------------------------------------------------------------
-// T-FE-4: each named icon class has a background-image line (R-FE-3)
+// T-FE-4: v3.0.0 — icon CSS classes no longer have background-image rules (R-SCI-13)
 // ---------------------------------------------------------------------------
-describe('T-FE-4: each icon class has a background-image rule in icons.less (R-FE-3)', () => {
-    it.each(ICON_NAMES)('.tsg-icon-%s has background-image', (name) => {
+describe('T-FE-4-v3: icon CSS classes have NO background-image rule in icons.less (R-SCI-13)', () => {
+    it.each(ICON_NAMES)('.tsg-icon-%s has NO background-image (v3.0.0 — inline SVG replaces data URIs)', (name) => {
         const pattern = new RegExp(`\\.tsg-icon-${name}\\s*\\{[^}]*background-image`)
-        expect(iconsLess).toMatch(pattern)
+        expect(iconsLess).not.toMatch(pattern)
     })
 })
 
 // ---------------------------------------------------------------------------
-// T-FE-5: no raw < or > inside data URI strings (R-FE-4)
+// T-FE-5: v3.0.0 — no data URI strings exist (all background-image rules removed)
 // ---------------------------------------------------------------------------
-describe('T-FE-5: no raw < or > inside data URI strings (R-FE-4)', () => {
-    it('data URI values must not contain raw < characters', () => {
-        // Extract everything between url(" and ")
-        const uriMatches = iconsLess.matchAll(/url\("([^"]+)"\)/g)
-        for (const m of uriMatches) {
-            expect(m[1]).not.toContain('<')
-            expect(m[1]).not.toContain('>')
-        }
+describe('T-FE-5-v3: no data URI strings in icons.less (R-SCI-13 — all background-image removed)', () => {
+    it('icons.less has no url(...) data URI values (v3.0.0 — per-icon CSS rules deleted)', () => {
+        const uriMatches = Array.from(iconsLess.matchAll(/url\("([^"]+)"\)/g))
+        expect(uriMatches).toHaveLength(0)
     })
 })
 
 // ---------------------------------------------------------------------------
-// T-FE-6: each data URI starts with data:image/svg+xml;utf8,%3C (R-FE-4)
+// T-FE-6: v3.0.0 — no background-image data URIs (R-SCI-13)
 // ---------------------------------------------------------------------------
-describe('T-FE-6: each background-image data URI starts with svg+xml (R-FE-4)', () => {
-    it('all background-image data URIs start with data:image/svg+xml;utf8,%3C', () => {
-        // Extract only background-image data URIs
-        const bgMatches = iconsLess.matchAll(/background-image\s*:\s*url\("([^"]+)"\)/g)
-        let count = 0
-        for (const m of bgMatches) {
-            expect(m[1]).toMatch(/^data:image\/svg\+xml;utf8,%3C/)
-            count++
-        }
-        expect(count).toBe(15)
+describe('T-FE-6-v3: zero background-image data URIs in icons.less (R-SCI-13)', () => {
+    it('icons.less has zero background-image data URIs (v3.0.0 — inline SVG replaces all data URIs)', () => {
+        const bgMatches = Array.from(iconsLess.matchAll(/background-image\s*:\s*url\("([^"]+)"\)/g))
+        expect(bgMatches).toHaveLength(0)
     })
 })
 

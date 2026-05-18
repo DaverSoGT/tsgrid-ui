@@ -23,6 +23,7 @@ import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
 import { lazySingleton } from './lazy-singleton.js'
+import { eyeDropperIcon, colorsIcon, settingsIcon, searchIcon, checkIcon, emptyIcon } from './icons.js'
 
 // TsTooltip always calls query() with a selector (never a callback), so return is always Query.
 // any: query() overload returns void when called with a callback; we only use selector calls here
@@ -1439,15 +1440,15 @@ class ColorTooltip extends Tooltip {
                     <span style="text-align: right"> Hex </span>
                     <input class="tsg-input final" name="hex" tabindex="107" style="width: 70px" readonly>
                     <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndUse|${name}">
-                        <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                        <span class="tsg-icon">${eyeDropperIcon({ label: 'Eye dropper' })}</span>
                     </div>
                 </div>
             </div>`
         // color tabs on the bottom
         html += `
             <div class="tsg-color-tabs">
-                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon tsg-icon-colors"></span></div>
-                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon tsg-icon-settings"></span></div>
+                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon">${colorsIcon({ label: 'Colors' })}</span></div>
+                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon">${settingsIcon({ label: 'Settings' })}</span></div>
                 <div style="padding: 5px; width: 100%; text-align: right;">
                     ${(typeof options.html == 'string' ? options.html : '')}
                 </div>
@@ -1471,7 +1472,7 @@ class ColorTooltip extends Tooltip {
         })
         html += `
                 <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndSelect|${name}|event">
-                    <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                    <span class="tsg-icon">${eyeDropperIcon({ label: 'Eye dropper' })}</span>
                 </div>
             </div>`
         return html
@@ -2185,7 +2186,7 @@ class MenuTooltip extends Tooltip {
         if (options.search) {
             topHTML += `
                 <div class="tsg-menu-search">
-                    <span class="tsg-icon tsg-icon-search"></span>
+                    <span class="tsg-icon">${searchIcon({ label: 'Search' })}</span>
                     <input id="menu-search" class="tsg-input" type="text"/>
                 </div>`
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2204,7 +2205,7 @@ class MenuTooltip extends Tooltip {
             const index = (parents.length > 0 ? parents.join('-') + '-' : '') + f
             if (icon == null) icon = null // icon might be undefined
             if (['radio', 'check'].includes(options.type) && !Array.isArray(mitem.items) && mitem.group !== false) {
-                if (mitem.checked === true) icon = 'tsg-icon-check'; else icon = 'tsg-icon-empty'
+                if (mitem.checked === true) icon = checkIcon(); else icon = emptyIcon()
             }
             if (mitem.hidden !== true) {
                 let txt  = mitem.text
@@ -2214,7 +2215,7 @@ class MenuTooltip extends Tooltip {
                 if (icon) {
                     const first = String(icon).trim().slice(0, 1)
                     if (first == '#') {
-                        icon = `<span class="tsg-icon tsg-icon-empty" style="background-color: ${icon}"></span>`
+                        icon = `<span class="tsg-icon" style="background-color: ${icon}">${emptyIcon()}</span>`
                     } else if (first !== '<') {
                         icon = `<span class="tsg-icon ${icon}"></span>`
                     }
@@ -2834,10 +2835,10 @@ class MenuTooltip extends Tooltip {
             items.forEach((other: any, ind: any) => { // any: menu item shape varies
                 if (other.id == item.id) return
                 if (other.group === item.group && other.checked) {
+                    // Swap SVG content to empty icon (class-toggle replaced with innerHTML swap)
                     menu
                         .find(`.tsg-menu-item[index="${(parent ? parent + '-' : '') + ind}"] .tsg-icon`)
-                        .removeClass('tsg-icon-check')
-                        .addClass('tsg-icon-empty')
+                        .html(emptyIcon())
                     items[ind].checked = false
                 }
                 if (Array.isArray(other.items)) {
@@ -2852,16 +2853,18 @@ class MenuTooltip extends Tooltip {
             item.checked = options.type == 'radio' ? true : !item.checked
             if (item.checked) {
                 if (options.type === 'radio') {
+                    // Swap all icons to empty (class-toggle replaced with innerHTML swap)
                     query(event.target).closest('.tsg-menu').find('.tsg-icon')
-                        .removeClass('tsg-icon-check')
-                        .addClass('tsg-icon-empty')
+                        .html(emptyIcon())
                 }
                 if (options.type === 'check' && item.group != null) {
                     uncheck(options.items)
                 }
-                icon.removeClass('tsg-icon-empty').addClass('tsg-icon-check')
+                // Swap to check icon
+                icon.html(checkIcon())
             } else if (options.type === 'check') {
-                icon.removeClass('tsg-icon-check').addClass('tsg-icon-empty')
+                // Swap to empty icon
+                icon.html(emptyIcon())
             }
         }
         // highlight record

@@ -36,6 +36,7 @@ import { TsBase, TsEventPayload } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { TsTooltip as _w2tooltip, TsColor as _w2color, TsMenu as _w2menu, TsDate as _w2date } from './tstooltip.js'
 import { query as _queryRaw, Query } from './query.js'
+import { searchIcon } from './icons.js'
 
 // any: query() returns Query|void; cast once here for clean chaining
 const query = _queryRaw as (selector: unknown, context?: unknown) => Query
@@ -908,11 +909,11 @@ class TsField extends TsBase {
                     if (this.helpers.prefix) query(this.helpers.prefix).hide()
                     if (options.icon) {
                         focus.css('margin-left', '17px')
-                        query(this.helpers.search).find('.tsg-icon-search')
+                        query(this.helpers.search).find('[data-icon="search"]')
                             .addClass('show-search')
                     } else {
                         focus.css('margin-left', '0px')
-                        query(this.helpers.search).find('.tsg-icon-search')
+                        query(this.helpers.search).find('[data-icon="search"]')
                             .removeClass('show-search')
                     }
                 }, 1)
@@ -2057,7 +2058,7 @@ class TsField extends TsBase {
         // build helper
         const html = `
             <div class="tsg-field-helper">
-                <span class="tsg-icon tsg-icon-search"></span>
+                <span class="tsg-icon" data-icon="search">${searchIcon()}</span>
                 <input ${searchId} type="text" tabIndex="${tabIndex}" ${query(this.el).prop('readOnly') ? 'readonly' : ''}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`

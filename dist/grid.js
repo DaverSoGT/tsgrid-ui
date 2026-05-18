@@ -5720,6 +5720,61 @@ function lazySingleton(factory, protoRef) {
   });
 }
 
+// src/icons.ts
+function _escapeAttr(value) {
+  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function _renderSvg(viewBox, paths, opts) {
+  const fill = opts?.color ? _escapeAttr(opts.color) : "currentColor";
+  let attrs = `xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="${fill}"`;
+  if (opts?.label && opts.label.length > 0) {
+    attrs += ` role="img" aria-label="${_escapeAttr(opts.label)}"`;
+  } else {
+    attrs += ' aria-hidden="true"';
+  }
+  if (opts?.class) {
+    attrs += ` class="${_escapeAttr(opts.class)}"`;
+  }
+  if (opts?.size !== void 0) {
+    attrs += ` width="${opts.size}" height="${opts.size}"`;
+  }
+  return `<svg ${attrs}>${paths}</svg>`;
+}
+var CHECK_PATHS = '<polygon points="416 0 192 238 49 101 0 149 192 341 466 51"/>';
+var CHEVRON_DOWN_PATHS = '<path d="M5 8l7 8 7-8z"/>';
+var COLLAPSE_PATHS = '<path d="M7 14l5-5 5 5z"/>';
+var COLORS_PATHS = '<path d="M81.382 153.549c-10.829-8.96-27.059-7.424-36.045 3.379l-32.691 39.399c-8.96 10.829-7.449 27.085 3.354 36.019l201.933 167.475-97.459-213.863-39.091-32.41zM179.533 68.685l-46.592 21.222c-12.775 5.837-18.483 21.12-12.672 33.894l108.8 238.72 5.453-234.982-21.043-46.183c-5.888-12.8-21.145-18.509-33.946-12.672zM363.801 73.907c0.333-14.080-10.931-25.856-24.986-26.189l-51.2-1.178c-14.055-0.333-25.831 10.931-26.163 24.986l-6.119 262.221 107.264-209.075 1.203-50.765zM491.289 98.227l-45.543-23.373c-12.519-6.4-28.058-1.408-34.483 11.111l-163.609 318.873c-6.425 12.519-1.434 28.058 11.11 34.483l45.543 23.373c12.519 6.425 28.032 1.433 34.457-11.085l163.609-318.873c6.425-12.57 1.433-28.083-11.085-34.509zM327.654 417.101c-6.451 12.595-21.888 17.562-34.457 11.111-12.595-6.451-17.536-21.863-11.085-34.457s21.863-17.536 34.457-11.085c12.595 6.425 17.536 21.863 11.085 34.432z"/>';
+var COLUMNS_PATHS = '<polygon points="0.5 0.5 71.5 0.5 71.5 420.5 0.5 420.5"/><polygon points="172 0.5 243 0.5 243 420.5 172 420.5"/><polygon points="343.5 0.5 414.5 0.5 414.5 420.5 343.5 420.5"/>';
+var CROSS_PATHS = '<path d="M567.006313,46.872 C572.393313,52.259 575.086312,58.725 575.086312,66.266 C575.086312,73.809 572.393313,80.273 567.006313,85.66 L355.725,281.714 L558.926313,473.71775 C564.313313,479.10675 567.006313,485.57175 567.006313,493.11375 C567.006313,500.65575 564.313313,507.12175 558.926313,512.50875 L520.135312,551.29875 C514.748313,556.68675 508.283313,559.38075 500.740312,559.38075 C493.197313,559.38075 486.732312,556.68675 481.345312,551.29875 L283.144,360.294 L85.66,551.29875 C80.273,556.68575 73.809,559.38075 66.265,559.38075 C58.724,559.38075 52.259,556.68575 46.871,551.29875 L8.081,512.50975 C2.694,507.12075 -0.00200027819,500.65575 -0.00200027819,493.11375 C-0.00200027819,485.57075 2.693,479.10575 8.081,473.71775 L210.564,282.714 L8.079,87.661 C2.691,82.274 -0.00200027819,75.809 -0.00200027819,68.267 C-0.00200027819,60.725 2.692,54.26 8.079,48.872 L46.869,10.082 C52.257,4.695 58.722,1.99999917 66.265,1.99999917 C73.806,1.99999917 80.271,4.693 85.659,10.081 L283.144,210.134 L489.425313,8.08 C494.812313,2.693 501.277313,0 508.820313,0 C516.363313,0 522.828313,2.694 528.215313,8.082 L567.006313,46.872 Z"/>';
+var DROP_PATHS = '<polygon fill-rule="nonzero" points="83 133 272 133 272 166 83 166"/><polygon fill-rule="nonzero" points="116 188 240 188 240 218 116 218"/><polygon fill-rule="nonzero" points="150 242 206 242 206 264 150 264"/><path fill-rule="nonzero" d="M340.07716,108.093742 C331.183651,87.0324973 318.411216,68.0950754 302.143321,51.8566786 C285.875427,35.5887843 266.982251,22.860595 245.906258,13.9228398 C224.063328,4.70485793 200.87826,0 177,0 C153.12174,0 129.936672,4.70485793 108.093742,13.9228398 C87.0324973,22.8163486 68.0950754,35.5887843 51.8566786,51.8566786 C35.5887843,68.124573 22.860595,87.0177485 13.9228398,108.093742 C4.70485793,129.936672 0,153.12174 0,177 C0,200.87826 4.70485793,224.063328 13.9228398,245.906258 C22.8163486,266.967503 35.5887843,285.904925 51.8566786,302.143321 C68.124573,318.411216 87.0177485,331.139405 108.093742,340.07716 C129.936672,349.295142 153.12174,354 177,354 C200.87826,354 224.063328,349.295142 245.906258,340.07716 C266.967503,331.183651 285.904925,318.411216 302.143321,302.143321 C318.411216,285.875427 331.139405,266.982251 340.07716,245.906258 C349.295142,224.063328 354,200.87826 354,177 C354,153.12174 349.295142,129.936672 340.07716,108.093742 Z M177.014749,324.487709 C95.7195234,324.487709 29.5270394,258.295225 29.5270394,177 C29.5270394,95.7047746 95.7195234,29.5122906 177.014749,29.5122906 C258.324723,29.5122906 324.502458,95.7047746 324.502458,177 C324.502458,258.295225 258.309974,324.487709 177.014749,324.487709 Z"/>';
+var EMPTY_PATHS = "";
+var EXPAND_PATHS = '<path d="M7 10l5 5 5-5z"/>';
+var EYE_DROPPER_PATHS = '<path d="M246.627 9.373c-12.497-12.496-32.758-12.496-45.255 0l-43.029 43.029-30.343-30.343-33.941 33.941 26.606 26.606-118.029 118.029c-2.012 2.012-2.867 4.739-2.575 7.364h-0.061v40c0 4.418 3.582 8 8 8h40c0 0 0.666 0 1 0 2.303 0 4.606-0.879 6.364-2.636l118.029-118.030 26.607 26.607 33.941-33.941-30.343-30.343 43.030-43.029c12.497-12.497 12.497-32.758 0-45.255zM43.273 240h-27.273v-27.273l117.394-117.393 27.272 27.272-117.393 117.394z"/>';
+var INFO_PATHS = '<path d="M225.406,152.383c0-12.933,10.575-23.508,23.508-23.508h15.672c12.933,0,23.508,10.575,23.508,23.508v15.672c0,12.933-10.575,23.508-23.508,23.508h-15.672c-12.933,0-23.508-10.575-23.508-23.508V152.383z"/><path d="M319.438,379.625H194.062v-31.344h31.344V254.25h-31.344v-31.344h94.031v125.375h31.344V379.625z"/><path d="M256.75,3.5C118.26,3.5,6,115.76,6,254.25S118.26,505,256.75,505S507.5,392.74,507.5,254.25S395.24,3.5,256.75,3.5z M256.75,457.984c-112.528,0-203.734-91.215-203.734-203.734c0-112.527,91.207-203.734,203.734-203.734c112.521,0,203.734,91.208,203.734,203.734C460.484,366.77,369.271,457.984,256.75,457.984z"/>';
+var PASTE_PATHS = '<path d="M464 64h-144c0-35.346-28.653-64-64-64s-64 28.654-64 64h-144c-8.836 0-16 7.164-16 16v416c0 8.837 7.164 16 16 16h416c8.837 0 16-7.163 16-16v-416c0-8.836-7.163-16-16-16zM256 32c17.673 0 32 14.327 32 32s-14.327 32-32 32c-17.673 0-32-14.327-32-32s14.327-32 32-32zM448 480h-384v-384h64v48c0 8.836 7.164 16 16 16h224c8.837 0 16-7.164 16-16v-48h64v384z"/><path d="M224 429.255l-102.627-118.627 29.254-29.255 73.373 57.372 137.371-121.372 29.257 29.254z"/>';
+var PENCIL_PATHS = '<path d="M198.4,313.6l57.6-28.799L457.6,83.2l-28.799-28.8L227.2,256L198.4,313.6z M155.785,415.794c-14.234-30.028-29.55-45.343-59.578-59.577L140.8,233.46l57.6-35.06L371.2,25.6h-86.399L112,198.4l-86.4,288l288-86.4L486.4,227.2v-86.4L313.6,313.6L278.539,371.2L155.785,415.794z"/>';
+var PLUS_PATHS = '<path d="M442.286,232.143 C442.286,239.761667 439.619333,250.237667 434.286,255.571 C428.952667,260.904333 422.476667,263.571 414.858,263.571 L263.001,263.571 L263.001,415.428 C263.001,423.046667 260.334333,429.522667 255.001,434.856 C249.667667,440.189333 243.191667,442.856 235.573,442.856 L206.716,442.856 C199.096667,442.856 192.620333,440.189333 187.287,434.856 C181.953667,429.522667 179.287,423.046667 179.287,415.428 L179.287,263.571 L27.43,263.571 C19.8113333,263.571 13.3353333,260.904333 8.002,255.571 C2.66866667,250.237667 0.002,243.761667 0.002,236.143 L0.002,207.286 C0.002,199.666667 2.66866667,193.190333 8.002,187.857 C13.3353333,182.523667 19.8113333,179.857 27.43,179.857 L179.287,179.857 L179.287,28 C179.287,20.3813333 181.953667,13.9053333 187.287,8.572 C192.620333,3.23866667 199.096333,0.572 206.715,0.572 L235.572,0.572 C243.191333,0.572 249.667667,3.23866667 255.001,8.572 C260.334333,13.9053333 263.001,20.3813333 263.001,28 L263.001,179.857 L414.858,179.857 C422.476667,179.857 428.952667,182.523667 434.286,187.857 C439.619333,193.190333 442.286,199.666333 442.286,207.285 L442.286,232.143 Z"/>';
+var RELOAD_PATHS = '<path d="M288,32C175.154,32,81.815,115.449,66.285,224H-16L96,352l112-128h-93.104c6.362-34.828,23.083-66.882,48.653-92.451C196.791,98.307,240.989,80,288,80c47.012,0,91.209,18.307,124.451,51.549C445.693,164.791,464,208.989,464,256c0,47.012-18.307,91.209-51.549,124.451S335.012,432,288,432v48c123.712,0,224-100.288,224-224S411.712,32,288,32z"/>';
+var SEARCH_PATHS = '<path d="M496.131 435.698l-121.276-103.147c-12.537-11.283-25.945-16.463-36.776-15.963 28.628-33.534 45.921-77.039 45.921-124.588 0-106.039-85.961-192-192-192-106.038 0-192 85.961-192 192 0 106.039 85.961 192 192 192 47.549 0 91.054-17.293 124.588-45.922-0.5 10.831 4.68 24.239 15.963 36.776l103.147 121.276c17.661 19.623 46.511 21.277 64.11 3.678s15.946-46.449-3.677-64.11zM192 320c-70.692 0-128-57.308-128-128s57.308-128 128-128 128 57.308 128 128-57.307 128-128 128z"/>';
+var SETTINGS_PATHS = '<path d="M224 64v-8c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-96v64h96v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h288v-64h-288zM128 128v-64h64v64h-64zM416 216c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-288v64h288v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h96v-64h-96v-8zM320 288v-64h64v64h-64zM224 376c0-13.2-10.8-24-24-24h-80c-13.2 0-24 10.8-24 24v8h-96v64h96v8c0 13.2 10.8 24 24 24h80c13.2 0 24-10.8 24-24v-8h288v-64h-288v-8zM128 448v-64h64v64h-64z"/>';
+var checkIcon = (opts) => _renderSvg("-30 -30 562 412", CHECK_PATHS, opts);
+var chevronDownIcon = (opts) => _renderSvg("0 0 24 24", CHEVRON_DOWN_PATHS, opts);
+var collapseIcon = (opts) => _renderSvg("0 0 24 24", COLLAPSE_PATHS, opts);
+var colorsIcon = (opts) => _renderSvg("0 0 470 470", COLORS_PATHS, opts);
+var columnsIcon = (opts) => _renderSvg("-40 -40 470 470", COLUMNS_PATHS, opts);
+var crossIcon = (opts) => _renderSvg("-80 -80 700 700", CROSS_PATHS, opts);
+var dropIcon = (opts) => _renderSvg("0 0 354 354", DROP_PATHS, opts);
+var emptyIcon = (opts) => _renderSvg("-49.5 140.5 512 512", EMPTY_PATHS, opts);
+var expandIcon = (opts) => _renderSvg("0 0 24 24", EXPAND_PATHS, opts);
+var eyeDropperIcon = (opts) => _renderSvg("0 0 256 256", EYE_DROPPER_PATHS, opts);
+var infoIcon = (opts) => _renderSvg("20 20 470 470", INFO_PATHS, opts);
+var pasteIcon = (opts) => _renderSvg("70 70 510 470", PASTE_PATHS, opts);
+var pencilIcon = (opts) => _renderSvg("0 0 512 512", PENCIL_PATHS, opts);
+var plusIcon = (opts) => _renderSvg("-30 -30 500 500", PLUS_PATHS, opts);
+var reloadIcon = (opts) => _renderSvg("0 0 512 512", RELOAD_PATHS, opts);
+var searchIcon = (opts) => _renderSvg("0 0 512 512", SEARCH_PATHS, opts);
+var settingsIcon = (opts) => _renderSvg("0 0 512 512", SETTINGS_PATHS, opts);
+
 // src/tstooltip.ts
 var query11 = query;
 var Tooltip = class _Tooltip {
@@ -6796,14 +6851,14 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
                     <span style="text-align: right"> Hex </span>
                     <input class="tsg-input final" name="hex" tabindex="107" style="width: 70px" readonly>
                     <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndUse|${name}">
-                        <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                        <span class="tsg-icon">${eyeDropperIcon({ label: "Eye dropper" })}</span>
                     </div>
                 </div>
             </div>`;
     html += `
             <div class="tsg-color-tabs">
-                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon tsg-icon-colors"></span></div>
-                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon tsg-icon-settings"></span></div>
+                <div class="tsg-color-tab tsg-selected tsg-eaction" data-click="tabClick|1|event|this"><span class="tsg-icon">${colorsIcon({ label: "Colors" })}</span></div>
+                <div class="tsg-color-tab tsg-eaction" data-click="tabClick|2|event|this"><span class="tsg-icon">${settingsIcon({ label: "Settings" })}</span></div>
                 <div style="padding: 5px; width: 100%; text-align: right;">
                     ${typeof options.html == "string" ? options.html : ""}
                 </div>
@@ -6824,7 +6879,7 @@ var ColorTooltip = class _ColorTooltip extends Tooltip {
     });
     html += `
                 <div class="tsg-color tsg-color-picker tsg-eaction" data-click="pickAndSelect|${name}|event">
-                    <span class="tsg-icon tsg-icon-eye-dropper"></span>
+                    <span class="tsg-icon">${eyeDropperIcon({ label: "Eye dropper" })}</span>
                 </div>
             </div>`;
     return html;
@@ -7370,7 +7425,7 @@ var MenuTooltip = class extends Tooltip {
     if (options.search) {
       topHTML += `
                 <div class="tsg-menu-search">
-                    <span class="tsg-icon tsg-icon-search"></span>
+                    <span class="tsg-icon">${searchIcon({ label: "Search" })}</span>
                     <input id="menu-search" class="tsg-input" type="text"/>
                 </div>`;
       items.forEach((item) => item.hidden = false);
@@ -7387,8 +7442,8 @@ var MenuTooltip = class extends Tooltip {
       const index = (parents.length > 0 ? parents.join("-") + "-" : "") + f;
       if (icon == null) icon = null;
       if (["radio", "check"].includes(options.type) && !Array.isArray(mitem.items) && mitem.group !== false) {
-        if (mitem.checked === true) icon = "tsg-icon-check";
-        else icon = "tsg-icon-empty";
+        if (mitem.checked === true) icon = checkIcon();
+        else icon = emptyIcon();
       }
       if (mitem.hidden !== true) {
         let txt = mitem.text;
@@ -7398,7 +7453,7 @@ var MenuTooltip = class extends Tooltip {
         if (icon) {
           const first = String(icon).trim().slice(0, 1);
           if (first == "#") {
-            icon = `<span class="tsg-icon tsg-icon-empty" style="background-color: ${icon}"></span>`;
+            icon = `<span class="tsg-icon" style="background-color: ${icon}">${emptyIcon()}</span>`;
           } else if (first !== "<") {
             icon = `<span class="tsg-icon ${icon}"></span>`;
           }
@@ -7937,7 +7992,7 @@ var MenuTooltip = class extends Tooltip {
       items2.forEach((other, ind) => {
         if (other.id == item.id) return;
         if (other.group === item.group && other.checked) {
-          menu.find(`.tsg-menu-item[index="${(parent ? parent + "-" : "") + ind}"] .tsg-icon`).removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+          menu.find(`.tsg-menu-item[index="${(parent ? parent + "-" : "") + ind}"] .tsg-icon`).html(emptyIcon());
           items2[ind].checked = false;
         }
         if (Array.isArray(other.items)) {
@@ -7949,14 +8004,14 @@ var MenuTooltip = class extends Tooltip {
       item.checked = options.type == "radio" ? true : !item.checked;
       if (item.checked) {
         if (options.type === "radio") {
-          query11(event2.target).closest(".tsg-menu").find(".tsg-icon").removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+          query11(event2.target).closest(".tsg-menu").find(".tsg-icon").html(emptyIcon());
         }
         if (options.type === "check" && item.group != null) {
           uncheck(options.items);
         }
-        icon.removeClass("tsg-icon-empty").addClass("tsg-icon-check");
+        icon.html(checkIcon());
       } else if (options.type === "check") {
-        icon.removeClass("tsg-icon-check").addClass("tsg-icon-empty");
+        icon.html(emptyIcon());
       }
     }
     if (!query11(event2.target).hasClass("menu-remove") && !query11(event2.target).hasClass("menu-help")) {
@@ -9289,10 +9344,10 @@ var TsField = class extends TsBase {
           if (this.helpers.prefix) query12(this.helpers.prefix).hide();
           if (options.icon) {
             focus2.css("margin-left", "17px");
-            query12(this.helpers.search).find(".tsg-icon-search").addClass("show-search");
+            query12(this.helpers.search).find('[data-icon="search"]').addClass("show-search");
           } else {
             focus2.css("margin-left", "0px");
-            query12(this.helpers.search).find(".tsg-icon-search").removeClass("show-search");
+            query12(this.helpers.search).find('[data-icon="search"]').removeClass("show-search");
           }
         }, 1);
       }
@@ -10225,7 +10280,7 @@ var TsField = class extends TsBase {
     }
     const html = `
             <div class="tsg-field-helper">
-                <span class="tsg-icon tsg-icon-search"></span>
+                <span class="tsg-icon" data-icon="search">${searchIcon()}</span>
                 <input ${searchId} type="text" tabIndex="${tabIndex}" ${query12(this.el).prop("readOnly") ? "readonly" : ""}
                     autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"/>
             </div>`;
@@ -11429,7 +11484,7 @@ function searchSave(grid) {
         grid.savedSearches.push({
           id: name,
           text: name,
-          icon: "tsg-icon-search",
+          icon: searchIcon(),
           remove: true,
           logic: grid.last.logic,
           data: grid.searchData
@@ -14682,7 +14737,7 @@ function refreshSearch(grid) {
       searches += `<span class="tsg-action" data-click="searchFieldTooltip|${ind}|${sd_ind}|this">
                 ${sf ? sf.label ?? sf.field : sd.field}
                 ${display}
-                <span class="icon-chevron-down"></span>
+                <span class="tsg-icon">${chevronDownIcon()}</span>
             </span>`;
     });
     searches += `
@@ -14937,12 +14992,12 @@ function initColumnOnOff(grid) {
   }
   if (grid.show.skipRecords) {
     const skip = TsUtils.lang("Skip") + `<input id="${grid.name}_skip" type="text" class="tsg-input tsg-grid-skip" value="${grid.offset}">` + TsUtils.lang("records");
-    items.push({ id: "tsg-skip", text: skip, group: false, icon: "tsg-icon-empty" });
+    items.push({ id: "tsg-skip", text: skip, group: false, icon: emptyIcon() });
   }
   if (grid.show.saveRestoreState) {
     items.push(
-      { id: "tsg-stateSave", text: TsUtils.lang("Save Grid State"), icon: "tsg-icon-empty", group: false },
-      { id: "tsg-stateReset", text: TsUtils.lang("Restore Default State"), icon: "tsg-icon-empty", group: false }
+      { id: "tsg-stateSave", text: TsUtils.lang("Save Grid State"), icon: emptyIcon(), group: false },
+      { id: "tsg-stateReset", text: TsUtils.lang("Restore Default State"), icon: emptyIcon(), group: false }
     );
   }
   const selected = [];
@@ -15120,7 +15175,7 @@ function initToolbar(grid) {
             <div class="tsg-grid-search-input">
                 ${grid.buttons["search"].html}
                 <div id="grid_${grid.name}_search_name" class="tsg-grid-search-name">
-                    <span class="name-icon tsg-icon-search"></span>
+                    <span class="name-icon tsg-icon">${searchIcon()}</span>
                     <span class="name-text"></span>
                     <span class="name-cross tsg-action" data-click="searchReset">x</span>
                 </div>
@@ -15131,7 +15186,7 @@ function initToolbar(grid) {
                 >
                 <div class="tsg-search-drop tsg-action" data-click="searchOpen"
                         style="${grid.multiSearch ? "" : "display: none"}">
-                    <span class="tsg-icon-drop"></span>
+                    <span class="tsg-icon">${dropIcon()}</span>
                 </div>
             </div>`;
     grid.toolbar.items.push({
@@ -16070,23 +16125,23 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
     }
     if (record.TsUi.parent_recid) {
       for (let i = 0; i < level; i++) {
-        infoBubble += '<span class="tsg-show-children tsg-icon-empty"></span>';
+        infoBubble += `<span class="tsg-show-children tsg-icon">${emptyIcon()}</span>`;
       }
     }
-    const className2 = record.TsUi?.children?.length > 0 ? record.TsUi.expanded ? "tsg-icon-collapse" : "tsg-icon-expand" : "tsg-icon-empty";
     if (record.TsUi?.children?.length > 0) {
-      infoBubble += `<span class="tsg-show-children ${className2}"></span>`;
+      const expandCollapseIcon = record.TsUi.expanded ? collapseIcon() : expandIcon();
+      infoBubble += `<span class="tsg-show-children tsg-icon">${expandCollapseIcon}</span>`;
     }
   }
   if (col["info"] === true) col["info"] = {};
   if (col["info"] != null) {
-    let infoIcon = "tsg-icon-info";
+    let infoIconContent = infoIcon();
     if (typeof col["info"].icon == "function") {
-      infoIcon = col["info"].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary });
+      infoIconContent = col["info"].icon(record, { self: grid, index: ind, colIndex: col_ind, summary: !!summary });
     } else if (typeof col["info"].icon == "object") {
-      infoIcon = col["info"].icon[grid.parseField(record, col.field)] || "";
+      infoIconContent = col["info"].icon[grid.parseField(record, col.field)] || "";
     } else if (typeof col["info"].icon == "string") {
-      infoIcon = col["info"].icon;
+      infoIconContent = col["info"].icon;
     }
     let infoStyle = col["info"].style || "";
     if (typeof col["info"].style == "function") {
@@ -16096,7 +16151,8 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
     } else if (typeof col["info"].style == "string") {
       infoStyle = col["info"].style;
     }
-    infoBubble += `<span class="tsg-info ${infoIcon}" style="${infoStyle}"></span>`;
+    const infoIconHtml = String(infoIconContent).trim().startsWith("<") ? `<span class="tsg-info" style="${infoStyle}">${infoIconContent}</span>` : `<span class="tsg-info ${infoIconContent}" style="${infoStyle}"></span>`;
+    infoBubble += infoIconHtml;
   }
   let data = value;
   if (edit && ["checkbox", "check"].indexOf(edit.type) != -1) {
@@ -16131,7 +16187,7 @@ function getCellHTML(grid, ind, col_ind, summary, col_span) {
   if (isRowSelected && sel.columns[ind]?.includes(col_ind)) isCellSelected = true;
   let clipboardIcon;
   if (col.clipboardCopy) {
-    clipboardIcon = '<span class="tsg-clipboard-copy tsg-icon-paste"></span>';
+    clipboardIcon = `<span class="tsg-clipboard-copy tsg-icon">${pasteIcon()}</span>`;
   }
   data = '<td class="tsg-grid-data' + (isCellSelected ? " tsg-selected" : "") + " " + className + (isChanged ? " tsg-changed" : "") + '"    id="grid_' + grid.name + "_data_" + ind + "_" + col_ind + '" col="' + col_ind + '"    style="' + style + (col.style != null ? col.style : "") + '" ' + (col.attr != null ? col.attr : "") + attr + ((col_span ?? 0) > 1 ? 'colspan="' + col_span + '"' : "") + ">" + data + (clipboardIcon && TsUtils.stripTags(data) ? clipboardIcon : "") + "</td>";
   if (ind === -1 && summary === true) {
@@ -17059,23 +17115,23 @@ var TsGrid = class extends TsBase {
     this.msgNeedReload = "Your remote data source record count has changed, reloading from the first record.";
     this.msgEmpty = "";
     this.buttons = {
-      "reload": { type: "button", id: "tsg-reload", icon: "tsg-icon-reload", tooltip: TsUtils.lang("Reload data in the list") },
+      "reload": { type: "button", id: "tsg-reload", icon: reloadIcon(), tooltip: TsUtils.lang("Reload data in the list") },
       "columns": {
         type: "menu-check",
         id: "tsg-column-on-off",
-        icon: "tsg-icon-columns",
+        icon: columnsIcon(),
         tooltip: TsUtils.lang("Show/hide columns"),
         overlay: { align: "none" }
       },
       "search": {
         type: "html",
         id: "tsg-search",
-        html: '<div class="tsg-icon tsg-icon-search tsg-search-down tsg-action" data-click="searchShowFields"></div>'
+        html: `<div class="tsg-icon tsg-search-down tsg-action" data-click="searchShowFields">${searchIcon()}</div>`
       },
-      "add": { type: "button", id: "tsg-add", text: "Add New", tooltip: TsUtils.lang("Add new record"), icon: "tsg-icon-plus" },
-      "edit": { type: "button", id: "tsg-edit", text: "Edit", tooltip: TsUtils.lang("Edit selected record"), icon: "tsg-icon-pencil", batch: 1, disabled: true },
-      "delete": { type: "button", id: "tsg-delete", text: "Delete", tooltip: TsUtils.lang("Delete selected records"), icon: "tsg-icon-cross", batch: true, disabled: true },
-      "save": { type: "button", id: "tsg-save", text: "Save", tooltip: TsUtils.lang("Save changed records"), icon: "tsg-icon-check" }
+      "add": { type: "button", id: "tsg-add", text: "Add New", tooltip: TsUtils.lang("Add new record"), icon: plusIcon() },
+      "edit": { type: "button", id: "tsg-edit", text: "Edit", tooltip: TsUtils.lang("Edit selected record"), icon: pencilIcon(), batch: 1, disabled: true },
+      "delete": { type: "button", id: "tsg-delete", text: "Delete", tooltip: TsUtils.lang("Delete selected records"), icon: crossIcon(), batch: true, disabled: true },
+      "save": { type: "button", id: "tsg-save", text: "Save", tooltip: TsUtils.lang("Save changed records"), icon: checkIcon() }
     };
     this.operators = {
       // for search fields
@@ -17218,7 +17274,7 @@ var TsGrid = class extends TsBase {
     if (Array.isArray(this.defaultSearches)) {
       this.defaultSearches.forEach((search2, ind) => {
         search2.id = "default-" + ind;
-        search2.icon ??= "tsg-icon-search";
+        search2.icon ??= searchIcon();
       });
     }
     const data = this.cache("searches");
@@ -17227,7 +17283,7 @@ var TsGrid = class extends TsBase {
         this.savedSearches.push({
           id: search2.id ?? "none",
           text: search2.text ?? "none",
-          icon: "tsg-icon-search",
+          icon: searchIcon(),
           remove: true,
           logic: search2.logic ?? "AND",
           data: search2.data ?? []

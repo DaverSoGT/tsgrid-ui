@@ -11,8 +11,9 @@
 </head>
 <body>
     <div id="sidebar"></div>
-    <script src="../../dist/tsgrid-ui.js"></script>
-    <script>
+    <script type="module">
+        import { TsSidebar } from '../../dist/sidebar.es6.js'
+        window.TsSidebar = TsSidebar
         var sidebar = new TsSidebar({
             name: 'smoke-sidebar',
             nodes: [

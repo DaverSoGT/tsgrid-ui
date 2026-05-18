@@ -2,6 +2,10 @@ import {
   lazySingleton
 } from "./chunks/chunk-EQK6JAHT.js";
 import {
+  boxIcon,
+  crossIcon
+} from "./chunks/chunk-OITJCF5M.js";
+import {
   TsUtils
 } from "./chunks/chunk-ZDPL4SCT.js";
 import "./chunks/chunk-IYF3Q7GX.js";
@@ -172,12 +176,12 @@ var TsDialog = class extends TsBase {
     let titleBtns = "";
     if (options.showClose) {
       titleBtns += `<div class="tsg-popup-button tsg-popup-close">
-                        <span class="tsg-icon tsg-icon-cross tsg-eaction" data-mousedown="stop" data-click="close"></span>
+                        <span class="tsg-icon tsg-eaction" data-mousedown="stop" data-click="close">${crossIcon({ label: "Close" })}</span>
                     </div>`;
     }
     if (options.showMax) {
       titleBtns += `<div class="tsg-popup-button tsg-popup-max">
-                        <span class="tsg-icon tsg-icon-box tsg-eaction" data-mousedown="stop" data-click="toggle"></span>
+                        <span class="tsg-icon tsg-eaction" data-mousedown="stop" data-click="toggle">${boxIcon({ label: "Toggle size" })}</span>
                     </div>`;
     }
     if (query2("#tsg-popup").length === 0) {
