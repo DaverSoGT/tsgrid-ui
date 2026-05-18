@@ -295,16 +295,30 @@ describe('T-SCI-14: icons dist NOT in sideEffects (R-SCI-11, INV-4)', () => {
 // ---------------------------------------------------------------------------
 describe('T-SCI-15: widget files have no tsg-icon-{name} class strings (R-SCI-12) [B3-scope]', () => {
     // B3-scope: widget migration happens in PR3 (B3 GREEN commit).
-    // These tests are marked todo until PR3 migrates all 9 widget files.
-    it.todo('src/tsgrid.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/grid-render.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tspopup.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tstooltip.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tsfield.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tsform.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tstoolbar.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tstabs.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
-    it.todo('src/tssidebar.ts has no tsg-icon-{name} class injection [B3-scope: migrated in PR3]')
+    // See test/unit/widgets-no-css-icons.test.ts for the full assertion suite.
+    // These it() blocks provide the canonical T-SCI-15 coverage referenced in verify probes.
+    const ICON_NAMES = [
+        'box', 'check', 'chevron-down', 'collapse', 'colors',
+        'columns', 'cross', 'drop', 'empty', 'expand',
+        'eye-dropper', 'info', 'paste', 'pencil', 'plus',
+        'reload', 'search', 'settings',
+    ]
+    const WIDGET_FILES = [
+        'src/tsgrid.ts', 'src/grid-render.ts', 'src/grid-search.ts',
+        'src/tspopup.ts', 'src/tstooltip.ts', 'src/tsfield.ts',
+        'src/tsform.ts', 'src/tstoolbar.ts', 'src/tstabs.ts', 'src/tssidebar.ts',
+    ]
+
+    it.each(WIDGET_FILES)('%s has no tsg-icon-{name} class injection', (file) => {
+        const src = readFileSync(join(ROOT, file), 'utf8')
+        const violations: string[] = []
+        for (const name of ICON_NAMES) {
+            // tsg-icon-selected is allowed in tssidebar.ts ('selected' is not an icon name)
+            const pattern = new RegExp(`tsg-icon-${name.replace(/-/g, '[-]')}(?:[^-a-z]|$)`)
+            if (pattern.test(src)) violations.push(`tsg-icon-${name}`)
+        }
+        expect(violations, `${file} still contains: ${violations.join(', ')}`).toHaveLength(0)
+    })
 })
 
 // ---------------------------------------------------------------------------
@@ -312,7 +326,10 @@ describe('T-SCI-15: widget files have no tsg-icon-{name} class strings (R-SCI-12
 // NOTE: B3-scope test — icons.less background-image removal happens in PR3 (B3 GREEN commit).
 // ---------------------------------------------------------------------------
 describe('T-SCI-16: icons.less has no background-image rules (R-SCI-13) [B3-scope]', () => {
-    it.todo('src/less/src/icons.less has zero background-image declarations [B3-scope: removed in PR3]')
+    it('src/less/src/icons.less has zero background-image declarations', () => {
+        const content = readFileSync(join(ROOT, 'src', 'less', 'src', 'icons.less'), 'utf8')
+        expect(content).not.toMatch(/background-image\s*:/)
+    })
 })
 
 // ---------------------------------------------------------------------------
@@ -320,8 +337,15 @@ describe('T-SCI-16: icons.less has no background-image rules (R-SCI-13) [B3-scop
 // NOTE: B3-scope test — common.less CSS-trick removal happens in PR3 (B3 GREEN commit).
 // ---------------------------------------------------------------------------
 describe('T-SCI-17: common.less has no expand/collapse CSS-trick rules (R-SCI-14) [B3-scope]', () => {
-    it.todo('common.less has no .tsg-icon-expand rule [B3-scope: removed in PR3]')
-    it.todo('common.less has no .tsg-icon-collapse rule [B3-scope: removed in PR3]')
+    it('common.less has no .tsg-icon-expand CSS rule', () => {
+        const content = readFileSync(join(ROOT, 'src', 'less', 'src', 'common.less'), 'utf8')
+        expect(content).not.toContain('.tsg-icon-expand')
+    })
+
+    it('common.less has no .tsg-icon-collapse CSS rule', () => {
+        const content = readFileSync(join(ROOT, 'src', 'less', 'src', 'common.less'), 'utf8')
+        expect(content).not.toContain('.tsg-icon-collapse')
+    })
 })
 
 // ---------------------------------------------------------------------------
