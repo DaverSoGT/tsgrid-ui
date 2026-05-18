@@ -100,6 +100,32 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
 })
 
 // ---------------------------------------------------------------------------
+// barrel-deprecation (v2.15.0): T-BD-10, T-BD-11 (R-BD-10, R-BD-11)
+// version-anchor: manual-review-trigger (see W-2 convention)
+// ---------------------------------------------------------------------------
+describe('package.json barrel-deprecation assertions (T-BD-10, T-BD-11)', () => {
+    it('T-BD-10: package version is 2.15.0 (barrel-deprecation release)', () => {
+        expect(pkg.version).toBe('2.15.0')
+    })
+
+    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.es6.js (R-BD-11)', () => {
+        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.es6.js')
+    })
+
+    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.es6.min.js (R-BD-11)', () => {
+        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.es6.min.js')
+    })
+
+    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.js (R-BD-11)', () => {
+        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.js')
+    })
+
+    it('T-BD-11: sideEffects array includes ./dist/tsgrid-ui.min.js (R-BD-11)', () => {
+        expect(pkg.sideEffects).toContain('./dist/tsgrid-ui.min.js')
+    })
+})
+
+// ---------------------------------------------------------------------------
 // font-externalization (v2.14.0): T-FE-10..T-FE-13 (R-FE-8, R-FE-9, R-FE-11, R-FE-12)
 // ---------------------------------------------------------------------------
 describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () => {
