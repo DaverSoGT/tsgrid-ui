@@ -98,3 +98,24 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(verify).toContain('pnpm consumer-smoke-cjs')
     })
 })
+
+// ---------------------------------------------------------------------------
+// font-externalization (v2.14.0): T-FE-10..T-FE-13 (R-FE-8, R-FE-9, R-FE-11, R-FE-12)
+// ---------------------------------------------------------------------------
+describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () => {
+    it('T-FE-10: scripts["build:css"] does not contain "gulp icons" (R-FE-8, R-FE-9)', () => {
+        expect(pkg.scripts['build:css']).not.toContain('gulp icons')
+    })
+
+    it('T-FE-11: scripts.verify starts with "pnpm build &&" (R-FE-10, W-3 closure)', () => {
+        expect(pkg.scripts.verify).toMatch(/^pnpm build &&/)
+    })
+
+    it('T-FE-12: gulp-iconfont not in devDependencies (R-FE-11)', () => {
+        expect('gulp-iconfont' in pkg.devDependencies).toBe(false)
+    })
+
+    it('T-FE-13: package version is 2.14.0 (font-externalization release)', () => {
+        expect(pkg.version).toBe('2.14.0')
+    })
+})
