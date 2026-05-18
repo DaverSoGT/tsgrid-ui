@@ -39,25 +39,29 @@ describe('subpath-exports — package.json shape', () => {
         expect(pkg.exports['./package.json']).toBe('./package.json')
     })
 
-    it.each(SUBPATHS)('"./%s" has correct types+import shape, no require (INV-SX-5)', (name) => {
+    it.each(SUBPATHS)('"./%s" has types+import+require shape (v2.13.0 Phase 4)', (name) => {
         const key = `./${name}`
         const entry = pkg.exports[key]
         expect(entry).toBeDefined()
         expect(entry).toEqual({
-            types:  `./dist/${name}.d.ts`,
-            import: `./dist/${name}.es6.js`,
+            types:   `./dist/${name}.d.ts`,
+            import:  `./dist/${name}.es6.js`,
+            require: `./dist/${name}.js`,
         })
-        expect('require' in entry).toBe(false)
     })
 
-    it('NEGATIVE CONTROL — synthetic subpath with require IS detected (SC-SX-8, DD-SX-H)', () => {
-        const synthetic = {
-            ...pkg.exports,
-            './popup': { types: './x.d.ts', import: './x.js', require: './x.cjs' },
-        }
-        const bad = Object.entries(synthetic)
-            .filter(([k, v]) => k !== '.' && typeof v === 'object' && v !== null && 'require' in (v as object))
-        expect(bad.length).toBeGreaterThan(0)
+    it.each(SUBPATHS)('"./%s" require condition points to dist/<name>.js (CJS plain)', (name) => {
+        const entry = pkg.exports[`./${name}`]
+        expect(entry.require).toBe(`./dist/${name}.js`)
+        expect(entry.require).not.toMatch(/\.es6\.js$/)
+    })
+
+    it('NEGATIVE CONTROL — synthetic entry MISSING require is detected (v2.13.0 Phase 4)', () => {
+        // After Phase 4, every JS subpath has require:. The negative control
+        // detects a subpath entry that is MISSING require — the post-Phase-4 invariant.
+        const syntheticMissingRequire = { types: './dist/x.d.ts', import: './dist/x.es6.js' }
+        const hasMissingRequire = !('require' in syntheticMissingRequire)
+        expect(hasMissingRequire).toBe(true)
     })
 })
 

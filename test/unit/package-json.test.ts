@@ -1,4 +1,5 @@
 // v2.10.0: popup + tooltip removed from sideEffects (lazy singleton — safe to tree-shake)
+// v2.13.0: utils.js added to sideEffects (CJS parity for the ESM utils.es6.js singleton)
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -6,18 +7,21 @@ import { join } from 'node:path'
 const ROOT = process.cwd()
 const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
 
-// Spec Q2: the exact 16-entry sideEffects list (v2.12.0 — 9 per-widget CSS entries added).
+// Spec Q2: the exact 17-entry sideEffects list (v2.13.0 — utils.js CJS pair added).
 // utils stays (side-effectful: reads navigator/localStorage at construction).
 // popup and tooltip are now lazy-init — safe to tree-shake.
 // locale and base are NOT in the array (pure ESM — safe to tree-shake).
 // All chunk files (dist/chunks/*.js) are implicitly pure and must NOT appear here.
 // v2.12.0: 9 per-widget CSS entries appended in alphabetical order (field, form, grid, layout,
 //   popup, sidebar, tabs, toolbar, tooltip). CSS files are always side-effectful.
+// v2.13.0: utils.js inserted immediately after utils.es6.js (ESM+CJS pair stays adjacent).
 const EXPECTED_SIDE_EFFECTS: string[] = [
     // v2.10.0 — JS singleton + monolith CSS (UNCHANGED ordering)
     './dist/tsgrid-ui.css',
     './dist/tsgrid-ui.min.css',
     './dist/utils.es6.js',
+    // v2.13.0 — CJS parity for utils singleton (adjacent to ESM pair)
+    './dist/utils.js',
     './dist/tsgrid-ui.es6.js',
     './dist/tsgrid-ui.es6.min.js',
     './dist/tsgrid-ui.js',
@@ -39,12 +43,16 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(Array.isArray(pkg.sideEffects)).toBe(true)
     })
 
-    it('sideEffects has exactly 16 entries (7 existing + 9 per-widget CSS added in v2.12.0)', () => {
-        expect(pkg.sideEffects).toHaveLength(16)
+    it('sideEffects has exactly 17 entries (v2.13.0 — utils.js CJS pair added)', () => {
+        expect(pkg.sideEffects).toHaveLength(17)
     })
 
     it('sideEffects contains ./dist/utils.es6.js (singleton — side-effectful)', () => {
         expect(pkg.sideEffects).toContain('./dist/utils.es6.js')
+    })
+
+    it('sideEffects contains ./dist/utils.js (v2.13.0 CJS pair — singleton parity)', () => {
+        expect(pkg.sideEffects).toContain('./dist/utils.js')
     })
 
     it('sideEffects does NOT contain ./dist/popup.es6.js (lazy singleton — safe to tree-shake)', () => {
@@ -63,12 +71,12 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).not.toContain('./dist/base.es6.js')
     })
 
-    it('sideEffects contains all expected entries in the correct order (v2.10.0 mandatory order)', () => {
+    it('sideEffects contains all expected entries in the correct order (v2.13.0 mandatory order)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.12.0 (grid-css-pairing release)', () => {
-        expect(pkg.version).toBe('2.12.0')
+    it('package version is 2.13.0 (cjs-subpath-parity release)', () => {
+        expect(pkg.version).toBe('2.13.0')
     })
 
     // R-GCP-4 regression guard: files[] must not exclude per-widget CSS
@@ -78,5 +86,15 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
     it('files[] has no !dist/*.css exclusion pattern (R-GCP-4 regression guard)', () => {
         const cssExclusions = pkg.files.filter((f: string) => /^!dist.*\.css$/.test(f))
         expect(cssExclusions).toEqual([])
+    })
+
+    it('scripts["consumer-smoke-cjs"] is wired to run the CJS smoke probe', () => {
+        expect(pkg.scripts['consumer-smoke-cjs']).toBe('node test/consumer-smoke-cjs.js')
+    })
+
+    it('scripts.verify chain includes pnpm build and pnpm consumer-smoke-cjs', () => {
+        const verify: string = pkg.scripts['verify']
+        expect(verify).toContain('pnpm build')
+        expect(verify).toContain('pnpm consumer-smoke-cjs')
     })
 })

@@ -102,6 +102,10 @@ describe('tarball contents (S-3 — packaging regression guard)', () => {
         expect(contents).toContain(`dist/${name}.es6.js`)
     })
 
+    it.each(SUBPATHS)('includes CJS subpath dist/%s.js (v2.13.0 Phase 4)', (name) => {
+        expect(contents).toContain(`dist/${name}.js`)
+    })
+
     it.each(SUBPATHS)('includes subpath types dist/%s.d.ts', (name) => {
         expect(contents).toContain(`dist/${name}.d.ts`)
     })

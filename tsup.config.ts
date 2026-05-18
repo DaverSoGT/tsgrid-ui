@@ -149,4 +149,45 @@ export default defineConfig([
         },
         clean: false,
     },
+    // -----------------------------------------------------------------------
+    // Block 6 — CJS subpath bundles (Phase 4 / v2.13.0)
+    //
+    // Plain CJS, NOT post-processed by scripts/wrap-legacy.mjs.
+    // Each entry is self-contained (splitting:false) so `require('tsgrid-ui/grid')`
+    // resolves with no chunk-graph dependencies.
+    //
+    // outDir: dist (same as ESM); naming via entry KEYS produces dist/<key>.js
+    // because tsup's default CJS extension is .js. NO outExtension() override.
+    //
+    // IMPORTANT: this block emits Node-only require() targets. See
+    // scripts/wrap-legacy.mjs lines 32-50 (updated PR #2) for the rationale
+    // that these files INTENTIONALLY ship unwrapped.
+    // -----------------------------------------------------------------------
+    {
+        entry: {
+            'locale':  'src/tslocale.ts',
+            'base':    'src/tsbase.ts',
+            'utils':   'src/tsutils.ts',
+            'popup':   'src/tspopup.ts',
+            'tooltip': 'src/tstooltip.ts',
+            'tabs':    'src/tstabs.ts',
+            'toolbar': 'src/tstoolbar.ts',
+            'sidebar': 'src/tssidebar.ts',
+            'field':   'src/tsfield.ts',
+            'layout':  'src/tslayout.ts',
+            'form':    'src/tsform.ts',
+            'grid':    'src/tsgrid.ts',
+        },
+        format: ['cjs'],
+        outDir: 'dist',
+        target: 'es2022',
+        // CJS lacks import.meta; substitute per existing Block 3/4 pattern.
+        define: { 'import.meta.url': 'undefined' },
+        dts: false,
+        clean: false,
+        splitting: false,
+        sourcemap: true,    // unlike Block 3/4: NOT post-processed, sourcemap is safe
+        minify: false,
+        shims: false,
+    },
 ])
