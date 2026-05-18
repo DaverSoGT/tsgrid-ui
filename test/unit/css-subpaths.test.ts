@@ -1,6 +1,32 @@
 import { describe, it, expect } from 'vitest'
-import { existsSync, statSync, readFileSync } from 'fs'
+import { existsSync, statSync, promises as fsPromises } from 'fs'
+import { readFileSync } from 'fs'
 import { join } from 'path'
+
+/**
+ * readWithRetry — guards against the Windows gulp.dest() FS race where
+ * readFileSync returns empty content for a file that exists on disk but
+ * whose write has not yet been flushed by the OS at the point the test
+ * reads it. Retries up to `attempts` times with incremental back-off
+ * (delayMs * attempt-index ms) and rejects partial (empty) reads.
+ *
+ * W-2 closure (verify-report #1146).
+ */
+async function readWithRetry(filePath: string, attempts = 5, delayMs = 50): Promise<string> {
+    let lastErr: unknown
+    for (let i = 0; i < attempts; i++) {
+        try {
+            const content = await fsPromises.readFile(filePath, 'utf8')
+            if (content.length > 0) return content
+            // content.length === 0 means a partial/empty flush — treat as transient
+            lastErr = new Error(`readWithRetry: got empty content on attempt ${i + 1}: ${filePath}`)
+        } catch (err) {
+            lastErr = err
+        }
+        await new Promise(r => setTimeout(r, delayMs * (i + 1)))
+    }
+    throw lastErr ?? new Error(`readWithRetry exhausted after ${attempts} attempts: ${filePath}`)
+}
 
 const ROOT = join(__dirname, '../..')
 const V212_BASELINE_PATH = join(ROOT, 'reports', 'bundle', 'v2.12.0-baseline.json')
@@ -40,19 +66,23 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         expect(size).toBeGreaterThan(5 * 1024)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css has NO tsg-icon-{name} background-image rules (v3.0.0 — R-SCI-13)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css has NO tsg-icon-{name} background-image rules (v3.0.0 — R-SCI-13)', async (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
-        const css = readFileSync(cssPath, 'utf8')
+        // W-2 closure (verify-report #1146): use readWithRetry to guard against Windows
+        // gulp.dest() FS race that causes readFileSync to return empty content on cold start.
+        const css = await readWithRetry(cssPath)
         // v3.0.0: .tsg-icon-{name} background-image rules are removed from icons.less (R-SCI-13).
         // Note: other background-image data URIs (e.g. column resizer in grid.css) are allowed.
         expect(css).not.toMatch(/\.tsg-icon-\w[\w-]*\s*\{[^}]*background-image/)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains expected sentinel selector', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains expected sentinel selector', async (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
-        const css = readFileSync(cssPath, 'utf8')
+        // W-2 closure (verify-report #1146): use readWithRetry to guard against Windows
+        // gulp.dest() FS race that causes readFileSync to return empty content on cold start.
+        const css = await readWithRetry(cssPath)
         expect(css).toContain(SENTINEL_SELECTOR[name])
     })
 
