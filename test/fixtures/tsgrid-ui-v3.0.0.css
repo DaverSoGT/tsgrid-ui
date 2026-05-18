@@ -2377,7 +2377,7 @@ textarea.tsg-error {
   border-radius: 4px;
   background-color: transparent;
 }
-.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop span.tsg-icon-drop {
+.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop span.tsg-icon {
   position: relative;
   top: -3px;
 }
@@ -2385,8 +2385,8 @@ textarea.tsg-error {
 .tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop.checked {
   background-color: #56a1e2;
 }
-.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop:hover span.tsg-icon-drop,
-.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop.checked span.tsg-icon-drop {
+.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop:hover span.tsg-icon,
+.tsg-grid .tsg-grid-toolbar .tsg-grid-search-input .tsg-search-drop.checked span.tsg-icon {
   color: #fff;
 }
 .tsg-grid .tsg-grid-toolbar .tsg-grid-searches {

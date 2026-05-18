@@ -104,14 +104,21 @@ describe('T-FE-6-v3: zero background-image data URIs in icons.less (R-SCI-13)', 
 // so fill="currentColor" on the icon SVG inherits the white color.
 // ---------------------------------------------------------------------------
 describe('T-FE-7-v3: tsg-icon-drop hover uses color: #fff (R-SCI-15 — R-FE-5 superseded)', () => {
-    it('hover/checked block for span.tsg-icon-drop uses color: #fff (v3.0.0 currentColor migration)', () => {
+    it('hover/checked block for .tsg-search-drop span.tsg-icon uses color: #fff (W-1 closure: retargeted from dead span.tsg-icon-drop)', () => {
+        // W-1 closure (verify-report #1146): span.tsg-icon-drop was dead after v3.0 migration;
+        // selector retargeted to span.tsg-icon — the actual element rendered by dropIcon().
         // v3.0.0: background-image replaced by color: #fff (theming via currentColor)
-        expect(gridLess).toMatch(/span\.tsg-icon-drop[^}]*color\s*:\s*#fff/)
+        expect(gridLess).toMatch(/span\.tsg-icon[^}]*color\s*:\s*#fff/)
     })
 
-    it('hover/checked block for span.tsg-icon-drop has NO background-image (R-SCI-15)', () => {
+    it('hover/checked block for .tsg-search-drop has NO background-image (R-SCI-15)', () => {
         // R-SCI-15: grid.less MUST NOT contain tsg-icon-drop hover background-image
-        expect(gridLess).not.toMatch(/span\.tsg-icon-drop[^}]*background-image/)
+        expect(gridLess).not.toMatch(/span\.tsg-icon[^}]*background-image/)
+    })
+
+    it('dead span.tsg-icon-drop selector is ABSENT from grid.less (W-1 closure)', () => {
+        // W-1 closure (verify-report #1146): dead selectors removed after v3.0 widget migration
+        expect(gridLess).not.toContain('tsg-icon-drop')
     })
 })
 
