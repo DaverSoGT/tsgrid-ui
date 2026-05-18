@@ -75,8 +75,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.13.0 (cjs-subpath-parity release)', () => {
-        expect(pkg.version).toBe('2.13.0')
+    it('package version is 2.14.0 (font-externalization release)', () => {
+        expect(pkg.version).toBe('2.14.0')
     })
 
     // R-GCP-4 regression guard: files[] must not exclude per-widget CSS

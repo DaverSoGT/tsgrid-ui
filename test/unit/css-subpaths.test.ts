@@ -29,23 +29,24 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         expect(existsSync(join(ROOT, 'dist', `${name}.css`))).toBe(true)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 10KB (compiled content sanity)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 20KB (compiled content sanity)', (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
         const size = statSync(cssPath).size
-        // Each per-widget file includes icon woff (~3KB base64) + widget rules.
-        // A file < 10KB would mean something went wrong with the compile.
+        // v2.14.0: Each per-widget file includes inline SVG data URIs + widget rules.
+        // SVG inline block adds ~7.7KB per file (was woff base64 ~3KB).
+        // A file < 20KB would mean something went wrong with the compile.
         // Note: the OpenSans font (~200KB) lives only in tsgrid-ui.less (monolith entry).
-        // Per-widget entries import icons.less (icon font only), not the OpenSans font.
-        expect(size).toBeGreaterThan(10 * 1024)
+        // Per-widget entries import icons.less (SVG data URIs), not the OpenSans font.
+        expect(size).toBeGreaterThan(20 * 1024)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains icon font (woff base64 — duplication confirmed)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains SVG data URIs (v2.14.0 — duplication confirmed)', (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
         const css = readFileSync(cssPath, 'utf8')
-        // Confirms icons.less was imported — the icon woff data URI is present
-        expect(css).toContain('data:application/x-font-woff')
+        // v2.14.0: Confirms icons.less was imported — SVG data URIs are present (not woff)
+        expect(css).toContain('data:image/svg+xml')
     })
 
     it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css contains expected sentinel selector', (name) => {
@@ -108,15 +109,15 @@ describe('css-subpaths — monolith unchanged (R-GCP-6/R-GCP-11)', () => {
         expect(existsSync(join(ROOT, 'dist', 'tsgrid-ui.min.css'))).toBe(true)
     })
 
-    // T-GCP-12: monolith byte-stability vs v2.11.0 fixture (modulo dated header).
-    // Rescues the regression guard lost when test/unit/less-extraction.test.ts was
-    // deleted in slice 2 commit bb211b6c without replacement (verify report #1088 W-2).
-    // The fixture test/fixtures/tsgrid-ui-v2.11.0.css is the v2.11.0 baseline anchor;
+    // T-GCP-12: monolith byte-stability vs v2.14.0 fixture (modulo dated header).
+    // Updated from v2.11.0 fixture in v2.14.0 (font-externalization cycle) per Q5 convention:
+    // fixture renamed and regenerated to track the current CSS shape (SVG data URIs).
+    // The fixture test/fixtures/tsgrid-ui-v2.14.0.css is the v2.14.0 baseline anchor;
     // any drift from variables.less, mixins.less, or partial imports MUST fail this check.
-    it.skipIf(!distExists)('dist/tsgrid-ui.css byte-stable vs v2.11.0 fixture (modulo dated header)', () => {
+    it.skipIf(!distExists)('dist/tsgrid-ui.css byte-stable vs v2.14.0 fixture (modulo dated header)', () => {
         const stripHeader = (s: string) => s.replace(/^\/\* tsgrid-ui[^\n]*\n/, '')
         const monolith = readFileSync(join(ROOT, 'dist', 'tsgrid-ui.css'), 'utf8')
-        const fixture  = readFileSync(join(ROOT, 'test', 'fixtures', 'tsgrid-ui-v2.11.0.css'), 'utf8')
+        const fixture  = readFileSync(join(ROOT, 'test', 'fixtures', 'tsgrid-ui-v2.14.0.css'), 'utf8')
         expect(stripHeader(monolith)).toEqual(stripHeader(fixture))
     })
 })
