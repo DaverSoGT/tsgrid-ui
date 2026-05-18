@@ -1,3 +1,4 @@
+// @vitest-environment node
 /**
  * icons-treeshake.test.ts — TDD RED commit (A2)
  *

@@ -39,6 +39,7 @@ export default defineConfig([
             'layout.es6':    'src/tslayout.ts',
             'form.es6':      'src/tsform.ts',
             'grid.es6':      'src/tsgrid.ts',
+            'icons.es6':     'src/icons.ts',
         },
         format: ['esm'],
         outDir: 'dist',
@@ -77,6 +78,7 @@ export default defineConfig([
             'layout':    'src/tslayout.ts',
             'form':      'src/tsform.ts',
             'grid':      'src/tsgrid.ts',
+            'icons':     'src/icons.ts',
         },
         format: ['cjs'],
         dts: {
@@ -119,6 +121,7 @@ export default defineConfig([
             'layout':  'src/tslayout.ts',
             'form':    'src/tsform.ts',
             'grid':    'src/tsgrid.ts',
+            'icons':   'src/icons.ts',
         },
         format: ['cjs'],
         outDir: 'dist',

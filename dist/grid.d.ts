@@ -514,7 +514,7 @@ declare class TsGrid extends TsBase {
     getRecordsHTML(): string[];
     getSummaryHTML(): string[] | undefined;
     scroll(event?: Event | any): void;
-    getRecordHTML(ind: number, lineNum: number, summary?: boolean): "" | string[];
+    getRecordHTML(ind: number, lineNum: number, summary?: boolean): string[] | "";
     getLineHTML(lineNum: number): string;
     getCellHTML(ind: number, col_ind: number, summary?: boolean, col_span?: number): any;
     clipboardCopy(ind: any, col_ind: any, summary: any): void;

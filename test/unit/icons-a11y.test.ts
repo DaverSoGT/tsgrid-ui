@@ -82,8 +82,11 @@ describe('T-A11y-6: eyeDropperIcon HTML attribute escaping in aria-label (R-A11y
     it('T-A11y-6a: aria-label escapes " to &quot;', async () => {
         const { eyeDropperIcon } = await import('../../src/icons.js')
         const result = eyeDropperIcon({ label: 'A"B' })
+        // The output must contain &quot; (the escaped form)
         expect(result).toContain('&quot;')
-        expect(result).not.toMatch(/aria-label="[^"]*"[^"]*"/)
+        // The aria-label value must not contain an unescaped literal double-quote
+        // (which would break the HTML attribute boundary)
+        expect(result).toContain('aria-label="A&quot;B"')
     })
 
     it('T-A11y-6b: aria-label escapes & to &amp;', async () => {

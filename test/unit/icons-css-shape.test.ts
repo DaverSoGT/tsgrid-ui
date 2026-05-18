@@ -106,10 +106,20 @@ describe('T-FE-6: each background-image data URI starts with svg+xml (R-FE-4)', 
 // ---------------------------------------------------------------------------
 // T-FE-7: tsg-icon-drop hover rule has background-image with %23fff (R-FE-5)
 // ---------------------------------------------------------------------------
-describe('T-FE-7: tsg-icon-drop hover has white-fill background-image in grid.less (R-FE-5)', () => {
-    it('hover/checked block for span.tsg-icon-drop has background-image with %23fff', () => {
-        // Look for the hover/checked block containing tsg-icon-drop with %23fff fill
-        expect(gridLess).toMatch(/span\.tsg-icon-drop[^}]*background-image[^}]*%23fff/)
+// ---------------------------------------------------------------------------
+// T-FE-7 updated for v3.0.0 (R-SCI-15): background-image replaced by color: #fff
+// The old white-fill SVG background-image is removed; color: #fff is used instead
+// so fill="currentColor" on the icon SVG inherits the white color.
+// ---------------------------------------------------------------------------
+describe('T-FE-7-v3: tsg-icon-drop hover uses color: #fff (R-SCI-15 — R-FE-5 superseded)', () => {
+    it('hover/checked block for span.tsg-icon-drop uses color: #fff (v3.0.0 currentColor migration)', () => {
+        // v3.0.0: background-image replaced by color: #fff (theming via currentColor)
+        expect(gridLess).toMatch(/span\.tsg-icon-drop[^}]*color\s*:\s*#fff/)
+    })
+
+    it('hover/checked block for span.tsg-icon-drop has NO background-image (R-SCI-15)', () => {
+        // R-SCI-15: grid.less MUST NOT contain tsg-icon-drop hover background-image
+        expect(gridLess).not.toMatch(/span\.tsg-icon-drop[^}]*background-image/)
     })
 })
 
@@ -172,7 +182,13 @@ describe('T-FE-14: stale icon-font generated artifacts deleted (R-FE-13)', () =>
 // T-FE-15: all 15 + drop-inverted.svg present under svg/ (R-FE-14)
 // ---------------------------------------------------------------------------
 describe('T-FE-15: SVG source files preserved (R-FE-14)', () => {
-    it.each([...ICON_NAMES, 'drop-inverted'])('src/less/icons/svg/%s.svg exists', (name) => {
+    // v3.0.0: drop-inverted.svg deleted (R-SCI-8). The 15 original files + 3 new ones.
+    // expand.svg, collapse.svg, chevron-down.svg are new in v3.0.0 (R-SCI-7).
+    it.each(ICON_NAMES)('src/less/icons/svg/%s.svg exists', (name) => {
         expect(existsSync(join(SVG_DIR, `${name}.svg`))).toBe(true)
+    })
+
+    it('src/less/icons/svg/drop-inverted.svg does NOT exist (R-SCI-8 — deleted in v3.0.0)', () => {
+        expect(existsSync(join(SVG_DIR, 'drop-inverted.svg'))).toBe(false)
     })
 })

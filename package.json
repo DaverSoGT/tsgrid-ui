@@ -54,6 +54,7 @@
     "./layout":  { "types": "./dist/layout.d.ts",  "import": "./dist/layout.es6.js",  "require": "./dist/layout.js"  },
     "./form":    { "types": "./dist/form.d.ts",    "import": "./dist/form.es6.js",    "require": "./dist/form.js"    },
     "./grid":    { "types": "./dist/grid.d.ts",    "import": "./dist/grid.es6.js",    "require": "./dist/grid.js"    },
+    "./icons":   { "types": "./dist/icons.d.ts",   "import": "./dist/icons.es6.js",   "require": "./dist/icons.js"   },
     "./css":          "./dist/tsgrid-ui.css",
     "./package.json": "./package.json",
     "./field.css":    "./dist/field.css",
