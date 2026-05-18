@@ -1,5 +1,5 @@
 /* eslint-env node */
-/* tsgrid-ui 1.0 — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). */
+/* tsgrid-ui — bundler ownership: Less/icons/locales = gulp; JS bundle = tsup (see tsup.config.ts). */
 const gulp     = require('gulp')
 const header   = require('gulp-header')
 const less     = require('gulp-less')
@@ -8,8 +8,9 @@ const concat   = require('gulp-concat')
 const rename   = require('gulp-rename')
 const replace  = require('gulp-replace')
 const del      = require('del')
+const pkg      = require('./package.json')
 const comments = {
-    tsgrid : '/* tsgrid-ui 1.0.x (nightly) ('+ (new Date()).toLocaleString('en-us') +') (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n'
+    tsgrid : '/* tsgrid-ui ' + pkg.version + ' (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */\n'
 }
 
 let tasks = {

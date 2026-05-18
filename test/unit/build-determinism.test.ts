@@ -28,9 +28,10 @@ const EXPECTED_FILES = [
     'tooltip.css',
 ]
 
-// The gulp header carries `new Date()).toLocaleString('en-us')` so the first
-// comment line differs between runs by design. Strip it before comparison —
-// same pattern used by the T-GCP-12 byte-stability check in css-subpaths.test.ts.
+// Strip the first comment line before comparison. The header format is
+// `/* tsgrid-ui {version} ... */` (deterministic since Commit G removed the
+// new Date() timestamp). The stripHeader regex is retained for format stability
+// even though the content is now identical across runs without stripping.
 const stripHeader = (s: string) => s.replace(/^\/\* tsgrid-ui[^\n]*\n/, '')
 
 function runBuildInto(out: string): void {
@@ -91,18 +92,19 @@ describe('build determinism — gulp less produces byte-stable output (T-GCP-13 
         expect(run2[name]).toEqual(run1[name])
     })
 
-    // Belt-and-suspenders: the dated header itself MUST differ between the
-    // two runs (otherwise our stripHeader regex would be silently masking a
-    // case where the header was never written). This proves the strip works
-    // on real data, not just an empty-header degenerate case.
-    it('dated header was actually written by each run (sanity check on stripHeader)', () => {
+    // Belt-and-suspenders: the header MUST be present in each run (otherwise our
+    // stripHeader regex would be silently masking a case where the header was never
+    // written). Also confirms that both raw files are byte-identical — since Commit G
+    // removed the new Date() timestamp, the banner is now deterministic and the full
+    // files (not just the stripped body) are identical across runs.
+    it('header was written by each run and raw files are byte-identical (sanity check on stripHeader)', () => {
         if (!buildOK || !tmp1 || !tmp2) throw new Error('build did not complete')
         const raw1 = readFileSync(join(tmp1, 'tsgrid-ui.css'), 'utf8')
         const raw2 = readFileSync(join(tmp2, 'tsgrid-ui.css'), 'utf8')
         expect(raw1).toMatch(/^\/\* tsgrid-ui/)
         expect(raw2).toMatch(/^\/\* tsgrid-ui/)
-        // Each header carries new Date()).toLocaleString('en-us') — stripped output is identical.
-        expect(stripHeader(raw1)).toEqual(stripHeader(raw2))
+        // Banner is now deterministic (version-only, no date). Raw output is identical.
+        expect(raw1).toEqual(raw2)
     })
 
     // Confirms ./dist was not mutated by the test (S-2 implementation requirement).

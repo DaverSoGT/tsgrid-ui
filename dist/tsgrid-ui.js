@@ -1,4 +1,4 @@
-/* tsgrid-ui 2.13.0 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 2.14.0 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 "use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
