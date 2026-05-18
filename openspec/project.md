@@ -15,7 +15,7 @@ TypeScript-native UI component library, ESM-first, dual ESM/CJS bundle, zero run
 | --- | --- | --- |
 | TypeScript | 5.9.3 | Source language. Strict mode + `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` + `noImplicitOverride` + `noPropertyAccessFromIndexSignature` |
 | tsup | 8.5.1 | JS bundler (esbuild). 3 entries today: ESM, CJS legacy, `.d.ts` rollup |
-| Gulp | 4 | CSS/icons. `gulp-less` + `gulp-iconfont` |
+| Gulp | 4 | CSS. `gulp-less` only — `gulp-iconfont` removed in v2.14.0 |
 | ESLint | 8 | `@typescript-eslint/parser` + `align-assignments`. 4-space indent enforced |
 | Vitest | 4.1.5 | Unit tests (84) |
 | Playwright | 1.59.1 | Smoke E2E (38, chromium-only) |
@@ -34,13 +34,13 @@ TypeScript-native UI component library, ESM-first, dual ESM/CJS bundle, zero run
 `strict_tdd = true` — watchable unit tests + isolated typecheck + integration smoke is feasible per phase.
 
 ## Build pipeline
-- `pnpm build:css` = gulp less + gulp icons
+- `pnpm build:css` = `gulp less` only (v2.14.0: `gulp icons` removed — icons are now inline SVG data URIs in `icons.less`)
 - `pnpm build:js` = tsup + `node scripts/wrap-legacy.mjs` (IIFE wrapper for AMD/CommonJS/globals)
 - `pnpm build` = both
 
-**Important**: `dist/` is versioned in git deliberately for traceability. Building regenerates `dist/tsgrid-ui.{js,es6.js,d.ts,css,min.css}` + iconfont. `gulp icons` is non-deterministic in woff metadata (~2 bytes change per run) — accepted noise.
+**Important**: `dist/` is versioned in git deliberately for traceability. Building regenerates `dist/tsgrid-ui.{js,es6.js,d.ts,css,min.css}`. As of v2.14.0, `pnpm build:css` is fully deterministic — `gulp icons` (which produced non-deterministic woff metadata) is gone. Icons are inlined as SVG data URIs in `src/less/src/icons.less`.
 
-**Why `pnpm verify` calls `pnpm build:js` and not `pnpm build`**: the verify chain MUST leave the working tree clean (bug #1080 anchor — see `test/unit/build-determinism.test.ts`). `pnpm build:css` invokes `gulp icons` whose woff metadata mutates per run, which would dirty `dist/` mid-verify and cause downstream byte-stability tests (`tarball-contents`, `css-subpaths` byte-stable check) to fail spuriously. The CSS pipeline is exercised separately by `test/unit/build-determinism.test.ts` (which runs `gulp less` into a tmpdir, NOT `gulp icons`). Closing this gap end-to-end requires the future `font-externalization` cycle to deterministically generate the icon woff (e.g. fixed timestamp, sorted glyph order) — tracked as tech-debt carry-forward from verify reports #1088 (W-3) and #1104 (W-3). Until that cycle ships, keep verify as `build:js`-only.
+**`pnpm verify` is `pnpm build &&...` (v2.14.0+)**: The prior `build:js`-only restriction (W-3, verify reports #1088 and #1104) was a workaround for `gulp icons` non-determinism dirtying `dist/` mid-verify. That root cause is eliminated in v2.14.0 — `pnpm build:css` now runs only `gulp less`, which is idempotent. Both CSS and JS artifacts are validated on every `pnpm verify` run. The CSS pipeline is also covered separately by `test/unit/build-determinism.test.ts` (runs `gulp less` into a tmpdir).
 
 ## Source layout
 ```
@@ -51,7 +51,7 @@ src/
 ├── ts{grid,form,field,layout,sidebar,tabs,toolbar,popup,tooltip}.ts  widgets
 ├── query.ts                   internal jQuery-like wrapper
 ├── types.ts                   branded primitives (RecId, etc.)
-└── less/                      Gulp-compiled stylesheets + iconfont sources
+└── less/                      Gulp-compiled stylesheets + SVG icon sources (src/less/icons/svg/)
 ```
 
 ## Conventions

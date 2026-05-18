@@ -2,6 +2,29 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.14.0 — 2026-05-17
+
+### Changed
+
+- **Icon rendering migrated from woff font-face to inline SVG data URIs** (R-FE-1..R-FE-7). The `@font-face` + woff base64 block is removed from `icons.less`. Each of the 15 icons (box, check, colors, columns, cross, drop, empty, eye-dropper, info, paste, pencil, plus, reload, search, settings) is now rendered via `background-image: url("data:image/svg+xml;utf8,...")`. SVG source files live under `src/less/icons/svg/` as reference artwork; they are NOT part of the build graph (icons are inlined in `icons.less` directly).
+- **Build chain restored to `pnpm build` in `scripts.verify`** (R-FE-10, closes W-3 from verify #1104). The verify script now begins with `pnpm build &&` instead of `pnpm build:js &&`, because the prior reason for skipping `build:css` (non-deterministic `gulp icons` regeneration) is eliminated. Both CSS and JS artifacts are now validated on every verify run.
+- **`gulp icons` task removed from build pipeline** (R-FE-8, R-FE-9). `scripts.build:css` now runs `gulp less` only. The `gulp-iconfont` devDependency is removed. The `gulpfile.js` `icons` task and its `gulp.watch` hook are deleted.
+- **Drop-button hover state migrated** (R-FE-5): `grid.less` no longer uses a CSS font-color trick for the white drop icon on hover. The `&:hover, &.checked` block for `span.tsg-icon-drop` now carries an inline SVG data URI with `fill='%23ffffff'`. The `drop-inverted.svg` reference source is added alongside `drop.svg` in `src/less/icons/svg/`.
+- **Compat shim added to icons.less** (R-FE-7): `[class^="tsg-icon-"]:before, [class*=" tsg-icon-"]:before { content: "" }` prevents stale font-glyph pseudo-content from rendering in browsers that cached the old woff stylesheet.
+- **Stale icon-font artifacts deleted** (R-FE-13): `src/less/icons/tsgrid-font.woff`, `tsgrid-font.css`, `preview.html`, and `icons.json` are removed from the repository.
+- **`test/fixtures/tsgrid-ui-v2.14.0.css`** replaces `tsgrid-ui-v2.11.0.css` as the byte-stable fixture anchor. The monolith CSS now contains `data:image/svg+xml` data URIs (was `data:application/x-font-woff`).
+
+### Known Limitations
+
+1. **SVG icon duplication across per-widget CSS files**: Each per-widget CSS file (`dist/field.css`, `dist/form.css`, etc.) imports `icons.less`, so all 15 icon SVG data URIs (~7.7 KB total) are inlined into every per-widget CSS bundle. This is expected — the monolith (`tsgrid-ui/css`) also inlines them once. Consumers using multiple per-widget CSS subpaths in a browser will receive duplicate SVG data; the browser will deduplicate identical stylesheet rules. A shared icons import strategy is deferred to a future cycle.
+2. **`drop-inverted.svg` must stay in sync with `drop.svg`**: The white-fill drop icon hover state is inlined in `grid.less` as a separate data URI. If the drop icon shape changes, both `drop.svg` AND the inline URI in `grid.less` (and `drop-inverted.svg`) must be updated manually. See `src/less/icons/readme.md`.
+
+### Breaking Changes
+
+None. All existing `import 'tsgrid-ui/css'` and `import 'tsgrid-ui/<widget>.css'` paths continue to work. The icon `background-image` approach is a visual-only change; any consumers overriding `.tsg-icon-*` via `color:` will no longer see that color applied to icon glyphs (glyphs are gone — use `filter:` or a custom SVG if color control is needed).
+
+---
+
 ## v2.13.0 — 2026-05-17
 
 ### Added
