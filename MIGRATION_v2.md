@@ -33,6 +33,30 @@ const { TsGrid } = require('tsgrid-ui/grid')
 
 **Caution**: If you `require` multiple subpaths AND `require('tsgrid-ui')` in the same process, class identities are NOT shared. `instanceof` checks across the two copies will fail (see [CHANGELOG Known Limitation #4](CHANGELOG.md)). For multi-subpath CJS consumers, `require('tsgrid-ui')` remains the safer choice.
 
+### Migration action for pure-Node consumers
+
+**DOM environment required at require() time.** tsgrid-ui targets browsers as its primary runtime and the CJS bundles reference `document`, `window`, `Node`, `Event`, `MutationObserver`, `navigator`, `localStorage`, and `self` at module-load. Pure-Node use cases (SSR pre-render, CLI tooling, headless test scripts) MUST provide a DOM environment before calling `require()`:
+
+```js
+// Option A — jsdom (recommended for SSR / SEO use cases)
+const { JSDOM } = require('jsdom')
+const dom = new JSDOM('<!DOCTYPE html>')
+global.window = dom.window
+global.document = dom.window.document
+global.Node = dom.window.Node
+global.Event = dom.window.Event
+global.MutationObserver = dom.window.MutationObserver
+global.navigator = dom.window.navigator
+global.localStorage = dom.window.localStorage
+global.self = dom.window
+const { TsGrid } = require('tsgrid-ui/grid')  // OK
+
+// Option B — minimal stubs (sufficient for type-only / smoke tests)
+// See test/consumer-smoke-cjs.js in the repo for a working example
+```
+
+Calling `require('tsgrid-ui/grid')` in a bare Node process (no polyfills, no jsdom) throws at load. See [CHANGELOG v2.13.0 Known Limitation #3](CHANGELOG.md) for the full list of referenced DOM globals.
+
 ---
 
 <!-- baseline: 943401 bytes -->

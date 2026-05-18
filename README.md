@@ -71,7 +71,9 @@ import { TsLocale } from 'tsgrid-ui/locale'
 import { TsUtils }  from 'tsgrid-ui/utils'
 ```
 
-**CJS subpath imports are Node.js only.** Browser `<script>` consumers must continue using `dist/tsgrid-ui.min.js` (the IIFE monolith). For multi-subpath CJS consumers, prefer `require('tsgrid-ui')` (the CJS monolith) to avoid duplicated transitive code — each subpath file inlines all its dependencies because `splitting: false` is required for CJS output. See [CHANGELOG v2.13.0 Known Limitations](CHANGELOG.md) for details.
+**CJS subpath imports are Node.js only.** Browser `<script>` consumers must continue using `dist/tsgrid-ui.min.js` (the IIFE monolith). For multi-subpath CJS consumers, prefer `require('tsgrid-ui')` (the CJS monolith) to avoid duplicated transitive code — each subpath file inlines all its dependencies because `splitting: false` is required for CJS output.
+
+**Pure-Node consumers must provide a DOM environment** (jsdom / happy-dom or equivalent stubs) before the `require()` call resolves — tsgrid-ui references `document`, `window`, `Node`, `Event`, `MutationObserver`, `navigator`, `localStorage`, and `self` at module-load time because it targets browsers as its primary runtime. Calling `require('tsgrid-ui/grid')` in a bare Node process without these polyfills throws at load. See [CHANGELOG v2.13.0 Known Limitations](CHANGELOG.md) for the full list and `test/consumer-smoke-cjs.js` for a working stub example.
 
 ## Per-component CSS
 
