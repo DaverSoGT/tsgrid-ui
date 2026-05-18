@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 3,
+  "tsgridUiVersion": "2.13.0",
+  "generatedAt": "2026-05-18T00:41:32.422Z",
+  "generator": {
+    "tool": "tsup",
+    "toolVersion": "8.5.1",
+    "esbuildMetafile": true
+  },
+  "scope": {
+    "format": "esm",
+    "minified": false,
+    "entry": "src/index.ts",
+    "output": "dist/tsgrid-ui.es6.js",
+    "splitting": true,
+    "sourcemap": true
+  },
+  "outputBundle": {
+    "path": "dist/tsgrid-ui.es6.js",
+    "totalBytes": 1167,
+    "imports": [
+      "dist/chunks/chunk-3NYH6545.js",
+      "dist/chunks/chunk-6MOFFUV2.js",
+      "dist/chunks/chunk-6UCGFWIQ.js",
+      "dist/chunks/chunk-DXZJHS4M.js",
+      "dist/chunks/chunk-DZSFZLV6.js",
+      "dist/chunks/chunk-EQK6JAHT.js",
+      "dist/chunks/chunk-FAIRNXQR.js",
+      "dist/chunks/chunk-GZFWK4LZ.js",
+      "dist/chunks/chunk-IYF3Q7GX.js",
+      "dist/chunks/chunk-KLJ35UAH.js",
+      "dist/chunks/chunk-KXOFRWPD.js",
+      "dist/chunks/chunk-LUSNRF73.js",
+      "dist/chunks/chunk-N3GASHTI.js"
+    ]
+  },
+  "modules": [
+    {
+      "path": "src/index.ts",
+      "bytes": 2046,
+      "bytesInOutput": 0,
+      "imports": [
+        "src/tsbase.ts",
+        "src/tsfield.ts",
+        "src/tsform.ts",
+        "src/tsgrid.ts",
+        "src/tslayout.ts",
+        "src/tslocale.ts",
+        "src/tspopup.ts",
+        "src/tssidebar.ts",
+        "src/tstabs.ts",
+        "src/tstoolbar.ts",
+        "src/tstooltip.ts",
+        "src/tsutils.ts"
+      ]
+    }
+  ],
+  "totals": {
+    "modules": 1,
+    "inputBytes": 2046,
+    "outputBytes": 1167
+  },
+  "subpaths": {
+    "locale": {
+      "totalBytes": 118,
+      "sourceFile": "src/tslocale.ts",
+      "outputFile": "dist/locale.es6.js",
+      "forecastBytes": 118,
+      "forecastPct": 0
+    },
+    "base": {
+      "totalBytes": 164,
+      "sourceFile": "src/tsbase.ts",
+      "outputFile": "dist/base.es6.js",
+      "forecastBytes": 164,
+      "forecastPct": 0
+    },
+    "utils": {
+      "totalBytes": 231,
+      "sourceFile": "src/tsutils.ts",
+      "outputFile": "dist/utils.es6.js",
+      "forecastBytes": 231,
+      "forecastPct": 0.1
+    },
+    "popup": {
+      "totalBytes": 399,
+      "sourceFile": "src/tspopup.ts",
+      "outputFile": "dist/popup.es6.js",
+      "forecastBytes": 322,
+      "forecastPct": 0.1
+    },
+    "tooltip": {
+      "totalBytes": 393,
+      "sourceFile": "src/tstooltip.ts",
+      "outputFile": "dist/tooltip.es6.js",
+      "forecastBytes": 316,
+      "forecastPct": 0.1
+    },
+    "tabs": {
+      "totalBytes": 297,
+      "sourceFile": "src/tstabs.ts",
+      "outputFile": "dist/tabs.es6.js",
+      "forecastBytes": 260,
+      "forecastPct": 0.1
+    },
+    "toolbar": {
+      "totalBytes": 306,
+      "sourceFile": "src/tstoolbar.ts",
+      "outputFile": "dist/toolbar.es6.js",
+      "forecastBytes": 269,
+      "forecastPct": 0.1
+    },
+    "sidebar": {
+      "totalBytes": 306,
+      "sourceFile": "src/tssidebar.ts",
+      "outputFile": "dist/sidebar.es6.js",
+      "forecastBytes": 269,
+      "forecastPct": 0.1
+    },
+    "field": {
+      "totalBytes": 300,
+      "sourceFile": "src/tsfield.ts",
+      "outputFile": "dist/field.es6.js",
+      "forecastBytes": 263,
+      "forecastPct": 0.1
+    },
+    "layout": {
+      "totalBytes": 377,
+      "sourceFile": "src/tslayout.ts",
+      "outputFile": "dist/layout.es6.js",
+      "forecastBytes": 340,
+      "forecastPct": 0.1
+    },
+    "form": {
+      "totalBytes": 408,
+      "sourceFile": "src/tsform.ts",
+      "outputFile": "dist/form.es6.js",
+      "forecastBytes": 371,
+      "forecastPct": 0.1
+    },
+    "grid": {
+      "totalBytes": 371,
+      "sourceFile": "src/tsgrid.ts",
+      "outputFile": "dist/grid.es6.js",
+      "forecastBytes": 500,
+      "forecastPct": 0.1
+    }
+  },
+  "subpathEffective": {
+    "locale": {
+      "stubPath": "dist/locale.es6.js",
+      "stubBytes": 118,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 3806,
+      "loadedBytes": 3924,
+      "executedBytes": 3924,
+      "effectiveBytes": 3924
+    },
+    "base": {
+      "stubPath": "dist/base.es6.js",
+      "stubBytes": 164,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 39770,
+      "loadedBytes": 39934,
+      "executedBytes": 39934,
+      "effectiveBytes": 39934
+    },
+    "utils": {
+      "stubPath": "dist/utils.es6.js",
+      "stubBytes": 231,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 128934,
+      "loadedBytes": 129165,
+      "executedBytes": 129165,
+      "effectiveBytes": 129165
+    },
+    "popup": {
+      "stubPath": "dist/popup.es6.js",
+      "stubBytes": 399,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-6UCGFWIQ.js",
+          "bytes": 32427,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 162197,
+      "loadedBytes": 162596,
+      "executedBytes": 130169,
+      "effectiveBytes": 162596
+    },
+    "tooltip": {
+      "stubPath": "dist/tooltip.es6.js",
+      "stubBytes": 393,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 247420,
+      "loadedBytes": 247813,
+      "executedBytes": 130163,
+      "effectiveBytes": 247813
+    },
+    "tabs": {
+      "stubPath": "dist/tabs.es6.js",
+      "stubBytes": 297,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-GZFWK4LZ.js",
+          "bytes": 24090,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 271510,
+      "loadedBytes": 271807,
+      "executedBytes": 154157,
+      "effectiveBytes": 271807
+    },
+    "toolbar": {
+      "stubPath": "dist/toolbar.es6.js",
+      "stubBytes": 306,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-LUSNRF73.js",
+          "bytes": 47585,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 295005,
+      "loadedBytes": 295311,
+      "executedBytes": 177661,
+      "effectiveBytes": 295311
+    },
+    "sidebar": {
+      "stubPath": "dist/sidebar.es6.js",
+      "stubBytes": 306,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DZSFZLV6.js",
+          "bytes": 61981,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 309401,
+      "loadedBytes": 309707,
+      "executedBytes": 192057,
+      "effectiveBytes": 309707
+    },
+    "field": {
+      "stubPath": "dist/field.es6.js",
+      "stubBytes": 300,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-KLJ35UAH.js",
+          "bytes": 68473,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 315893,
+      "loadedBytes": 316193,
+      "executedBytes": 198543,
+      "effectiveBytes": 316193
+    },
+    "layout": {
+      "stubPath": "dist/layout.es6.js",
+      "stubBytes": 377,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-GZFWK4LZ.js",
+          "bytes": 24090,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-LUSNRF73.js",
+          "bytes": 47585,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-N3GASHTI.js",
+          "bytes": 41931,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 361026,
+      "loadedBytes": 361403,
+      "executedBytes": 243753,
+      "effectiveBytes": 361403
+    },
+    "form": {
+      "stubPath": "dist/form.es6.js",
+      "stubBytes": 408,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-6MOFFUV2.js",
+          "bytes": 87541,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-GZFWK4LZ.js",
+          "bytes": 24090,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-KLJ35UAH.js",
+          "bytes": 68473,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-LUSNRF73.js",
+          "bytes": 47585,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 475109,
+      "loadedBytes": 475517,
+      "executedBytes": 357867,
+      "effectiveBytes": 475517
+    },
+    "grid": {
+      "stubPath": "dist/grid.es6.js",
+      "stubBytes": 371,
+      "chunks": [
+        {
+          "path": "dist/chunks/chunk-3NYH6545.js",
+          "bytes": 85358,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-DXZJHS4M.js",
+          "bytes": 39770,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-EQK6JAHT.js",
+          "bytes": 836,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-FAIRNXQR.js",
+          "bytes": 117650,
+          "lazyDeferred": true
+        },
+        {
+          "path": "dist/chunks/chunk-IYF3Q7GX.js",
+          "bytes": 3806,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-KLJ35UAH.js",
+          "bytes": 68473,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-KXOFRWPD.js",
+          "bytes": 340086,
+          "lazyDeferred": false
+        },
+        {
+          "path": "dist/chunks/chunk-LUSNRF73.js",
+          "bytes": 47585,
+          "lazyDeferred": false
+        }
+      ],
+      "chunkBytes": 703564,
+      "loadedBytes": 703935,
+      "executedBytes": 586285,
+      "effectiveBytes": 703935
+    }
+  }
+}
