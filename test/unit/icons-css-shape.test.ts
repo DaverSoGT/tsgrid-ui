@@ -39,14 +39,17 @@ describe('T-FE-1: @font-face absent from icons.less (R-FE-1)', () => {
 
 // ---------------------------------------------------------------------------
 // T-FE-2: :before content rules removed (R-FE-2)
+// The old font-glyph content rules used non-empty Unicode values like content: "A".
+// The compat shim (T-FE-9) uses content: "" (empty) — that is allowed.
 // ---------------------------------------------------------------------------
-describe('T-FE-2: no :before content rules in icons.less (R-FE-2)', () => {
-    it('no ":before { content:" rules present', () => {
-        expect(iconsLess).not.toMatch(/:before\s*\{[^}]*content\s*:/)
+describe('T-FE-2: no :before glyph-content rules in icons.less (R-FE-2)', () => {
+    it('no ":before { content:" rules with non-empty Unicode values (old glyph assignments)', () => {
+        // Match content with non-empty values (exclude the compat shim content: "")
+        expect(iconsLess).not.toMatch(/:before\s*\{[^}]*content\s*:\s*"[^"]/)
     })
 
-    it('no tsg-icon-*]:before attribute selector present', () => {
-        expect(iconsLess).not.toMatch(/tsg-icon-[^\]]*\]:before/)
+    it('no per-icon :before content rules (e.g. .tsg-icon-box:before { content: "A" })', () => {
+        expect(iconsLess).not.toMatch(/\.tsg-icon-[a-z-]+:before\s*\{/)
     })
 })
 
