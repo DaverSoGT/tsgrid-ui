@@ -1,6 +1,6 @@
 {
   "name": "tsgrid-ui",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "sideEffects": [
     "./dist/tsgrid-ui.css",
     "./dist/tsgrid-ui.min.css",
@@ -97,7 +97,7 @@
     "lint": "eslint src --ext .js,.ts",
     "typecheck": "tsc --noEmit",
     "build:css": "gulp less",
-    "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs",
+    "build:js": "tsup --config tsup.config.ts && node scripts/wrap-legacy.mjs && node scripts/patch-deprecated.mjs",
     "build": "pnpm build:css && pnpm build:js",
     "bundle:analyze": "tsup --config tsup.config.analyze.ts && node scripts/bundle-analyze.mjs",
     "bundle:snapshot": "tsup --config tsup.config.analyze.ts && node scripts/bundle-snapshot.mjs",

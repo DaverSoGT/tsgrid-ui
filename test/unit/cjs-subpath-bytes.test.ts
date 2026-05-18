@@ -14,8 +14,8 @@ const SUBPATHS = CJS_SUBPATH_NAMES
 const distExists = existsSync(join(ROOT, 'dist'))
 
 describe('cjs-subpath-bytes — per-file byte-floor guard (R-CSP-14, R-CSP-22)', () => {
-    it('package version is 2.14.0 (font-externalization release anchor)', () => {
-        expect(pkg.version).toBe('2.14.0')
+    it('package version is 2.15.0 (barrel-deprecation release anchor)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(pkg.version).toBe('2.15.0')
     })
 
     it.skipIf(!distExists).each(SUBPATHS)(

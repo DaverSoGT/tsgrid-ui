@@ -137,9 +137,11 @@ describe('barrel-deprecation — dist artifacts', () => {
     })
 
     // T-BD-6: dist/tsgrid-ui.es6.js contains NODE_ENV guard and console.warn
-    it.skipIf(!distExists)('T-BD-6: dist/tsgrid-ui.es6.js contains process.env.NODE_ENV (R-BD-6)', () => {
+    // D-A-1: esbuild preserves optional chaining (process?.env?.NODE_ENV) from source,
+    // so we match either the optional-chaining or standard form.
+    it.skipIf(!distExists)('T-BD-6: dist/tsgrid-ui.es6.js contains process NODE_ENV guard (R-BD-6)', () => {
         const es6 = readFileSync(join(distDir, 'tsgrid-ui.es6.js'), 'utf8')
-        expect(es6).toMatch(/process\.env\.NODE_ENV/)
+        expect(es6).toMatch(/process\??\.\??env\??\.\??NODE_ENV/)
     })
 
     it.skipIf(!distExists)('T-BD-6: dist/tsgrid-ui.es6.js contains console.warn (R-BD-6)', () => {

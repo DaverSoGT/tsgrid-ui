@@ -75,8 +75,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
         expect(pkg.sideEffects).toEqual(EXPECTED_SIDE_EFFECTS)
     })
 
-    it('package version is 2.14.0 (font-externalization release)', () => {
-        expect(pkg.version).toBe('2.14.0')
+    it('package version is 2.15.0 (barrel-deprecation release)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(pkg.version).toBe('2.15.0')
     })
 
     // R-GCP-4 regression guard: files[] must not exclude per-widget CSS
@@ -141,7 +141,7 @@ describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () =
         expect('gulp-iconfont' in pkg.devDependencies).toBe(false)
     })
 
-    it('T-FE-13: package version is 2.14.0 (font-externalization release)', () => {
-        expect(pkg.version).toBe('2.14.0')
+    it('T-FE-13: package version is 2.15.0 (barrel-deprecation release)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(pkg.version).toBe('2.15.0')
     })
 })

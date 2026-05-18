@@ -9,30 +9,44 @@
  * validate the rolled-up declaration file.
  *
  * All assertions are pure type-level; no DOM APIs are invoked.
+ *
+ * v2.15.0: restructured into PRIMARY (subpath-canonical) + REGRESSION GUARD (barrel, deprecated).
  */
 
-// Import all 23 public names from the source barrel
-import {
-    TsUi,
-    TsUtils,
-    query,
-    TsLocale,
-    TsEvent,
-    TsBase,
-    TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog,
-    TsTooltip, TsMenu, TsColor, TsDate, Tooltip,
-    TsToolbar,
-    TsSidebar,
-    TsTabs,
-    TsLayout,
-    TsGrid,
-    TsForm,
-    TsField,
-} from '../src/index.js'
-import type { TsEventPayload } from '../src/index.js'
+// ===========================================================================
+// === PRIMARY: subpath imports (canonical as of v2.15.0) ===
+// Per-widget subpaths are the canonical import shape. Each import exercises
+// both the type resolution (dist/<name>.d.ts) and the module resolver.
+// ===========================================================================
 
-// Import branded types from src/types.ts
-import type { Brand, RecId, LayoutPanelId, FieldName } from '../src/types.js'
+import { TsLocale }                                                                              from 'tsgrid-ui/locale'
+import { TsBase, TsEvent, toSafeEvent }                                                          from 'tsgrid-ui/base'
+import { TsUi, TsUtils, query }                                                                  from 'tsgrid-ui/utils'
+import { TsPopup, TsAlert, TsConfirm, TsPrompt, TsDialog }                                      from 'tsgrid-ui/popup'
+import { TsTooltip, TsMenu, TsColor, TsDate, Tooltip }                                          from 'tsgrid-ui/tooltip'
+import { TsTabs }                                                                                from 'tsgrid-ui/tabs'
+import { TsToolbar }                                                                             from 'tsgrid-ui/toolbar'
+import { TsSidebar }                                                                             from 'tsgrid-ui/sidebar'
+import { TsField }                                                                               from 'tsgrid-ui/field'
+import { TsLayout }                                                                              from 'tsgrid-ui/layout'
+import { TsForm }                                                                                from 'tsgrid-ui/form'
+import { TsGrid }                                                                                from 'tsgrid-ui/grid'
+
+// Type-only subpath imports
+import type { TsEventPayload }              from 'tsgrid-ui/base'
+import type { TsLocaleSettings }            from 'tsgrid-ui/locale'
+import type { TsMessageOptions }            from 'tsgrid-ui/utils'
+import type { TsSidebarRefreshOptions }     from 'tsgrid-ui/sidebar'
+import type { TsFieldOptions }              from 'tsgrid-ui/field'
+import type { TsLayoutPanel }               from 'tsgrid-ui/layout'
+import type { TsEventData }                 from 'tsgrid-ui/base'
+import type {
+    TsGridRecord, TsGridColumn, TsGridSearch, TsGridSortData,
+    TsGridSelection, TsGridCellSelection, TsGridRange, TsGridRangeEndpoint, TsGridGroupBy,
+} from 'tsgrid-ui/grid'
+
+// v2.15.0 types-gap closure: branded primitives now accessible via tsgrid-ui/utils (R-TG-1)
+import type { Brand, RecId, LayoutPanelId, FieldName } from 'tsgrid-ui/utils'
 
 // ---------------------------------------------------------------------------
 // Type-level assertions (no runtime effect)
@@ -63,6 +77,8 @@ const _event: typeof TsEvent = TsEvent
 void _event
 const _base: typeof TsBase = TsBase
 void _base
+const _toSafeEvent: typeof toSafeEvent = toSafeEvent
+void _toSafeEvent
 
 // Popup family
 const _popup: typeof TsPopup = TsPopup
@@ -105,7 +121,7 @@ const _field: typeof TsField = TsField
 void _field
 
 // ---------------------------------------------------------------------------
-// Branded type smoke checks
+// Branded type smoke checks (v2.15.0: now from tsgrid-ui/utils, not tsgrid-ui)
 // ---------------------------------------------------------------------------
 
 // Brand utility
@@ -165,56 +181,7 @@ void _formHandler
 // Untyped handler: no annotation required — inference continues to work (Req 4.4)
 _gridInst.onSearch = (event) => { void event }
 
-// ===========================================================================
-// v2.8.0 subpath exports — runtime + type-only probes (INV-SX-3, REQ-SX-6)
-// Cycle 6: 12 subpaths (./grid reintroduced).
-// ===========================================================================
-
-// 12 named-import probes (runtime side — proves dist/{name}.es6.js resolves)
-import { TsLocale as _SP_TsLocale }                                                                          from 'tsgrid-ui/locale'
-import { TsBase as _SP_TsBase, TsEvent as _SP_TsEvent, toSafeEvent as _SP_toSafeEvent }                     from 'tsgrid-ui/base'
-import { TsUi as _SP_TsUi, TsUtils as _SP_TsUtils, query as _SP_query }                                     from 'tsgrid-ui/utils'
-import { TsPopup as _SP_TsPopup, TsAlert as _SP_TsAlert, TsConfirm as _SP_TsConfirm, TsPrompt as _SP_TsPrompt, TsDialog as _SP_TsDialog } from 'tsgrid-ui/popup'
-import { TsTooltip as _SP_TsTooltip, TsMenu as _SP_TsMenu, TsColor as _SP_TsColor, TsDate as _SP_TsDate, Tooltip as _SP_Tooltip }        from 'tsgrid-ui/tooltip'
-import { TsTabs as _SP_TsTabs }       from 'tsgrid-ui/tabs'
-import { TsToolbar as _SP_TsToolbar } from 'tsgrid-ui/toolbar'
-import { TsSidebar as _SP_TsSidebar } from 'tsgrid-ui/sidebar'
-import { TsField as _SP_TsField }     from 'tsgrid-ui/field'
-import { TsLayout as _SP_TsLayout }   from 'tsgrid-ui/layout'
-import { TsForm as _SP_TsForm }       from 'tsgrid-ui/form'
-import { TsGrid as _SP_TsGrid }       from 'tsgrid-ui/grid'
-void _SP_TsLocale; void _SP_TsBase; void _SP_TsEvent; void _SP_toSafeEvent
-void _SP_TsUi; void _SP_TsUtils; void _SP_query
-void _SP_TsPopup; void _SP_TsAlert; void _SP_TsConfirm; void _SP_TsPrompt; void _SP_TsDialog
-void _SP_TsTooltip; void _SP_TsMenu; void _SP_TsColor; void _SP_TsDate; void _SP_Tooltip
-void _SP_TsTabs; void _SP_TsToolbar; void _SP_TsSidebar; void _SP_TsField
-void _SP_TsLayout; void _SP_TsForm; void _SP_TsGrid
-
-// 12 type-only-import probes (per design §6 Resolution 1 — class-as-type via typeof for const exports)
-import type { TsLocaleSettings }    from 'tsgrid-ui/locale'
-import type { TsEventData }         from 'tsgrid-ui/base'
-import type { TsMessageOptions }    from 'tsgrid-ui/utils'
-import type { TsSidebarRefreshOptions } from 'tsgrid-ui/sidebar'
-import type { TsFieldOptions }      from 'tsgrid-ui/field'
-import type { TsLayoutPanel }       from 'tsgrid-ui/layout'
-// popup, tooltip, tabs, toolbar, form: TsPopup/TsMenu/TsTabs/TsToolbar/TsForm are const exports,
-// use typeof of the already-imported value binding for type-only validation
-const _t_locale : TsLocaleSettings          | undefined = undefined ; void _t_locale
-const _t_base   : TsEventData               | undefined = undefined ; void _t_base
-const _t_utils  : TsMessageOptions          | undefined = undefined ; void _t_utils
-const _t_popup  : typeof _SP_TsPopup        | undefined = undefined ; void _t_popup
-const _t_tt     : typeof _SP_TsMenu         | undefined = undefined ; void _t_tt
-const _t_tabs   : typeof _SP_TsTabs         | undefined = undefined ; void _t_tabs
-const _t_tb     : typeof _SP_TsToolbar      | undefined = undefined ; void _t_tb
-const _t_sb     : TsSidebarRefreshOptions   | undefined = undefined ; void _t_sb
-const _t_field  : TsFieldOptions            | undefined = undefined ; void _t_field
-const _t_lay    : TsLayoutPanel             | undefined = undefined ; void _t_lay
-const _t_form   : typeof _SP_TsForm         | undefined = undefined ; void _t_form
-// grid type-only probes (R-GSR-3, T-GSR-2)
-import type {
-    TsGridRecord, TsGridColumn, TsGridSearch, TsGridSortData,
-    TsGridSelection, TsGridCellSelection, TsGridRange, TsGridRangeEndpoint, TsGridGroupBy,
-} from 'tsgrid-ui/grid'
+// Type-level probes for imported types (grid types)
 const _t_grid_record    : TsGridRecord        | undefined = undefined ; void _t_grid_record
 const _t_grid_column    : TsGridColumn        | undefined = undefined ; void _t_grid_column
 const _t_grid_search    : TsGridSearch        | undefined = undefined ; void _t_grid_search
@@ -224,6 +191,18 @@ const _t_grid_cellsel   : TsGridCellSelection | undefined = undefined ; void _t_
 const _t_grid_range     : TsGridRange         | undefined = undefined ; void _t_grid_range
 const _t_grid_rangeend  : TsGridRangeEndpoint | undefined = undefined ; void _t_grid_rangeend
 const _t_grid_groupby   : TsGridGroupBy       | undefined = undefined ; void _t_grid_groupby
+
+const _t_locale  : TsLocaleSettings          | undefined = undefined ; void _t_locale
+const _t_base    : TsEventData               | undefined = undefined ; void _t_base
+const _t_utils   : TsMessageOptions          | undefined = undefined ; void _t_utils
+const _t_popup   : typeof TsPopup            | undefined = undefined ; void _t_popup
+const _t_tt      : typeof TsMenu             | undefined = undefined ; void _t_tt
+const _t_tabs    : typeof TsTabs             | undefined = undefined ; void _t_tabs
+const _t_tb      : typeof TsToolbar          | undefined = undefined ; void _t_tb
+const _t_sb      : TsSidebarRefreshOptions   | undefined = undefined ; void _t_sb
+const _t_field   : TsFieldOptions            | undefined = undefined ; void _t_field
+const _t_lay     : TsLayoutPanel             | undefined = undefined ; void _t_lay
+const _t_form    : typeof TsForm             | undefined = undefined ; void _t_form
 
 // ---------------------------------------------------------------------------
 // v2.12.0 grid-css-pairing — per-widget CSS subpaths (side-effect imports)
@@ -239,6 +218,20 @@ import 'tsgrid-ui/tabs.css'
 import 'tsgrid-ui/toolbar.css'
 import 'tsgrid-ui/layout.css'
 import 'tsgrid-ui/field.css'
+
+// ===========================================================================
+// === REGRESSION GUARD: barrel still resolvable (deprecated as of v2.15.0, removed in v3.0) ===
+// Per Q3 lock: ensures src/index.ts and src/index-legacy.ts continue to expose
+// the public surface until v3.0 actually removes them.
+// Strikethrough is EXPECTED on these imports in IDE preview — @deprecated is a
+// suggestion diagnostic, NOT a tsc error. pnpm consumer-smoke exits 0 here.
+// ===========================================================================
+import { TsGrid as _BarrelTsGrid } from '../src/index.js'
+import type { RecId as _BarrelRecId } from '../src/index.js'
+void _BarrelTsGrid
+// type-level reference — proves the type is importable from the barrel (no runtime use)
+const _barrelRecIdRef: _BarrelRecId | undefined = undefined
+void _barrelRecIdRef
 
 // ---------------------------------------------------------------------------
 // Export nothing — this file is type-check-only

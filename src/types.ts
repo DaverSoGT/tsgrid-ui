@@ -21,7 +21,9 @@
  * @example
  *   type UserId = Brand<number, 'UserId'>
  *
- * @internal
+ * v2.15.0: Made public (was previously utility-only) to enable re-export via
+ * `tsgrid-ui/utils` (R-TG-1, R-TG-2). Consumers deriving their own branded types need it.
+ * See design D-4 task 2.5 for rationale.
  */
 export type Brand<K, T> = K & { readonly __brand: T }
 

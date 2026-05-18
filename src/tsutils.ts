@@ -51,6 +51,9 @@ export type { TsMessageProm, TsMessageWhere, TsMessageOptions } from './tsutils-
 import { transition as _transition, lock as _lock, unlock as _unlock, getSize as _getSize, getStrDimentions as _getStrDimentions, getStrWidth as _getStrWidth, getStrHeight as _getStrHeight, bindEvents as _bindEvents } from './tsutils-dom.js'
 import type { TsLockOptions } from './tsutils-dom.js'
 export type { TsLockOptions } from './tsutils-dom.js'
+// Phase 5 types-gap closure (v2.15.0): branded primitives are now accessible via `tsgrid-ui/utils`.
+// Previously only reachable via the flat `tsgrid-ui` barrel; this plugs the gap before barrel deprecation.
+export type { Brand, RecId, LayoutPanelId, FieldName } from './types.js'
 import { _isDate, _isTime, _isDateTime, _age, _interval, _formatDate, _formatTime, _formatDateTime, _date } from './tsutils-datetime.js'
 import type { TsTimeResult } from './tsutils-datetime.js'
 import { _locale } from './tsutils-locale.js'
