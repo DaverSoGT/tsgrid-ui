@@ -148,26 +148,22 @@ describe('T-FE-9: compat shim content:"" present after last icon rule (R-FE-7)',
 
 // ---------------------------------------------------------------------------
 // T-FE-14: stale generated artifacts do NOT exist (R-FE-13)
-// NOTE: marked skip — files exist on master; will be activated at Commit E (file deletion)
+// Activated at Commit E when stale files are deleted.
 // ---------------------------------------------------------------------------
 describe('T-FE-14: stale icon-font generated artifacts deleted (R-FE-13)', () => {
-    it.skip('tsgrid-font.woff must not exist (activated at Commit E)', () => {
-        // activated at Commit E (file deletion)
+    it('tsgrid-font.woff must not exist', () => {
         expect(existsSync(join(ROOT, 'src', 'less', 'icons', 'tsgrid-font.woff'))).toBe(false)
     })
 
-    it.skip('tsgrid-font.css must not exist (activated at Commit E)', () => {
-        // activated at Commit E (file deletion)
+    it('tsgrid-font.css must not exist', () => {
         expect(existsSync(join(ROOT, 'src', 'less', 'icons', 'tsgrid-font.css'))).toBe(false)
     })
 
-    it.skip('preview.html must not exist (activated at Commit E)', () => {
-        // activated at Commit E (file deletion)
+    it('preview.html must not exist', () => {
         expect(existsSync(join(ROOT, 'src', 'less', 'icons', 'preview.html'))).toBe(false)
     })
 
-    it.skip('icons.json must not exist (activated at Commit E)', () => {
-        // activated at Commit E (file deletion)
+    it('icons.json must not exist', () => {
         expect(existsSync(join(ROOT, 'src', 'less', 'icons', 'icons.json'))).toBe(false)
     })
 })
