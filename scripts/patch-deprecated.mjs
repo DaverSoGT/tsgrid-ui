@@ -27,11 +27,16 @@ const src = readFileSync(DTS_PATH, 'utf8')
 
 // Prepend @deprecated JSDoc before each `export { ... } from '...'` line.
 // Preserve import lines and blank lines as-is.
-const patched = src
-    .split('\n')
-    .map(line => {
+const lines = src.split('\n')
+const patched = lines
+    .map((line, idx) => {
         const trimmed = line.trim()
         if (trimmed.startsWith('export {') && trimmed.includes(' from ')) {
+            // Idempotent: skip injection if preceding lines already contain @deprecated
+            const lookback = lines.slice(Math.max(0, idx - 6), idx)
+            if (lookback.some(l => l.includes('@deprecated'))) {
+                return line
+            }
             return `${DEPRECATED_JSDOC}\n${line}`
         }
         return line
