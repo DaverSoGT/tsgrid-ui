@@ -63,6 +63,12 @@ function schemaVersionFor(semver) {
 // monolith dist/tsgrid-ui.es6.js (340,952 B post-splitting).
 // Note: forecastBytes measures ONLY the stub file, not the transitive chunk size.
 // Consumer effective size = stub + union of consumed chunk bytes.
+//
+// Phase 4 / v2.13.0: CJS subpath outputs (dist/<name>.js, emitted by tsup Block 6)
+// are INTENTIONALLY NOT tracked in subpathEffective. They are inlined, self-contained
+// CJS bundles with no chunk graph to analyze. Per-file size regression coverage lives
+// in test/unit/cjs-subpath-bytes.test.ts (R-CSP-14).
+// Mirror of v2.12.0 CSS exclusion (memory #1078 Rule 1).
 const SUBPATH_INVENTORY = [
     { name: 'locale',  sourceFile: 'src/tslocale.ts',  forecastBytes: 118,  forecastPct: 0.0 },
     { name: 'base',    sourceFile: 'src/tsbase.ts',    forecastBytes: 164,  forecastPct: 0.0 },

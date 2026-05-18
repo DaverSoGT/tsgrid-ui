@@ -1,5 +1,40 @@
 # Migration Guide: v1.x to v2.0
 
+## v2.13.0 — CJS Subpath Parity
+
+### What changed
+
+CJS `require:` conditions are now available for all 12 JS subpath exports. This is a **purely additive** change — no existing behavior is modified.
+
+```js
+// Before v2.13.0 — this threw ERR_PACKAGE_PATH_NOT_EXPORTED
+const { TsGrid } = require('tsgrid-ui/grid')  // ERROR
+
+// After v2.13.0 — resolves to dist/grid.js
+const { TsGrid } = require('tsgrid-ui/grid')  // OK
+```
+
+### Migration action for ESM consumers
+
+**None.** ESM imports (`import { TsGrid } from 'tsgrid-ui/grid'`) are completely unchanged. The `require:` condition is only invoked by CJS-mode `require()` calls.
+
+### Migration action for CJS monolith consumers
+
+**None required, but optional improvement available.** CJS consumers previously relying on `require('tsgrid-ui')` can now selectively require individual subpaths:
+
+```js
+// Before: monolith require (still fully supported)
+const lib = require('tsgrid-ui')
+const { TsGrid } = lib
+
+// After: subpath require (new option, Node.js only)
+const { TsGrid } = require('tsgrid-ui/grid')
+```
+
+**Caution**: If you `require` multiple subpaths AND `require('tsgrid-ui')` in the same process, class identities are NOT shared. `instanceof` checks across the two copies will fail (see [CHANGELOG Known Limitation #4](CHANGELOG.md)). For multi-subpath CJS consumers, `require('tsgrid-ui')` remains the safer choice.
+
+---
+
 <!-- baseline: 943401 bytes -->
 
 ## Bundle size measurement

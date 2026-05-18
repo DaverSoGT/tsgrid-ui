@@ -407,6 +407,50 @@ describe('subpathEffective block (v2.12.0 grid-css-pairing)', () => {
     })
 })
 
+describe('subpathEffective block (v2.13.0 cjs-subpath-parity)', () => {
+    const V213_BASELINE_PATH = join(process.cwd(), 'reports', 'bundle', 'v2.13.0-baseline.json')
+
+    const CJS_WIDGET_NAMES = [
+        'base', 'field', 'form', 'grid', 'layout', 'locale',
+        'popup', 'sidebar', 'tabs', 'toolbar', 'tooltip', 'utils',
+    ]
+
+    it('reports/bundle/v2.13.0-baseline.json exists', () => {
+        expect(existsSync(V213_BASELINE_PATH)).toBe(true)
+    })
+
+    it('tsgridUiVersion is "2.13.0" and schemaVersion is 3', () => {
+        if (!existsSync(V213_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V213_BASELINE_PATH, 'utf8'))
+        expect(snap.tsgridUiVersion).toBe('2.13.0')
+        expect(snap.schemaVersion).toBe(3)
+    })
+
+    it('subpathEffective contains exactly 12 JS subpath keys (ESM-only — CJS excluded)', () => {
+        if (!existsSync(V213_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V213_BASELINE_PATH, 'utf8'))
+        expect(Object.keys(snap.subpathEffective)).toHaveLength(12)
+    })
+
+    it.each(CJS_WIDGET_NAMES)(
+        'NEGATIVE: "%s.js" does NOT appear as a key in subpathEffective (G-2 gate)',
+        (name) => {
+            if (!existsSync(V213_BASELINE_PATH)) return
+            const snap = JSON.parse(readFileSync(V213_BASELINE_PATH, 'utf8'))
+            const subpathKeys = Object.keys(snap.subpathEffective)
+            expect(subpathKeys).not.toContain(`${name}.js`)
+        }
+    )
+
+    it('NEGATIVE: no key in subpathEffective ends with .js without .es6. infix', () => {
+        if (!existsSync(V213_BASELINE_PATH)) return
+        const snap = JSON.parse(readFileSync(V213_BASELINE_PATH, 'utf8'))
+        const subpathKeys = Object.keys(snap.subpathEffective)
+        const bareCjsKeys = subpathKeys.filter(k => k.endsWith('.js') && !k.includes('.es6.'))
+        expect(bareCjsKeys, 'bare *.js CJS keys must not appear in subpathEffective').toEqual([])
+    })
+})
+
 describe('subpathEffective AC-8 — hard-fail on missing stub', () => {
     it('buildSubpathEffectiveBlock throws / exits when a stub is missing from metafile.outputs', async () => {
         const { buildSubpathEffectiveBlock } = await import('../../scripts/bundle-snapshot.mjs')

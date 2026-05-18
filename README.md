@@ -47,6 +47,32 @@ grid.render('#mygrid')
 <div id="mygrid" style="width: 600px; height: 300px;"></div>
 ```
 
+## CommonJS Usage
+
+Starting in **v2.13.0**, all 12 JS subpath exports support `require()` in Node.js CJS modules.
+
+```js
+// CJS subpath import — Node.js only
+const { TsGrid }    = require('tsgrid-ui/grid')
+const { TsForm }    = require('tsgrid-ui/form')
+const { TsField }   = require('tsgrid-ui/field')
+const { TsLocale }  = require('tsgrid-ui/locale')
+const { TsUtils }   = require('tsgrid-ui/utils')
+// ... all 12 subpaths available
+```
+
+ESM equivalent (preferred — use ESM whenever your environment supports it):
+
+```ts
+import { TsGrid }   from 'tsgrid-ui/grid'
+import { TsForm }   from 'tsgrid-ui/form'
+import { TsField }  from 'tsgrid-ui/field'
+import { TsLocale } from 'tsgrid-ui/locale'
+import { TsUtils }  from 'tsgrid-ui/utils'
+```
+
+**CJS subpath imports are Node.js only.** Browser `<script>` consumers must continue using `dist/tsgrid-ui.min.js` (the IIFE monolith). For multi-subpath CJS consumers, prefer `require('tsgrid-ui')` (the CJS monolith) to avoid duplicated transitive code — each subpath file inlines all its dependencies because `splitting: false` is required for CJS output. See [CHANGELOG v2.13.0 Known Limitations](CHANGELOG.md) for details.
+
 ## Per-component CSS
 
 Starting in **v2.12.0**, individual per-widget CSS subpaths are available. There are two import patterns:

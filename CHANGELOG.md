@@ -2,6 +2,32 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v2.13.0 — 2026-05-17
+
+### Added
+
+- CJS `require:` condition on all 12 JS subpath exports (`./locale`, `./base`, `./utils`, `./popup`, `./tooltip`, `./tabs`, `./toolbar`, `./sidebar`, `./field`, `./layout`, `./form`, `./grid`). Consumers can now `require('tsgrid-ui/grid')` in Node.js CJS modules.
+- `dist/<widget>.js` files (12 new self-contained CJS bundles, one per subpath, emitted by tsup Block 6 with `splitting: false`).
+- Runtime CJS smoke test (`test/consumer-smoke-cjs.js`) wired into `pnpm verify` as `pnpm consumer-smoke-cjs`.
+
+### Implementation (2-PR summary)
+
+- **PR #1** (`feat/cjs-subpath-build`): tsup Block 6 (CJS subpath emission, `splitting: false`, 12 entries), package.json exports + sideEffects update (16→17 entries, `utils.js` added adjacent to `utils.es6.js`), subpath-exports + tarball-contents tests updated, consumer-smoke-cjs script created, `pnpm verify` chain updated to include `pnpm build` and `pnpm consumer-smoke-cjs`.
+- **PR #2** (`feat/cjs-subpath-hardening`): Byte-floor guards (`cjs-subpath-bytes.test.ts`, tightened from G-1 measurements), `wrap-legacy.mjs` comment clarification + `SUBPATH_CJS_NEVER_WRAP` tripwire constant, `bundle-snapshot.mjs` CJS exclusion comment, v2.13.0 baseline snapshot, CHANGELOG + docs, version bump.
+
+### Known Limitations
+
+1. **Per-subpath CJS file size (~5 KB–700 KB each)**: Because `splitting: false` is required for CJS output, each `dist/<name>.js` file inlines all transitive dependencies. A consumer `require()`-ing both `tsgrid-ui/grid` AND `tsgrid-ui/form` will load duplicated transitive code (`TsBase`, `TsUtils`, etc.) twice into the process. For memory-sensitive CJS consumers using multiple subpaths, prefer `require('tsgrid-ui')` (the CJS monolith) or migrate to ESM.
+2. **Type conditions**: Types are exposed via the shared `types:` condition — valid for all consumers under `moduleResolution: node16` regardless of CJS/ESM. Explicit `.d.cts` per-subpath type entries are deferred to a future cycle.
+3. **Node.js only**: Subpath CJS files (`dist/<name>.js`) are Node.js `require()` targets only. Browser `<script>` consumers must continue using `dist/tsgrid-ui.min.js` (the IIFE monolith). Using subpath CJS files directly in a browser `<script>` is unsupported. These files ship INTENTIONALLY unwrapped — see `scripts/wrap-legacy.mjs` for the rationale.
+4. **Cross-copy instanceof**: A consumer `require()`-ing `tsgrid-ui/grid` AND `require('tsgrid-ui')` simultaneously may see two copies of the class identity; `instanceof` checks across the two copies will fail. This is documented behavior inherent to `splitting: false` (each subpath file inlines its own copy of the class definitions). See `test/consumer-smoke-cjs.js` cross-copy probe.
+
+### Breaking Changes
+
+None. This is a purely additive release. Existing ESM imports (`import { TsGrid } from 'tsgrid-ui/grid'`) are unchanged. The new `require:` condition is only invoked by CJS-mode `require()` calls.
+
+---
+
 ## v2.12.0 — 2026-05-16
 
 ### Added: per-widget CSS subpaths (`tsgrid-ui/grid.css`, `tsgrid-ui/form.css`, etc.)

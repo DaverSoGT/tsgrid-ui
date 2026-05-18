@@ -30,16 +30,27 @@ if (typeof _pkgRaw.version !== 'string' || _pkgRaw.version.length === 0) {
 const PKG_VERSION = _pkgRaw.version
 
 // ---------------------------------------------------------------------------
-// SUBPATH CONSTRAINT (v2.8.0+): This script wraps ONLY the two CJS files
+// SUBPATH CONSTRAINT (v2.13.0+): This script wraps ONLY the two CJS files
 // emitted from src/index-legacy.ts (dist/tsgrid-ui.js, dist/tsgrid-ui.min.js).
-// ESM subpath bundles (dist/{popup,form,...}.es6.js) are NOT post-processed
-// because v2.8.0 ships subpaths as ESM-only (INV-SX-5, OQ-SX-6 → Phase 4).
+// The 12 CJS subpath bundles emitted by tsup Block 6
+// (dist/{base,field,form,grid,layout,locale,popup,sidebar,tabs,toolbar,tooltip,utils}.js,
+// Phase 4 / v2.13.0) ship as PLAIN CJS — INTENTIONALLY unwrapped. Those files
+// are Node-only `require()` targets and DO NOT need the IIFE/UMD shell used for
+// the browser `<script>` monolith. Wrapping them would force callers to use
+// hardcoded globals instead of named CJS exports, which defeats the parity contract.
 //
-// If a future maintainer adds `require:` conditions to subpath entries in
-// package.json, those CJS subpath bundles will be SHIPPED UNWRAPPED unless
-// this script is extended with per-subpath IIFE wrappers (distinct symbol
-// sets per subpath). This is deferred to Phase 4 (cjs-subpath-modernization).
+// If a future phase adds BROWSER-loadable per-subpath UMD bundles, that work
+// belongs in a NEW build block and a SEPARATE wrap-legacy extension; it is NOT
+// a defect of this comment.
 // ---------------------------------------------------------------------------
+
+// Names that must NEVER be wrapped (Phase 4 CJS subpaths — plain CJS,
+// not IIFE). If a future extension globs dist/*.js, filter on this constant.
+const SUBPATH_CJS_NEVER_WRAP = new Set([
+    'base.js', 'field.js', 'form.js', 'grid.js', 'layout.js',
+    'locale.js', 'popup.js', 'sidebar.js', 'tabs.js', 'toolbar.js',
+    'tooltip.js', 'utils.js',
+])
 
 // ---------------------------------------------------------------------------
 // Paths
