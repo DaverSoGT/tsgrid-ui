@@ -32,6 +32,7 @@
  *  - options.msgNoItems
  */
 
+import { isHTMLElement } from './tsutils-type-guards.js'
 import { TsBase, TsEventPayload } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { TsTooltip as _w2tooltip, TsColor as _w2color, TsMenu as _w2menu, TsDate as _w2date } from './tstooltip.js'
@@ -452,7 +453,7 @@ class TsField extends TsBase {
     }
 
     override render(el: HTMLElement): void {
-        if (!(el instanceof HTMLElement)) {
+        if (!isHTMLElement(el)) {
             console.log('ERROR: Cannot init TsField on empty subject')
             return
         }

@@ -1,5 +1,7 @@
 /* tsgrid-ui query 1.0.0 — DOM helper based on mQuery 0.7 by vitmalina@gmail.com (2014, MIT). */
 
+import { isDOMNode, isDOMEvent, isHTMLElement, isDOMWindow } from './tsutils-type-guards.js'
+
 type QuerySelector = string | Node | Window | Query | Array<Node | Element> | Iterable<Node | Element> | null | undefined
 type QueryContext = Document | Element | ShadowRoot | DocumentFragment
 
@@ -35,7 +37,7 @@ class Query {
         let nodes: Node[] = []
         if (Array.isArray(selector)) {
             nodes = selector
-        } else if (selector instanceof Node || selector instanceof Window) { // any html element or Window
+        } else if (isDOMNode(selector) || isDOMWindow(selector)) { // any html element or Window
             nodes = [selector as Node]
         } else if (selector instanceof Query) {
             nodes = selector.nodes
@@ -143,7 +145,7 @@ class Query {
                 })
             })
             if (!single) html.remove()
-        } else if (html instanceof Node) { // any HTML element
+        } else if (isDOMNode(html)) { // any HTML element
             this.each(node => {
                 // if insert before a single node, just move new one, else clone and move it
                 const clone: Node | DocumentFragment = (len === 1 ? html : Query._fragment((html as Element).outerHTML))
@@ -496,7 +498,7 @@ class Query {
         let event: Event
         const mevent = ['click', 'dblclick', 'mousedown', 'mouseup', 'mousemove']
         const kevent = ['keydown', 'keyup', 'keypress']
-        if (name instanceof Event) {
+        if (isDOMEvent(name)) {
             // MouseEvent and KeyboardEvent are instances of Event, no need to explicitly add
             event = name
         } else if (mevent.includes(name)) {
@@ -637,7 +639,7 @@ class Query {
     }
 
     html(html?: string | HTMLElement): string | Query | undefined {
-        if (html instanceof HTMLElement) {
+        if (isHTMLElement(html)) {
             return (this.empty() as Query).append(html)
         } else {
             return this.prop('innerHTML', html) as Query

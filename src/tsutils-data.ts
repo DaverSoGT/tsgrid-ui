@@ -12,7 +12,7 @@
  *  - 4-space indent
  */
 
-import { isPlainObject } from './tsutils-type-guards.js'
+import { isPlainObject, isDOMNode, isDOMEvent } from './tsutils-type-guards.js'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,8 +65,8 @@ export function clone(obj: unknown, options?: Partial<TsCloneOptions>): any {
         return ret
     } else {
         if ((obj instanceof Function && !opts.functions)
-                || (obj instanceof Node && !opts.elements)
-                || (obj instanceof Event && !opts.events)
+                || (isDOMNode(obj) && !opts.elements)
+                || (isDOMEvent(obj) && !opts.events)
         ) {
             // do not include these objects, otherwise include them uncloned
             return undefined
@@ -94,7 +94,7 @@ export function extend(target: any, source: any, ...rest: unknown[]): any { // a
         } else {
             throw new Error('Arrays can be extended with arrays only')
         }
-    } else if (target instanceof Node || target instanceof Event) {
+    } else if (isDOMNode(target) || isDOMEvent(target)) {
         throw new Error('HTML elmenents and events cannot be extended')
     } else if (target && typeof target == 'object' && source != null) {
         if (typeof source != 'object') {
@@ -105,7 +105,7 @@ export function extend(target: any, source: any, ...rest: unknown[]): any { // a
                     && source[key] != null && typeof source[key] == 'object') {
                 const src = clone(source[key])
                 // do not extend HTML elements and events, but overwrite them
-                if (target[key] instanceof Node || target[key] instanceof Event) {
+                if (isDOMNode(target[key]) || isDOMEvent(target[key])) {
                     target[key] = src
                 } else {
                     // if an array needs to be extended with an object, then convert it to empty object

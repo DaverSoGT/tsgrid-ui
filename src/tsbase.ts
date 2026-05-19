@@ -10,7 +10,7 @@
  */
 
 import { extend } from './tsutils-data.js'
-import { isPlainObject } from './tsutils-type-guards.js'
+import { isPlainObject, isHTMLElement } from './tsutils-type-guards.js'
 import { TsUi, checkName } from './tsutils-registry.js'
 import { query as _query } from './query.js'
 // Cycle break — Phase 0 of v2.3 SDD message-cluster-extraction:
@@ -423,7 +423,7 @@ class TsBase {
         }
         const remove: string[] = []
         // find classes that start with "tsg-*"
-        if (this.box instanceof HTMLElement) {
+        if (isHTMLElement(this.box)) {
             this.box.classList.forEach(cl => {
                 if (cl.startsWith('tsg-')) remove.push(cl)
             })

@@ -19,6 +19,7 @@
  * - added onMouseEnter and onMouseLeave for TsMenu
  */
 
+import { isHTMLElement } from './tsutils-type-guards.js'
 import { TsBase } from './tsbase.js'
 import { TsUtils } from './tsutils.js'
 import { query as _queryRaw, Query } from './query.js'
@@ -480,10 +481,10 @@ class Tooltip {
     }
 
     show(name?: string | HTMLElement | TooltipOptions, extraOptions?: TooltipOptions): AttachReturn | { overlay: TooltipOverlay } | undefined { // any: name is polymorphic (string|HTMLElement|options)
-        if (name instanceof HTMLElement || name instanceof Object) {
+        if (isHTMLElement(name) || name instanceof Object) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             let options: any = name // any: name is object-as-options in this branch
-            if (name instanceof HTMLElement) {
+            if (isHTMLElement(name)) {
                 options = extraOptions || {}
                 options.anchor = name
             }
@@ -707,7 +708,7 @@ class Tooltip {
             Object.keys(Tooltip.active).forEach(name => { this.hide(name) })
             return
         }
-        if (name instanceof HTMLElement) {
+        if (isHTMLElement(name)) {
             const names = (query(name).data('tooltipName') ?? []) as string[] // any: data() unknown; runtime is string[]
             names.forEach(name => { this.hide(name) })
             return

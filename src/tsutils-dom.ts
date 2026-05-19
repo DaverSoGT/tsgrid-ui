@@ -12,7 +12,7 @@
  */
 
 import { encodeTags as _encodeTags } from './tsutils-string.js'
-import { isInt as _isInt } from './tsutils-type-guards.js'
+import { isInt as _isInt, isDOMNode } from './tsutils-type-guards.js'
 import { extend as _extend } from './tsutils-data.js'
 import { query as _query, Query } from './query.js'
 
@@ -236,7 +236,7 @@ export function lock(
     // for backward compatibility: unwrap jQuery-like array wrappers
     // any: box may be a legacy jQuery wrapper with [0] and .get(); normalise to a plain selector
     let boxSel: unknown = box
-    if ((box as Record<string, unknown>)?.[0] instanceof Node) {
+    if (isDOMNode((box as Record<string, unknown>)?.[0])) {
         boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
     }
     if (!opts.msg && opts.msg !== 0) opts.msg = ''
@@ -321,7 +321,7 @@ export function unlock(box: unknown, speed?: number): void {
     clearTimeout(prevBox['_prevUnlock'] as number)
     // for backward compatibility
     let boxSel: unknown = box
-    if ((box as Record<string, unknown>)?.[0] instanceof Node) {
+    if (isDOMNode((box as Record<string, unknown>)?.[0])) {
         boxSel = Array.isArray(box) ? box : (box as { get(): unknown[] }).get()
     }
     if (_isInt(speed) && (speed ?? 0) > 0) {
@@ -428,7 +428,7 @@ export function bindEvents(
     if ((selectorR?.['length'] as number) == 0) return
     // for backward compatibility
     let normalizedSelector = selector
-    if (selectorR?.[0] instanceof Node) {
+    if (isDOMNode(selectorR?.[0])) {
         normalizedSelector = Array.isArray(selector) ? selector : (selector as { get(): unknown[] }).get()
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
