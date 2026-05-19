@@ -2,16 +2,36 @@ import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
     test: {
-        environment: 'jsdom',
-        include: ['test/unit/**/*.test.ts'],
-        exclude: ['test/smoke/**', 'node_modules/**', 'dist/**'],
-        globals: false,
-        watch: false,
-        // build-determinism-js sweeps dist/chunks/ via pnpm build:js (prebuild:js hook)
-        // during test execution. Concurrent runs of this test with other tests that read
-        // dist/chunks/ (icons-treeshake, chunks-orphan-free, build-output) cause FS races.
-        // Use a single thread so test files run one at a time in the same process. (v3.0.2)
-        pool: 'threads',
-        singleThread: true,
+        projects: [
+            // serial-build: build-determinism-js runs pnpm build:js twice, mutating
+            // dist/chunks/. Must be isolated so no other test reads dist/ while it runs.
+            // fileParallelism: false serializes execution within this project.
+            {
+                test: {
+                    name: 'serial-build',
+                    include: ['test/unit/build-determinism-js.test.ts'],
+                    environment: 'node',
+                    fileParallelism: false,
+                },
+            },
+            // parallel: all other unit tests — read dist/ at rest, no build mutation.
+            // environment: 'jsdom' matches the previous global default; many source
+            // files reference DOM globals (Node, Event) at module load time.
+            // icons-treeshake.test.ts has // @vitest-environment node pragma which
+            // overrides to 'node' for that single file.
+            {
+                test: {
+                    name: 'parallel',
+                    include: ['test/unit/**/*.test.ts'],
+                    exclude: [
+                        'test/unit/build-determinism-js.test.ts',
+                        'test/smoke/**',
+                        'dist/**',
+                        'node_modules/**',
+                    ],
+                    environment: 'jsdom',
+                },
+            },
+        ],
     },
 })

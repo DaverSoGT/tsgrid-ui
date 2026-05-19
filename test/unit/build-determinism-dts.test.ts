@@ -23,7 +23,7 @@ import { join } from 'node:path'
 
 const ROOT = join(__dirname, '../..')
 
-describe('build-determinism-dts — dist/grid.d.ts getRecordHTML line shows canonical string[] | "" order (S-DOS-1)', () => {
+describe("build-determinism-dts — dist/grid.d.ts getRecordHTML line shows canonical string[] | '' order (S-DOS-1)", () => {
     const DTS = readFileSync(join(ROOT, 'dist', 'grid.d.ts'), 'utf8')
     const line = DTS.split('\n').find(l => l.includes('getRecordHTML('))
 
@@ -31,13 +31,15 @@ describe('build-determinism-dts — dist/grid.d.ts getRecordHTML line shows cano
         expect(line, 'getRecordHTML not found in dist/grid.d.ts — was the dts regenerated?').toBeDefined()
     })
 
-    it('getRecordHTML return type is canonical string[] | "" (not "" | string[])', () => {
+    it('getRecordHTML return type is canonical string[] | \'\' (not \'\' | string[])', () => {
         expect(line).toBeDefined()
-        // Tolerant of inter-token whitespace; strict on member order.
-        // Canonical: string[] BEFORE "" (TypeReference before StringLiteral).
+        // Tolerant of inter-token whitespace and quote style (TypeScript may emit
+        // single or double quotes for the empty string literal depending on the
+        // annotation quote style in source).
+        // Canonical: string[] BEFORE the empty string literal (TypeReference first).
         expect(
             line,
-            `getRecordHTML dts line does not match canonical order.\nActual line: ${line}\nExpected pattern: getRecordHTML(...): string[] | "";`,
-        ).toMatch(/getRecordHTML\([^)]*\):\s*string\[\]\s*\|\s*""\s*;/)
+            `getRecordHTML dts line does not match canonical order.\nActual line: ${line}\nExpected pattern: getRecordHTML(...): string[] | '';`,
+        ).toMatch(/getRecordHTML\([^)]*\):\s*string\[\]\s*\|\s*(?:""|'')\s*;/)
     })
 })
