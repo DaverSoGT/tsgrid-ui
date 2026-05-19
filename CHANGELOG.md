@@ -2,6 +2,36 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v3.0.3 — 2026-05-18
+
+### Fixed
+
+- `getRecordHTML` return type explicitly annotated as `string[] | ''` in
+  `src/grid-render.ts` and `src/tsgrid.ts` to prevent non-deterministic dts
+  union-member ordering (`string[]` vs `''` member order) across TypeScript 5.x
+  build runs. Guard test: `test/unit/build-determinism-dts.test.ts` (S-DOS-1).
+
+### Changed
+
+- `vitest.config.ts` migrated from deprecated `pool: 'threads' / singleThread: true`
+  to the vitest 4 `projects` API. Two projects: `serial-build`
+  (`build-determinism-js.test.ts` only, `fileParallelism: false`, `environment: node`)
+  and `parallel` (all other unit tests, `environment: jsdom`). Eliminates unnecessary
+  full-suite serialization while preserving FS isolation for the build-mutating test.
+  Actual parallel project uses `jsdom` to match existing test expectations (W-DOS-1).
+- `test/unit/widgets-no-css-icons.test.ts` Suite 1 refactored: 11 hardcoded `it()`
+  blocks replaced with glob-derived `it.each(widgetFiles)` loop plus `NON_WIDGET_SRC`
+  denylist (24 entries) and a length-guard `it('has 11 widget files', ...)` that fails
+  loud when the denylist drifts. No change in violation-detection coverage (D-8).
+
+### Internal
+
+- Engram upsert: `sdd/dist-orphan-sweep/spec` R-DOS-5 updated with `.js.map` sibling
+  clause (S-DOS-2). Memory-only, no diff.
+- Engram upsert: `sdd/css-dead-code/spec` corrected R-CDC-13 changelog probe text
+  (`## v3.0.1` style) and added R-CDC-16 documenting `crossIcon` usage in
+  `tsutils-notify.ts` (css-dead-code S-1 + W-2). Memory-only, no diff.
+
 ## v3.0.2 — 2026-05-18
 
 ### Build
