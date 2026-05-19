@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Test suite for TsUtils DOM cluster — Phase 4 (TDD safety-net) of v2.4 SDD.
  *

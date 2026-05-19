@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Unit tests for tsutils-message module (Phase 3a + 3b of v2.3 SDD).
  *

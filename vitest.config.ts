@@ -15,10 +15,11 @@ export default defineConfig({
                 },
             },
             // parallel: all other unit tests — read dist/ at rest, no build mutation.
-            // environment: 'jsdom' matches the previous global default; many source
-            // files reference DOM globals (Node, Event) at module load time.
+            // environment: 'node' is the DESIGN INTENT from spec #1185, restored in
+            // v3.0.4 once src/ stopped referencing DOM globals at runtime (replaced
+            // by isDOMNode/isDOMEvent/isHTMLElement/isDOMWindow helpers).
             // icons-treeshake.test.ts has // @vitest-environment node pragma which
-            // overrides to 'node' for that single file.
+            // remains; tests that require real DOM use // @vitest-environment jsdom.
             {
                 test: {
                     name: 'parallel',
@@ -29,7 +30,7 @@ export default defineConfig({
                         'dist/**',
                         'node_modules/**',
                     ],
-                    environment: 'jsdom',
+                    environment: 'node',
                 },
             },
         ],

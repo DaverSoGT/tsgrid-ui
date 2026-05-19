@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 /**
  * Test suite for TsUtils.notify — Phase 1 of v2.3 SDD (message-cluster-extraction).
  *

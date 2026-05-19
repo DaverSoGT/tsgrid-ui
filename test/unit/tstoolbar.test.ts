@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { TsToolbar } from '../../src/tstoolbar.js'
 import { Tooltip, TsTooltip } from '../../src/tstooltip.js'

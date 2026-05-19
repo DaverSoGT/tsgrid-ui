@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 describe('singleton-lazy-init (R-SLI-15..18)', () => {
