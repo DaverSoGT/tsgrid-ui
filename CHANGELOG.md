@@ -2,6 +2,52 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v3.0.4 — 2026-05-19
+
+### Fixed
+
+- **dom-global-safety**: Replaced all 17 unguarded `instanceof <DOMGlobal>` expressions
+  across 6 source files with calls to 4 new type-guard helpers
+  (`isDOMNode`, `isDOMEvent`, `isHTMLElement`, `isDOMWindow`) in
+  `src/tsutils-type-guards.ts`. Each helper implements a `typeof <Global> !== 'undefined'`
+  pre-check so the guards return `false` rather than throwing `ReferenceError` in Node.js
+  environments where DOM globals are absent. Satisfies R-DGS-1 through R-DGS-3 and
+  R-DGS-7 through R-DGS-8 from spec `sdd/dom-global-safety/spec`.
+
+  Affected source files (17 sites total):
+  - `src/tsutils-data.ts` — 4 sites (clone / extend guards)
+  - `src/query.ts` — 4 sites (constructor + html + trigger + html() overload)
+  - `src/tstooltip.ts` — 3 sites (show + hide methods)
+  - `src/tsutils-dom.ts` — 3 sites (lock / unlock / updateBox helpers)
+  - `src/tsfield.ts` — 1 site (render guard)
+  - `src/tsbase.ts` — 1 site (removeClass helper)
+
+### Changed
+
+- **W-1 closure**: `vitest.config.ts` `parallel` project environment restored from
+  `'jsdom'` (v3.0.3 workaround, W-DOS-1) back to `'node'` (original design intent from
+  spec #1185). Tests that require real DOM APIs now carry explicit
+  `// @vitest-environment jsdom` pragmas: `tsutils-dom.test.ts`, `tsutils-message.test.ts`,
+  `tsutils-notify.test.ts`, `tstoolbar.test.ts`, `singleton-lazy-init.test.ts`.
+  Satisfies R-DGS-4 and R-DGS-5.
+
+### Added
+
+- `test/unit/tsutils-dom-globals.test.ts` (`// @vitest-environment node`): proves the 4
+  helpers return `false` without throwing in a DOM-free environment (R-DGS-3, R-DGS-8).
+- `test/unit/tsutils-dom-globals.jsdom.test.ts` (`// @vitest-environment jsdom`): covers
+  positive narrowing paths for `isDOMNode`, `isDOMEvent`, `isHTMLElement`, `isDOMWindow`
+  and asserts the throw-branch typo `'HTML elmenents and events cannot be extended'` is
+  preserved verbatim in jsdom env (R-DGS-7, R-DGS-11).
+
+### Known Limitations (unchanged)
+
+- Top-level DOM-global references (`document.createElement`, `window.getComputedStyle`,
+  `MutationObserver`, `navigator.userAgent`, `window.localStorage`, `self`) in several
+  source files still cause `ReferenceError` at module-load time in a bare Node.js process
+  without DOM stubs. This is documented Known Limitation #3 and is out of scope for this
+  cycle. `test/unit/cjs-nostubs-load-error.test.ts` intentionally asserts this behavior.
+
 ## v3.0.3 — 2026-05-18
 
 ### Fixed

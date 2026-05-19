@@ -95,7 +95,7 @@ describe('barrel-removed — consumer-smoke.ts has no flat barrel import (R-BR-7
 
 describe('barrel-removed — version bump (R-BR-8)', () => {
     it('T-PKG-1: package.json version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (v3.0 cycle pre-release allow-list)', () => {
-        expect(['3.0.0-rc.1', '3.0.0', '3.0.1', '3.0.2', '3.0.3']).toContain(pkg.version)
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1', '3.0.2', '3.0.3', '3.0.4']).toContain(pkg.version)
     })
 })
 
