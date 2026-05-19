@@ -1955,7 +1955,7 @@ export function getSummaryHTML(grid: TsGrid) {
     return [html1, html2]
 }
 
-export function getRecordHTML(grid: TsGrid, ind: number, lineNum: number, summary?: boolean) {
+export function getRecordHTML(grid: TsGrid, ind: number, lineNum: number, summary?: boolean): string[] | "" {
     let tmph      = ''
     let rec_html1 = ''
     let rec_html2 = ''

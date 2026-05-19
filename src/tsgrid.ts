@@ -2292,7 +2292,7 @@ class TsGrid extends TsBase {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     scroll(event?: Event | any) { return gridRender.scroll(this, event) }
 
-    getRecordHTML(ind: number, lineNum: number, summary?: boolean) { return gridRender.getRecordHTML(this, ind, lineNum, summary) }
+    getRecordHTML(ind: number, lineNum: number, summary?: boolean): string[] | "" { return gridRender.getRecordHTML(this, ind, lineNum, summary) }
 
     getLineHTML(lineNum: number): string { return gridRender.getLineHTML(this, lineNum) }
 
