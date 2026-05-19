@@ -246,9 +246,9 @@ describe('smoke fixture barrel-IIFE migration — fixtures must not reference de
 // NOTE: currently 3.0.0-rc.1 — this test will go RED until B3 bumps to 3.0.0.
 // ---------------------------------------------------------------------------
 
-describe('T-PKG-1-final: package.json version is exactly 3.0.1 (v3.0.1 hotfix)', () => {
-    it('package.json#version === "3.0.1"', () => {
+describe('T-PKG-1-final: package.json version is exactly 3.0.2 (v3.0.2 orphan-sweep)', () => {
+    it('package.json#version === "3.0.2"', () => {
         const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'))
-        expect(pkg.version).toBe('3.0.1')
+        expect(pkg.version).toBe('3.0.2')
     })
 })

@@ -2,6 +2,31 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v3.0.2 — 2026-05-18
+
+### Build
+
+- Added `scripts/clean-chunks.mjs`: a pre-build sweep that removes `dist/chunks/`
+  before every `pnpm build:js` invocation via the `prebuild:js` npm lifecycle hook.
+  Uses `fs.rmSync({ recursive: true, force: true })` — pure Node stdlib, no shell
+  commands, cross-platform (Windows + POSIX). Idempotent: safe to run on first build
+  when `dist/chunks/` does not yet exist.
+- Wired `"prebuild:js": "node scripts/clean-chunks.mjs"` in `package.json` immediately
+  above `build:js`. The hook fires for both `pnpm build:js` and `pnpm build` (CSS → sweep → JS).
+  `pnpm dev` (tsup --watch) is NOT affected — the `pre` hook only fires for `build:js`.
+
+### Added
+
+- `test/unit/chunks-orphan-free.test.ts`: referential-integrity guard for `dist/chunks/`.
+  Reads committed `dist/*.es6.js` entries, extracts `./chunks/chunk-*.js` import paths via
+  regex, and asserts bidirectional set-equality with `dist/chunks/*.js` on disk. Fast (< 1 s),
+  no build trigger, CI-safe. Guards against future orphan accumulation.
+- `test/unit/build-determinism-js.test.ts`: JS build determinism guard. Runs `pnpm build:js`
+  twice and asserts chunk filename sets and per-file SHA-256 hashes are identical across both
+  runs. Uses `readWithRetry` pattern (commit `d2feb53a`) to absorb Windows FS flush races.
+  Opt-out: set `SKIP_BUILD_TESTS=1`. Ensures future esbuild upgrades do not introduce
+  non-deterministic chunk hashing.
+
 ## v3.0.1 — 2026-05-18
 
 ### Fixed
