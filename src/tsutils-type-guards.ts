@@ -75,3 +75,19 @@ export function isPlainObject(value: unknown): boolean {
     const proto = Object.getPrototypeOf(value) as unknown
     return proto === null || proto === Object.prototype
 }
+
+export function isDOMNode(val: unknown): val is Node {
+    return typeof Node !== 'undefined' && val instanceof Node
+}
+
+export function isDOMEvent(val: unknown): val is Event {
+    return typeof Event !== 'undefined' && val instanceof Event
+}
+
+export function isHTMLElement(val: unknown): val is HTMLElement {
+    return typeof HTMLElement !== 'undefined' && val instanceof HTMLElement
+}
+
+export function isDOMWindow(val: unknown): val is Window {
+    return typeof Window !== 'undefined' && val instanceof Window
+}
