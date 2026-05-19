@@ -3,7 +3,7 @@ import {
 } from "./chunk-EQK6JAHT.js";
 import {
   TsUtils
-} from "./chunk-UDGOHP3E.js";
+} from "./chunk-4ANPVTBJ.js";
 import {
   checkIcon,
   colorsIcon,
@@ -14,8 +14,9 @@ import {
 } from "./chunk-OITJCF5M.js";
 import {
   TsBase,
+  isHTMLElement,
   query
-} from "./chunk-W7JZO7EX.js";
+} from "./chunk-RR7PNBCO.js";
 
 // src/tstooltip.ts
 var query2 = query;
@@ -297,9 +298,9 @@ var Tooltip = class _Tooltip {
     }
   }
   show(name, extraOptions) {
-    if (name instanceof HTMLElement || name instanceof Object) {
+    if (isHTMLElement(name) || name instanceof Object) {
       let options2 = name;
-      if (name instanceof HTMLElement) {
+      if (isHTMLElement(name)) {
         options2 = extraOptions || {};
         options2.anchor = name;
       }
@@ -465,7 +466,7 @@ var Tooltip = class _Tooltip {
       });
       return;
     }
-    if (name instanceof HTMLElement) {
+    if (isHTMLElement(name)) {
       const names2 = query2(name).data("tooltipName") ?? [];
       names2.forEach((name2) => {
         this.hide(name2);
@@ -3025,4 +3026,4 @@ export {
   TsDate,
   __test_internals
 };
-//# sourceMappingURL=chunk-G5ZE37KO.js.map
+//# sourceMappingURL=chunk-T7DFHUXG.js.map

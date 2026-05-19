@@ -52,6 +52,18 @@ function isPlainObject(value) {
   const proto = Object.getPrototypeOf(value);
   return proto === null || proto === Object.prototype;
 }
+function isDOMNode(val) {
+  return typeof Node !== "undefined" && val instanceof Node;
+}
+function isDOMEvent(val) {
+  return typeof Event !== "undefined" && val instanceof Event;
+}
+function isHTMLElement(val) {
+  return typeof HTMLElement !== "undefined" && val instanceof HTMLElement;
+}
+function isDOMWindow(val) {
+  return typeof Window !== "undefined" && val instanceof Window;
+}
 
 // src/tsutils-data.ts
 function clone(obj, options) {
@@ -83,7 +95,7 @@ function clone(obj, options) {
     });
     return ret;
   } else {
-    if (obj instanceof Function && !opts.functions || obj instanceof Node && !opts.elements || obj instanceof Event && !opts.events) {
+    if (obj instanceof Function && !opts.functions || isDOMNode(obj) && !opts.elements || isDOMEvent(obj) && !opts.events) {
       return void 0;
     } else {
       return obj;
@@ -100,7 +112,7 @@ function extend(target, source, ...rest) {
     } else {
       throw new Error("Arrays can be extended with arrays only");
     }
-  } else if (target instanceof Node || target instanceof Event) {
+  } else if (isDOMNode(target) || isDOMEvent(target)) {
     throw new Error("HTML elmenents and events cannot be extended");
   } else if (target && typeof target == "object" && source != null) {
     if (typeof source != "object") {
@@ -109,7 +121,7 @@ function extend(target, source, ...rest) {
     Object.keys(source).forEach((key) => {
       if (target[key] != null && typeof target[key] == "object" && source[key] != null && typeof source[key] == "object") {
         const src = clone(source[key]);
-        if (target[key] instanceof Node || target[key] instanceof Event) {
+        if (isDOMNode(target[key]) || isDOMEvent(target[key])) {
           target[key] = src;
         } else {
           if (Array.isArray(target[key]) && isPlainObject(src)) {
@@ -337,7 +349,7 @@ var Query = class _Query {
     let nodes = [];
     if (Array.isArray(selector)) {
       nodes = selector;
-    } else if (selector instanceof Node || selector instanceof Window) {
+    } else if (isDOMNode(selector) || isDOMWindow(selector)) {
       nodes = [selector];
     } else if (selector instanceof _Query) {
       nodes = selector.nodes;
@@ -434,7 +446,7 @@ var Query = class _Query {
         });
       });
       if (!single) html.remove();
-    } else if (html instanceof Node) {
+    } else if (isDOMNode(html)) {
       this.each((node) => {
         const clone2 = len === 1 ? html : _Query._fragment(html.outerHTML);
         nodes.push(...len === 1 ? [html] : clone2.childNodes);
@@ -752,7 +764,7 @@ var Query = class _Query {
     let event;
     const mevent = ["click", "dblclick", "mousedown", "mouseup", "mousemove"];
     const kevent = ["keydown", "keyup", "keypress"];
-    if (name instanceof Event) {
+    if (isDOMEvent(name)) {
       event = name;
     } else if (mevent.includes(name)) {
       event = new MouseEvent(name, options);
@@ -888,7 +900,7 @@ var Query = class _Query {
     return this.html("");
   }
   html(html) {
-    if (html instanceof HTMLElement) {
+    if (isHTMLElement(html)) {
       return this.empty().append(html);
     } else {
       return this.prop("innerHTML", html);
@@ -1238,7 +1250,7 @@ var TsBase = class {
       return;
     }
     const remove = [];
-    if (this.box instanceof HTMLElement) {
+    if (isHTMLElement(this.box)) {
       this.box.classList.forEach((cl) => {
         if (cl.startsWith("tsg-")) remove.push(cl);
       });
@@ -1259,6 +1271,8 @@ export {
   isEmail,
   isIpAddress,
   isPlainObject,
+  isDOMNode,
+  isHTMLElement,
   clone,
   extend,
   naturalCompare,
@@ -1280,4 +1294,4 @@ export {
  * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
  * @license    MIT License
  */
-//# sourceMappingURL=chunk-W7JZO7EX.js.map
+//# sourceMappingURL=chunk-RR7PNBCO.js.map

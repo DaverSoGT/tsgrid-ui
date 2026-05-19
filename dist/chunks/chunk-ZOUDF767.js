@@ -3,17 +3,18 @@ import {
   TsDate,
   TsMenu,
   TsTooltip
-} from "./chunk-G5ZE37KO.js";
+} from "./chunk-T7DFHUXG.js";
 import {
   TsUtils
-} from "./chunk-UDGOHP3E.js";
+} from "./chunk-4ANPVTBJ.js";
 import {
   searchIcon
 } from "./chunk-OITJCF5M.js";
 import {
   TsBase,
+  isHTMLElement,
   query
-} from "./chunk-W7JZO7EX.js";
+} from "./chunk-RR7PNBCO.js";
 
 // src/tsfield.ts
 var query2 = query;
@@ -87,7 +88,7 @@ var TsField = class extends TsBase {
     }
   }
   render(el) {
-    if (!(el instanceof HTMLElement)) {
+    if (!isHTMLElement(el)) {
       console.log("ERROR: Cannot init TsField on empty subject");
       return;
     }
@@ -1795,4 +1796,4 @@ var TsField = class extends TsBase {
 export {
   TsField
 };
-//# sourceMappingURL=chunk-PTTOCBE4.js.map
+//# sourceMappingURL=chunk-ZOUDF767.js.map

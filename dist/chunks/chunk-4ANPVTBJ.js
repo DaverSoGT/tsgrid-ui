@@ -14,6 +14,7 @@ import {
   getNested,
   isAlphaNumeric,
   isBin,
+  isDOMNode,
   isEmail,
   isFloat,
   isHex,
@@ -27,7 +28,7 @@ import {
   prepareParams,
   query,
   wait
-} from "./chunk-W7JZO7EX.js";
+} from "./chunk-RR7PNBCO.js";
 
 // src/tsutils-color.ts
 function parseColor(str) {
@@ -1099,7 +1100,7 @@ function lock(box, options = {}, ...rest) {
   }
   opts = extend({ spinner: false }, opts);
   let boxSel = box;
-  if (box?.[0] instanceof Node) {
+  if (isDOMNode(box?.[0])) {
     boxSel = Array.isArray(box) ? box : box.get();
   }
   if (!opts.msg && opts.msg !== 0) opts.msg = "";
@@ -1170,7 +1171,7 @@ function unlock(box, speed) {
   const prevBox = box;
   clearTimeout(prevBox["_prevUnlock"]);
   let boxSel = box;
-  if (box?.[0] instanceof Node) {
+  if (isDOMNode(box?.[0])) {
     boxSel = Array.isArray(box) ? box : box.get();
   }
   if (isInt(speed) && (speed ?? 0) > 0) {
@@ -1230,7 +1231,7 @@ function bindEvents(selector, subject) {
   const selectorR = selector;
   if (selectorR?.["length"] == 0) return;
   let normalizedSelector = selector;
-  if (selectorR?.[0] instanceof Node) {
+  if (isDOMNode(selectorR?.[0])) {
     normalizedSelector = Array.isArray(selector) ? selector : selector.get();
   }
   ;
@@ -2423,4 +2424,4 @@ export {
   query6 as query,
   TsUtils
 };
-//# sourceMappingURL=chunk-UDGOHP3E.js.map
+//# sourceMappingURL=chunk-4ANPVTBJ.js.map
