@@ -39,10 +39,58 @@
  * Additionally: src/grid-search.ts (grid search helper with icon data).
  */
 import { describe, it, expect } from 'vitest'
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 
 const ROOT = process.cwd()
+
+// ---------------------------------------------------------------------------
+// Suite 1 setup: glob-derived widget file list (D-8 refactor)
+// ---------------------------------------------------------------------------
+
+/**
+ * Non-widget source files to exclude from the css-icon injection scan.
+ * These are utility modules, base classes, grid sub-modules, or files
+ * that do not render widget HTML and therefore have no icon-class injection surface.
+ *
+ * IMPORTANT: When adding a new src/*.ts file that is NOT a widget, add it here.
+ * If you add a new WIDGET file, do NOT add it here — the length-guard below
+ * (`has 11 widget files`) will catch the drift and remind you to update the count.
+ */
+const NON_WIDGET_SRC = new Set<string>([
+    'tslocale.ts',            // locale data, not a widget
+    'tsbase.ts',              // base class shared by widgets — not a standalone widget
+    'tsutils.ts',             // utils barrel re-exporting submodules
+    'query.ts',               // query helper, no HTML rendering
+    'tslayout.ts',            // layout manager — no icon-class injection surface in this cycle
+    'grid-columns.ts',        // grid sub-module (column definitions)
+    'grid-data.ts',           // grid sub-module (data handling)
+    'grid-edit.ts',           // grid sub-module (editing logic)
+    'grid-interaction.ts',    // grid sub-module (event handling)
+    'grid-selection.ts',      // grid sub-module (selection state)
+    'grid-state.ts',          // grid sub-module (state management)
+    'tsutils-data.ts',        // utils sub-module (data utilities)
+    'tsutils-marker.ts',      // utils sub-module (marker utilities)
+    'tsutils-type-guards.ts', // utils sub-module (type guards — no rendering)
+    'tsutils-color.ts',       // utils sub-module (color utilities)
+    'tsutils-message.ts',     // utils sub-module (message utilities)
+    'tsutils-registry.ts',    // utils sub-module (registry pattern)
+    'tsutils-string.ts',      // utils sub-module (string utilities)
+    'tsutils-dom.ts',         // utils sub-module (DOM utilities)
+    'tsutils-datetime.ts',    // utils sub-module (datetime utilities)
+    'tsutils-locale.ts',      // utils sub-module (locale utilities)
+    'lazy-singleton.ts',      // build/DI helper — no HTML rendering
+    'types.ts',               // pure types module — no runtime rendering
+    'icons.ts',               // icon module — exports SVG helpers, not a widget that injects CSS class names
+])
+
+/**
+ * Widget source files: all src/*.ts files not in NON_WIDGET_SRC.
+ * Expected = 11 (tsgrid, grid-render, grid-search, tspopup, tstooltip,
+ *               tsfield, tsform, tstoolbar, tstabs, tssidebar, tsutils-notify).
+ */
+const widgetFiles = readdirSync(join(ROOT, 'src'))
+    .filter(f => f.endsWith('.ts') && !NON_WIDGET_SRC.has(f))
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -85,92 +133,28 @@ function findCssIconViolations(source: string): string[] {
 
 // ---------------------------------------------------------------------------
 // Suite 1: Widget source files — no tsg-icon-{name} class injection (R-SCI-12)
+// D-8 refactor: 11 hardcoded it() blocks replaced with glob-derived it.each(widgetFiles).
+// NON_WIDGET_SRC denylist + length-guard defined above (pre-describe block).
 // ---------------------------------------------------------------------------
 
 describe('T-SCI-15: widget source files have no tsg-icon-{name} CSS class injection (R-SCI-12)', () => {
 
-    // --- src/tsgrid.ts ---
-    it('src/tsgrid.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tsgrid.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tsgrid.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
+    // Length-guard: must be the FIRST it() in Suite 1 (D-CCF-15).
+    // Fails loud if NON_WIDGET_SRC denylist drifts (new src/*.ts added without updating the set).
+    it('has 11 widget files (denylist sanity check)', () => {
+        expect(
+            widgetFiles.length,
+            'NON_WIDGET_SRC denylist drifted — update the set when adding non-widget src/*.ts files',
+        ).toBe(11)
     })
 
-    // --- src/grid-render.ts ---
-    it('src/grid-render.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'grid-render.ts'), 'utf8')
+    // Covers all 11 widget files derived from src/ minus NON_WIDGET_SRC.
+    // Same assertions as the former individual it() blocks — no regression in violation detection.
+    // tsg-icon-selected is a CSS state modifier (not in MIGRATED_ICON_NAMES) — correctly ignored.
+    it.each(widgetFiles)('src/%s has no tsg-icon-{name} class injection', (file) => {
+        const src = readFileSync(join(ROOT, 'src', file), 'utf8')
         const violations = findCssIconViolations(src)
-        expect(violations, `grid-render.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/grid-search.ts ---
-    it('src/grid-search.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'grid-search.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `grid-search.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tspopup.ts ---
-    it('src/tspopup.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tspopup.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tspopup.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tstooltip.ts ---
-    it('src/tstooltip.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tstooltip.ts'), 'utf8')
-        // tsg-icon-selected is an allowed CSS state modifier — not a migrated icon
-        // We use the standard findCssIconViolations which only checks the 18 icon names.
-        const violations = findCssIconViolations(src)
-        expect(violations, `tstooltip.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tsfield.ts ---
-    it('src/tsfield.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tsfield.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tsfield.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tsform.ts ---
-    it('src/tsform.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tsform.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tsform.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tstoolbar.ts (CONFIRMED zero violations per pre-flight 0.6 audit) ---
-    it('src/tstoolbar.ts has no tsg-icon-{name} class injection (confirmed zero in pre-flight)', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tstoolbar.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tstoolbar.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tstabs.ts (CONFIRMED zero violations per pre-flight 0.6 audit) ---
-    it('src/tstabs.ts has no tsg-icon-{name} class injection (confirmed zero in pre-flight)', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tstabs.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tstabs.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tssidebar.ts ---
-    // NOTE: tsg-icon-selected is a CSS STATE MODIFIER, NOT an icon-set class.
-    // It is applied to a container span to indicate selected state.
-    // The 18 migrated icon names do NOT include 'selected', so findCssIconViolations
-    // will correctly return empty for tssidebar.ts if only 'tsg-icon-selected' is present.
-    it('src/tssidebar.ts has no tsg-icon-{name} class injection (tsg-icon-selected is allowed state modifier)', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tssidebar.ts'), 'utf8')
-        // findCssIconViolations only checks the 18 icon names; 'selected' is not among them.
-        const violations = findCssIconViolations(src)
-        expect(violations, `tssidebar.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
-    })
-
-    // --- src/tsutils-notify.ts (added in v3.0.1 — closes v3.0.0 coverage hole) ---
-    it('src/tsutils-notify.ts has no tsg-icon-{name} class injection', () => {
-        const src = readFileSync(join(ROOT, 'src', 'tsutils-notify.ts'), 'utf8')
-        const violations = findCssIconViolations(src)
-        expect(violations, `tsutils-notify.ts still contains: ${violations.join(', ')}`).toHaveLength(0)
+        expect(violations, `${file} still contains: ${violations.join(', ')}`).toHaveLength(0)
     })
 })
 
