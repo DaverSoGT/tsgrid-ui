@@ -1,4 +1,4 @@
-/* tsgrid-ui 3.0.0 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
+/* tsgrid-ui 3.0.1 (c) 2014 vitmalina@gmail.com, (c) 2026 DaverSoGT — MIT */
 /* tsgrid-ui per-widget entry: field
  * Compiled standalone — produces dist/field.css.
  * NOTE: imports fields.less (PLURAL) — the widget source partial is named fields.less.
@@ -484,11 +484,6 @@ input[type=range]:focus::-ms-fill-upper {
   background-color: #7ae097;
   color: rgba(21, 192, 70, 0.8);
 }
-.w2field {
-  padding: 3px;
-  border-radius: 3px;
-  border: 1px solid silver;
-}
 .tsg-field-helper {
   position: absolute;
   display: inline-block;
@@ -519,17 +514,6 @@ input[type=range]:focus::-ms-fill-upper {
 }
 .tsg-field-helper .arrow-down:hover {
   border-top-color: #81C6FF;
-}
-.tsg-field-helper .tsg-icon-search {
-  position: absolute;
-  margin: 8px 0px 0px -2px;
-  display: none;
-  color: #777777;
-  width: 21px !important;
-  font-size: 13px;
-}
-.tsg-field-helper .tsg-icon-search.show-search {
-  display: block;
 }
 .tsg-field-helper.tsg-list {
   color: inherit;

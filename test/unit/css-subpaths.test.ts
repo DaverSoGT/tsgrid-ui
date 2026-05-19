@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { existsSync, statSync, promises as fsPromises } from 'fs'
+import { existsSync, promises as fsPromises } from 'fs'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 
@@ -55,15 +55,18 @@ describe('css-subpaths — dist artifacts (R-GCP-8/9/10)', () => {
         expect(existsSync(join(ROOT, 'dist', `${name}.css`))).toBe(true)
     })
 
-    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 5KB (compiled content sanity)', (name) => {
+    it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css is non-empty and > 5KB (compiled content sanity)', async (name) => {
         const cssPath = join(ROOT, 'dist', `${name}.css`)
         if (!existsSync(cssPath)) return
-        const size = statSync(cssPath).size
+        // W-2 closure: use readWithRetry to guard against Windows gulp.dest() FS race where
+        // statSync may return size=0 immediately after gulp writes the file. Retry absorbs
+        // the race window (same pattern as the readFileSync checks below).
+        const content = await readWithRetry(cssPath)
         // v3.0.0: Per-icon SVG data URI background-image rules removed from icons.less (R-SCI-13).
         // Per-widget CSS files no longer contain SVG data URI blobs; widget-specific rules remain.
         // popup.css and sidebar.css are ~10KB; threshold updated from 20KB to 5KB.
         // A file < 5KB would mean something went wrong with the compile.
-        expect(size).toBeGreaterThan(5 * 1024)
+        expect(content.length).toBeGreaterThan(5 * 1024)
     })
 
     it.skipIf(!distExists).each(CSS_SUBPATHS)('dist/%s.css has NO tsg-icon-{name} background-image rules (v3.0.0 — R-SCI-13)', async (name) => {

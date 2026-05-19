@@ -1,807 +1,33 @@
-"use strict";
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __export = (target, all) => {
-  for (var name in all)
-    __defProp(target, name, { get: all[name], enumerable: true });
-};
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-
-// src/tsutils.ts
-var tsutils_exports = {};
-__export(tsutils_exports, {
-  TsUi: () => TsUi,
-  TsUtils: () => TsUtils,
-  query: () => query7
-});
-module.exports = __toCommonJS(tsutils_exports);
-
-// src/tslocale.ts
-var TsLocale = {
-  "locale": "en-US",
-  "dateFormat": "m/d/yyyy",
-  "timeFormat": "hh:mi pm",
-  "datetimeFormat": "m/d/yyyy|hh:mi pm",
-  "currencyPrefix": "$",
-  "currencySuffix": "",
-  "currencyPrecision": 2,
-  "groupSymbol": ",",
-  // aka "thousands separator"
-  "decimalSymbol": ".",
-  "shortmonths": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
-  "fullmonths": ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"],
-  "shortdays": ["M", "T", "W", "T", "F", "S", "S"],
-  "fulldays": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
-  "weekStarts": "S",
-  // can be "M" for Monday or "S" for Sunday
-  // phrases used in TsUi, should be empty for original language
-  // keep these up-to-date and in sorted order
-  // value = "---" to easier see what to translate
-  "phrases": {
-    "${count} letters or more...": "---",
-    "Add new record": "---",
-    "Add New": "---",
-    "Advanced Search": "---",
-    "after": "---",
-    "AJAX error. See console for more details.": "---",
-    "All Fields": "---",
-    "All": "---",
-    "Any": "---",
-    "Are you sure you want to delete ${count} ${records}?": "---",
-    "Attach files by dragging and dropping or Click to Select": "---",
-    "before": "---",
-    "begins with": "---",
-    "begins": "---",
-    "between": "---",
-    "buffered": "---",
-    "Cancel": "---",
-    "Close": "---",
-    "Column": "---",
-    "Confirmation": "---",
-    "contains": "---",
-    "Copied": "---",
-    "Copy to clipboard": "---",
-    "Current Date & Time": "---",
-    "Delete selected records": "---",
-    "Delete": "---",
-    'Do you want to delete search item "${item}"?': "---",
-    "Edit selected record": "---",
-    "Edit": "---",
-    "Empty list": "---",
-    "ends with": "---",
-    "ends": "---",
-    "Field should be at least ${count} characters.": "---",
-    "Hide": "---",
-    "in": "---",
-    "is not": "---",
-    "is": "---",
-    "less than": "---",
-    "Line #": "---",
-    "Load ${count} more...": "---",
-    "Loading...": "---",
-    "Maximum number of files is ${count}": "---",
-    "Maximum total size is ${count}": "---",
-    "Modified": "---",
-    "more than": "---",
-    "Multiple Fields": "---",
-    "Name": "---",
-    "No items found": "---",
-    "No matches": "---",
-    "No": "---",
-    "none": "---",
-    "Not a float": "---",
-    "Not a hex number": "---",
-    "Not a valid date": "---",
-    "Not a valid email": "---",
-    "Not alpha-numeric": "---",
-    "Not an integer": "---",
-    "Not in money format": "---",
-    "not in": "---",
-    "Notification": "---",
-    "of": "---",
-    "Ok": "---",
-    "Opacity": "---",
-    "Record ID": "---",
-    "record": "---",
-    "records": "---",
-    "Refreshing...": "---",
-    "RegEx": "---",
-    "regex": "---",
-    "Reload data in the list": "---",
-    "Remove": "---",
-    "Remove This Field": "---",
-    "Request aborted.": "---",
-    "Required field": "---",
-    "Reset": "---",
-    "Restore Default State": "---",
-    "Returned data is not in valid JSON format.": "---",
-    "Save changed records": "---",
-    "Save Grid State": "---",
-    "Save": "---",
-    "Saved Searches": "---",
-    "Saving...": "---",
-    "Search took ${count} seconds": "---",
-    "Search": "---",
-    "Select Hour": "---",
-    "Select Minute": "---",
-    "selected": "---",
-    "Server Response ${count} seconds": "---",
-    "Show/hide columns": "---",
-    "Show": "---",
-    "Size": "---",
-    "Skip": "---",
-    "Sorting took ${count} seconds": "---",
-    "Type to search...": "---",
-    "Type": "---",
-    "Yes": "---",
-    "Yesterday": "---",
-    "Your remote data source record count has changed, reloading from the first record.": "---"
-  }
-};
-
-// src/query.ts
-var Query = class _Query {
-  static version = 0.8;
-  context;
-  nodes;
-  length;
-  constructor(selector, context) {
-    this.context = context ?? document;
-    let nodes = [];
-    if (Array.isArray(selector)) {
-      nodes = selector;
-    } else if (selector instanceof Node || selector instanceof Window) {
-      nodes = [selector];
-    } else if (selector instanceof _Query) {
-      nodes = selector.nodes;
-    } else if (typeof selector == "string") {
-      if (typeof this.context.querySelector != "function") {
-        throw new Error("Invalid context");
-      }
-      nodes = Array.from(this.context.querySelectorAll(selector));
-    } else if (selector == null) {
-      nodes = [];
-    } else {
-      const arr = Array.from(selector ?? []);
-      if (typeof selector == "object" && Array.isArray(arr)) {
-        nodes = arr;
-      } else {
-        throw new Error(`Invalid selector "${selector}"`);
-      }
-    }
-    this.nodes = nodes;
-    this.length = nodes.length;
-    this.each((node, ind) => {
-      this[ind] = node;
-    });
-  }
-  static _fragment(html) {
-    const tmpl = document.createElement("template");
-    tmpl.innerHTML = html;
-    tmpl.content.childNodes.forEach((node) => {
-      const newNode = _Query._scriptConvert(node);
-      if (newNode != node) {
-        tmpl.content.replaceChild(newNode, node);
-      }
-    });
-    return tmpl.content;
-  }
-  // innerHTML, append, etc. script tags will not be executed unless they are proper script tags
-  static _scriptConvert(node) {
-    const convert = (txtNode) => {
-      const doc = txtNode.ownerDocument;
-      const scNode = doc.createElement("script");
-      scNode.text = txtNode.text;
-      const attrs = txtNode.attributes;
-      for (let i = 0; i < attrs.length; i++) {
-        const attr = attrs[i];
-        if (attr) scNode.setAttribute(attr.name, attr.value);
-      }
-      return scNode;
-    };
-    if (node.tagName == "SCRIPT") {
-      node = convert(node);
-    }
-    if (node.querySelectorAll) {
-      node.querySelectorAll("script").forEach((textNode) => {
-        textNode.parentNode.replaceChild(convert(textNode), textNode);
-      });
-    }
-    return node;
-  }
-  static _fixProp(name) {
-    const fixes = {
-      cellpadding: "cellPadding",
-      cellspacing: "cellSpacing",
-      class: "className",
-      colspan: "colSpan",
-      contenteditable: "contentEditable",
-      for: "htmlFor",
-      frameborder: "frameBorder",
-      maxlength: "maxLength",
-      readonly: "readOnly",
-      rowspan: "rowSpan",
-      tabindex: "tabIndex",
-      usemap: "useMap"
-    };
-    return fixes[name] ? fixes[name] : name;
-  }
-  _insert(method, html) {
-    const nodes = [];
-    const len = this.length;
-    if (len < 1) return this;
-    if (typeof html == "string") {
-      this.each((node) => {
-        const clone2 = _Query._fragment(html);
-        nodes.push(...clone2.childNodes);
-        node[method]?.(clone2);
-      });
-    } else if (html instanceof _Query) {
-      const single = len == 1;
-      html.each((el) => {
-        this.each((node) => {
-          const clone2 = single ? el : el.cloneNode(true);
-          nodes.push(clone2);
-          node[method]?.(clone2);
-          _Query._scriptConvert(clone2);
-        });
-      });
-      if (!single) html.remove();
-    } else if (html instanceof Node) {
-      this.each((node) => {
-        const clone2 = len === 1 ? html : _Query._fragment(html.outerHTML);
-        nodes.push(...len === 1 ? [html] : clone2.childNodes);
-        node[method]?.(clone2);
-      });
-      if (len > 1) html.remove();
-    } else {
-      throw new Error(`Incorrect argument for "${method}(html)". It expects one string argument.`);
-    }
-    if (method == "replaceWith") {
-      return new _Query(nodes, this.context);
-    }
-    return this;
-  }
-  _save(node, name, value) {
-    node._mQuery = node._mQuery ?? {};
-    if (Array.isArray(value)) {
-      node._mQuery[name] = node._mQuery[name] ?? [];
-      node._mQuery[name].push(...value);
-    } else if (value != null) {
-      node._mQuery[name] = value;
-    } else {
-      delete node._mQuery[name];
-    }
-  }
-  get(index) {
-    if (index === void 0 || index === null) return this.nodes;
-    if (index < 0) index = this.length + index;
-    const node = this[index];
-    if (node) {
-      return node;
-    }
-    return null;
-  }
-  eq(index) {
-    if (index < 0) index = this.length + index;
-    const item = this[index];
-    const nodes = item != null ? [item] : [];
-    return new _Query(nodes, this.context);
-  }
-  then(fun) {
-    const ret = fun(this);
-    return ret != null ? ret : this;
-  }
-  find(selector) {
-    const nodes = [];
-    this.each((node) => {
-      const nn = Array.from(node.querySelectorAll(selector));
-      if (nn.length > 0) {
-        nodes.push(...nn);
-      }
-    });
-    return new _Query(nodes, this.context);
-  }
-  filter(selector) {
-    const nodes = [];
-    this.each((node) => {
-      if (node === selector || typeof selector == "string" && node.matches && node.matches(selector) || typeof selector == "function" && selector(node)) {
-        nodes.push(node);
-      }
-    });
-    return new _Query(nodes, this.context);
-  }
-  next() {
-    const nodes = [];
-    this.each((node) => {
-      const nn = node.nextElementSibling;
-      if (nn) {
-        nodes.push(nn);
-      }
-    });
-    return new _Query(nodes, this.context);
-  }
-  prev() {
-    const nodes = [];
-    this.each((node) => {
-      const nn = node.previousElementSibling;
-      if (nn) {
-        nodes.push(nn);
-      }
-    });
-    return new _Query(nodes, this.context);
-  }
-  shadow(selector) {
-    const nodes = [];
-    this.each((node) => {
-      if (node.shadowRoot) nodes.push(node.shadowRoot);
-    });
-    const col = new _Query(nodes, this.context);
-    return selector ? col.find(selector) : col;
-  }
-  closest(selector) {
-    const nodes = [];
-    this.each((node) => {
-      const nn = node.closest(selector);
-      if (nn) {
-        nodes.push(nn);
-      }
-    });
-    return new _Query(nodes, this.context);
-  }
-  host(all) {
-    const nodes = [];
-    const top = (node) => {
-      if (node.parentNode) {
-        return top(node.parentNode);
-      } else {
-        return node;
-      }
-    };
-    const fun = (node) => {
-      const nn = top(node);
-      nodes.push(nn.host ? nn.host : nn);
-      if (nn.host && all) fun(nn.host);
-    };
-    this.each((node) => {
-      fun(node);
-    });
-    return new _Query(nodes, this.context);
-  }
-  parent(selector) {
-    return this.parents(selector, true);
-  }
-  parents(selector, firstOnly) {
-    const nodes = [];
-    const add = (node) => {
-      if (nodes.indexOf(node) == -1) {
-        nodes.push(node);
-      }
-      if (!firstOnly && node.parentNode) {
-        return add(node.parentNode);
-      }
-    };
-    this.each((node) => {
-      if (node.parentNode) add(node.parentNode);
-    });
-    const col = new _Query(nodes, this.context);
-    return selector ? col.filter(selector) : col;
-  }
-  add(more) {
-    const nodes = more instanceof _Query ? more.nodes : Array.isArray(more) ? more : [more];
-    return new _Query(this.nodes.concat(nodes), this.context);
-  }
-  each(func) {
-    this.nodes.forEach((node, ind) => {
-      func(node, ind, this);
-    });
-    return this;
-  }
-  append(html) {
-    return this._insert("append", html);
-  }
-  prepend(html) {
-    return this._insert("prepend", html);
-  }
-  after(html) {
-    return this._insert("after", html);
-  }
-  before(html) {
-    return this._insert("before", html);
-  }
-  replace(html) {
-    return this._insert("replaceWith", html);
-  }
-  remove() {
-    this.each((node) => {
-      node.remove();
-    });
-    return this;
-  }
-  css(key, value) {
-    let css = typeof key === "object" ? key : {};
-    const len = arguments.length;
-    if (len === 0 || len === 1 && typeof key == "string") {
-      if (this[0]) {
-        const st = this[0].style;
-        if (typeof key == "string") {
-          const pri = st.getPropertyPriority(key);
-          return st.getPropertyValue(key) + (pri ? "!" + pri : "");
-        } else {
-          return Object.fromEntries(
-            this[0].style.cssText.split(";").filter((a) => !!a).map((a) => {
-              return a.split(":").map((a2) => a2.trim());
-            })
-          );
-        }
-      } else {
-        return void 0;
-      }
-    } else {
-      if (typeof key != "object") {
-        css = {};
-        css[key] = value;
-      }
-      this.each((el) => {
-        Object.keys(css).forEach((key2) => {
-          const imp = String(css[key2]).toLowerCase().includes("!important") ? "important" : "";
-          el.style.setProperty(key2, String(css[key2]).replace(/\!important/i, ""), imp);
-        });
-      });
-      return this;
-    }
-  }
-  addClass(classes) {
-    this.toggleClass(classes, true);
-    return this;
-  }
-  removeClass(classes) {
-    this.toggleClass(classes, false);
-    return this;
-  }
-  toggleClass(classes, force) {
-    if (typeof classes == "string") classes = classes.split(/[,\s]+/);
-    this.each((node) => {
-      let classes2 = classes;
-      if (classes2 == null && force === false) classes2 = Array.from(node.classList);
-      if (classes2) {
-        classes2.forEach((className) => {
-          if (className !== "") {
-            let act = "toggle";
-            if (force != null) act = force ? "add" : "remove";
-            node.classList[act](className);
-          }
-        });
-      }
-    });
-    return this;
-  }
-  hasClass(classes) {
-    if (typeof classes == "string") classes = classes.split(/[,\s]+/);
-    if (classes == null && this.length > 0) {
-      return Array.from(this[0].classList);
-    }
-    let ret = false;
-    this.each((node) => {
-      ret = ret || classes.every((className) => {
-        return Array.from(node.classList ?? []).includes(className);
-      });
-    });
-    return ret;
-  }
-  on(events, optionsOrCallback, callback) {
-    let options = void 0;
-    if (typeof optionsOrCallback == "function") {
-      callback = optionsOrCallback;
-      options = void 0;
-    } else {
-      options = optionsOrCallback;
-    }
-    let delegate;
-    if (options?.delegate) {
-      delegate = options.delegate;
-      delete options.delegate;
-    }
-    const eventsStr = events.split(/[,\s]+/);
-    eventsStr.forEach((eventName) => {
-      const parts = String(eventName).toLowerCase().split(".");
-      const event = parts[0] ?? "";
-      const scope = parts[1];
-      let cb = callback;
-      if (delegate) {
-        const fun = cb;
-        cb = (evt) => {
-          const parent = query(evt.target).parents(delegate);
-          if (parent.length > 0) {
-            evt["delegate"] = parent[0];
-          } else {
-            evt["delegate"] = evt.target;
-          }
-          if (evt.target.matches(delegate) || parent.length > 0) {
-            fun(evt);
-          }
-        };
-      }
-      this.each((node) => {
-        this._save(node, "events", [{ event, scope, callback: cb, options }]);
-        node.addEventListener(event, cb, options);
-      });
-    });
-    return this;
-  }
-  off(events, options, callback) {
-    if (typeof options == "function") {
-      callback = options;
-      options = void 0;
-    }
-    const eventsStr = (events ?? "").split(/[,\s]+/);
-    eventsStr.forEach((eventName) => {
-      const offParts = String(eventName).toLowerCase().split(".");
-      const event = offParts[0] ?? "";
-      const scope = offParts[1];
-      this.each((node) => {
-        if (Array.isArray(node._mQuery?.events)) {
-          for (let i = node._mQuery.events.length - 1; i >= 0; i--) {
-            const evt = node._mQuery.events[i];
-            if (!evt) continue;
-            if (scope == null || scope === "") {
-              if ((evt.event == event || event === "") && (evt.callback == callback || callback == null)) {
-                node.removeEventListener(evt.event, evt.callback, evt.options);
-                node._mQuery.events.splice(i, 1);
-              }
-            } else {
-              if ((evt.event == event || event === "") && evt.scope == scope) {
-                node.removeEventListener(evt.event, evt.callback, evt.options);
-                node._mQuery.events.splice(i, 1);
-              }
-            }
-          }
-        }
-      });
-    });
-    return this;
-  }
-  trigger(name, options) {
-    let event;
-    const mevent = ["click", "dblclick", "mousedown", "mouseup", "mousemove"];
-    const kevent = ["keydown", "keyup", "keypress"];
-    if (name instanceof Event) {
-      event = name;
-    } else if (mevent.includes(name)) {
-      event = new MouseEvent(name, options);
-    } else if (kevent.includes(name)) {
-      event = new KeyboardEvent(name, options);
-    } else {
-      event = new Event(name, options);
-    }
-    this.each((node) => {
-      node.dispatchEvent(event);
-    });
-    return this;
-  }
-  attr(name, value) {
-    if (value === void 0 && typeof name == "string") {
-      return this[0] ? this[0].getAttribute(name) ?? void 0 : void 0;
-    } else {
-      let obj = {};
-      if (typeof name == "object") obj = name;
-      else obj[name] = value;
-      this.each((node) => {
-        Object.entries(obj).forEach(([nm, val]) => {
-          node.setAttribute(nm, val);
-        });
-      });
-      return this;
-    }
-  }
-  removeAttr(...attrs) {
-    this.each((node) => {
-      attrs.forEach((attr) => {
-        node.removeAttribute(attr);
-      });
-    });
-    return this;
-  }
-  prop(name, value) {
-    if (value === void 0 && typeof name == "string") {
-      return this[0] ? this[0][name] : void 0;
-    } else {
-      let obj = {};
-      if (typeof name == "object") obj = name;
-      else obj[name] = value;
-      this.each((node) => {
-        Object.entries(obj).forEach(([nm, val]) => {
-          const prop = _Query._fixProp(nm);
-          node[prop] = val;
-          if (prop == "innerHTML") {
-            _Query._scriptConvert(node);
-          }
-        });
-      });
-      return this;
-    }
-  }
-  removeProp(...props) {
-    this.each((node) => {
-      props.forEach((prop) => {
-        delete node[_Query._fixProp(prop)];
-      });
-    });
-    return this;
-  }
-  data(key, value) {
-    if (key instanceof Object && !(typeof key === "string")) {
-      Object.entries(key).forEach((item) => {
-        this.data(item[0], item[1]);
-      });
-      return;
-    }
-    if (key && typeof key === "string" && key.indexOf("-") != -1) {
-      console.error(`Key "${key}" contains "-" (dash). Dashes are not allowed in property names. Use camelCase instead.`);
-    }
-    if (arguments.length < 2) {
-      if (this[0]) {
-        const data = Object.assign({}, this[0].dataset);
-        Object.keys(data).forEach((k) => {
-          const v = data[k];
-          if (v.startsWith("[") || v.startsWith("{")) {
-            try {
-              data[k] = JSON.parse(v);
-            } catch (e) {
-            }
-          }
-        });
-        return key ? data[key] : data;
-      } else {
-        return void 0;
-      }
-    } else {
-      this.each((node) => {
-        if (value != null) {
-          node.dataset[key] = value instanceof Object ? JSON.stringify(value) : value;
-        } else {
-          delete node.dataset[key];
-        }
-      });
-      return this;
-    }
-  }
-  removeData(key) {
-    if (typeof key == "string") key = key.split(/[,\s]+/);
-    this.each((node) => {
-      key.forEach((k) => {
-        delete node.dataset[k];
-      });
-    });
-    return this;
-  }
-  show() {
-    return this.toggle(true);
-  }
-  hide() {
-    return this.toggle(false);
-  }
-  toggle(force) {
-    return this.each((node) => {
-      const prev = node.style.display;
-      const dsp = getComputedStyle(node).display;
-      const isHidden = prev == "none" || dsp == "none";
-      if (isHidden && (force == null || force === true)) {
-        const def = node instanceof HTMLTableRowElement ? "table-row" : node instanceof HTMLTableCellElement ? "table-cell" : "block";
-        node.style.display = node._mQuery?.prevDisplay ?? (prev == dsp && dsp != "none" ? "" : def);
-        this._save(node, "prevDisplay", null);
-      }
-      if (!isHidden && (force == null || force === false)) {
-        if (dsp != "none") this._save(node, "prevDisplay", dsp);
-        node.style.setProperty("display", "none");
-      }
-    });
-  }
-  empty() {
-    return this.html("");
-  }
-  html(html) {
-    if (html instanceof HTMLElement) {
-      return this.empty().append(html);
-    } else {
-      return this.prop("innerHTML", html);
-    }
-  }
-  text(text) {
-    return this.prop("textContent", text);
-  }
-  val(value) {
-    return this.prop("value", value);
-  }
-  change() {
-    return this.trigger("change");
-  }
-  click() {
-    return this.trigger("click");
-  }
-};
-var query = function(selector, context) {
-  if (typeof selector == "function") {
-    const fn = selector;
-    if (document.readyState == "complete") {
-      fn();
-    } else {
-      window.addEventListener("load", fn);
-    }
-  } else {
-    return new Query(selector, context);
-  }
-};
-query.html = (str) => {
-  const frag = Query._fragment(str);
-  return query(frag.children, frag);
-};
-query.version = Query.version;
-
-// src/tsutils-type-guards.ts
-function isBin(val) {
-  const re = /^[0-1]+$/;
-  return re.test(String(val));
-}
-function isInt(val) {
-  const re = /^[-+]?[0-9]+$/;
-  return re.test(String(val));
-}
-function isFloat(val, settings) {
-  if (typeof val === "string") {
-    val = val.replace(new RegExp(settings.groupSymbol, "g"), "").replace(settings.decimalSymbol, ".");
-  }
-  return (typeof val === "number" || typeof val === "string" && val !== "") && !isNaN(Number(val));
-}
-function isMoney(val, settings) {
-  if (typeof val === "object" || val === "") return false;
-  if (isFloat(val, settings)) return true;
-  const se = settings;
-  const re = new RegExp("^" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[-+]?" + (se.currencyPrefix ? "\\" + se.currencyPrefix + "?" : "") + "[0-9]*[\\" + se.decimalSymbol + "]?[0-9]+" + (se.currencySuffix ? "\\" + se.currencySuffix + "?" : "") + "$", "i");
-  if (typeof val === "string") {
-    val = val.replace(new RegExp(se.groupSymbol, "g"), "");
-  }
-  return re.test(String(val));
-}
-function isHex(val) {
-  const re = /^(0x)?[0-9a-fA-F]+$/;
-  return re.test(String(val));
-}
-function isAlphaNumeric(val) {
-  const re = /^[a-zA-Z0-9_-]+$/;
-  return re.test(String(val));
-}
-function isEmail(val) {
-  const email = /^[a-zA-Z0-9._%\-+]+@[а-яА-Яa-zA-Z0-9.-]+\.[а-яА-Яa-zA-Z]+$/;
-  return email.test(String(val));
-}
-function isIpAddress(val) {
-  const re = new RegExp("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?).){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$");
-  return re.test(String(val));
-}
-function isPlainObject(value) {
-  if (value == null) {
-    return false;
-  }
-  if (Object.prototype.toString.call(value) !== "[object Object]") {
-    return false;
-  }
-  if (value.constructor === void 0) {
-    return true;
-  }
-  const proto = Object.getPrototypeOf(value);
-  return proto === null || proto === Object.prototype;
-}
+import {
+  crossIcon
+} from "./chunk-OITJCF5M.js";
+import {
+  TsLocale
+} from "./chunk-IYF3Q7GX.js";
+import {
+  TsBase,
+  checkName,
+  clone,
+  debounce,
+  encodeParams,
+  extend,
+  getNested,
+  isAlphaNumeric,
+  isBin,
+  isEmail,
+  isFloat,
+  isHex,
+  isInt,
+  isIpAddress,
+  isMoney,
+  isPlainObject,
+  naturalCompare,
+  normMenu,
+  parseRoute,
+  prepareParams,
+  query,
+  wait
+} from "./chunk-W7JZO7EX.js";
 
 // src/tsutils-color.ts
 function parseColor(str) {
@@ -948,261 +174,6 @@ function rgb2hsv(r, g, b, a) {
     v: Math.round(v * 100),
     a: a != null ? a : 1
   };
-}
-
-// src/tsutils-data.ts
-function clone(obj, options) {
-  const opts = Object.assign(
-    { functions: true, elements: true, events: true, exclude: [], parent: "" },
-    options ?? {}
-  );
-  if (Array.isArray(obj)) {
-    const arr = Array.from(obj);
-    arr.forEach((value, ind) => {
-      arr[ind] = clone(value, { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + "[]" });
-    });
-    return arr;
-  } else if (isPlainObject(obj)) {
-    const ret = {};
-    Object.assign(ret, obj);
-    if (Array.isArray(opts.exclude)) {
-      opts.exclude.forEach((key) => {
-        delete ret[key];
-      });
-    }
-    Object.keys(ret).forEach((key) => {
-      if (typeof opts.exclude == "function" && opts.exclude(key, { obj, parent: opts.parent })) {
-        ret[key] = void 0;
-      } else {
-        ret[key] = clone(ret[key], { functions: opts.functions, elements: opts.elements, events: opts.events, exclude: opts.exclude, parent: opts.parent + (opts.parent ? "." : "") + key });
-      }
-      if (ret[key] === void 0) delete ret[key];
-    });
-    return ret;
-  } else {
-    if (obj instanceof Function && !opts.functions || obj instanceof Node && !opts.elements || obj instanceof Event && !opts.events) {
-      return void 0;
-    } else {
-      return obj;
-    }
-  }
-}
-function extend(target, source, ...rest) {
-  if (Array.isArray(target)) {
-    if (Array.isArray(source)) {
-      target.splice(0, target.length);
-      source.forEach((s) => {
-        target.push(clone(s));
-      });
-    } else {
-      throw new Error("Arrays can be extended with arrays only");
-    }
-  } else if (target instanceof Node || target instanceof Event) {
-    throw new Error("HTML elmenents and events cannot be extended");
-  } else if (target && typeof target == "object" && source != null) {
-    if (typeof source != "object") {
-      throw new Error("Object can be extended with other objects only.");
-    }
-    Object.keys(source).forEach((key) => {
-      if (target[key] != null && typeof target[key] == "object" && source[key] != null && typeof source[key] == "object") {
-        const src = clone(source[key]);
-        if (target[key] instanceof Node || target[key] instanceof Event) {
-          target[key] = src;
-        } else {
-          if (Array.isArray(target[key]) && isPlainObject(src)) {
-            target[key] = {};
-          }
-          extend(target[key], src);
-        }
-      } else {
-        target[key] = clone(source[key]);
-      }
-    });
-  } else if (source != null) {
-    throw new Error("Object is not extendable, only {} or [] can be extended.");
-  }
-  if (rest.length > 0) {
-    for (let i = 0; i < rest.length; i++) {
-      extend(target, rest[i]);
-    }
-  }
-  return target;
-}
-function naturalCompare(a, b) {
-  let i = 0, codeA = 0, codeB = 1, posA = 0, posB = 0;
-  const alphabet = String["alphabet"];
-  function getCode(str, pos, code) {
-    if (code) {
-      for (i = pos; code = getCode(str, i), code < 76 && code > 65; ) ++i;
-      return +str.slice(pos - 1, i);
-    }
-    let c = alphabet ? alphabet.indexOf(str.charAt(pos)) : -1;
-    return c > -1 ? c + 76 : (c = str.charCodeAt(pos) || 0, c < 45 || c > 127) ? c : c < 46 ? 65 : c < 48 ? c - 1 : c < 58 ? c + 18 : c < 65 ? c - 11 : c < 91 ? c + 11 : c < 97 ? c - 37 : c < 123 ? c + 5 : c - 63;
-  }
-  const aStr = "" + a, bStr = "" + b;
-  if (aStr != bStr) for (; codeB; ) {
-    codeA = getCode(aStr, posA++);
-    codeB = getCode(bStr, posB++);
-    if (codeA < 76 && codeB < 76 && codeA > 66 && codeB > 66) {
-      codeA = getCode(aStr, posA, posA);
-      codeB = getCode(bStr, posB, posA = i);
-      posB = i;
-    }
-    if (codeA != codeB) return codeA < codeB ? -1 : 1;
-  }
-  return 0;
-}
-function getNested(obj, prop) {
-  let val;
-  try {
-    val = obj;
-    const tmp = String(prop).split(".");
-    for (let i = 0; i < tmp.length; i++) {
-      val = val[tmp[i] ?? ""];
-    }
-  } catch (event) {
-    val = void 0;
-  }
-  return val;
-}
-function normMenu(menu, options = {}) {
-  if (Array.isArray(menu)) {
-    menu.forEach((it, m) => {
-      if (typeof it === "string" || typeof it === "number") {
-        menu[m] = { id: it, text: String(it) };
-      } else if (it != null) {
-        if (options.itemMap != null) {
-          let val = getNested(it, options.itemMap.id);
-          if (options.itemMap.id != null && val != null) {
-            it.id = val;
-          }
-          val = getNested(it, options.itemMap.text);
-          if (options.itemMap.text != null && val) {
-            it.text = val;
-          }
-        }
-        if (it.caption != null && it.text == null) it.text = it.caption;
-        if (it.text != null && it.id == null) it.id = it.text;
-        if (it.text == null && it.id != null) it.text = it.id;
-      } else {
-        menu[m] = { id: null, text: "null" };
-      }
-    });
-    return menu;
-  } else if (typeof menu === "function") {
-    const newMenu = menu(menu, options);
-    return normMenu(newMenu, options);
-  } else if (typeof menu === "object" && menu !== null) {
-    const menuObj = menu;
-    return Object.keys(menuObj).map((key) => {
-      return { id: key, text: String(menuObj[key] ?? "") };
-    });
-  }
-}
-function encodeParams(obj, prefix = "") {
-  let str = "";
-  Object.keys(obj).forEach((key) => {
-    if (str != "") str += "&";
-    if (typeof obj[key] == "object") {
-      str += encodeParams(obj[key], prefix + key + (prefix ? "]" : "") + "[");
-    } else {
-      str += `${prefix}${key}${prefix ? "]" : ""}=${obj[key]}`;
-    }
-  });
-  return str;
-}
-function prepareParams(url, fetchOptions, options, defaultDataType) {
-  const dataType = options?.["dataType"] ?? defaultDataType;
-  let postParams = fetchOptions["body"];
-  fetchOptions["method"] = String(fetchOptions["method"]).toUpperCase();
-  switch (dataType) {
-    /**
-     * Will submit GET, POST, PUT, DELETE
-     * - if GET - it will be in URL
-     * - if POST, PUT, DELETE it will be JSON encoded
-     */
-    case "RESTFULL":
-    case "RESTFULJSON": {
-      if (["POST", "PUT", "DELETE"].includes(String(fetchOptions["method"]))) {
-        ;
-        fetchOptions["headers"]["Content-Type"] = "application/json";
-      }
-      if (String(fetchOptions["method"]) == "GET") {
-        if (dataType == "RESTFULLJSON") {
-          postParams = { request: postParams };
-        }
-        body2params();
-      }
-      break;
-    }
-    /**
-     * Will submit either GET or POST and
-     * - if POST it will be JSON encoded
-     * - if GET it will be in URL
-     * - if HTTPJSON and GET then it will be JSON encoded
-     */
-    case "HTTP":
-    case "HTTPJSON":
-    case "JSON": {
-      if (String(fetchOptions["method"]) == "GET") {
-        if (dataType == "JSON" || dataType === "HTTPJSON") {
-          postParams = { request: postParams };
-        }
-        body2params();
-      } else {
-        ;
-        fetchOptions["headers"]["Content-Type"] = "application/json";
-        fetchOptions["method"] = "POST";
-      }
-      break;
-    }
-    default: {
-      if (typeof dataType == "function") {
-        fetchOptions = dataType(url, fetchOptions, options);
-      } else {
-        console.log(`ERROR: Unsupported dataType "${dataType}". Supported types are JSON (default), HTTP, RESTFULL. For backward compatibility HTTPJSON is same as JSON. RESTULFLJSON will encode GET request as JSON.`);
-      }
-    }
-  }
-  if (fetchOptions["body"] != null) {
-    fetchOptions["body"] = typeof fetchOptions["body"] == "string" ? fetchOptions["body"] : JSON.stringify(fetchOptions["body"]);
-  }
-  return fetchOptions;
-  function body2params() {
-    const pp = postParams;
-    Object.keys(pp).forEach((key) => {
-      let param = pp[key];
-      if (typeof param == "object") param = JSON.stringify(param);
-      url.searchParams.append(key, String(param ?? ""));
-    });
-    delete fetchOptions["body"];
-  }
-}
-function parseRoute(route) {
-  const keys = [];
-  const path = route.replace(/\/\(/g, "(?:/").replace(/\+/g, "__plus__").replace(/(\/)?(\.)?:(\w+)(?:(\(.*?\)))?(\?)?/g, (_, slash, format, key, capture, optional) => {
-    keys.push({ name: key, optional: !!optional });
-    slash = slash || "";
-    return "" + (optional ? "" : slash) + "(?:" + (optional ? slash : "") + (format || "") + (capture || (format && "([^/.]+?)" || "([^/]+?)")) + ")" + (optional || "");
-  }).replace(/([\/.])/g, "\\$1").replace(/__plus__/g, "(.+)").replace(/\*/g, "(.*)");
-  return {
-    path: new RegExp("^" + path + "$", "i"),
-    keys
-  };
-}
-function debounce(func, wait2 = 250) {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      func(...args);
-    }, wait2);
-  };
-}
-async function wait(time = 0) {
-  return new Promise((resolve) => {
-    setTimeout(() => resolve(), time);
-  });
 }
 
 // src/tsutils-string.ts
@@ -1492,47 +463,6 @@ function marker(el, items, options = { onlyFirst: false, wholeWord: false, isReg
   return el;
 }
 
-// src/tsutils-registry.ts
-var TsUi = {};
-function checkName(name) {
-  if (name == null) {
-    console.log('ERROR: Property "name" is required but not supplied.');
-    return false;
-  }
-  if (TsUi[name] != null) {
-    console.log(`ERROR: Object named "${name}" is already registered as TsUi.${name}.`);
-    return false;
-  }
-  if (!isAlphaNumeric(name)) {
-    console.log('ERROR: Property "name" has to be alpha-numeric (a-z, 0-9, dash and underscore).');
-    return false;
-  }
-  return true;
-}
-
-// src/icons.ts
-function _escapeAttr(value) {
-  return value.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-function _renderSvg(viewBox, paths, opts) {
-  const fill = opts?.color ? _escapeAttr(opts.color) : "currentColor";
-  let attrs = `xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" fill="${fill}"`;
-  if (opts?.label && opts.label.length > 0) {
-    attrs += ` role="img" aria-label="${_escapeAttr(opts.label)}"`;
-  } else {
-    attrs += ' aria-hidden="true"';
-  }
-  if (opts?.class) {
-    attrs += ` class="${_escapeAttr(opts.class)}"`;
-  }
-  if (opts?.size !== void 0) {
-    attrs += ` width="${opts.size}" height="${opts.size}"`;
-  }
-  return `<svg ${attrs}>${paths}</svg>`;
-}
-var CROSS_PATHS = '<path d="M567.006313,46.872 C572.393313,52.259 575.086312,58.725 575.086312,66.266 C575.086312,73.809 572.393313,80.273 567.006313,85.66 L355.725,281.714 L558.926313,473.71775 C564.313313,479.10675 567.006313,485.57175 567.006313,493.11375 C567.006313,500.65575 564.313313,507.12175 558.926313,512.50875 L520.135312,551.29875 C514.748313,556.68675 508.283313,559.38075 500.740312,559.38075 C493.197313,559.38075 486.732312,556.68675 481.345312,551.29875 L283.144,360.294 L85.66,551.29875 C80.273,556.68575 73.809,559.38075 66.265,559.38075 C58.724,559.38075 52.259,556.68575 46.871,551.29875 L8.081,512.50975 C2.694,507.12075 -0.00200027819,500.65575 -0.00200027819,493.11375 C-0.00200027819,485.57075 2.693,479.10575 8.081,473.71775 L210.564,282.714 L8.079,87.661 C2.691,82.274 -0.00200027819,75.809 -0.00200027819,68.267 C-0.00200027819,60.725 2.692,54.26 8.079,48.872 L46.869,10.082 C52.257,4.695 58.722,1.99999917 66.265,1.99999917 C73.806,1.99999917 80.271,4.693 85.659,10.081 L283.144,210.134 L489.425313,8.08 C494.812313,2.693 501.277313,0 508.820313,0 C516.363313,0 522.828313,2.694 528.215313,8.082 L567.006313,46.872 Z"/>';
-var crossIcon = (opts) => _renderSvg("-80 -80 700 700", CROSS_PATHS, opts);
-
 // src/tsutils-notify.ts
 var query3 = query;
 function notify(text, options, deps) {
@@ -1594,319 +524,8 @@ function notify(text, options, deps) {
   });
 }
 
-// src/tsbase.ts
-var query4 = query;
-var TsEvent = class {
-  type;
-  // assigned via Object.assign in constructor
-  detail;
-  // assigned via Object.assign in constructor
-  owner;
-  // assigned via Object.assign in constructor
-  target;
-  phase;
-  // assigned via Object.assign in constructor
-  object;
-  execute;
-  // assigned via Object.assign in constructor
-  isStopped;
-  // assigned via Object.assign in constructor
-  isCancelled;
-  // assigned via Object.assign in constructor
-  onComplete;
-  // assigned via Object.assign in constructor
-  listeners;
-  // assigned via Object.assign in constructor
-  complete;
-  _resolve;
-  _reject;
-  constructor(owner, edata) {
-    Object.assign(this, {
-      type: edata.type ?? null,
-      detail: edata,
-      owner,
-      target: edata.target ?? null,
-      phase: edata.phase ?? "before",
-      object: edata.object ?? null,
-      execute: null,
-      isStopped: false,
-      isCancelled: false,
-      onComplete: null,
-      listeners: []
-    });
-    delete edata.type;
-    delete edata.target;
-    delete edata.object;
-    this.complete = new Promise((resolve, reject) => {
-      this._resolve = resolve;
-      this._reject = reject;
-    });
-    this.complete.catch(() => {
-    });
-  }
-  finish(detail) {
-    if (detail) {
-      extend(this.detail, detail);
-    }
-    this.phase = "after";
-    this.owner.trigger.call(this.owner, this);
-  }
-  done(func) {
-    this.listeners.push(func);
-  }
-  preventDefault() {
-    this._reject();
-    this.isCancelled = true;
-  }
-  stopPropagation() {
-    this.isStopped = true;
-  }
-};
-var TsBase = class {
-  activeEvents = [];
-  listeners = [];
-  debug = false;
-  name;
-  box;
-  /**
-   * Initializes base object for TsUi, registers it with TsUi object
-   *
-   * @param {string} name  - name of the object
-   * @returns
-   */
-  constructor(name) {
-    this.activeEvents = [];
-    this.listeners = [];
-    if (typeof name !== "undefined") {
-      if (!checkName(name)) return;
-      TsUi[name] = this;
-    }
-    this.debug = false;
-  }
-  /**
-   * Adds event listener, supports event phase and event scoping
-   *
-   * @param {*} edata - an object or string, if string "eventName:phase.scope"
-   * @param {*} handler
-   * @returns itself
-   */
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  on(events, handler) {
-    if (typeof events == "string") {
-      events = events.split(/[,\s]+/);
-    } else {
-      events = [events];
-    }
-    events.forEach((edata) => {
-      const name = typeof edata == "string" ? edata : edata.type + ":" + edata.execute + "." + edata.scope;
-      if (typeof edata == "string") {
-        const [eventName, scope] = edata.split(".");
-        const [type, execute] = (eventName ?? "").replace(":complete", ":after").replace(":done", ":after").split(":");
-        edata = { type, execute: execute ?? "before", scope };
-      }
-      edata = extend({ type: null, execute: "before", onComplete: null }, edata);
-      if (!edata.type) {
-        console.log("ERROR: You must specify event type when calling .on() method of " + this.name);
-        return;
-      }
-      if (!handler) {
-        console.log("ERROR: You must specify event handler function when calling .on() method of " + this.name);
-        return;
-      }
-      if (!Array.isArray(this.listeners)) this.listeners = [];
-      this.listeners.push({ name, edata, handler });
-      if (this.debug) {
-        console.log("TsBase: add event", { name, edata, handler });
-      }
-    });
-    return this;
-  }
-  /**
-   * Removes event listener, supports event phase and event scoping
-   *
-   * @param {*} edata - an object or string, if string "eventName:phase.scope"
-   * @param {*} handler
-   * @returns itself
-   */
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  off(events, handler) {
-    if (typeof events == "string") {
-      events = events.split(/[,\s]+/);
-    } else {
-      events = [events];
-    }
-    events.forEach((edata) => {
-      const name = typeof edata == "string" ? edata : edata.type + ":" + edata.execute + "." + edata.scope;
-      if (typeof edata == "string") {
-        const [eventName, scope] = edata.split(".");
-        const [type, execute] = (eventName ?? "").replace(":complete", ":after").replace(":done", ":after").split(":");
-        edata = { type: type || "*", execute: execute || "", scope: scope || "" };
-      }
-      edata = extend({ type: null, execute: null, onComplete: null }, edata);
-      if (!edata.type && !edata.scope) {
-        console.log("ERROR: You must specify event type when calling .off() method of " + this.name);
-        return;
-      }
-      if (!handler) {
-        handler = void 0;
-      }
-      let count = 0;
-      this.listeners = this.listeners.filter((curr) => {
-        if ((edata.type === "*" || edata.type === curr.edata.type) && (edata.execute === "" || edata.execute === curr.edata.execute) && (edata.scope === "" || edata.scope === curr.edata.scope) && (edata.handler == null || edata.handler === curr.edata.handler)) {
-          count++;
-          return false;
-        } else {
-          return true;
-        }
-      });
-      if (this.debug) {
-        console.log(`TsBase: remove event (${count})`, { name, edata, handler });
-      }
-    });
-    return this;
-  }
-  /**
-   * Triggers even listeners for a specific event, loops through this.listeners
-   *
-   * @param {Object} edata - Object
-   * @returns modified edata
-   *
-   * NOTE: `edata` is typed as `any` here intentionally. The method mutates the argument
-   * from TsEventData into a TsEvent mid-execution. Runtime type mutation is inherent
-   * to the event dispatch pattern. Phase 6 strict tighten will revisit this.
-   */
-  // any: targeted-any per typing_policy; TsBase event payload is widget-defined at runtime
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  trigger(eventName, edataIn) {
-    let edata;
-    if (arguments.length == 1) {
-      if (typeof eventName == "string") {
-        edata = { type: eventName, target: this };
-      } else {
-        edata = eventName;
-      }
-    } else {
-      edata = edataIn;
-      edata.type = eventName;
-      edata.target = edata.target ?? this;
-    }
-    if (isPlainObject(edata) && edata.phase == "after") {
-      edata = this.activeEvents.find((event) => {
-        if (event.type == edata.type && event.target == edata.target) {
-          return true;
-        }
-        return false;
-      });
-      if (!edata) {
-        console.log(`ERROR: Cannot find even handler for "${edata?.type}" on "${edata?.target}".`);
-        return edata;
-      }
-      console.log(`NOTICE: This syntax "edata.trigger({ phase: 'after' })" is outdated. Use edata.finish() instead.`);
-    } else if (!(edata instanceof TsEvent)) {
-      edata = new TsEvent(this, edata);
-      this.activeEvents.push(edata);
-    }
-    let args, fun, tmp;
-    if (!Array.isArray(this.listeners)) this.listeners = [];
-    if (this.debug) {
-      console.log(`TsBase: trigger "${edata.type}:${edata.phase}"`, edata);
-    }
-    for (let h = this.listeners.length - 1; h >= 0; h--) {
-      const item = this.listeners[h];
-      if (item != null && (item.edata.type === edata.type || item.edata.type === "*") && (item.edata["target"] === edata.target || item.edata["target"] == null) && (item.edata.execute === edata.phase || item.edata.execute === "*" || item.edata["phase"] === "*")) {
-        Object.keys(item.edata).forEach((key) => {
-          if (edata[key] == null && item.edata[key] != null) {
-            edata[key] = item.edata[key];
-          }
-        });
-        args = [];
-        tmp = new RegExp(/\((.*?)\)/).exec(String(item.handler).split("=>")[0] ?? "");
-        if (tmp) args = (tmp[1] ?? "").split(/\s*,\s*/);
-        if (args.length === 2) {
-          item.handler.call(this, edata.target, edata);
-          if (this.debug) console.log(" - call (old)", item.handler);
-        } else {
-          item.handler.call(this, edata);
-          if (this.debug) console.log(" - call", item.handler);
-        }
-        if (edata.isStopped === true || edata.stop === true) return edata;
-      }
-    }
-    const funName = "on" + edata.type.substr(0, 1).toUpperCase() + edata.type.substr(1);
-    if (edata.phase === "before" && typeof this[funName] === "function") {
-      fun = this[funName];
-      args = [];
-      tmp = new RegExp(/\((.*?)\)/).exec(String(fun).split("=>")[0] ?? "");
-      if (tmp) args = (tmp[1] ?? "").split(/\s*,\s*/);
-      if (args.length === 2) {
-        fun.call(this, edata.target, edata);
-        if (this.debug) console.log(" - call: on[Event] (old)", fun);
-      } else {
-        fun.call(this, edata);
-        if (this.debug) console.log(" - call: on[Event]", fun);
-      }
-      if (edata.isStopped === true || edata.stop === true) return edata;
-    }
-    if (edata.object != null && edata.phase === "before" && typeof edata.object[funName] === "function") {
-      fun = edata.object[funName];
-      args = [];
-      tmp = new RegExp(/\((.*?)\)/).exec(String(fun).split("=>")[0] ?? "");
-      if (tmp) args = (tmp[1] ?? "").split(/\s*,\s*/);
-      if (args.length === 2) {
-        fun.call(this, edata.target, edata);
-        if (this.debug) console.log(" - call: edata.object (old)", fun);
-      } else {
-        fun.call(this, edata);
-        if (this.debug) console.log(" - call: edata.object", fun);
-      }
-      if (edata.isStopped === true || edata.stop === true) return edata;
-    }
-    if (edata.phase === "after") {
-      if (typeof edata.onComplete === "function") edata.onComplete.call(this, edata);
-      for (let i = 0; i < edata.listeners.length; i++) {
-        if (typeof edata.listeners[i] === "function") {
-          edata.listeners[i].call(this, edata);
-          if (this.debug) console.log(" - call: done", fun);
-        }
-      }
-      edata._resolve(edata);
-      if (this.debug) {
-        console.log(`TsBase: trigger "${edata.type}:${edata.phase}"`, edata);
-      }
-      const ind = this.activeEvents.indexOf(edata);
-      if (ind !== -1) this.activeEvents.splice(ind, 1);
-    }
-    return edata;
-  }
-  /**
-   * This method renders component into the box. It is overwritten in descendents and in this base
-   * component it is empty.
-   */
-  render(_box) {
-  }
-  /**
-   * Removes all classes that start with tsg-* and sets box to null. It is needed so that control will
-   * release the box to be used for other widgets
-   */
-  unmount() {
-    const edata = this.trigger("unmount", { target: this.name });
-    if (edata.isCancelled) {
-      return;
-    }
-    const remove = [];
-    if (this.box instanceof HTMLElement) {
-      this.box.classList.forEach((cl) => {
-        if (cl.startsWith("tsg-")) remove.push(cl);
-      });
-    }
-    query4(this.box).off().removeClass(remove).removeAttr("name").html("");
-    this.box = null;
-    edata.finish();
-  }
-};
-
 // src/tsutils-message.ts
-var query5 = query;
+var query4 = query;
 function normButtons(options, btn, deps) {
   options["actions"] = options["actions"] ?? {};
   const btns = Object.keys(btn);
@@ -1953,7 +572,7 @@ function _message(where, options, deps) {
   let closeTimer, openTimer, edata;
   let msgBase = {};
   const removeLast = () => {
-    const msgs = query5(where?.box).find(".tsg-message");
+    const msgs = query4(where?.box).find(".tsg-message");
     if (msgs.length == 0) return;
     msgBase = msgs.get(0)["_msg_options"] || {};
     if (typeof msgBase?.close == "function") {
@@ -1963,17 +582,17 @@ function _message(where, options, deps) {
   const closeComplete = (options2) => {
     const msgBoxEl = options2["box"];
     const focus = msgBoxEl?.["_msg_prevFocus"];
-    if (query5(where.box).find(".tsg-message").length <= 1) {
+    if (query4(where.box).find(".tsg-message").length <= 1) {
       if (where.owner) {
         where.owner.unlock?.(where.param, 150);
       } else {
         deps.unlock(where.box, 150);
       }
     } else {
-      query5(where.box).find(`#tsg-message-${where.owner?.name}-${options2["msgIndex"] - 1}`).css("z-index", "1500");
+      query4(where.box).find(`#tsg-message-${where.owner?.name}-${options2["msgIndex"] - 1}`).css("z-index", "1500");
     }
     if (focus) {
-      const msg = query5(focus).closest(".tsg-message");
+      const msg = query4(focus).closest(".tsg-message");
       if (msg.length > 0) {
         const opt = msg.get(0)["_msg_options"];
         opt["setFocus"](focus);
@@ -1983,11 +602,11 @@ function _message(where, options, deps) {
     } else {
       if (typeof where.owner?.focus == "function") where.owner.focus();
     }
-    query5(options2["box"]).remove();
+    query4(options2["box"]).remove();
     if (options2["msgIndex"] === 0) {
       const tmp = options2["tmp"];
       head.css("z-index", tmp.zIndex);
-      query5(where.box).css("overflow", tmp.overflow);
+      query4(where.box).css("overflow", tmp.overflow);
     }
     if (options2["trigger"]) {
       ;
@@ -2021,9 +640,9 @@ function _message(where, options, deps) {
   }
   const msgOpts = msgBase;
   msgOpts["on"]("open", (event) => {
-    deps.bindEvents(query5(msgOpts["box"]).find(".tsg-eaction"), msgOpts);
+    deps.bindEvents(query4(msgOpts["box"]).find(".tsg-eaction"), msgOpts);
     const detail = event["detail"];
-    query5(detail["box"]).find("button, input, textarea, [name=hidden-first]").off(".message").on("keydown.message", function(evt) {
+    query4(detail["box"]).find("button, input, textarea, [name=hidden-first]").off(".message").on("keydown.message", function(evt) {
       const keyEvt = evt;
       if (keyEvt.keyCode == 27 && msgOpts["hideOn"].includes("esc")) {
         if (msgOpts["cancelAction"]) {
@@ -2111,12 +730,12 @@ function _message(where, options, deps) {
             <div class="tsg-message-buttons">${msgBase.buttons || ""}</div>
         `;
   }
-  let styles = getComputedStyle(query5(where.box).get(0));
+  let styles = getComputedStyle(query4(where.box).get(0));
   const pWidth = parseFloat(styles.width);
   const pHeight = parseFloat(styles.height);
   let titleHeight = 0;
-  if (query5(where.after).length > 0) {
-    styles = getComputedStyle(query5(where.after).get(0));
+  if (query4(where.after).length > 0) {
+    styles = getComputedStyle(query4(where.after).get(0));
     titleHeight = parseInt(styles.display != "none" ? styles.height : "0");
   }
   if ((msgBase.width ?? 0) > pWidth) msgBase.width = pWidth - 10;
@@ -2129,7 +748,7 @@ function _message(where, options, deps) {
   if (parseInt(String(msgBase.height)) < 10) msgBase.height = 10;
   if ((msgBase.originalHeight ?? 0) < 0) msgBase.height = pHeight + (msgBase.originalHeight ?? 0) - titleHeight;
   if ((msgBase.originalWidth ?? 0) < 0) msgBase.width = pWidth + (msgBase.originalWidth ?? 0) * 2;
-  const head = query5(where.box).find(where.after);
+  const head = query4(where.box).find(where.after);
   if (!msgBase.tmp) {
     msgBase.tmp = {
       zIndex: String(head.css("z-index")),
@@ -2139,9 +758,9 @@ function _message(where, options, deps) {
   if (msgBase.html === "" && msgBase.body === "" && msgBase.buttons === "") {
     removeLast();
   } else {
-    msgBase.msgIndex = query5(where.box).find(".tsg-message").length;
+    msgBase.msgIndex = query4(where.box).find(".tsg-message").length;
     if (msgBase.msgIndex === 0 && typeof deps.lock == "function") {
-      query5(where.box).css("overflow", "hidden");
+      query4(where.box).css("overflow", "hidden");
       if (where.owner) {
         ;
         where.owner.lock?.(where.param);
@@ -2149,7 +768,7 @@ function _message(where, options, deps) {
         deps.lock(where.box);
       }
     }
-    query5(where.box).find(".tsg-message").css("z-index", "1390");
+    query4(where.box).find(".tsg-message").css("z-index", "1390");
     head.css("z-index", "1501");
     const content = `
             <div id="tsg-message-${where.owner?.name}-${msgBase.msgIndex}" class="tsg-message" data-mousedown="stop"
@@ -2160,34 +779,34 @@ function _message(where, options, deps) {
                 ${msgBase.html}
                 <span name="hidden-last" tabindex="0" style="position: absolute; top: 0; outline: none"></span>
             </div>`;
-    if (query5(where.after).length > 0) {
-      query5(where.box).find(where.after).after(content);
+    if (query4(where.after).length > 0) {
+      query4(where.box).find(where.after).after(content);
     } else {
-      query5(where.box).prepend(content);
+      query4(where.box).prepend(content);
     }
-    msgBase.box = query5(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)[0];
+    msgBase.box = query4(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`)[0];
     deps.bindEvents(msgBase.box, deps.self);
-    query5(msgBase.box).addClass("animating");
+    query4(msgBase.box).addClass("animating");
     msgBase.box["_msg_options"] = msgBase;
     msgBase.box["_msg_prevFocus"] = document.activeElement;
     setTimeout(() => {
       edata = msgOpts["trigger"]("open", { target: deps.ownerName, box: msgBase.box, self: msgBase });
       const edataR = edata;
       if (edataR["isCancelled"] === true) {
-        query5(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).remove();
+        query4(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).remove();
         if (msgBase.msgIndex === 0) {
           head.css("z-index", msgBase.tmp.zIndex);
-          query5(where.box).css("overflow", msgBase.tmp.overflow);
+          query4(where.box).css("overflow", msgBase.tmp.overflow);
         }
         return;
       }
-      query5(msgBase.box).css({
+      query4(msgBase.box).css({
         transition: "0.3s",
         transform: "translateY(0px)"
       });
     }, 0);
     openTimer = setTimeout(() => {
-      query5(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).removeClass("animating").css({ "transition": "0s" });
+      query4(where.box).find(`#tsg-message-${where.owner?.name}-${msgBase.msgIndex}`).removeClass("animating").css({ "transition": "0s" });
       edata?.["finish"]?.();
     }, 300);
   }
@@ -2211,25 +830,25 @@ function _message(where, options, deps) {
     const edataR = edata;
     if (edataR["isCancelled"] === true) return;
     clearTimeout(openTimer);
-    if (query5(msgBase.box).hasClass("animating")) {
+    if (query4(msgBase.box).hasClass("animating")) {
       clearTimeout(closeTimer);
       closeComplete(msgOpts);
       return;
     }
-    query5(msgBase.box).addClass("tsg-closing animating").css({
+    query4(msgBase.box).addClass("tsg-closing animating").css({
       "transition": "0.15s",
       "transform": "translateY(-" + msgBase.height + "px)"
     });
     if ((msgBase.msgIndex ?? 0) !== 0) {
-      query5(where.box).find(`#tsg-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1) - 1}`).css("z-index", "1499");
+      query4(where.box).find(`#tsg-message-${where.owner?.name}-${(msgBase.msgIndex ?? 1) - 1}`).css("z-index", "1499");
     }
     closeTimer = setTimeout(() => {
       closeComplete(msgOpts);
     }, 150);
   };
   msgBase.setFocus = (focus) => {
-    const cnt = query5(where.box).find(".tsg-message").length - 1;
-    const box = query5(where.box).find(`#tsg-message-${where.owner?.name}-${cnt}`);
+    const cnt = query4(where.box).find(".tsg-message").length - 1;
+    const box = query4(where.box).find(`#tsg-message-${where.owner?.name}-${cnt}`);
     const sel = "input, button, select, textarea, [contentEditable], .tsg-input";
     if (focus != null) {
       const el = typeof focus === "string" ? box.find(sel).filter(focus).get(0) : box.find(sel).get(focus);
@@ -2237,20 +856,20 @@ function _message(where, options, deps) {
     } else {
       box.find("[name=hidden-first]").get(0)?.focus();
     }
-    query5(where.box).find(".tsg-message").find(sel + ",[name=hidden-first],[name=hidden-last]").off(".keep-focus");
-    query5(box).find(sel + ",[name=hidden-first],[name=hidden-last]").on("blur.keep-focus", function(_event) {
+    query4(where.box).find(".tsg-message").find(sel + ",[name=hidden-first],[name=hidden-last]").off(".keep-focus");
+    query4(box).find(sel + ",[name=hidden-first],[name=hidden-last]").on("blur.keep-focus", function(_event) {
       setTimeout(() => {
         const focus2 = document.activeElement;
-        const inside = focus2 != null && query5(box).find(sel).filter(focus2).length > 0;
-        const name = query5(focus2).attr("name");
+        const inside = focus2 != null && query4(box).find(sel).filter(focus2).length > 0;
+        const name = query4(focus2).attr("name");
         if (!inside && focus2 && focus2 !== document.body) {
-          query5(box).find(sel).get(0)?.focus();
+          query4(box).find(sel).get(0)?.focus();
         }
         if (name == "hidden-last") {
-          query5(box).find(sel).get(0)?.focus();
+          query4(box).find(sel).get(0)?.focus();
         }
         if (name == "hidden-first") {
-          query5(box).find(sel).get(-1)?.focus();
+          query4(box).find(sel).get(-1)?.focus();
         }
       }, 1);
     });
@@ -2317,8 +936,8 @@ function _prompt(where, options, deps) {
       self?.["close"]?.();
     }).then((event) => {
       const d = event["detail"];
-      (d?.["self"])["input"] = query5(d?.["box"]).find("#TsPrompt").get(0);
-      query5(d?.["box"]).find("#TsPrompt").on("keydown", (evt) => {
+      (d?.["self"])["input"] = query4(d?.["box"]).find("#TsPrompt").get(0);
+      query4(d?.["box"]).find("#TsPrompt").on("keydown", (evt) => {
         if (evt.keyCode == 13 && evt.shiftKey === false) {
           evt.preventDefault();
         }
@@ -2338,7 +957,7 @@ function _prompt(where, options, deps) {
 }
 
 // src/tsutils-dom.ts
-var query6 = query;
+var query5 = query;
 function transition(divOld, divNew, type, callBack) {
   return new Promise((resolve, _reject) => {
     const styles = getComputedStyle(divOld);
@@ -2357,7 +976,7 @@ function transition(divOld, divNew, type, callBack) {
       case "slide-left":
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; transform: translate3d(" + width + "px, 0, 0)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: translate3d(0, 0, 0)";
           divOld.style.cssText += "transition: " + time + "s; transform: translate3d(-" + width + "px, 0, 0)";
@@ -2366,7 +985,7 @@ function transition(divOld, divNew, type, callBack) {
       case "slide-right":
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; transform: translate3d(-" + width + "px, 0, 0)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: translate3d(0px, 0, 0)";
           divOld.style.cssText += "transition: " + time + "s; transform: translate3d(" + width + "px, 0, 0)";
@@ -2375,7 +994,7 @@ function transition(divOld, divNew, type, callBack) {
       case "slide-down":
         divOld.style.cssText += "overflow: hidden; z-index: 1; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; z-index: 0; transform: translate3d(0, 0, 0)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: translate3d(0, 0, 0)";
           divOld.style.cssText += "transition: " + time + "s; transform: translate3d(0, " + height + "px, 0)";
@@ -2384,7 +1003,7 @@ function transition(divOld, divNew, type, callBack) {
       case "slide-up":
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; transform: translate3d(0, " + height + "px, 0)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: translate3d(0, 0, 0)";
           divOld.style.cssText += "transition: " + time + "s; transform: translate3d(0, 0, 0)";
@@ -2393,7 +1012,7 @@ function transition(divOld, divNew, type, callBack) {
       case "flip-left":
         divOld.style.cssText += "overflow: hidden; transform: rotateY(0deg)";
         divNew.style.cssText += "overflow: hidden; transform: rotateY(-180deg)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: rotateY(0deg)";
           divOld.style.cssText += "transition: " + time + "s; transform: rotateY(180deg)";
@@ -2402,7 +1021,7 @@ function transition(divOld, divNew, type, callBack) {
       case "flip-right":
         divOld.style.cssText += "overflow: hidden; transform: rotateY(0deg)";
         divNew.style.cssText += "overflow: hidden; transform: rotateY(180deg)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: rotateY(0deg)";
           divOld.style.cssText += "transition: " + time + "s; transform: rotateY(-180deg)";
@@ -2411,7 +1030,7 @@ function transition(divOld, divNew, type, callBack) {
       case "flip-down":
         divOld.style.cssText += "overflow: hidden; transform: rotateX(0deg)";
         divNew.style.cssText += "overflow: hidden; transform: rotateX(180deg)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: rotateX(0deg)";
           divOld.style.cssText += "transition: " + time + "s; transform: rotateX(-180deg)";
@@ -2420,7 +1039,7 @@ function transition(divOld, divNew, type, callBack) {
       case "flip-up":
         divOld.style.cssText += "overflow: hidden; transform: rotateX(0deg)";
         divNew.style.cssText += "overflow: hidden; transform: rotateX(-180deg)";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: rotateX(0deg)";
           divOld.style.cssText += "transition: " + time + "s; transform: rotateX(180deg)";
@@ -2429,7 +1048,7 @@ function transition(divOld, divNew, type, callBack) {
       case "pop-in":
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0); transform: scale(.8); opacity: 0;";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; transform: scale(1); opacity: 1;";
           divOld.style.cssText += "transition: " + time + "s;";
@@ -2438,7 +1057,7 @@ function transition(divOld, divNew, type, callBack) {
       case "pop-out":
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0); transform: scale(1); opacity: 1;";
         divNew.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0); opacity: 0;";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; opacity: 1;";
           divOld.style.cssText += "transition: " + time + "s; transform: scale(1.7); opacity: 0;";
@@ -2447,7 +1066,7 @@ function transition(divOld, divNew, type, callBack) {
       default:
         divOld.style.cssText += "overflow: hidden; transform: translate3d(0, 0, 0)";
         divNew.style.cssText += "overflow: hidden; translate3d(0, 0, 0); opacity: 0;";
-        query6(divNew).show();
+        query5(divNew).show();
         setTimeout(() => {
           divNew.style.cssText += "transition: " + time + "s; opacity: 1;";
           divOld.style.cssText += "transition: " + time + "s";
@@ -2456,16 +1075,16 @@ function transition(divOld, divNew, type, callBack) {
     }
     setTimeout(() => {
       if (type === "slide-down") {
-        query6(divOld).css("z-index", "1019");
-        query6(divNew).css("z-index", "1020");
+        query5(divOld).css("z-index", "1019");
+        query5(divNew).css("z-index", "1020");
       }
       if (divNew) {
         ;
-        query6(divNew).css({ "opacity": "1" }).css({ "transition": "", "transform": "" });
+        query5(divNew).css({ "opacity": "1" }).css({ "transition": "", "transform": "" });
       }
       if (divOld) {
         ;
-        query6(divOld).css({ "opacity": "1" }).css({ "transition": "", "transform": "" });
+        query5(divOld).css({ "opacity": "1" }).css({ "transition": "", "transform": "" });
       }
       if (typeof callBack === "function") callBack();
       resolve();
@@ -2485,18 +1104,18 @@ function lock(box, options = {}, ...rest) {
   }
   if (!opts.msg && opts.msg !== 0) opts.msg = "";
   unlock(boxSel);
-  const el = query6(boxSel).get(0);
+  const el = query5(boxSel).get(0);
   const pWidth = el.scrollWidth;
   const pHeight = el.scrollHeight;
   let style = `height: ${pHeight}px; width: ${pWidth}px`;
   if (el.tagName == "BODY") {
     style = "position: fixed; right: 0; bottom: 0;";
   }
-  query6(boxSel).prepend(
+  query5(boxSel).prepend(
     `<div class="tsg-lock" style="${style}"></div><div class="tsg-lock-msg"></div>`
   );
-  const $lock = query6(boxSel).find(".tsg-lock");
-  const $mess = query6(boxSel).find(".tsg-lock-msg");
+  const $lock = query5(boxSel).find(".tsg-lock");
+  const $mess = query5(boxSel).find(".tsg-lock-msg");
   if (!opts.msg) {
     $mess.css({
       "background-color": "transparent",
@@ -2555,23 +1174,23 @@ function unlock(box, speed) {
     boxSel = Array.isArray(box) ? box : box.get();
   }
   if (isInt(speed) && (speed ?? 0) > 0) {
-    query6(boxSel).find(".tsg-lock").css({
+    query5(boxSel).find(".tsg-lock").css({
       transition: (speed ?? 0) / 1e3 + "s",
       opacity: 0
     });
-    const _box = query6(boxSel).get(0);
+    const _box = query5(boxSel).get(0);
     clearTimeout(_box["_prevUnlock"]);
     _box["_prevUnlock"] = setTimeout(() => {
-      query6(boxSel).find(".tsg-lock").remove();
+      query5(boxSel).find(".tsg-lock").remove();
     }, speed);
-    query6(boxSel).find(".tsg-lock-msg").remove();
+    query5(boxSel).find(".tsg-lock-msg").remove();
   } else {
-    query6(boxSel).find(".tsg-lock").remove();
-    query6(boxSel).find(".tsg-lock-msg").remove();
+    query5(boxSel).find(".tsg-lock").remove();
+    query5(boxSel).find(".tsg-lock-msg").remove();
   }
 }
 function getSize(el, type) {
-  const $el = query6(el);
+  const $el = query5(el);
   let ret = 0;
   if ($el.length > 0) {
     const styles = getComputedStyle($el[0]);
@@ -2592,10 +1211,10 @@ function getSize(el, type) {
   return ret;
 }
 function getStrDimentions(str, styles, raw) {
-  let div = query6("body > #_tmp_width");
+  let div = query5("body > #_tmp_width");
   if (div.length === 0) {
-    query6("body").append('<div id="_tmp_width" style="position: absolute; top: -9000px;"></div>');
-    div = query6("body > #_tmp_width");
+    query5("body").append('<div id="_tmp_width" style="position: absolute; top: -9000px;"></div>');
+    div = query5("body > #_tmp_width");
   }
   if (raw === void 0 && str.trim().startsWith("<") && str.trim().endsWith(">")) {
     raw = true;
@@ -2615,8 +1234,8 @@ function bindEvents(selector, subject) {
     normalizedSelector = Array.isArray(selector) ? selector : selector.get();
   }
   ;
-  query6(normalizedSelector).each((el) => {
-    const actions = query6(el).data();
+  query5(normalizedSelector).each((el) => {
+    const actions = query5(el).data();
     Object.keys(actions).forEach((name) => {
       const events = [
         "click",
@@ -2660,7 +1279,7 @@ function bindEvents(selector, subject) {
       }
       const method = String(params[0]);
       params = params.slice(1);
-      query6(el).off(name + ".TsUtils-bind").on(name + ".TsUtils-bind", function(event) {
+      query5(el).off(name + ".TsUtils-bind").on(name + ".TsUtils-bind", function(event) {
         switch (method) {
           case "alert":
             alert(params[0]);
@@ -3098,7 +1717,7 @@ async function _locale(locale, keepPhrases, noMerge, settings, deps) {
 }
 
 // src/tsutils.ts
-var query7 = query;
+var query6 = query;
 var Utils = class {
   version;
   tmp;
@@ -3596,9 +2215,9 @@ var Utils = class {
                 <div style="height: 120px">1</div>
             </div>
         `;
-    query7("body").append(html);
-    this.tmp["scrollBarSize"] = 100 - query7("#_scrollbar_width > div")[0].clientWidth;
-    query7("#_scrollbar_width").remove();
+    query6("body").append(html);
+    this.tmp["scrollBarSize"] = 100 - query6("#_scrollbar_width > div")[0].clientWidth;
+    query6("#_scrollbar_width").remove();
     return this.tmp["scrollBarSize"];
   }
   checkName(name) {
@@ -3668,9 +2287,9 @@ var Utils = class {
       input.setSelectionRange(pos, posEnd ?? pos);
     } else {
       for (let i = 0; i < input.childNodes.length; i++) {
-        let tmp = String(query7(input.childNodes[i]).text());
+        let tmp = String(query6(input.childNodes[i]).text());
         if (input.childNodes[i].tagName) {
-          tmp = String(query7(input.childNodes[i]).html());
+          tmp = String(query6(input.childNodes[i]).html());
           tmp = tmp.replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&nbsp;/g, " ");
         }
         if (pos <= tmp.length) {
@@ -3799,14 +2418,9 @@ var Utils = class {
   }
 };
 var TsUtils = new Utils();
-// Annotate the CommonJS export names for ESM import in node:
-0 && (module.exports = {
-  TsUi,
-  TsUtils,
-  query
-});
-/*
- * @author     Lauri Rooden (https://github.com/litejs/natural-compare-lite)
- * @license    MIT License
- */
-//# sourceMappingURL=utils.js.map
+
+export {
+  query6 as query,
+  TsUtils
+};
+//# sourceMappingURL=chunk-UDGOHP3E.js.map

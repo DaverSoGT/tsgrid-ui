@@ -95,8 +95,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
     })
 
     // version-anchor: manual-review-trigger (see W-2 convention)
-    it('package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle)', () => {
-        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    it('package version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (v3.0 cycle)', () => {
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1']).toContain(pkg.version)
     })
 
     // R-GCP-4 regression guard: files[] must not exclude per-widget CSS
@@ -125,8 +125,8 @@ describe('package.json sideEffects (R-CSSE-1)', () => {
 // These tests are updated to assert the v3.0.0 contract.
 // ---------------------------------------------------------------------------
 describe('package.json barrel-removal transition (v2.15.0→v3.0.0)', () => {
-    it('T-BD-10-v3: package version is 3.0.0-rc.1 or 3.0.0 (barrel removed in v3.0.0)', () => {
-        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    it('T-BD-10-v3: package version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (barrel removed in v3.0.0)', () => {
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1']).toContain(pkg.version)
     })
 
     it('T-BD-11-v3: sideEffects array does NOT include ./dist/tsgrid-ui.es6.js (barrel removed)', () => {
@@ -150,8 +150,8 @@ describe('package.json barrel-removal transition (v2.15.0→v3.0.0)', () => {
 // barrel-removal (v3.0.0): T-PKG-1..T-PKG-3 (R-BR-3, R-BR-4, R-BR-8, R-SCI-9, R-SCI-11)
 // ---------------------------------------------------------------------------
 describe('package.json barrel-removal assertions (v3.0.0)', () => {
-    it('T-PKG-1: package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle allow-list)', () => {
-        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    it('T-PKG-1: package version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (v3.0 cycle allow-list)', () => {
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1']).toContain(pkg.version)
     })
 
     it('T-PKG-2: package.json#exports["./icons"] is defined (R-SCI-9)', () => {
@@ -183,7 +183,7 @@ describe('package.json font-externalization assertions (T-FE-10..T-FE-13)', () =
         expect('gulp-iconfont' in pkg.devDependencies).toBe(false)
     })
 
-    it('T-FE-13: package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle — barrel-deprecation baseline superseded)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
-        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    it('T-FE-13: package version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (v3.0 cycle — barrel-deprecation baseline superseded)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1']).toContain(pkg.version)
     })
 })

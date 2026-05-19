@@ -14,8 +14,8 @@ const SUBPATHS = CJS_SUBPATH_NAMES
 const distExists = existsSync(join(ROOT, 'dist'))
 
 describe('cjs-subpath-bytes — per-file byte-floor guard (R-CSP-14, R-CSP-22)', () => {
-    it('package version is 3.0.0-rc.1 or 3.0.0 (v3.0 cycle — barrel removed)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
-        expect(['3.0.0-rc.1', '3.0.0']).toContain(pkg.version)
+    it('package version is 3.0.0-rc.1 or 3.0.0 or 3.0.1 (v3.0 cycle — barrel removed)', () => { // version-anchor: manual-review-trigger (see W-2 convention)
+        expect(['3.0.0-rc.1', '3.0.0', '3.0.1']).toContain(pkg.version)
     })
 
     it.skipIf(!distExists).each(SUBPATHS)(

@@ -2,6 +2,39 @@
 
 All notable changes to **TsGrid UI** will be documented in this file.
 
+## v3.0.1 — 2026-05-18
+
+### Fixed
+
+- `TsUtils.notify(...)` close button rendered an invisible empty `<span>`
+  in v3.0.0 because the `.tsg-icon-cross` CSS background-image rule was
+  removed in v3.0.0 but `src/tsutils-notify.ts` was missed by the
+  inline-SVG migration. The close button now renders an inline `<svg>` via
+  `crossIcon({ label: 'Close', size: 16 })` (consistent with the v3.0.0
+  `tspopup.ts:240` pattern). Accessible name "Close" is now present via
+  `role="img"` + `aria-label="Close"` on the SVG. (R-CDC-1..4)
+
+### Removed
+
+- `.w2field` rule (5 LOC) from `src/less/src/fields.less` — unused since the
+  w2ui migration; zero TS references, only mentioned in non-shipping test HTML.
+- `.tsg-field-helper .tsg-icon-search` and `&.show-search` rules (12 LOC)
+  from `src/less/src/fields.less` — superseded by the
+  `[data-icon="search"]` attribute selector + inline `searchIcon()` SVG
+  pattern in `tsfield.ts:2061` already shipped in v3.0.0.
+
+### Changed
+
+- `test/unit/widgets-no-css-icons.test.ts` now also scans
+  `src/tsutils-notify.ts` (regression guard for the v3.0.0 hole).
+- `src/less/icons/readme.md` rewritten to reflect the v3.0.0+ inline-SVG
+  icon model. Old references to `drop-inverted.svg` and the
+  background-image data-URI pipeline removed.
+
+### Migration
+
+None — PATCH release with no public API changes.
+
 ## v3.0.0 — 2026-05-18
 
 ### Breaking Changes
